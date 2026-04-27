@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carter Shannon | Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <aside class="profile-rail" aria-label="Profile summary">
+        <a class="brand-lockup" href="index.html" aria-label="Carter Shannon home">
+          <span>Carter Shannon</span>
+        </a>
+
+        <img
+          class="headshot"
+          src="assets/carter-shannon-headshot.png"
+          alt="Carter Shannon headshot"
+        />
+
+        <p class="profile-line">Strategy backed by Data</p>
+
+        <nav class="side-nav" aria-label="Section navigation">
+          <a class="side-nav-link" href="index.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 21a8 8 0 0 0-16 0" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            About Me
+          </a>
+          <a class="side-nav-link" href="experience.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M10 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1" />
+              <rect x="3" y="6" width="18" height="14" rx="2" />
+              <path d="M3 12h18" />
+            </svg>
+            Experience
+          </a>
+          <a class="side-nav-link active" href="portfolio.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+            Portfolio
+          </a>
+        </nav>
+
+        <div class="social-links" aria-label="Contact links">
+          <a href="mailto:cartershannon000@gmail.com" aria-label="Email Carter">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m4 6 8 7 8-7" />
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+            </svg>
+          </a>
+          <a href="tel:+13364553421" aria-label="Call Carter">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.7.6 2.5a2 2 0 0 1-.5 2.1L8 9.5a16 16 0 0 0 6.5 6.5l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.6.5 2.5.6A2 2 0 0 1 22 16.9Z" />
+            </svg>
+          </a>
+        </div>
+      </aside>
+
+      <main class="page-content">
+        <header class="top-nav">
+          <a class="top-nav-link" href="index.html">About Me</a>
+          <a class="top-nav-link" href="experience.html">Experience</a>
+          <a class="top-nav-link active" href="portfolio.html">Portfolio</a>
+        </header>
+
+        <section class="page-section" aria-labelledby="portfolio-title">
+          <h1 id="portfolio-title">Portfolio</h1>
+          <p class="intro">
+            Selected personal apps and systems built around clear workflows,
+            thoughtful interfaces, and practical user outcomes.
+          </p>
+
+          <div class="portfolio-grid" aria-label="Portfolio projects">
+            <a
+              class="portfolio-card"
+              href="https://novena-prayer-app.github.io/nos-prayer-app/marketing.html"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div class="portfolio-preview nos-preview" aria-hidden="true">
+                <div class="phone-frame">
+                  <div class="phone-bar"></div>
+                  <div class="preview-line short"></div>
+                  <div class="preview-line"></div>
+                  <div class="preview-card"></div>
+                  <div class="preview-line"></div>
+                  <div class="preview-line short"></div>
+                </div>
+                <div class="preview-panel">
+                  <span>NOVENA</span>
+                  <strong>Daily Reflection</strong>
+                  <p>Prayer, journaling, and steady spiritual rhythm.</p>
+                </div>
+              </div>
+              <div class="portfolio-content">
+                <div class="portfolio-heading">
+                  <h2>Nós</h2>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M7 17 17 7" />
+                    <path d="M8 7h9v9" />
+                  </svg>
+                </div>
+                <p>
+                  Nós is a quiet home for novenas, daily reflection, honest
+                  journaling, and the grace to keep praying whether the answer
+                  is yes, no, or not yet. It gives structure without pressure
+                  and beauty without clutter.
+                </p>
+                <div class="tag-row" aria-label="Project tags">
+                  <span>Prayer App</span>
+                  <span>Journaling</span>
+                  <span>Reflection</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
