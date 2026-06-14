@@ -5,12 +5,13 @@ equity-research / investor deck from a prompt, then improves it on a
 twice-daily loop without drifting from **truth**, **story**, or **visual
 clarity**.
 
-This document covers: (1) the state machine, (2) how the two rubrics are
-**built and calibrated**, (3) the **Initial-Output Rubric (R1)**, (4) the
-**Loop Improvement Rubric (R2)**, (5) the accept/reject math that guarantees
-monotonic improvement with no truth regression, (6) the skill/agent catalog
-(deterministic tools vs. LLM agents), and (7) the persisted state schemas.
-Section (0) defines the **orchestrator** that drives all of it.
+This document covers: (0) the **orchestrator** that drives everything,
+(1) the state machine, (2) how the two rubrics are **built and calibrated**,
+(3) the **Initial-Output Rubric (R1)**, (4) the **Loop Improvement Rubric
+(R2)**, (5) the accept/reject math (and why monotonic improvement holds only
+within a data/rubric epoch), (6) the skill/agent catalog (deterministic tools
+vs. LLM agents), (7) the persisted state + immutable version history,
+(8) open decisions, and (9) known weaknesses we are accepting or watching.
 
 ---
 
@@ -78,29 +79,32 @@ flowchart TD
     RB --> Pull0["A3 — Deterministic data pull\nDoc parse · Analysis · SEC/EDGAR → fact store"]
     Pull0 --> Draft["First Build (Slide-create)"]
     Draft --> R1gate{"R1 — Initial-Output Rubric\nhard gates PASS + composite >= entry bar?"}
-    R1gate -->|no| Draft
-    R1gate -->|yes| Render
+    R1gate -->|no, rebuilds left| Draft
+    R1gate -->|no, rebuild budget exhausted| ColdEsc["Escalate: can't clear entry bar\n(notify human)"]
+    R1gate -->|yes| Epoch
 
-    subgraph Loop["G2 — improvement loop (cadence: 2x/day)"]
+    subgraph Loop["G2 — improvement loop (cadence: 2x/day per run)"]
         direction TB
-        Render["Render"] --> FactCheck["Deterministic fact-check\nevery claimed figure ↔ fact store"]
+        Epoch["Re-baseline epoch\n(re-score best-so-far vs current\nrubric_version + data_version)"] --> Render["Render"]
+        Render --> FactCheck["Deterministic fact-check\nevery claimed figure ↔ fact store"]
         FactCheck --> Score["A4 — Scorer (LLM judge)\nR2 per-dimension + evidence"]
-        Score --> Gate{"Accept logic\n(hard gates hold AND\nno protected dim regresses AND\ncomposite improves)?"}
-        Gate -->|accept| Persist["Update best-so-far\n+ score history + changelog"]
+        Score --> Gate{"Accept logic\n(invariants hold AND\nno protected dim regresses AND\ncomposite improves within epoch)?"}
+        Gate -->|accept| Persist["Update working best-so-far\n+ score history + changelog"]
         Gate -->|reject| Rollback["Restore best-so-far\nlog rejected attempt + reason"]
-        Persist --> Stop{"Stop?\nscore >= ship bar OR\nmargin < ε for N iters OR\nmax iters"}
+        Persist --> Stop{"Stop this run?\nscore >= ship bar OR\nmargin < ε for N iters OR\nmax iters"}
         Rollback --> Stop
         Stop -->|keep going| Plan["A4 — Planner\n(reads Score's comments,\nwrites a work order:\ntarget dim + action type)"]
-        Plan -->|action: refine numbers/analysis| Pull1["A3 — re-pull or re-run analysis\n→ fact store"] --> Build
+        Plan -->|action: refine numbers/analysis| Pull1["A3 — re-pull or re-run analysis\n→ fact store (bumps data_version)"] --> Build
         Plan -->|action: refine story / visual / traceability| Build["A4 — Reviser\n(executes the work order)"]
         Build --> Render
-        Stop -->|ship bar hit| HumanGate["Human checkpoint"]
-        Stop -->|plateau below bar| Stall["Escalate: loop stuck"]
+        Stop -->|run done: ship bar / max iters / plateau| Freeze
     end
 
-    HumanGate -->|approved| Deploy["Deploy (publish)"]
-    HumanGate -->|changes| Plan
-    Stall --> Human2["Human revises rubric/scope\nor accepts current best"]
+    Freeze["Freeze current best as new\nimmutable version vN"] --> Notify["T9 Notifier\nemail/message: run complete +\nstatus (ready / stalled) + score delta + version link"]
+    Notify --> Gate2{"Publish to C-suite?\n(human approves external)"}
+    Gate2 -->|approved| Deploy["Publish vN externally"]
+    Gate2 -->|not yet| Hold["vN retained as internal version\n(user browses version history)"]
+    ColdEsc --> Notify
 ```
 
 Two rubrics do two different jobs:
@@ -224,10 +228,11 @@ down. This is what enforces "do not derive from truth, story, or visuals."
 
 | Dimension | Weight | What "5" looks like (anchor) |
 |---|---|---|
-| **Actionability** | 0.30 | Every section ends in a decision-relevant takeaway tied to the thesis; reader knows what to *do*, not just what *is*. |
-| **Visual digestibility** | 0.25 | Each slide graspable in <10s: one idea, the right chart type, hierarchy guides the eye, minimal text. |
-| **Clean & concise story** | 0.25 | Tight through-line, no redundant slides, each builds on the last; could be read aloud as a coherent argument. |
-| **Metric traceability quality** | 0.20 | Beyond merely *passing* the truth gate: every metric is *labeled* with its source, period, and units inline, so the reader can self-verify. |
+| **Actionability** | 0.25 | Every section ends in a decision-relevant takeaway tied to the thesis; reader knows what to *do*, not just what *is*. |
+| **Executive altitude (C-suite fit)** | 0.20 | Exec-summary / "so what" up front; right level of abstraction for a CEO/CFO/board; anticipates the obvious executive questions and answers them; no analyst-level detail that an exec wouldn't ask for. |
+| **Visual digestibility** | 0.20 | Each slide graspable in <10s: one idea, the right chart type, hierarchy guides the eye, minimal text. |
+| **Clean & concise story** | 0.20 | Tight through-line, no redundant slides, each builds on the last; could be read aloud as a coherent argument. |
+| **Metric traceability quality** | 0.15 | Beyond merely *passing* the truth gate: every metric is *labeled* with its source, period, and units inline, so the reader can self-verify. |
 
 > Note the split on numbers: the **truth invariant (4a)** is a binary
 > deterministic gate — "does this number exist in the fact store?" The
@@ -235,7 +240,7 @@ down. This is what enforces "do not derive from truth, story, or visuals."
 > *presented* so a reader can trace it?" The first prevents fabrication; the
 > second is a thing we actively get better at.
 
-**Composite:** `R2 = 0.30·Action + 0.25·Visual + 0.25·Story + 0.20·Trace`,
+**Composite:** `R2 = 0.25·Action + 0.20·Exec + 0.20·Visual + 0.20·Story + 0.15·Trace`,
 on the [0,5] scale, computed **only when all 4a invariants hold.**
 
 ---
@@ -259,6 +264,23 @@ from R2's improvement targets are `s_d`; invariant flags from 4a are booleans.
 Otherwise **roll back to `b`** and log the rejected attempt + reason. This is
 hill-climbing with rollback: the composite is monotonically non-decreasing
 across accepted iterations, and the invariants are monotonically protected.
+
+**Monotonicity holds only within an epoch — and that's deliberate.** An
+"epoch" is a fixed `(rubric_version, data_version)` pair. The guarantee above
+is *relative to the facts and rubric in force.* When new data lands (a fresh
+10-Q moves a margin, a price updates), reality itself can lower a score — and
+the deck **must** follow reality down; that is correct behavior, not a
+regression. So whenever `data_version` (or `rubric_version`) changes, the loop
+**re-baselines**: it re-scores best-so-far against the new facts and resets the
+reference point `b` to that re-scored value. Improvement is then measured
+forward within the new epoch.
+
+This resolves the otherwise-contradictory pair of goals — "never sacrifice
+truth" and "monotonically improve." Truth wins: a reality-driven score drop
+re-baselines rather than rolls back. Quality regressions *within* an epoch
+(same facts, deck got worse) still roll back. `score_history` stamps both
+`rubric_version` and `data_version` on every row, so a drop caused by reality
+is always distinguishable from a drop caused by a bad revision.
 
 **Stop conditions (any one):**
 
@@ -310,10 +332,16 @@ acts on their compact results.
 | **T6 Renderer** | Turn the deck spec into rendered slides | deck spec → rendered deck |
 | **T7 Render lint** | Detect overflow, walls of text, broken/empty slides | rendered deck → visual-integrity flags |
 | **T8 Score aggregator** | Apply rubric weights, compute composite, run the accept/reject math (§5) | per-dim scores + invariant flags → composite + accept/reject decision |
+| **T9 Notifier** | On run completion (or cold-start escalation), send email/message with status, score delta, and a link to the new version | run summary → email/Slack/message sent |
+| **T10 Version writer** | Freeze the run's final deck as a new immutable version file; update the version index | best deck + run metadata → `versions/vN/…` + index row |
+| **T11 Judge-consistency check** | Periodically re-score an *unchanged* best-so-far to detect judge drift; if self-variance > δ, flag it | best-so-far (unchanged) → judge-drift flag |
 
-> Why deterministic: numbers, verification, and the accept/reject decision must
-> be **reproducible and auditable.** If an LLM did the arithmetic or the
-> figure-matching, "the loop never sacrifices truth" couldn't be guaranteed.
+> Why deterministic: numbers, verification, the accept/reject decision,
+> versioning, and notifications must be **reproducible and auditable.** If an
+> LLM did the arithmetic or the figure-matching, "the loop never sacrifices
+> truth" couldn't be guaranteed. T11 watches the one place we *can't* make
+> deterministic — the LLM judge — by checking it scores identical input
+> consistently.
 
 ### 6b. LLM agents (judgment)
 
@@ -341,34 +369,61 @@ acts on their compact results.
 
 ---
 
-## 7. Persisted state (loop memory)
+## 7. Persisted state (loop memory + version history)
+
+**Outputs are immutable and versioned — never overwritten.** Every completed
+run freezes its final deck as a *new* file under `versions/vN/`. `best_so_far`
+is just a working pointer used *inside* a run; the durable record is the
+growing stack of versions the user can browse to watch progress over time.
+
+```
+versions/
+  v001/  deck.json  render.pdf  scores.json  changelog.jsonl   ← run 1 output
+  v002/  deck.json  render.pdf  scores.json  changelog.jsonl   ← run 2 output
+  v003/  ...                                                    ← newest
+  index.jsonl                                                   ← one row per version
+```
 
 ```jsonc
-// best_so_far.json — the current champion
+// versions/index.jsonl — one immutable row per completed run
+{ "version": "v003", "ts": "2026-06-14T12:00Z", "status": "ready_for_review",
+  "composite": 4.12, "delta_vs_prev": +0.14, "rubric_version": "r2-1.2.0",
+  "data_version": "d-2026Q1", "iters_this_run": 9, "render": "versions/v003/render.pdf" }
+
+// best_so_far.json — WORKING pointer during a run (not a durable artifact)
 { "deck": { /* slides with fact_id tags */ },
-  "r2": { "action": 4.1, "visual": 3.8, "story": 4.0, "trace": 3.9,
+  "r2": { "action": 4.1, "exec": 4.0, "visual": 3.8, "story": 4.0, "trace": 3.9,
           "composite": 3.98, "invariants": {"truth": true, "scope": true,
           "story_integrity": true, "visual_integrity": true} },
-  "rubric_version": "r2-1.2.0", "iter": 7 }
+  "rubric_version": "r2-1.2.0", "data_version": "d-2026Q1", "iter": 7 }
 
 // score_history.jsonl — one line per iteration (accepted or rejected)
 { "iter": 8, "ts": "...", "accepted": false, "reason": "trace 3.9→3.7 regression",
-  "candidate_r2": {...}, "target_dim": "trace" }
+  "candidate_r2": {...}, "target_dim": "trace",
+  "rubric_version": "r2-1.2.0", "data_version": "d-2026Q1" }
 
 // changelog.jsonl — what each accepted revision changed and why
 { "iter": 7, "target_dim": "visual", "action_type": "refine_visual",
   "change": "split text slide 4 into chart + callout",
-  "composite": "3.83→3.98", "rubric_version": "r2-1.2.0" }
+  "composite": "3.83→3.98", "rubric_version": "r2-1.2.0", "data_version": "d-2026Q1" }
 
-// data_refresh_log.jsonl — every time the Planner triggered new/re-run data
+// data_refresh_log.jsonl — every Planner-triggered data pull (bumps data_version)
 { "iter": 12, "action_type": "refresh_data", "reason": "trace score flagged stale margin bridge",
-  "facts_updated": ["fact_0231", "fact_0245"], "source": "EDGAR 10-Q 2026Q1" }
+  "facts_updated": ["fact_0231", "fact_0245"], "source": "EDGAR 10-Q 2026Q1",
+  "data_version": "d-2026Q1 → d-2026Q1b" }
+
+// notifications.jsonl — every message sent (audit of what the user was told)
+{ "version": "v003", "ts": "...", "channel": "email", "status": "ready_for_review",
+  "summary": "Run complete: composite 3.98→4.12 (+0.14), 9 iters, no invariant breaks." }
 ```
 
 Score history lets us tell improvement from noise and roll back; the changelog
 explains *why* the deck looks the way it does after dozens of twice-daily runs;
-stamping `rubric_version` on every row means a score jump caused by a rubric
-edit is never mistaken for a real deck improvement.
+stamping **both** `rubric_version` and `data_version` on every row means a
+score change caused by a rubric edit *or by reality* is never mistaken for a
+real deck improvement; the immutable `versions/` stack is the progress-over-time
+trail the user browses; `notifications.jsonl` records exactly what each
+run-complete message told them.
 
 ---
 
@@ -378,9 +433,50 @@ edit is never mistaken for a real deck improvement.
   max_iters — these are starting guesses; calibrate on the first few real runs.
 - **Weights:** R2 weights (0.30/0.25/0.25/0.20) reflect "actionability first";
   adjust to the audience.
-- **Planner action taxonomy:** the four `action_type`s (refresh_data,
+- **Planner action taxonomy:** the five `action_type`s (refresh_data,
   refine_analysis, refine_story, refine_visual, refine_traceability) are a
   starting set — confirm they cover the kinds of comments a senior reviewer
-  actually gives, and that each maps cleanly to a tool the Reviser/A3 can run.
+  actually gives, and that each maps cleanly to a tool the Reviser/data layer
+  can run.
 - **Judge model & determinism:** fix temperature low and pin the model so
   score history is comparable across iterations.
+- **Notification channel & cadence:** email vs. Slack/message; notify on every
+  run, or only when status or score materially changes (to avoid noise on a
+  twice-daily cadence).
+- **Run concurrency:** if a run is still going when the next 2x/day trigger
+  fires, skip / queue / cancel? Needs a lock so two runs don't write versions
+  at once.
+
+---
+
+## 9. Known weaknesses (honest risks we are accepting or watching)
+
+These are not solved by the design above; they are the soft spots to monitor.
+
+1. **Three of four invariants rest on the LLM judge.** Truth has a
+   deterministic backstop (T5); visual is partly backstopped by render-lint
+   (T7) and scope by section-presence checks, but **story integrity is
+   irreducibly the judge's opinion.** The Reviser is implicitly optimizing
+   against that judge, so judge blind spots become deck blind spots. Mitigation:
+   calibration (§2), the T11 judge-consistency check, and the human gate before
+   external publish — not a guarantee.
+
+2. **Greedy hill-climb finds local optima.** "Accept only if strictly better"
+   blocks the transient dip a multi-slide restructure needs. Mitigation:
+   allow a *bounded multi-edit work order* that is applied and scored as one
+   unit, so a 2-step move is judged end-to-end instead of rejected midway.
+   Still won't find globally better structures a human would.
+
+3. **Cost grows with cadence.** Twice daily × many iterations × render + judge
+   calls is real spend over months. No hard cost ceiling per run is defined
+   yet — add a compute budget alongside `max_iters`, and short-circuit a run
+   that starts already ≥ ship bar with no new data (just re-notify "no change").
+
+4. **Calibration can rot.** Gold decks and anchors drift from what execs
+   actually want over time. Re-calibrate periodically; treat a rising
+   judge-drift flag (T11) or repeated human-gate rejections as the signal.
+
+5. **Scope is frozen, the world is not.** The brief (A1) is fixed for drift
+   measurement, but a thesis can be overtaken by events. Only the human gate
+   catches "the whole angle is now stale" — the loop itself will keep polishing
+   a deck whose premise has expired.
