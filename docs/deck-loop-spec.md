@@ -10,6 +10,62 @@ This document covers: (1) the state machine, (2) how the two rubrics are
 **Loop Improvement Rubric (R2)**, (5) the accept/reject math that guarantees
 monotonic improvement with no truth regression, (6) the skill/agent catalog
 (deterministic tools vs. LLM agents), and (7) the persisted state schemas.
+Section (0) defines the **orchestrator** that drives all of it.
+
+---
+
+## 0. Orchestration model (the manager agent)
+
+Everything below is coordinated by a single **orchestrator** — a manager, not
+a worker. The defining rule:
+
+> **The orchestrator decides *what* needs to happen and *which* agent does it.
+> It never does the work itself.** No code, no HTML, no number-crunching, no
+> slide-writing, no reviewing.
+
+What that means concretely:
+
+- **It delegates, it doesn't perform.** Need data? It dispatches the EDGAR
+  tools. Need a draft? It dispatches the Drafter. Need the deck rendered? It
+  dispatches the Renderer. The orchestrator itself writes nothing into the
+  deck or the fact store.
+- **It does not review — it commissions reviews.** The orchestrator never
+  forms its own opinion of the deck's quality. It sends the **Reviewer (L4)**
+  to produce the ranked weakest-parts list, then sends a **Reviser (L6)** to
+  fix exactly what the reviewer found. Its job is routing the hand-off, not
+  judging the deck.
+- **It owns control flow, not content.** The orchestrator reads compact
+  *signals* — "review returned 4 weak parts," "fact-check failed on 2
+  figures," "composite went 3.83 → 3.98, accepted" — and from those decides
+  the next move: dispatch the Planner, accept/reject via the score aggregator,
+  loop again, escalate, or route to the human gate. Every arrow in the §1
+  state machine is an orchestrator decision.
+
+### 0a. Context discipline (why the manager stays lean)
+
+The orchestrator is **optimized for the smallest, highest-signal context
+possible**, because its only job is high-quality routing decisions — and a
+manager buried in raw material makes worse decisions.
+
+- **Heavy artifacts live outside its context.** The full deck, raw filings,
+  parsed tables, and long tool outputs are passed between workers **by
+  reference** (IDs / file handles / fact_ids), not pasted into the
+  orchestrator. Workers read and write the heavy state; the orchestrator only
+  holds pointers to it.
+- **Workers return summaries, not dumps.** Each agent reports back a compact
+  result — counts, scores, pass/fail, a short reason, an artifact handle — not
+  its full working output. The Reviewer hands back a ranked list and a handle,
+  not the deck re-pasted; the EDGAR tool hands back "12 facts updated" + the
+  fact_ids, not the filings.
+- **State lives in the persisted files (§7), not the prompt.** best-so-far,
+  score history, and the changelog are on disk. The orchestrator queries what
+  it needs for the current decision and nothing more, so its context doesn't
+  grow with iteration count over a long-lived, twice-daily asset.
+
+The payoff: the orchestrator can run many iterations without its context
+bloating, stays fast and accurate at the one thing it does — deciding who
+works next — and the expensive, context-heavy work is isolated in the workers
+where it belongs.
 
 ---
 
@@ -233,7 +289,14 @@ agent.** They fall into two classes, and the split is deliberate:
   factual accuracy.
 
 Each skill is invoked as a separate agent with explicit inputs/outputs so it
-can be built, tested, swapped, and reasoned about in isolation.
+can be built, tested, swapped, and reasoned about in isolation. Above both
+classes sits the **orchestrator (§0)** — it belongs to neither, because it
+runs no tool and writes no content; it only dispatches the skills below and
+acts on their compact results.
+
+| Manager | Responsibility | Holds in context |
+|---|---|---|
+| **O0 Orchestrator** | Decide what's next and which skill does it; route hand-offs (e.g. Reviewer → Planner → Reviser); never performs the work | plan + control state + artifact handles only — never raw decks/filings (§0a) |
 
 ### 6a. Deterministic tools (code — the source of truth)
 
