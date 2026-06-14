@@ -34,10 +34,9 @@ flowchart TD
         Gate -->|reject| Rollback["Restore best-so-far\nlog rejected attempt + reason"]
         Persist --> Stop{"Stop?\nscore >= ship bar OR\nmargin < ε for N iters OR\nmax iters"}
         Rollback --> Stop
-        Stop -->|keep going| Refresh{"Data stale?"}
-        Refresh -->|yes| Pull1["A3 — re-pull → fact store"] --> Plan
-        Refresh -->|no| Plan["A4 — Planner\n(pick lowest-scoring dim as target)"]
-        Plan --> Build["A4 — Reviser\n(single edit toward target dim)"]
+        Stop -->|keep going| Plan["A4 — Planner\n(reads Score's comments,\nwrites a work order:\ntarget dim + action type)"]
+        Plan -->|action: refine numbers/analysis| Pull1["A3 — re-pull or re-run analysis\n→ fact store"] --> Build
+        Plan -->|action: refine story / visual / traceability| Build["A4 — Reviser\n(executes the work order)"]
         Build --> Render
         Stop -->|ship bar hit| HumanGate["Human checkpoint"]
         Stop -->|plateau below bar| Stall["Escalate: loop stuck"]
@@ -56,6 +55,28 @@ Two rubrics do two different jobs:
 - **R2 (Loop Improvement Rubric)** is a *delta/monotonicity rubric*. It answers
   every iteration: "is this revision strictly better, and did it break any
   invariant?" It compares against best-so-far, not an absolute bar.
+
+**The loop as a review cycle.** The Score → Plan → Build sequence is an
+automation of how a research desk actually revises a deck:
+
+- **Score** is the **senior reviewer's markup** — a structured set of comments
+  against the rubric ("the thesis slide doesn't land," "this chart buries the
+  number," "the margin bridge is stale").
+- **Plan** is **triaging those comments into a work order.** It doesn't just
+  pick *which dimension* to improve next — it decides *what kind of work* is
+  needed to address the comment: refresh a number / re-run an analysis,
+  restructure the narrative, redesign a visual, or improve source labeling.
+  This is the step that decides whether new data needs to be pulled — driven
+  by what the deck needs, not by a fixed schedule.
+- **Build (Reviser)** is the **analyst doing the rework** — executing exactly
+  the work order Plan wrote, nothing more. If the work order calls for new or
+  re-run data, Build first invokes A3's deterministic tools (re-pull EDGAR,
+  re-run the analysis model) to get fresh facts into the fact store, then
+  edits the deck against those facts.
+
+So "data refresh" isn't a separate scheduled step — it's one of the actions
+Plan can prescribe, exactly like a senior reviewer telling an analyst "pull
+the latest 10-Q before you touch this slide again."
 
 ---
 
@@ -205,14 +226,16 @@ a hope.
 | **A2 Rubric Builder** | brief | `R1`, `R2` (versioned JSON, weights + anchors) | Runs calibration (§2) before emitting. |
 | **A3 Data layer** | tickers, sections | `fact_store{id, metric, value, unit, period, source_url, retrieved_at}` | Deterministic. EDGAR/analysis only; LLM never writes here. |
 | **A4 Slide-create** | brief, fact_store | `deck{slides[]}` with every figure tagged by `fact_id` | Tagging is what makes the fact-check deterministic. |
-| **A4 Scorer** | deck, R2, fact_store | per-dim scores + evidence + invariant flags | Judge; structured output; cites which slide/fact drove each score. |
-| **A4 Planner** | last R2 result | `target_dim` = lowest-scoring improvement dimension | One target per iteration → attributable deltas. |
-| **A4 Reviser** | deck, target_dim, fact_store | revised deck (figures still `fact_id`-tagged) | One focused edit; may not introduce untagged numbers. |
+| **A4 Scorer** | deck, R2, fact_store | per-dim scores + evidence + invariant flags ("reviewer comments") | Judge; structured output; cites which slide/fact drove each score. |
+| **A4 Planner** | last R2 result + comments | `work_order{target_dim, action_type, instructions}` where `action_type ∈ {refresh_data, refine_analysis, refine_story, refine_visual, refine_traceability}` | Triages comments into one focused task → attributable deltas. |
+| **A3 Data layer (loop-invoked)** | work_order (when action_type = refresh_data / refine_analysis) | updated `fact_store` entries (new/revised facts, new `fact_id`s) | Same deterministic tools as cold-start, invoked on demand by the work order. |
+| **A4 Reviser** | deck, work_order, fact_store | revised deck (figures still `fact_id`-tagged) | Executes exactly the work order; may not introduce untagged numbers. |
 | **Fact-check** | deck, fact_store | pass/fail per figure | Deterministic value match, not the judge. |
 
 Key design rule: **the LLM judge never gates factual accuracy alone.** Slides
 carry `fact_id` tags; the deterministic fact-checker confirms each tagged value
-equals the fact store. The judge only scores *quality* dimensions.
+equals the fact store. The judge only scores *quality* dimensions, and only
+the Planner — reading those scores — decides whether new data is warranted.
 
 ---
 
@@ -231,8 +254,13 @@ equals the fact store. The judge only scores *quality* dimensions.
   "candidate_r2": {...}, "target_dim": "trace" }
 
 // changelog.jsonl — what each accepted revision changed and why
-{ "iter": 7, "target_dim": "visual", "change": "split text slide 4 into chart + callout",
+{ "iter": 7, "target_dim": "visual", "action_type": "refine_visual",
+  "change": "split text slide 4 into chart + callout",
   "composite": "3.83→3.98", "rubric_version": "r2-1.2.0" }
+
+// data_refresh_log.jsonl — every time the Planner triggered new/re-run data
+{ "iter": 12, "action_type": "refresh_data", "reason": "trace score flagged stale margin bridge",
+  "facts_updated": ["fact_0231", "fact_0245"], "source": "EDGAR 10-Q 2026Q1" }
 ```
 
 Score history lets us tell improvement from noise and roll back; the changelog
@@ -248,7 +276,9 @@ edit is never mistaken for a real deck improvement.
   max_iters — these are starting guesses; calibrate on the first few real runs.
 - **Weights:** R2 weights (0.30/0.25/0.25/0.20) reflect "actionability first";
   adjust to the audience.
-- **Refresh policy:** does every loop re-pull EDGAR, or only on a price/filing
-  change signal? Affects cost and how often numbers move under the prose.
+- **Planner action taxonomy:** the four `action_type`s (refresh_data,
+  refine_analysis, refine_story, refine_visual, refine_traceability) are a
+  starting set — confirm they cover the kinds of comments a senior reviewer
+  actually gives, and that each maps cleanly to a tool the Reviser/A3 can run.
 - **Judge model & determinism:** fix temperature low and pin the model so
   score history is comparable across iterations.
