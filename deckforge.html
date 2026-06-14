@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeckForge — the self-refining equity-deck agent</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#e8e8df;
+    --panel: rgba(246,246,239,0.74);
+    --panel-strong: rgba(249,249,242,0.92);
+    --ink:#151915;
+    --muted:#596157;
+    --line: rgba(35,48,39,0.18);
+    --green:#2e6b3f;
+    --green-soft:#dce8cd;
+    --blue:#315c75;
+    --blue-soft:#dce7ed;
+    --gold:#9e7132;
+    --gold-soft:#efe3c9;
+    --purple:#7256a8;
+    --purple-soft:#e8e0f3;
+    --rose:#9b4f4d;
+    --rose-soft:#efd9d6;
+    --shadow: 0 18px 46px rgba(31,38,31,.11);
+    --radius:16px;
+    --maxw:1160px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 18% 12%, rgba(96,129,80,.13), transparent 32%),
+      radial-gradient(circle at 78% 72%, rgba(149,117,74,.12), transparent 30%),
+      var(--bg);
+    color:var(--ink); font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--green); text-decoration:none}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px}
+  h1,h2,h3{line-height:1.2; letter-spacing:-.02em}
+  h2{font-size:30px; margin:0 0 6px}
+  .eyebrow{font-size:13px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--green)}
+
+  header.top{position:sticky; top:0; z-index:40; backdrop-filter:blur(10px);
+    background:rgba(232,232,223,.78); border-bottom:1px solid var(--line)}
+  .nav{display:flex; align-items:center; gap:18px; height:64px}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:-.02em; font-size:18px}
+  .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--green),var(--blue));
+    box-shadow:0 0 18px rgba(46,107,63,.35)}
+  .tabs{margin-left:auto; display:flex; gap:6px; background:var(--panel); padding:5px; border-radius:12px; border:1px solid var(--line)}
+  .tab{padding:8px 16px; border-radius:8px; font-weight:700; font-size:14px; color:var(--muted); cursor:pointer; border:0; background:transparent}
+  .tab.active{background:var(--green-soft); color:#294323; box-shadow:inset 0 0 0 1px rgba(46,107,63,.16)}
+
+  section{padding:64px 0; border-bottom:1px solid var(--line)}
+  .lead{color:var(--muted); font-size:18px; max-width:720px}
+
+  .hero{padding:84px 0 56px}
+  .hero h1{font-size:clamp(38px,6vw,64px); margin:0 0 18px; letter-spacing:-.04em}
+  .hero h1 .g{color:var(--green)}
+  .pills{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px}
+  .pill{font-size:13px; font-weight:700; padding:7px 13px; border-radius:999px; border:1px solid var(--line); background:var(--panel); color:var(--muted)}
+  .pill b{color:var(--ink)}
+
+  .grid{display:grid; gap:18px}
+  @media(min-width:760px){ .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:1fr 1fr} }
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow)}
+  .card h3{margin:.2em 0 .4em; font-size:18px}
+  .card p{margin:0; color:var(--muted); font-size:15px}
+  .tag{display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:4px 9px; border-radius:7px}
+  .tag.det{color:#294323; background:var(--green-soft); border:1px solid rgba(46,107,63,.25)}
+  .tag.llm{color:#243f52; background:var(--blue-soft); border:1px solid rgba(49,92,117,.25)}
+  .dot{width:8px;height:8px;border-radius:50%}
+  .dot.det{background:var(--green)} .dot.llm{background:var(--blue)} .dot.dyn{background:var(--gold)}
+
+  /* ---- demo ---- */
+  .demo{background:var(--panel-strong); border:1px solid var(--line); border-radius:22px; padding:26px; margin-top:30px; box-shadow:var(--shadow)}
+  .demo-head{display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-bottom:20px}
+  .btn{appearance:none; border:0; cursor:pointer; font-weight:800; font-size:14px; padding:11px 18px; border-radius:11px;
+    background:var(--green); color:#fff; box-shadow:0 8px 20px rgba(46,107,63,.25)}
+  .btn.ghost{background:var(--panel); color:var(--ink); border:1px solid var(--line); box-shadow:none}
+  .demo-stage{display:grid; gap:22px}
+  @media(min-width:900px){ .demo-stage{grid-template-columns:1.25fr 1fr} }
+  .legend{display:flex; gap:18px; flex-wrap:wrap; font-size:13px; color:var(--muted)}
+  .legend span{display:inline-flex; align-items:center; gap:7px}
+
+  /* ---- flow diagram (left) ---- */
+  .flowcol{display:flex; flex-direction:column; gap:8px}
+  .flabel{font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:6px 0 4px}
+  .flowline{position:relative; padding-left:30px; border-left:3px dashed rgba(46,107,63,.28)}
+  .fnode{position:relative; display:flex; gap:12px; align-items:flex-start; padding:12px 14px; border-radius:12px;
+    border:1px solid var(--line); background:var(--panel); margin-bottom:10px; opacity:.55; transition:.4s; transform:translateX(0)}
+  .fnode.on{opacity:1; background:var(--panel-strong); border-color:rgba(46,107,63,.5); box-shadow:0 10px 26px rgba(31,38,31,.12); transform:translateX(4px)}
+  .fnode.done{opacity:.85}
+  .fnode::before{content:''; position:absolute; left:-38px; top:18px; width:13px; height:13px; border-radius:50%;
+    background:var(--bg); border:3px solid rgba(46,107,63,.35); transition:.4s}
+  .fnode.on::before{border-color:var(--green); background:var(--green)}
+  .fnode.done::before{border-color:var(--green)}
+  .fnum{flex:none; width:28px; height:28px; border-radius:8px; display:grid; place-items:center; font-size:13px; font-weight:800;
+    background:var(--green-soft); color:#294323; border:1px solid rgba(46,107,63,.2)}
+  .fnode.llm .fnum{background:var(--blue-soft); color:#243f52; border-color:rgba(49,92,117,.2)}
+  .ft{font-weight:800; font-size:14.5px}
+  .fd{font-size:12.5px; color:var(--muted); margin-top:1px}
+  .fsubs{display:flex; gap:6px; flex-wrap:wrap; margin-top:7px}
+  .fsub{font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; background:var(--bg); border:1px solid var(--line); color:var(--muted)}
+  .fnode.out{background:var(--gold-soft); border-color:rgba(158,113,50,.3)}
+  .fnode.out .fnum{background:#fff; color:var(--gold); border-color:rgba(158,113,50,.3)}
+  .fnode.out::before{border-color:var(--gold)}
+  .fnode.out.on::before{background:var(--gold); border-color:var(--gold)}
+  .fnode.out.on{border-color:rgba(158,113,50,.5)}
+
+  /* loop box */
+  .loopbox{margin:6px 0 12px; padding:14px; border-radius:14px; border:1.5px dashed rgba(46,107,63,.3); background:rgba(220,232,205,.25)}
+  .loop-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+  .loop-row .fnode{margin-bottom:0}
+  .loop-row .fnode::before{display:none}
+  .loop-return{margin-top:10px; text-align:center; font-size:12px; font-weight:700; color:var(--muted);
+    padding:7px; border-top:2px solid rgba(46,107,63,.28); border-radius:0 0 10px 10px}
+  .plan .branches{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px}
+  .branch{font-size:11px; font-weight:800; padding:4px 8px; border-radius:7px; background:var(--bg); border:1px solid var(--line); color:var(--muted); transition:.3s}
+  .branch.active{background:var(--gold-soft); color:#7a5424; border-color:rgba(158,113,50,.4)}
+  .dyn{display:inline-block; font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#7a5424;
+    background:var(--gold-soft); border:1px solid rgba(158,113,50,.35); padding:2px 6px; border-radius:6px; margin-left:6px; vertical-align:middle}
+
+  /* ---- detail panel (right) ---- */
+  .detailcol{display:flex; flex-direction:column; gap:16px}
+  .detail-card{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px; min-height:220px; box-shadow:var(--shadow)}
+  .detail-tag{font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--green); margin-bottom:8px}
+  .detail-card h3{margin:0 0 8px; font-size:21px}
+  .detail-card p{margin:0; color:var(--ink); font-size:15px}
+  .detail-card .who{display:inline-flex; gap:6px; align-items:center; font-size:12px; font-weight:800; margin-top:12px;
+    padding:5px 10px; border-radius:8px}
+  .who.det{background:var(--green-soft); color:#294323}
+  .who.llm{background:var(--blue-soft); color:#243f52}
+  .who.dyn{background:var(--gold-soft); color:#7a5424}
+  .who.out{background:var(--purple-soft); color:#4c3a73}
+
+  .scorebox{background:var(--panel); border:1px solid var(--line); border-radius:15px; padding:18px; box-shadow:var(--shadow)}
+  .scoreline{display:flex; align-items:baseline; gap:10px; margin:2px 0 8px}
+  .scoreline .v{font-size:38px; font-weight:800; letter-spacing:-.03em; color:var(--green)}
+  .scoreline .of{color:var(--muted); font-size:14px}
+  .meter{height:10px; border-radius:6px; background:var(--bg); border:1px solid var(--line); overflow:hidden}
+  .meter > i{display:block; height:100%; width:20%; background:linear-gradient(90deg,var(--green),var(--gold)); transition:.6s}
+  .guards{display:flex; gap:8px; margin-top:14px}
+  .guard{flex:1; text-align:center; font-size:11px; font-weight:800; padding:8px 4px; border-radius:9px; border:1px solid var(--line); background:var(--bg); color:var(--muted)}
+  .guard b{display:block; font-size:14px; color:var(--green)}
+  .ver{margin-top:14px; font-size:13px; color:var(--muted)}
+  .ver b{color:var(--gold)}
+
+  /* tables */
+  table{width:100%; border-collapse:collapse; font-size:14px; margin-top:14px}
+  th,td{text-align:left; padding:11px 13px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.07em}
+  td code{background:var(--green-soft); padding:2px 6px; border-radius:5px; font-size:12.5px; color:#294323}
+
+  /* ---- spec tab ---- */
+  #spec{display:none}
+  .spec-wrap{display:grid; gap:30px}
+  @media(min-width:900px){ .spec-wrap{grid-template-columns:230px 1fr} }
+  .toc{position:sticky; top:88px; align-self:start; font-size:14px; border:1px solid var(--line); border-radius:14px; padding:16px; background:var(--panel)}
+  .toc a{display:block; color:var(--muted); padding:5px 8px; border-radius:7px}
+  .toc a:hover{color:var(--ink); background:var(--green-soft)}
+  .specbody h2{margin-top:38px; padding-top:10px}
+  .specbody h3{margin-top:26px; font-size:18px; color:var(--ink)}
+  .specbody p{color:var(--ink)}
+  .specbody li{color:var(--ink); margin:4px 0}
+  .note{border-left:3px solid var(--gold); background:var(--gold-soft); padding:12px 16px; border-radius:0 10px 10px 0; color:#5b4319; margin:14px 0}
+  pre{background:var(--panel-strong); border:1px solid var(--line); border-radius:12px; padding:16px; overflow:auto; font-size:13px; color:#243f52}
+  .mermaid{background:var(--panel-strong); border:1px solid var(--line); border-radius:14px; padding:18px; margin:14px 0}
+  .kpis{display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 0}
+  .kpi{font-size:12.5px; padding:6px 11px; border-radius:9px; border:1px solid var(--line); background:var(--panel); color:var(--muted)}
+  footer{padding:40px 0 70px; color:var(--muted); font-size:13px; text-align:center}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap nav">
+    <div class="brand"><span class="logo"></span> DeckForge</div>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="spec">Technical Spec</button>
+    </div>
+  </div>
+</header>
+
+<!-- ================= OVERVIEW ================= -->
+<main id="overview">
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">Autonomous equity-research decks</div>
+      <h1>An agent that writes a deck, then <span class="g">critiques and rewrites it</span> until it's boardroom-ready.</h1>
+      <p class="lead">You give it a prompt. It pulls the real numbers from SEC filings, drafts a presentation,
+      and then runs a tireless review loop — twice a day — that improves the story, the visuals, and the
+      clarity <b>without ever drifting from the source numbers</b>. Every run is saved as a new version, and you
+      get a message when it's done.</p>
+      <div class="pills">
+        <span class="pill"><b>Grounded</b> in SEC / EDGAR filings</span>
+        <span class="pill"><b>Self-scoring</b> against a rubric</span>
+        <span class="pill"><b>Never overwrites</b> — versioned history</span>
+        <span class="pill"><b>Notifies you</b> on completion</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">See it work</div>
+      <h2>Walk through the full pipeline</h2>
+      <p class="lead">Press play to step through every stage — from the human prompt to a refined, versioned
+      deck. The diagram on the left shows where you are; the panel on the right explains what's actually
+      happening at that step, who's doing it, and why.</p>
+
+      <div class="demo">
+        <div class="demo-head">
+          <button class="btn" id="play">▶ Play</button>
+          <button class="btn ghost" id="step">Step ›</button>
+          <button class="btn ghost" id="reset">↻ Reset</button>
+          <div class="legend">
+            <span><span class="dot det"></span> Deterministic tool (code)</span>
+            <span><span class="dot llm"></span> LLM agent (judgment)</span>
+            <span><span class="dot dyn"></span> Dynamic — decided in-loop</span>
+          </div>
+        </div>
+
+        <div class="demo-stage">
+          <!-- LEFT: flow diagram -->
+          <div class="flowcol">
+            <div class="flabel">G1 — Cold start (runs once)</div>
+            <div class="flowline">
+              <div class="fnode llm" data-k="0">
+                <div class="fnum">→</div>
+                <div><div class="ft">Human-injected prompt</div><div class="fd">"Build me a deck on XYZ Corp for the board."</div></div>
+              </div>
+              <div class="fnode llm" data-k="1">
+                <div class="fnum">A1</div>
+                <div><div class="ft">Scope Builder</div><div class="fd">Turns the prompt into a frozen brief: tickers, thesis, audience, required sections.</div></div>
+              </div>
+              <div class="fnode llm" data-k="2">
+                <div class="fnum">A2</div>
+                <div><div class="ft">Rubric Builder</div><div class="fd">Authors &amp; calibrates R1 (entry gate) and R2 (loop rubric), versioned.</div></div>
+              </div>
+              <div class="fnode det" data-k="3">
+                <div class="fnum">A3</div>
+                <div>
+                  <div class="ft">Deterministic tools</div>
+                  <div class="fd">Pulls and computes the source-of-truth numbers.</div>
+                  <div class="fsubs"><span class="fsub">Doc parse</span><span class="fsub">Analysis tool</span><span class="fsub">SEC / EDGAR pull</span></div>
+                </div>
+              </div>
+              <div class="fnode llm" data-k="4">
+                <div class="fnum">A4</div>
+                <div>
+                  <div class="ft">LLM agents — first draft</div>
+                  <div class="fd">Writes the deck against the fact store; figures tagged to their source.</div>
+                  <div class="fsubs"><span class="fsub">Slide-create</span><span class="fsub">Reviewer</span><span class="fsub">Reviser</span></div>
+                </div>
+              </div>
+              <div class="fnode out" data-k="5">
+                <div class="fnum">✓</div>
+                <div><div class="ft">Initial Output</div><div class="fd">Passes the R1 gate — enters the improvement loop as the first "best-so-far."</div></div>
+              </div>
+            </div>
+
+            <div class="flabel">G2 — Improvement loop (up to 2×/day)</div>
+            <div class="loopbox">
+              <div class="loop-row">
+                <div class="fnode llm" data-k="6">
+                  <div class="fnum">①</div>
+                  <div><div class="ft">Review &amp; Score</div><div class="fd">Ranks the deck's weakest parts against the rubric.</div></div>
+                </div>
+                <div class="fnode llm plan" data-k="7">
+                  <div class="fnum">②</div>
+                  <div>
+                    <div class="ft">Plan <span class="dyn">dynamic</span></div>
+                    <div class="fd">Orchestrator + Reviewer choose this lap's focus.</div>
+                    <div class="branches">
+                      <span class="branch" data-b="analysis">↻ Refresh analysis</span>
+                      <span class="branch" data-b="story">✎ Refine story</span>
+                      <span class="branch" data-b="visual">▥ Refine visual</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="fnode llm" data-k="8">
+                  <div class="fnum">③</div>
+                  <div><div class="ft">Build / Revise</div><div class="fd">Executes only the chosen fix — nothing else.</div></div>
+                </div>
+              </div>
+              <div class="loop-return">↺ fact-check → score → loop back to Review with a fresh focus, up to 2×/day</div>
+            </div>
+            <div class="flowline" style="border-left:3px dashed rgba(158,113,50,.3); margin-top:-6px">
+              <div class="fnode out" data-k="9">
+                <div class="fnum">✓</div>
+                <div><div class="ft">New Version + Notify</div><div class="fd">Improved deck frozen as vN; email/message sent with the score delta.</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: detail + score -->
+          <div class="detailcol">
+            <div class="detail-card">
+              <div class="detail-tag" id="dTag">Ready</div>
+              <h3 id="dTitle">Press play to start a run</h3>
+              <p id="dBody">You'll step through the cold-start pipeline (G1) once, then watch the improvement
+              loop (G2) run a couple of laps — each one choosing a different focus depending on what the
+              reviewer found.</p>
+              <span class="who" id="dWho" style="display:none"></span>
+            </div>
+            <div class="scorebox">
+              <div class="scoreline"><span class="v" id="score">3.2</span><span class="of">/ 5.0 composite quality</span></div>
+              <div class="meter"><i id="meter"></i></div>
+              <div class="guards">
+                <div class="guard">Truth<b id="gT">✓</b></div>
+                <div class="guard">Story<b id="gS">✓</b></div>
+                <div class="guard">Visuals<b id="gV">✓</b></div>
+              </div>
+              <div class="ver" id="ver">No run yet.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT MAKES IT TRUSTWORTHY -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">Why you can trust the output</div>
+      <h2>Two kinds of work, kept strictly apart</h2>
+      <p class="lead">The secret to a finance deck that won't hallucinate a number: never let the language model
+      touch the math. DeckForge splits every job into deterministic <b>code</b> (the source of truth) and
+      <b>LLM</b> judgment (the writing and critiquing).</p>
+
+      <div class="grid g2" style="margin-top:24px">
+        <div class="card" style="border-color:rgba(46,107,63,.3)">
+          <span class="tag det"><span class="dot det"></span> Deterministic tools</span>
+          <h3>Code owns every number</h3>
+          <p>SEC/EDGAR fetching, parsing, analysis, the fact store, fact-checking, rendering, the scoring
+          arithmetic, versioning, and notifications. Same input → same output, every time. If a figure isn't
+          traceable to a filing, it can't appear in the deck.</p>
+        </div>
+        <div class="card" style="border-color:rgba(49,92,117,.3)">
+          <span class="tag llm"><span class="dot llm"></span> LLM agents</span>
+          <h3>Judgment owns the words</h3>
+          <p>Interpreting the prompt, writing slides, reviewing for weak spots, planning a fix, and rewriting.
+          The models <i>arrange</i> facts and sharpen the story — they never invent a value and never get the
+          final say on accuracy.</p>
+        </div>
+      </div>
+
+      <div class="grid g3" style="margin-top:18px">
+        <div class="card"><h3>Reviewer ≠ Reviser</h3><p>One agent finds the weakest parts; a different agent
+          fixes them. A critic grading its own rework drifts toward self-justification — separating them keeps
+          the diagnosis honest.</p></div>
+        <div class="card"><h3>The plan isn't fixed</h3><p>Each lap, the Reviewer and Orchestrator look at what's
+          actually weak right now and choose the focus — refreshing an analysis, rewriting the story, or fixing
+          a graphic. No two laps have to look the same.</p></div>
+        <div class="card"><h3>A manager, not a doer</h3><p>An orchestrator decides what happens next and which
+          agent does it. It writes no code and no slides — it just routes the work and stays context-light.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE GUARDRAILS -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">The promise</div>
+      <h2>It gets better at the things that matter — and never sacrifices the rest</h2>
+      <div class="grid g2" style="margin-top:24px">
+        <div class="card">
+          <h3 style="color:var(--gold)">Climbs ↑</h3>
+          <p style="margin-bottom:12px">The loop actively improves:</p>
+          <table>
+            <tr><td><b>Actionability</b></td><td>a clear "so what" and what to do</td></tr>
+            <tr><td><b>Executive altitude</b></td><td>right level for a CEO/CFO/board</td></tr>
+            <tr><td><b>Visual digestibility</b></td><td>one idea per slide, grasped in seconds</td></tr>
+            <tr><td><b>Clean story</b></td><td>tight through-line, nothing redundant</td></tr>
+            <tr><td><b>Traceability</b></td><td>every metric labeled with its source</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--green)">Never drops ↓</h3>
+          <p style="margin-bottom:12px">Protected as hard guardrails — a revision that breaks any of these is rejected:</p>
+          <table>
+            <tr><td><b>Truth</b></td><td>every figure matches its SEC source (checked by code, not the model)</td></tr>
+            <tr><td><b>Scope</b></td><td>still answers the original brief</td></tr>
+            <tr><td><b>Story integrity</b></td><td>the thesis chain never breaks</td></tr>
+            <tr><td><b>Visual integrity</b></td><td>no walls of text, no lost charts</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>When the world changes, the deck follows the truth — even downward</h3>
+        <p>If a fresh quarterly filing moves a number the wrong way, the deck updates to match reality. That
+        isn't counted as the deck "getting worse" — truth always wins over a prettier score.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- VERSIONS + NOTIFY -->
+  <section>
+    <div class="wrap">
+      <div class="grid g2">
+        <div class="card">
+          <div class="eyebrow">Progress you can see</div>
+          <h3 style="font-size:22px">Every run is a new version</h3>
+          <p>Nothing is overwritten. Each completed run freezes a fresh, immutable version — <code>v001</code>,
+          <code>v002</code>, <code>v003</code> … — so you can open any point in time and watch the deck mature.</p>
+          <div class="kpis"><span class="kpi">v001 · 3.2</span><span class="kpi">v002 · 3.6</span><span class="kpi">v003 · 4.1 ✓</span></div>
+        </div>
+        <div class="card">
+          <div class="eyebrow">You'll always know</div>
+          <h3 style="font-size:22px">A message when each run finishes</h3>
+          <p>Every loop completion sends an email or message: the new version link, the status (ready for review
+          or stalled), and how much the score moved. Publishing to the C-suite still waits for your approval.</p>
+          <div class="kpis"><span class="kpi">📧 "Run complete — v003, 3.98 → 4.12 (+0.14)"</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">DeckForge — concept &amp; design spec. Switch to the <a href="#" data-goto="spec">Technical Spec</a>
+    tab for the full architecture.</div>
+  </footer>
+</main>
+
+<!-- ================= SPEC ================= -->
+<main id="spec">
+  <section style="padding-top:42px">
+    <div class="wrap">
+      <div class="eyebrow">For builders</div>
+      <h2>Technical specification</h2>
+      <p class="lead">Everything a developer needs to rebuild this workflow as their own agent system — the
+      orchestration model, the two rubrics, the accept/reject math, the full skill catalog, and the persisted
+      state schemas.</p>
+
+      <div class="spec-wrap" style="margin-top:28px">
+        <nav class="toc">
+          <a href="#s0">0 · Orchestration model</a>
+          <a href="#s1">1 · State machine</a>
+          <a href="#s2">2 · Building the rubrics</a>
+          <a href="#s3">3 · R1 — initial output</a>
+          <a href="#s4">4 · R2 — loop rubric</a>
+          <a href="#s5">5 · Accept / reject math</a>
+          <a href="#s6">6 · Skill / agent catalog</a>
+          <a href="#s7">7 · State &amp; versioning</a>
+          <a href="#s8">8 · Open decisions</a>
+          <a href="#s9">9 · Known weaknesses</a>
+        </nav>
+
+        <div class="specbody">
+
+          <h2 id="s0">0 · Orchestration model (the manager agent)</h2>
+          <p>A single <b>orchestrator</b> coordinates everything — a manager, not a worker. The defining rule:
+          <b>it decides what needs to happen and which agent does it, and never does the work itself</b> — no code,
+          no HTML, no number-crunching, no slide-writing, no reviewing.</p>
+          <ul>
+            <li><b>Delegates, doesn't perform.</b> Dispatches the data tools, the Drafter, the Renderer; writes nothing into the deck or fact store.</li>
+            <li><b>Commissions reviews.</b> It never forms its own opinion of quality — it sends the Reviewer (L4) to produce the ranked weak-parts list, then a Reviser (L6) to fix what was found.</li>
+            <li><b>Owns control flow, not content.</b> It reads compact signals ("review returned 4 weak parts", "composite 3.83 → 3.98, accepted") and routes the next move. Every arrow in §1 is an orchestrator decision.</li>
+          </ul>
+          <h3>0a · Context discipline</h3>
+          <p>The orchestrator is optimized for the smallest, highest-signal context possible — a manager buried in
+          raw material makes worse decisions.</p>
+          <ul>
+            <li><b>Heavy artifacts live outside its context</b> — decks, filings, parsed tables pass between workers by reference (IDs / handles / fact_ids).</li>
+            <li><b>Workers return summaries, not dumps</b> — counts, scores, pass/fail, a short reason, an artifact handle.</li>
+            <li><b>State lives in the persisted files (§7), not the prompt</b> — so context doesn't grow with iteration count over a long-lived, twice-daily asset.</li>
+          </ul>
+
+          <h2 id="s1">1 · State machine</h2>
+          <div class="mermaid">
+flowchart TD
+    P["Human prompt"] --> SC["A1 Scope Builder"]
+    SC --> RB["A2 Rubric Builder (R1+R2, versioned)"]
+    RB --> D0["A3 Data pull · EDGAR/parse/analysis → fact store"]
+    D0 --> DR["First draft (Slide-create)"]
+    DR --> R1{"R1 gate: hard gates PASS + composite ≥ entry bar?"}
+    R1 -->|no, rebuilds left| DR
+    R1 -->|budget exhausted| CE["Escalate: can't clear entry bar"]
+    R1 -->|yes| EP
+
+    subgraph L["G2 improvement loop · up to 2x/day"]
+      EP["Re-baseline epoch (rubric_version + data_version)"] --> RN["Render"]
+      RN --> FC["Deterministic fact-check: every figure ↔ fact store"]
+      FC --> SCO["A4 Scorer (LLM judge) · R2 per-dim + evidence"]
+      SCO --> G{"Accept? invariants hold AND no protected regression AND composite improves within epoch"}
+      G -->|accept| PS["Update working best-so-far + history + changelog"]
+      G -->|reject| RO["Rollback to best-so-far"]
+      PS --> ST{"Stop run? score ≥ ship bar OR margin < ε for N OR max iters"}
+      RO --> ST
+      ST -->|keep going| PL["A4 Planner → work order (target dim + action, chosen fresh each lap)"]
+      PL -->|refine numbers| D1["A3 re-pull/re-run → bumps data_version"] --> BU
+      PL -->|refine story/visual/trace| BU["A4 Reviser executes work order"]
+      BU --> RN
+      ST -->|run done| FZ
+    end
+
+    FZ["Freeze best as immutable version vN"] --> NO["T9 Notifier: email/message + status + score delta + link"]
+    NO --> G2{"Publish to C-suite? (human approves)"}
+    G2 -->|approved| DP["Publish vN externally"]
+    G2 -->|not yet| HO["vN kept as internal version"]
+    CE --> NO
+          </div>
+          <div class="note"><b>Two rubrics, two jobs.</b> <b>R1</b> is a one-time acceptance gate (is the first
+          draft worth iterating on?). <b>R2</b> is the per-iteration delta rubric (is this revision strictly
+          better, and did it break an invariant?). The Score → Plan → Revise sequence mirrors a research desk:
+          a senior reviewer marks up the deck, the work is triaged into one task, and an analyst does exactly
+          that rework.</div>
+          <div class="note"><b>The Plan step is dynamic, not scripted.</b> The Planner doesn't run a fixed
+          checklist — each lap it reads <i>this lap's</i> reviewer comments and the Orchestrator routes to
+          whichever action the deck currently needs most: re-pulling or re-running an analysis, rewriting a
+          section of the story, or fixing a single graphic. Two consecutive laps can take completely different
+          actions depending on where the weakest part currently is.</div>
+
+          <h2 id="s2">2 · How the rubrics are built</h2>
+          <p>A rubric is only useful if its dimensions are <b>observable, anchored, and calibrated</b>. The Rubric
+          Builder follows five steps and versions the result:</p>
+          <ul>
+            <li><b>Derive dimensions</b> from the brief (audience, thesis, sections) and domain invariants (in finance: every number sourced → hard gates).</li>
+            <li><b>Anchor each dimension</b> with concrete descriptors at each scale point. Vague anchors are the #1 cause of judge noise.</li>
+            <li><b>Assign weights</b> in the rubric file (not the judge prompt), so they tune without code changes.</li>
+            <li><b>Calibrate against gold examples</b> — hand-score 3–5 reference decks; adjust anchors until the LLM judge lands within ±1 of human scores.</li>
+            <li><b>Validate &amp; version</b> — hold out one gold deck; require judge↔human agreement before the rubric drives the loop. Semantic-version it.</li>
+          </ul>
+          <div class="note">Calibration is not optional. Without it, R2's "improvement" is just judge variance and the loop climbs noise.</div>
+
+          <h2 id="s3">3 · R1 — Initial-Output Rubric (acceptance gate)</h2>
+          <h3>3a · Hard gates (binary — all must PASS to enter the loop)</h3>
+          <table>
+            <tr><th>Gate</th><th>Pass condition</th></tr>
+            <tr><td>Source-of-truth</td><td>100% of figures resolve to a fact-store entry with a citation. Zero unsourced numbers.</td></tr>
+            <tr><td>Scope coverage</td><td>Every required section from the brief is present and non-empty.</td></tr>
+            <tr><td>Structural validity</td><td>Deck renders; no broken slides, no placeholder text, no TODOs.</td></tr>
+          </table>
+          <p>Any gate fail → not "low score," but <b>reject and rebuild</b> (bounded by a rebuild budget, then escalate).</p>
+          <h3>3b · Graded baseline (0–5 anchored; composite must clear the entry bar)</h3>
+          <table>
+            <tr><th>Dimension</th><th>Weight</th><th>"5" looks like</th></tr>
+            <tr><td>Thesis clarity</td><td>0.30</td><td>thesis up front, every section ladders to it</td></tr>
+            <tr><td>Coverage depth</td><td>0.25</td><td>drivers + risks + catalysts quantified</td></tr>
+            <tr><td>Narrative flow</td><td>0.20</td><td>story builds; each slide earns the next</td></tr>
+            <tr><td>Visual baseline</td><td>0.15</td><td>one idea per slide, charts where numbers belong</td></tr>
+            <tr><td>Actionability</td><td>0.10</td><td>clear, decision-relevant recommendation</td></tr>
+          </table>
+          <p>Entry bar: <b>composite ≥ 3.2 / 5</b> AND all hard gates PASS.</p>
+
+          <h2 id="s4">4 · R2 — Loop Improvement Rubric</h2>
+          <h3>4a · Protected invariants (regression = auto-reject)</h3>
+          <table>
+            <tr><th>Invariant</th><th>Measured by</th><th>Rule</th></tr>
+            <tr><td>Truth / source-of-truth</td><td>deterministic fact-check (not the judge)</td><td>Every figure traces to the fact store. Mismatch → reject, roll back.</td></tr>
+            <tr><td>Scope adherence</td><td>judge vs. brief</td><td>Required sections present and on-brief. Drop below R1 → reject.</td></tr>
+            <tr><td>Story integrity</td><td>judge, coherence check</td><td>The thesis through-line must not break.</td></tr>
+            <tr><td>Visual integrity</td><td>judge + render lint</td><td>No new walls of text, no overflow, no chart that carried a number removed.</td></tr>
+          </table>
+          <h3>4b · Improvement targets (0–5 anchored; the loop hill-climbs the composite)</h3>
+          <table>
+            <tr><th>Dimension</th><th>Weight</th><th>"5" looks like</th></tr>
+            <tr><td>Actionability</td><td>0.25</td><td>every section ends in a decision-relevant takeaway tied to the thesis</td></tr>
+            <tr><td>Executive altitude (C-suite fit)</td><td>0.20</td><td>"so what" up front; right abstraction for a CEO/CFO/board; anticipates exec questions</td></tr>
+            <tr><td>Visual digestibility</td><td>0.20</td><td>each slide graspable in &lt;10s: one idea, right chart, clear hierarchy</td></tr>
+            <tr><td>Clean &amp; concise story</td><td>0.20</td><td>tight through-line, no redundant slides</td></tr>
+            <tr><td>Metric traceability quality</td><td>0.15</td><td>every metric labeled inline with source, period, units</td></tr>
+          </table>
+          <div class="note"><b>The split on numbers:</b> the truth <i>invariant</i> is a binary deterministic gate
+          ("does this number exist in the fact store?"). Traceability <i>quality</i> is a graded target ("is it
+          presented so a reader can trace it?"). The first prevents fabrication; the second is a thing we improve.</div>
+          <pre>R2 = 0.25·Action + 0.20·Exec + 0.20·Visual + 0.20·Story + 0.15·Trace
+     (computed only when all 4a invariants hold)</pre>
+
+          <h2 id="s5">5 · Accept / reject math</h2>
+          <p>Let <code>b</code> = best-so-far, <code>c</code> = candidate. Accept <code>c</code> iff <b>all</b> of:</p>
+          <ul>
+            <li><b>Invariants hold</b> — every 4a check on <code>c</code> passes. One fail → reject.</li>
+            <li><b>No protected regression</b> — for scored invariants, <code>s_d(c) ≥ s_d(b) − τ</code> (τ = 0 for truth/scope, 0.1 for story/visual).</li>
+            <li><b>Strict improvement</b> — <code>R2(c) ≥ R2(b) + δ</code>, δ ≈ 0.15, so judge noise isn't accepted.</li>
+          </ul>
+          <p>Otherwise roll back to <code>b</code> and log the attempt. Hill-climbing with rollback.</p>
+          <div class="note"><b>Monotonicity holds only within an epoch — by design.</b> An epoch is a fixed
+          <code>(rubric_version, data_version)</code> pair. When fresh data lands, reality can lower a score and the
+          deck <b>must</b> follow — so the loop re-baselines (re-scores best-so-far against the new facts and resets
+          the reference). Truth wins over a prettier score; <code>score_history</code> stamps both versions so a
+          reality-driven drop is never mistaken for a quality regression.</div>
+          <p><b>Stop conditions:</b> ship (R2(b) ≥ ship_bar ≈ 4.3) · plateau (no accepted revision for N iters) ·
+          budget (max_iters). All route to "freeze version + notify."</p>
+
+          <h2 id="s6">6 · Skill / agent catalog</h2>
+          <p>Single-responsibility skills, each its own agent, in two classes. Above both sits the orchestrator —
+          it runs no tool and writes no content.</p>
+          <table>
+            <tr><th>Manager</th><th>Responsibility</th><th>Holds in context</th></tr>
+            <tr><td><b>O0 Orchestrator</b></td><td>Decide what's next and who does it; route hand-offs; never performs work</td><td>plan + control state + artifact handles only</td></tr>
+          </table>
+          <h3>6a · Deterministic tools (code — the source of truth)</h3>
+          <table>
+            <tr><th>Skill</th><th>Responsibility</th></tr>
+            <tr><td><b>T1 EDGAR/SEC fetcher</b></td><td>Pull filings (10-K/10-Q/8-K) by ticker/CIK; cache raw</td></tr>
+            <tr><td><b>T2 Document parser</b></td><td>Extract tables &amp; text from filings and uploads</td></tr>
+            <tr><td><b>T3 Analysis engine</b></td><td>Compute ratios, growth, margins, bridges</td></tr>
+            <tr><td><b>T4 Fact-store writer</b></td><td>Normalize each figure into a traceable record (value, unit, period, source)</td></tr>
+            <tr><td><b>T5 Fact-check / number-tracer</b></td><td>Confirm every tagged figure equals its fact-store value</td></tr>
+            <tr><td><b>T6 Renderer</b></td><td>Turn the deck spec into rendered slides</td></tr>
+            <tr><td><b>T7 Render lint</b></td><td>Detect overflow, walls of text, broken slides</td></tr>
+            <tr><td><b>T8 Score aggregator</b></td><td>Apply weights, compute composite, run accept/reject (§5)</td></tr>
+            <tr><td><b>T9 Notifier</b></td><td>Send email/message on run completion with status + score delta + version link</td></tr>
+            <tr><td><b>T10 Version writer</b></td><td>Freeze the run's deck as a new immutable <code>versions/vN/</code> + index row</td></tr>
+            <tr><td><b>T11 Judge-consistency check</b></td><td>Re-score unchanged best-so-far to detect judge drift</td></tr>
+          </table>
+          <h3>6b · LLM agents (judgment)</h3>
+          <table>
+            <tr><th>Skill</th><th>Responsibility</th></tr>
+            <tr><td><b>L1 Scope Builder</b></td><td>Prompt → frozen brief (tickers, thesis, audience, sections, tone)</td></tr>
+            <tr><td><b>L2 Rubric Builder</b></td><td>Author + calibrate R1/R2 (§2)</td></tr>
+            <tr><td><b>L3 Drafter</b></td><td>Write the deck from brief + fact store; tag every figure with its fact_id</td></tr>
+            <tr><td><b>L4 Reviewer / Scorer</b></td><td>Review the deck → per-dim scores + ranked weakest-parts list + comments</td></tr>
+            <tr><td><b>L5 Planner</b></td><td>Triage the weak-parts list into one focused work order (target dim + action) — chosen fresh each lap, not from a fixed sequence</td></tr>
+            <tr><td><b>L6 Reviser</b></td><td>Execute the work order — fix exactly what was flagged, nothing more</td></tr>
+          </table>
+          <div class="note"><b>Two rules hold it together.</b> (1) <b>Reviewer ≠ Reviser</b> — the agent that finds
+          weak parts is different from the one that fixes them. (2) <b>LLMs never own a number</b> — every figure
+          originates in T1–T4, is verified by T5, and is only ever arranged by an LLM.</div>
+
+          <h2 id="s7">7 · Persisted state &amp; version history</h2>
+          <p><b>Outputs are immutable and versioned — never overwritten.</b> Every completed run freezes its deck as
+          a new <code>versions/vN/</code> folder; <code>best_so_far</code> is only a working pointer inside a run.</p>
+<pre>versions/
+  v001/  deck.json  render.pdf  scores.json  changelog.jsonl   ← run 1
+  v002/  deck.json  render.pdf  scores.json  changelog.jsonl   ← run 2
+  v003/  ...                                                    ← newest
+  index.jsonl                                                   ← one row per version</pre>
+<pre>// versions/index.jsonl — one immutable row per completed run
+{ "version":"v003", "ts":"2026-06-14T12:00Z", "status":"ready_for_review",
+  "composite":4.12, "delta_vs_prev":+0.14, "rubric_version":"r2-1.2.0",
+  "data_version":"d-2026Q1", "iters_this_run":9, "render":"versions/v003/render.pdf" }
+
+// score_history.jsonl — one line per iteration (stamps BOTH versions)
+{ "iter":8, "accepted":false, "reason":"trace 3.9→3.7 regression",
+  "rubric_version":"r2-1.2.0", "data_version":"d-2026Q1" }
+
+// notifications.jsonl — audit of every message sent
+{ "version":"v003", "channel":"email", "status":"ready_for_review",
+  "summary":"Run complete: composite 3.98→4.12 (+0.14), 9 iters, no invariant breaks." }</pre>
+          <p>Score history separates improvement from noise; the changelog explains <i>why</i> the deck looks the
+          way it does; stamping both <code>rubric_version</code> and <code>data_version</code> means a change caused
+          by a rubric edit or by reality is never mistaken for a real improvement; the immutable <code>versions/</code>
+          stack is the progress trail the user browses.</p>
+
+          <h2 id="s8">8 · Open decisions to confirm before building</h2>
+          <ul>
+            <li><b>Thresholds</b> — entry bar (3.2), ship bar (4.3), margin δ (0.15), plateau N, max_iters: starting guesses, calibrate on first runs.</li>
+            <li><b>Weights</b> — R2 weights reflect "actionability + exec-fit first"; adjust to the audience.</li>
+            <li><b>Planner action taxonomy</b> — confirm the five action types cover real reviewer comments.</li>
+            <li><b>Judge model &amp; determinism</b> — pin the model, low temperature, so score history is comparable.</li>
+            <li><b>Notification channel &amp; cadence</b> — email vs. Slack; every run vs. only on material change.</li>
+            <li><b>Run concurrency</b> — lock so a new 2x/day trigger doesn't collide with an in-flight run.</li>
+          </ul>
+
+          <h2 id="s9">9 · Known weaknesses (honest risks)</h2>
+          <ul>
+            <li><b>Three of four invariants rest on the LLM judge.</b> Truth has a deterministic backstop (T5); story integrity is irreducibly the judge's opinion. Mitigated by calibration, T11, and the human gate — not guaranteed.</li>
+            <li><b>Greedy hill-climb finds local optima.</b> "Accept only if better" blocks the transient dip a multi-slide restructure needs. Mitigation: a bounded multi-edit work order scored as one unit.</li>
+            <li><b>Cost grows with cadence.</b> Add a compute budget per run; short-circuit a run that starts already ≥ ship bar with no new data.</li>
+            <li><b>Calibration can rot.</b> Re-calibrate periodically; treat judge-drift flags or repeated human rejections as the signal.</li>
+            <li><b>Scope is frozen, the world is not.</b> Only the human gate catches "the whole angle is now stale."</li>
+          </ul>
+
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer><div class="wrap">DeckForge technical spec · mirrors <code>docs/deck-loop-spec.md</code></div></footer>
+</main>
+
+<script>
+  // ---------- tabs ----------
+  const tabs = document.querySelectorAll('.tab');
+  const panes = { overview: document.getElementById('overview'), spec: document.getElementById('spec') };
+  function show(name){
+    tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+    panes.overview.style.display = name==='overview' ? '' : 'none';
+    panes.spec.style.display = name==='spec' ? '' : 'none';
+    window.scrollTo({top:0});
+  }
+  tabs.forEach(t=>t.addEventListener('click', ()=>show(t.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.goto);}));
+
+  // ---------- mermaid ----------
+  if(window.mermaid){ mermaid.initialize({startOnLoad:true, theme:'neutral',
+    themeVariables:{ fontSize:'13px', primaryColor:'#dce8cd', primaryBorderColor:'#2e6b3f', lineColor:'#596157',
+      primaryTextColor:'#151915', tertiaryColor:'#f6f6ef'}}); }
+
+  // ---------- demo ----------
+  const nodes = [...document.querySelectorAll('.fnode')];
+  const scoreEl = document.getElementById('score');
+  const meterEl = document.getElementById('meter');
+  const verEl = document.getElementById('ver');
+  const dTag = document.getElementById('dTag');
+  const dTitle = document.getElementById('dTitle');
+  const dBody = document.getElementById('dBody');
+  const dWho = document.getElementById('dWho');
+  const branches = [...document.querySelectorAll('.branch')];
+
+  function setScore(v){
+    scoreEl.textContent = v.toFixed(1);
+    meterEl.style.width = Math.max(8, ((v-2)/3)*100) + '%';
+  }
+  function setActive(k){
+    nodes.forEach(n=>{
+      const nk = +n.dataset.k;
+      n.classList.toggle('on', nk===k);
+      if(nk<k || (nk===k)) n.classList.toggle('done', nk<k);
+      if(nk!==k && nk<k) n.classList.add('done');
+      if(nk>k) n.classList.remove('done');
+    });
+  }
+  function setBranch(name){
+    branches.forEach(b=>b.classList.toggle('active', b.dataset.b===name));
+  }
+  function detail(tag, who, title, body, score, guards, ver, branch){
+    dTag.textContent = tag;
+    dTitle.textContent = title;
+    dBody.innerHTML = body;
+    if(who){ dWho.style.display='inline-flex'; dWho.className='who '+who.cls; dWho.textContent = who.label; }
+    else { dWho.style.display='none'; }
+    if(score!=null) setScore(score);
+    if(guards){ document.getElementById('gT').textContent = guards[0]; document.getElementById('gS').textContent = guards[1]; document.getElementById('gV').textContent = guards[2]; }
+    verEl.innerHTML = ver;
+    if(branch) setBranch(branch); else setBranch(null);
+  }
+
+  // step definitions: k = node index, then detail content
+  const steps = [
+    {k:0, tag:'G1 · Kickoff', who:{cls:'llm',label:'Human input'},
+      title:'Human-injected prompt',
+      body:'A user describes the deck they need — company, angle, audience. The Orchestrator wakes up and starts the cold-start pipeline (G1).',
+      ver:'No run yet.'},
+    {k:1, tag:'G1 · Step A1', who:{cls:'llm',label:'LLM agent'},
+      title:'Scope Builder',
+      body:'Interprets the prompt into a <b>frozen brief</b>: tickers, thesis, audience, required sections, tone. This brief becomes the yardstick for "scope adherence" later — drift from it is never allowed to creep in unnoticed.',
+      ver:'Brief frozen.'},
+    {k:2, tag:'G1 · Step A2', who:{cls:'llm',label:'LLM agent'},
+      title:'Rubric Builder',
+      body:'Authors and calibrates <b>R1</b> (the one-time entry gate) and <b>R2</b> (the per-lap loop rubric) against gold-standard decks, then versions them so later score changes can be traced to a rubric edit.',
+      ver:'Rubrics R1 / R2 calibrated &amp; versioned.'},
+    {k:3, tag:'G1 · Step A3', who:{cls:'det',label:'Deterministic tools'},
+      title:'Doc parse · Analysis tool · SEC/EDGAR pull',
+      body:'Plain code — no LLM — pulls filings, parses tables, and computes ratios/growth/margins. Every resulting number is written to the <b>fact store</b> with its source, period, and unit. This is the one and only source of truth.',
+      ver:'Fact store populated — every figure has a citation.'},
+    {k:4, tag:'G1 · Step A4', who:{cls:'llm',label:'LLM agents'},
+      title:'Slide-create, Reviewer &amp; Reviser stand up',
+      body:'Slide-create drafts the deck from the brief and fact store, tagging every figure to its fact_id. The Reviewer and Reviser agents are the same ones that will run the improvement loop. The draft must clear the <b>R1 gate</b> — hard gates (sourced, on-scope, renders cleanly) plus a minimum quality bar.',
+      score:3.2, guards:['✓','✓','✓'],
+      ver:'First draft passes R1 at <b>3.2 / 5</b>.'},
+    {k:5, tag:'G1 → G2', who:{cls:'out',label:'Initial output'},
+      title:'Initial Output becomes "best-so-far"',
+      body:'The draft enters the improvement loop (G2) as the current best version. From here, every change must prove it\\'s an improvement before it\\'s kept.',
+      score:3.2, ver:'Entering the loop at <b>3.2 / 5</b>.'},
+    {k:6, tag:'G2 · Lap 1, step ①', who:{cls:'llm',label:'LLM — Reviewer'},
+      title:'Review &amp; Score',
+      body:'The Reviewer scores the deck against R2 and produces a <b>ranked list of the weakest parts</b> — e.g. "the thesis is buried on slide 4," "the margin chart is hard to read," "no exec takeaway on the summary slide." This reviewer never edits anything itself.',
+      score:3.2, ver:'Weakest part found: <b>visual clutter on slide 3</b>.'},
+    {k:7, tag:'G2 · Lap 1, step ②', who:{cls:'dyn',label:'Dynamic — Orchestrator + Planner'},
+      title:'Plan — chosen fresh, not scripted',
+      body:'This step is <b>not a fixed checklist item</b>. The Orchestrator and Planner look at <i>this lap\\'s</i> weakest-parts list and pick whichever action the deck needs most right now. This lap, the call is a <b>visual fix</b> — next lap it could just as easily be a story rewrite or a full data refresh.',
+      score:3.2, ver:'Work order: <b>refine visual</b> on slide 3.', branch:'visual'},
+    {k:8, tag:'G2 · Lap 1, step ③', who:{cls:'llm',label:'LLM — Reviser'},
+      title:'Build / Revise',
+      body:'A <b>different agent</b> than the Reviewer executes exactly this work order — splitting a crowded slide into a clean chart + callout. Fact-check then confirms no figures changed, and the score aggregator confirms the composite improved with no guardrail regressions.',
+      score:3.6, guards:['✓','✓','✓'],
+      ver:'Accepted: <b>3.2 → 3.6</b>. Looping back to Review…'},
+    {k:6, tag:'G2 · Lap 2, step ①', who:{cls:'llm',label:'LLM — Reviewer'},
+      title:'Review &amp; Score — again, with fresh eyes',
+      body:'A new lap starts. The Reviewer re-scores the <i>current</i> best deck. This time the weakest part is different: the margin bridge slide is now flagged as <b>stale relative to the latest filing</b>.',
+      score:3.6, ver:'Weakest part found: <b>margin bridge looks stale</b>.', branch:null},
+    {k:7, tag:'G2 · Lap 2, step ②', who:{cls:'dyn',label:'Dynamic — Orchestrator + Planner'},
+      title:'Plan — a completely different action this time',
+      body:'Same step, different outcome. Because the comment this lap is about a stale number, the Planner routes to <b>refresh analysis</b> — re-pulling the latest 10-Q and re-running the margin model <i>before</i> any slide is touched. The plan adapts to whatever the deck currently needs.',
+      score:3.6, ver:'Work order: <b>refresh analysis</b> — re-pull latest 10-Q.', branch:'analysis'},
+    {k:8, tag:'G2 · Lap 2, step ③', who:{cls:'llm',label:'LLM — Reviser'},
+      title:'Build / Revise — with fresh data',
+      body:'The Reviser first triggers the deterministic data tools to pull the new figures into the fact store (new fact_ids), then updates the margin bridge slide against the refreshed numbers. Fact-check confirms the new figures trace cleanly to the new filing.',
+      score:4.3, guards:['✓','✓','✓'],
+      ver:'Accepted: <b>3.6 → 4.3</b> — clears the ship bar.'},
+    {k:9, tag:'G2 → Done', who:{cls:'out',label:'Version + Notify'},
+      title:'New Version + Notify',
+      body:'The run stops (ship bar reached), freezes the deck as an <b>immutable new version</b> (e.g. <code>v003</code>), and sends an email/message: composite moved 3.2 → 4.3, two laps, no guardrail breaks, link to the new version. Publishing externally still waits on human approval.',
+      score:4.3, ver:'<b>v003 saved.</b> 📧 "Run complete — 3.2 → 4.3 (+1.1) over 2 laps."'}
+  ];
+
+  let i = 0, timer = null;
+  function applyStep(idx){
+    const s = steps[idx];
+    setActive(s.k);
+    detail(s.tag, s.who, s.title, s.body, s.score, s.guards, s.ver, 'branch' in s ? s.branch : undefined);
+  }
+  function stepFwd(){
+    if(i >= steps.length){ stop(); return; }
+    applyStep(i); i++;
+  }
+  function play(){ stop(); timer = setInterval(()=>{ stepFwd(); if(i>=steps.length) stop(); }, 1700); }
+  function stop(){ if(timer){ clearInterval(timer); timer=null; } }
+  function reset(){
+    stop(); i=0;
+    nodes.forEach(n=>{ n.classList.remove('on','done'); });
+    setBranch(null);
+    setScore(3.2);
+    document.getElementById('gT').textContent='✓'; document.getElementById('gS').textContent='✓'; document.getElementById('gV').textContent='✓';
+    dTag.textContent='Ready'; dTitle.textContent='Press play to start a run';
+    dBody.textContent="You'll step through the cold-start pipeline (G1) once, then watch the improvement loop (G2) run a couple of laps — each one choosing a different focus depending on what the reviewer found.";
+    dWho.style.display='none';
+    verEl.textContent='No run yet.';
+  }
+
+  document.getElementById('play').addEventListener('click', play);
+  document.getElementById('step').addEventListener('click', ()=>{ stop(); stepFwd(); });
+  document.getElementById('reset').addEventListener('click', reset);
+  reset();
+</script>
+</body>
+</html>
