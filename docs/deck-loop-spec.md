@@ -8,8 +8,8 @@ clarity**.
 This document covers: (1) the state machine, (2) how the two rubrics are
 **built and calibrated**, (3) the **Initial-Output Rubric (R1)**, (4) the
 **Loop Improvement Rubric (R2)**, (5) the accept/reject math that guarantees
-monotonic improvement with no truth regression, (6) agent contracts, and
-(7) the persisted state schemas.
+monotonic improvement with no truth regression, (6) the skill/agent catalog
+(deterministic tools vs. LLM agents), and (7) the persisted state schemas.
 
 ---
 
@@ -218,24 +218,63 @@ a hope.
 
 ---
 
-## 6. Agent contracts (I/O)
+## 6. Skill / agent catalog
 
-| Agent | Input | Output | Notes |
-|---|---|---|---|
-| **A1 Scope Builder** | human prompt | `brief{tickers, thesis, audience, required_sections[], tone}` | Brief is frozen; drift is measured against it. |
-| **A2 Rubric Builder** | brief | `R1`, `R2` (versioned JSON, weights + anchors) | Runs calibration (§2) before emitting. |
-| **A3 Data layer** | tickers, sections | `fact_store{id, metric, value, unit, period, source_url, retrieved_at}` | Deterministic. EDGAR/analysis only; LLM never writes here. |
-| **A4 Slide-create** | brief, fact_store | `deck{slides[]}` with every figure tagged by `fact_id` | Tagging is what makes the fact-check deterministic. |
-| **A4 Scorer** | deck, R2, fact_store | per-dim scores + evidence + invariant flags ("reviewer comments") | Judge; structured output; cites which slide/fact drove each score. |
-| **A4 Planner** | last R2 result + comments | `work_order{target_dim, action_type, instructions}` where `action_type ∈ {refresh_data, refine_analysis, refine_story, refine_visual, refine_traceability}` | Triages comments into one focused task → attributable deltas. |
-| **A3 Data layer (loop-invoked)** | work_order (when action_type = refresh_data / refine_analysis) | updated `fact_store` entries (new/revised facts, new `fact_id`s) | Same deterministic tools as cold-start, invoked on demand by the work order. |
-| **A4 Reviser** | deck, work_order, fact_store | revised deck (figures still `fact_id`-tagged) | Executes exactly the work order; may not introduce untagged numbers. |
-| **Fact-check** | deck, fact_store | pass/fail per figure | Deterministic value match, not the judge. |
+The system is a small set of **single-responsibility skills, each its own
+agent.** They fall into two classes, and the split is deliberate:
 
-Key design rule: **the LLM judge never gates factual accuracy alone.** Slides
-carry `fact_id` tags; the deterministic fact-checker confirms each tagged value
-equals the fact store. The judge only scores *quality* dimensions, and only
-the Planner — reading those scores — decides whether new data is warranted.
+- **Deterministic tools** are plain code (e.g. Python). Same input → same
+  output, no LLM in the path. These own anything that must be **reproducible
+  and trustworthy** — pulling numbers, computing analysis, verifying figures,
+  rendering, and the scoring arithmetic. They are the **source of truth.**
+- **LLM agents** are where **judgment** is required — writing prose, deciding
+  what's weak, refining a story. They never produce a raw number that wasn't
+  handed to them by a deterministic tool, and they never get the final say on
+  factual accuracy.
+
+Each skill is invoked as a separate agent with explicit inputs/outputs so it
+can be built, tested, swapped, and reasoned about in isolation.
+
+### 6a. Deterministic tools (code — the source of truth)
+
+| Skill | Responsibility | Input → Output |
+|---|---|---|
+| **T1 EDGAR/SEC fetcher** | Pull filings (10-K, 10-Q, 8-K) by ticker/CIK; cache raw | ticker/CIK, form types → raw filing docs |
+| **T2 Document parser** | Extract tables & text from filings and uploaded docs | raw docs → structured rows/figures |
+| **T3 Analysis engine** | Compute ratios, growth, margins, bridges from parsed figures | parsed figures → derived metrics |
+| **T4 Fact-store writer** | Normalize every figure into a traceable record | metrics → `fact_store{id, metric, value, unit, period, source_url, retrieved_at}` |
+| **T5 Fact-check / number-tracer** | Confirm every `fact_id`-tagged figure in the deck equals its fact-store value | deck + fact_store → pass/fail per figure |
+| **T6 Renderer** | Turn the deck spec into rendered slides | deck spec → rendered deck |
+| **T7 Render lint** | Detect overflow, walls of text, broken/empty slides | rendered deck → visual-integrity flags |
+| **T8 Score aggregator** | Apply rubric weights, compute composite, run the accept/reject math (§5) | per-dim scores + invariant flags → composite + accept/reject decision |
+
+> Why deterministic: numbers, verification, and the accept/reject decision must
+> be **reproducible and auditable.** If an LLM did the arithmetic or the
+> figure-matching, "the loop never sacrifices truth" couldn't be guaranteed.
+
+### 6b. LLM agents (judgment)
+
+| Skill | Responsibility | Input → Output |
+|---|---|---|
+| **L1 Scope Builder (A1)** | Interpret the prompt into a frozen brief | prompt → `brief{tickers, thesis, audience, required_sections[], tone}` |
+| **L2 Rubric Builder (A2)** | Author + calibrate R1/R2 (§2) | brief → versioned `R1`, `R2` (weights + anchors) |
+| **L3 Drafter / Slide-create** | Write the deck from the brief and fact store; tag every figure with its `fact_id` | brief + fact_store → `deck{slides[]}` |
+| **L4 Reviewer / Scorer** | **Review the deck and produce a ranked list of its weakest parts** — per-dimension scores against R2, plus specific comments pointing at the slide/element and why it's weak | deck + R2 + fact_store → `review{per_dim_scores, weakest_parts[ranked], comments}` |
+| **L5 Planner** | Triage the reviewer's weakest-parts list into one focused **work order** | review → `work_order{target_dim, action_type, instructions}`, `action_type ∈ {refresh_data, refine_analysis, refine_story, refine_visual, refine_traceability}` |
+| **L6 Reviser** | **Execute the work order** — fix/refine exactly the parts called out, nothing more | deck + work_order + fact_store → revised deck (figures still `fact_id`-tagged) |
+
+### 6c. The two rules that hold it together
+
+1. **Reviewer ≠ Reviser.** The agent that *finds* the weakest parts (L4) is a
+   different agent from the one that *fixes* them (L6). A critic grading its own
+   rework drifts toward self-justification; separating them keeps the diagnosis
+   honest and gives the loop a clean diff between "what was flagged" and "what
+   was changed." L4 only describes problems; L6 only fixes the assigned one.
+
+2. **LLMs never own a number.** Every figure originates in a deterministic tool
+   (T1–T4), is verified by another (T5), and is only ever *arranged* by an LLM.
+   When the Planner asks for fresh data, the Reviser calls the same T1–T4 tools
+   the cold start used — it does not invent values to fill the gap.
 
 ---
 
