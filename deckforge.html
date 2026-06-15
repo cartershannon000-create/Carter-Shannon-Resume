@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DeckForge — the self-refining equity-deck agent</title>
+<title>DeckForge: the self-refining equity-deck agent</title>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <style>
   :root{
@@ -462,12 +462,12 @@
       <div class="eyebrow">Autonomous equity-research decks</div>
       <h1>An agent that writes a deck, then <span class="g">critiques and rewrites it</span> in a loop until it's boardroom-ready.</h1>
       <p class="lead">Give it a prompt. It pulls the real numbers from SEC filings, drafts the deck, then improves
-      it in a loop — scoring each version against a fixed rubric and keeping only the changes that raise the
+      it in a loop, scoring each version against a fixed rubric and keeping only the changes that raise the
       score. The numbers always trace back to a filing.</p>
       <div class="pills">
         <span class="pill"><b>Grounded</b> in SEC / EDGAR filings</span>
         <span class="pill"><b>Scored</b> against a mathematical rubric</span>
-        <span class="pill"><b>Versioned</b> — never overwrites</span>
+        <span class="pill"><b>Versioned</b> and never overwrites</span>
         <span class="pill"><b>Notifies you</b> on completion</span>
       </div>
     </div>
@@ -478,15 +478,15 @@
     <div class="wrap">
       <div class="eyebrow">The whole system at a glance</div>
       <h2>How it works</h2>
-      <p class="lead">A one-time setup builds the first draft. Then a loop refines it — review, plan, revise,
-      score — until it clears the bar. Walk through it live in the demo.</p>
+      <p class="lead">A one-time setup builds the first draft. Then a loop refines it through review, planning, revision,
+      and scoring until it clears the bar. Walk through it live in the demo.</p>
 
       <div class="flowwrap">
         <div class="flowgrid">
 
           <!-- G1 — gated pipeline -->
           <div>
-            <p class="stagelabel"><b>G1</b> · Setup — runs once</p>
+            <p class="stagelabel"><b>G1</b> · Setup, runs once</p>
             <div class="g1head">Human-injected prompt</div>
             <div class="track">
               <div class="step callout" data-id="a1"><b>A1 · Scope Builder</b><span class="sub">prompt → frozen brief</span></div>
@@ -500,7 +500,7 @@
 
           <!-- G2 — the loop circle -->
           <div class="loopwrap">
-            <p class="stagelabel" style="align-self:flex-start"><b>G2</b> · The loop — up to 2×/day</p>
+            <p class="stagelabel" style="align-self:flex-start"><b>G2</b> · The loop, up to 2×/day</p>
             <div class="ring">
               <svg class="ringsvg" viewBox="0 0 400 400" aria-hidden="true">
                 <defs>
@@ -560,7 +560,7 @@
 
             <div class="looplegend">
               <span><span class="dot llm"></span> LLM agent</span>
-              <span><span class="dot dyn"></span> Dynamic — picked each lap</span>
+              <span><span class="dot dyn"></span> Dynamic, picked each lap</span>
               <span><span class="dot det"></span> Deterministic code</span>
             </div>
           </div>
@@ -583,7 +583,7 @@
         <div class="t-txt">
           <h3>Watch it run on a real question</h3>
           <p>See the agent take the prompt <i>"What is the pension risk due to AI for the PBGC?"</i> and drive it
-          through the pipeline and the scoring cycle — all the way to a board-ready deck.</p>
+          through the pipeline and the scoring cycle all the way to a board-ready deck.</p>
         </div>
         <button class="btn" data-goto="demo">Open the live demo</button>
       </div>
@@ -610,7 +610,7 @@
           <span class="tag llm"><span class="dot llm"></span> LLM agents</span>
           <h3>Judgment owns the words</h3>
           <p>Interpreting the prompt, writing slides, reviewing for weak spots, planning a fix, rewriting. The
-          models <i>arrange</i> facts and sharpen the story — they never invent a value and never get the final
+          models <i>arrange</i> facts and sharpen the story. They never invent a value and never get the final
           say on accuracy.</p>
         </div>
       </div>
@@ -618,9 +618,9 @@
         <div class="card"><h3>Reviewer ≠ Reviser</h3><p>One agent finds the weakest parts; a different agent fixes
           them. A critic grading its own rework drifts toward self-justification.</p></div>
         <div class="card"><h3>The plan isn't fixed</h3><p>Each lap, the Reviewer and Orchestrator look at what's
-          weak <i>right now</i> and choose the focus — refresh an analysis, rewrite the story, or fix a graphic.</p></div>
+          weak <i>right now</i> and choose the focus, whether that means refreshing an analysis, rewriting the story, or fixing a graphic.</p></div>
         <div class="card"><h3>A manager, not a doer</h3><p>An orchestrator decides what happens next and which agent
-          does it. It writes no code and no slides — it routes the work and stays context-light.</p></div>
+          does it. It writes no code and no slides. It routes the work and stays context-light.</p></div>
       </div>
     </div>
   </section>
@@ -629,7 +629,7 @@
   <section>
     <div class="wrap">
       <div class="eyebrow">The promise</div>
-      <h2>It gets better at what matters — and never sacrifices the rest</h2>
+      <h2>It gets better at what matters without sacrificing the rest</h2>
       <div class="grid g2" style="margin-top:24px">
         <div class="card">
           <h3 style="color:var(--gold)">What it improves</h3>
@@ -652,9 +652,9 @@
         </div>
       </div>
       <div class="card" style="margin-top:18px">
-        <h3>When the world changes, the deck follows the truth — even downward</h3>
+        <h3>When the world changes, the deck follows the truth, even downward</h3>
         <p>If a fresh quarterly filing moves a number the wrong way, the deck updates to match reality. That isn't
-        counted as the deck "getting worse" — truth always wins over a prettier score.</p>
+        counted as the deck "getting worse." Truth always wins over a prettier score.</p>
       </div>
     </div>
   </section>
@@ -666,8 +666,8 @@
         <div class="card">
           <div class="eyebrow">Progress you can see</div>
           <h3 style="font-size:22px">Every run is a new version</h3>
-          <p>Nothing is overwritten. Each completed run freezes an immutable version — <code>v001</code>,
-          <code>v002</code>, <code>v003</code> … — so you can open any point in time and watch the deck mature.</p>
+          <p>Nothing is overwritten. Each completed run freezes an immutable version: <code>v001</code>,
+          <code>v002</code>, <code>v003</code> … so you can open any point in time and watch the deck mature.</p>
           <div class="kpis"><span class="kpi">v001 · 3.2</span><span class="kpi">v002 · 3.6</span><span class="kpi">v003 · 4.3 ✓</span></div>
         </div>
         <div class="card">
@@ -675,13 +675,13 @@
           <h3 style="font-size:22px">A message when each run finishes</h3>
           <p>Every loop completion sends an email or message: the new version link, the status, and how much the
           score moved. Publishing to the C-suite still waits for your approval.</p>
-          <div class="kpis"><span class="kpi">"Run complete — v003, 3.98 → 4.12 (+0.14)"</span></div>
+          <div class="kpis"><span class="kpi">"Run complete: v003, 3.98 → 4.12 (+0.14)"</span></div>
         </div>
       </div>
     </div>
   </section>
 
-  <footer><div class="wrap">DeckForge — concept &amp; design. See the <a href="#" data-goto="demo">Live Demo</a>.</div></footer>
+  <footer><div class="wrap">DeckForge concept &amp; design. See the <a href="#" data-goto="demo">Live Demo</a>.</div></footer>
 </main>
 
 <!-- ================= LIVE DEMO ================= -->
@@ -690,8 +690,8 @@
     <div class="wrap">
       <div class="eyebrow">Live demo · worked example</div>
       <h2>From a question to a board-ready deck</h2>
-      <p class="lead">Press play and watch one real question travel the whole pipeline — research, a first draft,
-      the de-AI pass, and the scoring loop — until the deck is board-ready. Step through it at your own pace.</p>
+      <p class="lead">Press play and watch one real question travel the whole pipeline through research, a first draft,
+      the de-AI pass, and the scoring loop until the deck is board-ready. Step through it at your own pace.</p>
 
       <!-- progress timeline (built by JS) -->
       <div class="dtimeline" id="dTimeline"></div>
@@ -716,7 +716,7 @@
             </div>
           </div>
           <p class="scene-lead anim" style="animation-delay:.2s; text-align:center; max-width:640px; margin:18px auto 0">
-            User inputs an idea, but the agent delivers the full cycle of the project — from scope to deliverable —
+            User inputs an idea, but the agent delivers the full cycle of the project from scope to deliverable,
             and even refines the final output to make it board ready, without constantly asking for human input.
           </p>
           <div class="dchips anim" style="animation-delay:.35s; margin-top:18px; justify-content:center">
@@ -730,7 +730,7 @@
         <div class="scene" data-scene="1">
           <div class="dcols">
             <div class="dpanel anim">
-              <p class="dpanel-h">The brief — frozen up front</p>
+              <p class="dpanel-h">The brief, frozen up front</p>
               <div class="briefcard" id="dBrief">
                 <div class="briefrow"><span class="ck">✓</span><div><b>Subject</b>Virginia's economy &amp; AI adoption</div></div>
                 <div class="briefrow"><span class="ck">✓</span><div><b>Question</b>Cost of missing the AI boom</div></div>
@@ -738,7 +738,7 @@
               </div>
             </div>
             <div class="dpanel anim" style="animation-delay:.15s">
-              <p class="dpanel-h">The rubric — what "good" means</p>
+              <p class="dpanel-h">The rubric, what "good" means</p>
               <div class="rbar-row"><span class="rbar-label">Actionability</span><div class="rbar-track"><span class="rbar-fill" data-w="100"></span></div><span class="rbar-val">0.25</span></div>
               <div class="rbar-row"><span class="rbar-label">Executive altitude</span><div class="rbar-track"><span class="rbar-fill" data-w="80"></span></div><span class="rbar-val">0.20</span></div>
               <div class="rbar-row"><span class="rbar-label">Visual digestibility</span><div class="rbar-track"><span class="rbar-fill" data-w="80"></span></div><span class="rbar-val">0.20</span></div>
@@ -746,7 +746,7 @@
               <div class="rbar-row"><span class="rbar-label">Traceability</span><div class="rbar-track"><span class="rbar-fill" data-w="60"></span></div><span class="rbar-val">0.15</span></div>
             </div>
           </div>
-          <p class="src-note anim" style="animation-delay:.3s">"Good" is defined <b>before</b> a single slide exists — so improvement can be measured, not guessed.</p>
+          <p class="src-note anim" style="animation-delay:.3s">"Good" is defined <b>before</b> a single slide exists, so improvement can be measured, not guessed.</p>
         </div>
 
         <!-- 3 · data pull -->
@@ -755,17 +755,17 @@
             <div>
               <div class="dtool anim">
                 <div class="ico">BLS</div>
-                <div><div class="tt">Labor &amp; jobs data</div><div class="ts">BLS · Census — public series</div>
+                <div><div class="tt">Labor &amp; jobs data</div><div class="ts">BLS · Census, public series</div>
                   <div class="rows"><div class="row">Tech-sector share of jobs <b>9.4%</b></div><div class="row">5-yr AI-role growth <b>+38%</b></div></div></div>
               </div>
               <div class="dtool anim" style="animation-delay:.12s">
                 <div class="ico">VA</div>
-                <div><div class="tt">State budget &amp; GDP</div><div class="ts">VA state filings — public</div>
+                <div><div class="tt">State budget &amp; GDP</div><div class="ts">VA state filings, public</div>
                   <div class="rows"><div class="row">Annual GDP <b>$0.68T</b></div><div class="row">Tech share of GDP <b>13%</b></div></div></div>
               </div>
               <div class="dtool anim" style="animation-delay:.24s">
                 <div class="ico">SEC</div>
-                <div><div class="tt">SEC EDGAR — VA employers</div><div class="ts">10-K / 10-Q filings</div>
+                <div><div class="tt">SEC EDGAR, VA employers</div><div class="ts">10-K / 10-Q filings</div>
                   <div class="rows"><div class="row">Filings parsed <b>112</b></div><div class="row">Figures stored <b>1,940</b></div></div></div>
               </div>
             </div>
@@ -780,7 +780,7 @@
                   <tr><td>Higher education</td><td>63</td><td><span class="tier watch">Watch</span></td></tr>
                 </table>
               </div>
-              <p class="src-note">Fixed, repeatable tools — never the model. Every number traces back to a public filing.</p>
+              <p class="src-note">Fixed, repeatable tools, never the model. Every number traces back to a public filing.</p>
             </div>
           </div>
         </div>
@@ -792,7 +792,7 @@
             <div class="gtagline">Human gate 1 of 2</div>
             <h4>Approve the brief &amp; sources</h4>
             <div class="gck"><span class="ck">✓</span><div><b>Scope:</b> Virginia's exposure if it misses the AI boom</div></div>
-            <div class="gck"><span class="ck">✓</span><div><b>Sources:</b> BLS, Census, VA budget, SEC EDGAR — all public</div></div>
+            <div class="gck"><span class="ck">✓</span><div><b>Sources:</b> BLS, Census, VA budget, SEC EDGAR, all public</div></div>
             <div class="gck"><span class="ck">✓</span><div><b>Your call:</b> adjust scope or sources before any deck is built</div></div>
             <div class="gfoot">You're in control. The same approval ritual, every gate.</div>
             <button class="gbtn">✓ Approve and continue</button>
@@ -812,7 +812,7 @@
             </div>
             <div class="agents anim" style="animation-delay:.2s">
               <div class="agent on" id="agBuild"><div class="ai">✍︎</div><div><div class="at">Builder agent</div><div class="as">assembles slides from the facts</div></div></div>
-              <div class="agent" id="agRevD"><div class="ai">◎</div><div><div class="at">Fresh set of eyes</div><div class="as">reviews next — flags the weak spots</div></div></div>
+              <div class="agent" id="agRevD"><div class="ai">◎</div><div><div class="at">Fresh set of eyes</div><div class="as">reviews next and flags the weak spots</div></div></div>
               <div class="agent" id="agFixD"><div class="ai">✎</div><div><div class="at">Separate fixer agent</div><div class="as">fixes only what was flagged</div></div></div>
             </div>
           </div>
@@ -824,7 +824,7 @@
           <div class="deai">
             <div class="col before anim">
               <div class="lab">Before · AI tells</div>
-              <p>"<span class="tell">In today's fast-paced landscape,</span> it is <span class="tell">important to note</span> that Virginia <span class="tell">stands at a pivotal crossroads</span> <span class="tell">—</span> a state poised to <span class="tell">leverage</span> transformative opportunities."</p>
+              <p>"<span class="tell">In today's fast-paced landscape,</span> it is <span class="tell">important to note</span> that Virginia <span class="tell">stands at a pivotal crossroads</span> <span class="tell">,</span> a state poised to <span class="tell">leverage</span> transformative opportunities."</p>
               <p class="designnote">Design tells: gradient banners, glow shadows, emoji bullets.</p>
             </div>
             <div class="col after anim" style="animation-delay:.2s">
@@ -853,7 +853,7 @@
               </div>
             </div>
           </div>
-          <p class="src-note anim" style="animation-delay:.5s">The <b>de-AI / Humanizer tool</b> strips em-dashes, hedging, filler, and AI-looking design — gradients, glow, oversized colored boxes — on every build, so the deck reads and looks like a person made it.</p>
+          <p class="src-note anim" style="animation-delay:.5s">The <b>de-AI / Humanizer tool</b> strips em-dashes, hedging, filler, and AI-looking design, including gradients, glow, and oversized colored boxes, on every build, so the deck reads and looks like a person made it.</p>
         </div>
 
         <!-- 7 · revision loop -->
@@ -870,7 +870,7 @@
               </div>
               <div class="agents" style="margin-top:14px">
                 <div class="agent" id="agRev"><div class="ai">◎</div><div><div class="at">Fresh set of eyes</div><div class="as">flags the weakest slide this lap</div></div></div>
-                <div class="agent" id="agFix"><div class="ai">✎</div><div><div class="at">Separate fixer agent</div><div class="as">fixes only that — then re-scores</div></div></div>
+                <div class="agent" id="agFix"><div class="ai">✎</div><div><div class="at">Separate fixer agent</div><div class="as">fixes only that, then re-scores</div></div></div>
               </div>
             </div>
             <div>
@@ -917,8 +917,8 @@
             <div class="sendlabel" id="dSendLabel">Finalizing score…</div>
           </div>
           <div class="deliver-note anim" style="animation-delay:.4s">
-            <div class="dn-row"><span class="k">Saved</span> immutable version <b>v003</b> — nothing overwritten</div>
-            <div class="dn-row"><span class="k">Notified</span> "Run complete — Virginia / AI boom · 3.2 → 5.0 (+1.8)"</div>
+            <div class="dn-row"><span class="k">Saved</span> immutable version <b>v003</b>, nothing overwritten</div>
+            <div class="dn-row"><span class="k">Notified</span> "Run complete: Virginia / AI boom · 3.2 → 5.0 (+1.8)"</div>
             <div class="dn-row"><span class="k">Gate 2</span> publishing to leadership still waits for your approval</div>
           </div>
         </div>
@@ -948,7 +948,7 @@
     <div class="wrap">
       <div class="eyebrow">For builders</div>
       <h2>Technical specification</h2>
-      <p class="lead">Everything a developer needs to rebuild this workflow — the orchestration model, the two
+      <p class="lead">Everything a developer needs to rebuild this workflow, including the orchestration model, the two
       rubrics, the accept/reject math, the full skill catalog, and the persisted state schemas.</p>
 
       <div class="spec-wrap" style="margin-top:28px">
@@ -956,8 +956,8 @@
           <a href="#s0">0 · Orchestration model</a>
           <a href="#s1">1 · State machine</a>
           <a href="#s2">2 · Building the rubrics</a>
-          <a href="#s3">3 · R1 — initial output</a>
-          <a href="#s4">4 · R2 — loop rubric</a>
+          <a href="#s3">3 · R1, initial output</a>
+          <a href="#s4">4 · R2, loop rubric</a>
           <a href="#s5">5 · Accept / reject math</a>
           <a href="#s6">6 · Skill / agent catalog</a>
           <a href="#s7">7 · State &amp; versioning</a>
@@ -967,19 +967,19 @@
         <div class="specbody">
 
           <h2 id="s0">0 · Orchestration model (the manager agent)</h2>
-          <p>A single <b>orchestrator</b> coordinates everything — a manager, not a worker. The defining rule:
-          <b>it decides what needs to happen and which agent does it, and never does the work itself</b> — no code,
+          <p>A single <b>orchestrator</b> coordinates everything as a manager, not a worker. The defining rule:
+          <b>it decides what needs to happen and which agent does it, and never does the work itself</b>: no code,
           no number-crunching, no slide-writing, no reviewing.</p>
           <ul>
             <li><b>Delegates, doesn't perform.</b> Dispatches the data tools, the Drafter, the Renderer; writes nothing into the deck or fact store.</li>
-            <li><b>Commissions reviews.</b> It never forms its own opinion of quality — it sends the Reviewer (L4) to produce the ranked weak-parts list, then a Reviser (L6) to fix what was found.</li>
+            <li><b>Commissions reviews.</b> It never forms its own opinion of quality. It sends the Reviewer (L4) to produce the ranked weak-parts list, then a Reviser (L6) to fix what was found.</li>
             <li><b>Owns control flow, not content.</b> It reads compact signals and routes the next move. Every arrow in §1 is an orchestrator decision.</li>
           </ul>
           <h3>0a · Context discipline</h3>
           <ul>
-            <li><b>Heavy artifacts live outside its context</b> — decks, filings, parsed tables pass by reference.</li>
-            <li><b>Workers return summaries, not dumps</b> — counts, scores, pass/fail, a short reason, a handle.</li>
-            <li><b>State lives in the persisted files (§7), not the prompt</b> — context doesn't grow with iteration count.</li>
+            <li><b>Heavy artifacts live outside its context</b>: decks, filings, parsed tables pass by reference.</li>
+            <li><b>Workers return summaries, not dumps</b>: counts, scores, pass/fail, a short reason, a handle.</li>
+            <li><b>State lives in the persisted files (§7), not the prompt</b>: context doesn't grow with iteration count.</li>
           </ul>
 
           <h2 id="s1">1 · State machine</h2>
@@ -1020,7 +1020,7 @@ flowchart TD
           per-iteration delta rubric. The Score → Plan → Revise sequence mirrors a research desk: a senior reviewer
           marks up the deck, the work is triaged into one task, and an analyst does exactly that rework.</div>
           <div class="note"><b>The Plan step is dynamic, not scripted.</b> Each lap the Planner reads <i>this lap's</i>
-          comments and routes to whichever action the deck needs most — re-pulling an analysis, rewriting a section,
+          comments and routes to whichever action the deck needs most, including re-pulling an analysis, rewriting a section,
           or fixing one graphic. Two consecutive laps can take completely different actions.</div>
 
           <h2 id="s2">2 · How the rubrics are built</h2>
@@ -1029,19 +1029,19 @@ flowchart TD
             <li><b>Anchor each dimension</b> with concrete descriptors at each scale point.</li>
             <li><b>Assign weights</b> in the rubric file, so they tune without code changes.</li>
             <li><b>Calibrate against gold examples</b> until the LLM judge lands within ±1 of human scores.</li>
-            <li><b>Validate &amp; version</b> — require judge↔human agreement before the rubric drives the loop.</li>
+            <li><b>Validate &amp; version</b>: require judge↔human agreement before the rubric drives the loop.</li>
           </ul>
           <div class="note">Calibration is not optional. Without it, R2's "improvement" is just judge variance.</div>
 
-          <h2 id="s3">3 · R1 — Initial-Output Rubric (acceptance gate)</h2>
-          <h3>3a · Hard gates (binary — all must PASS)</h3>
+          <h2 id="s3">3 · R1, Initial-Output Rubric (acceptance gate)</h2>
+          <h3>3a · Hard gates (binary, all must PASS)</h3>
           <table>
             <tr><th>Gate</th><th>Pass condition</th></tr>
             <tr><td>Source-of-truth</td><td>100% of figures resolve to a fact-store entry with a citation.</td></tr>
             <tr><td>Scope coverage</td><td>Every required section from the brief is present and non-empty.</td></tr>
             <tr><td>Structural validity</td><td>Deck renders; no broken slides, no placeholder text.</td></tr>
           </table>
-          <h3>3b · Graded baseline (0–5; composite must clear the entry bar)</h3>
+          <h3>3b · Graded baseline (0 to 5; composite must clear the entry bar)</h3>
           <table>
             <tr><th>Dimension</th><th>Weight</th><th>"5" looks like</th></tr>
             <tr><td>Thesis clarity</td><td>0.30</td><td>thesis up front, every section ladders to it</td></tr>
@@ -1052,7 +1052,7 @@ flowchart TD
           </table>
           <p>Entry bar: <b>composite ≥ 3.2 / 5</b> AND all hard gates PASS.</p>
 
-          <h2 id="s4">4 · R2 — Loop Improvement Rubric</h2>
+          <h2 id="s4">4 · R2, Loop Improvement Rubric</h2>
           <h3>4a · Protected invariants (regression = auto-reject)</h3>
           <table>
             <tr><th>Invariant</th><th>Measured by</th><th>Rule</th></tr>
@@ -1077,9 +1077,9 @@ flowchart TD
           <p>Let <code>b</code> = best-so-far, <code>c</code> = candidate. Accept <code>c</code> iff: invariants hold,
           no protected regression (<code>s_d(c) ≥ s_d(b) − τ</code>), and strict improvement
           (<code>R2(c) ≥ R2(b) + δ</code>, δ ≈ 0.15). Otherwise roll back.</p>
-          <div class="note"><b>Monotonicity holds only within an epoch — by design.</b> An epoch is a fixed
+          <div class="note"><b>Monotonicity holds only within an epoch by design.</b> An epoch is a fixed
           <code>(rubric_version, data_version)</code> pair. When fresh data lands, reality can lower a score and the
-          deck <b>must</b> follow — so the loop re-baselines. Truth wins over a prettier score.</div>
+          deck <b>must</b> follow, so the loop re-baselines. Truth wins over a prettier score.</div>
           <p><b>Stop conditions:</b> ship (R2(b) ≥ 4.3) · plateau · max_iters. All route to "freeze version + notify."</p>
 
           <h2 id="s6">6 · Skill / agent catalog</h2>
@@ -1087,7 +1087,7 @@ flowchart TD
             <tr><th>Manager</th><th>Responsibility</th></tr>
             <tr><td><b>O0 Orchestrator</b></td><td>Decide what's next and who does it; route hand-offs; never performs work. Holds only plan + handles.</td></tr>
           </table>
-          <h3>6a · Deterministic tools (code — the source of truth)</h3>
+          <h3>6a · Deterministic tools (code, the source of truth)</h3>
           <table>
             <tr><td><b>T1 EDGAR/SEC fetcher</b></td><td>Pull filings by ticker/CIK; cache raw</td></tr>
             <tr><td><b>T2 Document parser</b></td><td>Extract tables &amp; text from filings and uploads</td></tr>
@@ -1100,7 +1100,7 @@ flowchart TD
             <tr><td><b>T9 Notifier</b></td><td>Email/message on run completion with status + score delta + link</td></tr>
             <tr><td><b>T10 Version writer</b></td><td>Freeze the run's deck as a new immutable version</td></tr>
             <tr><td><b>T11 Judge-consistency</b></td><td>Re-score unchanged best-so-far to detect judge drift</td></tr>
-            <tr><td><b>T12 De-AI / Humanizer</b></td><td>Strips AI tells from the built deck — em-dashes, hedging ("it's worth noting"), generic filler, over-symmetrical lists, and AI-looking design (gradient/glow). Flags them on render; a Reviser rewrite resolves them so the deck reads as human-authored.</td></tr>
+            <tr><td><b>T12 De-AI / Humanizer</b></td><td>Strips AI tells from the built deck: em-dashes, hedging ("it's worth noting"), generic filler, over-symmetrical lists, and AI-looking design (gradient/glow). Flags them on render; a Reviser rewrite resolves them so the deck reads as human-authored.</td></tr>
           </table>
           <h3>6b · LLM agents (judgment)</h3>
           <table>
@@ -1108,14 +1108,14 @@ flowchart TD
             <tr><td><b>L2 Rubric Builder</b></td><td>Author + calibrate R1/R2</td></tr>
             <tr><td><b>L3 Drafter</b></td><td>Write the deck; tag every figure with its fact_id</td></tr>
             <tr><td><b>L4 Reviewer / Scorer</b></td><td>Review → per-dim scores + ranked weakest-parts list</td></tr>
-            <tr><td><b>L5 Planner</b></td><td>Triage the weak-parts list into one work order — fresh each lap</td></tr>
-            <tr><td><b>L6 Reviser</b></td><td>Execute the work order — fix exactly what was flagged</td></tr>
+            <tr><td><b>L5 Planner</b></td><td>Triage the weak-parts list into one work order, fresh each lap</td></tr>
+            <tr><td><b>L6 Reviser</b></td><td>Execute the work order, fixing exactly what was flagged</td></tr>
           </table>
           <div class="note"><b>Two rules hold it together.</b> (1) <b>Reviewer ≠ Reviser.</b> (2) <b>LLMs never own a
-          number</b> — every figure originates in T1–T4, is verified by T5, and is only ever arranged by an LLM.</div>
+          number</b>. Every figure originates in T1–T4, is verified by T5, and is only ever arranged by an LLM.</div>
 
           <h2 id="s7">7 · Persisted state &amp; version history</h2>
-          <p><b>Outputs are immutable and versioned — never overwritten.</b> Every completed run freezes its deck as
+          <p><b>Outputs are immutable and versioned and never overwritten.</b> Every completed run freezes its deck as
           a new <code>versions/vN/</code> folder; <code>best_so_far</code> is only a working pointer inside a run.</p>
 <pre>versions/
   v001/  deck.json  render.pdf  scores.json  changelog.jsonl
@@ -1126,11 +1126,11 @@ flowchart TD
 
           <h2 id="s8">8 · Open decisions to confirm before building</h2>
           <ul>
-            <li><b>Thresholds</b> — entry bar (3.2), ship bar (4.3), margin δ (0.15), plateau N, max_iters.</li>
-            <li><b>Weights</b> — R2 weights reflect "actionability + exec-fit first"; adjust to the audience.</li>
-            <li><b>Planner action taxonomy</b> — confirm the five action types cover real reviewer comments.</li>
-            <li><b>Judge model &amp; determinism</b> — pin the model, low temperature.</li>
-            <li><b>Notification channel &amp; cadence</b> · <b>run concurrency</b> — lock against overlapping runs.</li>
+            <li><b>Thresholds</b>: entry bar (3.2), ship bar (4.3), margin δ (0.15), plateau N, max_iters.</li>
+            <li><b>Weights</b>: R2 weights reflect "actionability + exec-fit first"; adjust to the audience.</li>
+            <li><b>Planner action taxonomy</b>: confirm the five action types cover real reviewer comments.</li>
+            <li><b>Judge model &amp; determinism</b>: pin the model, low temperature.</li>
+            <li><b>Notification channel &amp; cadence</b> · <b>run concurrency</b>: lock against overlapping runs.</li>
           </ul>
 
           <h2 id="s9">9 · Known weaknesses (honest risks)</h2>
@@ -1167,24 +1167,24 @@ flowchart TD
 
   // ---------- flow callouts (hover / tap → description) ----------
   const calloutInfo = {
-    a1:{type:'llm', tag:'G1 · A1 — LLM agent', title:'Scope Builder',
-      text:'Turns your prompt into a frozen brief — subject, thesis, audience, required sections. Everything downstream is measured against it, so the deck can\'t quietly drift off-topic.'},
-    a2:{type:'llm', tag:'G1 · A2 — LLM agent', title:'Rubric Builder',
-      text:'Defines what "good" means before a single slide exists — the weighted rubric the loop will later hill-climb. "Good" becomes measurable up front.'},
-    a3:{type:'det', tag:'G1 · A3 — Deterministic code', title:'Deterministic tools',
-      text:'Plain code — not the model — pulls filings, parses tables, and runs the analysis. Every figure lands in a fact store with its source, period, and unit. Nothing is invented.'},
-    a4:{type:'llm', tag:'G1 · A4 — LLM agents', title:'LLM agents — first draft',
+    a1:{type:'llm', tag:'G1 · A1, LLM agent', title:'Scope Builder',
+      text:'Turns your prompt into a frozen brief with subject, thesis, audience, and required sections. Everything downstream is measured against it, so the deck can\'t quietly drift off-topic.'},
+    a2:{type:'llm', tag:'G1 · A2, LLM agent', title:'Rubric Builder',
+      text:'Defines what "good" means before a single slide exists with the weighted rubric the loop will later hill-climb. "Good" becomes measurable up front.'},
+    a3:{type:'det', tag:'G1 · A3, Deterministic code', title:'Deterministic tools',
+      text:'Plain code, not the model, pulls filings, parses tables, and runs the analysis. Every figure lands in a fact store with its source, period, and unit. Nothing is invented.'},
+    a4:{type:'llm', tag:'G1 · A4, LLM agents', title:'LLM agents, first draft',
       text:'Writes the first draft from the facts and tags every number to its source, then runs a <span class="strip">de-AI pass</span> so the writing reads human, not machine-generated.'},
-    init:{type:'gate', tag:'G1 → G2 — Gate (R1)', title:'Initial Output',
-      text:'The entry gate. The draft must be fully sourced, on-scope, and cleanly rendered before it\'s allowed into the loop — otherwise it never gets there.'},
-    review:{type:'llm', tag:'Loop ① — LLM agent', title:'Review',
-      text:'Scores the current deck and ranks its weakest parts. It only diagnoses — it never edits, so it can\'t rationalize its own work later.'},
-    plan:{type:'dyn', tag:'Loop ② — Dynamic', title:'Plan',
-      text:'Picks the single highest-value fix for this lap: refresh a number, rewrite a section, or fix one visual. Different laps choose different actions — the loop adapts.'},
-    revise:{type:'llm', tag:'Loop ③ — LLM agent', title:'Revise',
-      text:'A different agent makes exactly that one change and rebuilds the deck — then runs a <span class="strip">de-AI pass</span> that strips em-dashes, hedging, filler, and AI-looking design so it reads as if a person made it.'},
-    score:{type:'det', tag:'Loop ④ — Deterministic code', title:'Score',
-      text:'Fact-checks every figure against its source, then computes the weighted score shown in the dial. The edit is kept only if the score rose and no guardrail slipped — otherwise it rolls back. When it clears the ship bar (4.3), the deck is board-ready.'}
+    init:{type:'gate', tag:'G1 → G2, Gate (R1)', title:'Initial Output',
+      text:'The entry gate. The draft must be fully sourced, on-scope, and cleanly rendered before it\'s allowed into the loop. Otherwise it never gets there.'},
+    review:{type:'llm', tag:'Loop ①, LLM agent', title:'Review',
+      text:'Scores the current deck and ranks its weakest parts. It only diagnoses and never edits, so it can\'t rationalize its own work later.'},
+    plan:{type:'dyn', tag:'Loop ②, Dynamic', title:'Plan',
+      text:'Picks the single highest-value fix for this lap: refresh a number, rewrite a section, or fix one visual. Different laps choose different actions, so the loop adapts.'},
+    revise:{type:'llm', tag:'Loop ③, LLM agent', title:'Revise',
+      text:'A different agent makes exactly that one change and rebuilds the deck, then runs a <span class="strip">de-AI pass</span> that strips em-dashes, hedging, filler, and AI-looking design so it reads as if a person made it.'},
+    score:{type:'det', tag:'Loop ④, Deterministic code', title:'Score',
+      text:'Fact-checks every figure against its source, then computes the weighted score shown in the dial. The edit is kept only if the score rose and no guardrail slipped. Otherwise it rolls back. When it clears the ship bar (4.3), the deck is board-ready.'}
   };
   const fiTag = document.getElementById('fiTag');
   const fiTitle = document.getElementById('fiTitle');
@@ -1206,12 +1206,12 @@ flowchart TD
   const PROMPT = "What is the impact on Virginia if they miss the AI boom?";
   const dScenes = [
     {cap:'Idea',    gate:false, eyebrow:'Step 1 of 8', title:'It starts with one plain-language question.', dur:4200},
-    {cap:'Frame',   gate:false, eyebrow:'Step 2 of 8', title:'It frames the brief and defines what “good” means — before writing.', dur:4200},
-    {cap:'Data',    gate:false, eyebrow:'Step 3 of 8', title:'Fixed tools pull real data — every number traces to a public source.', dur:5400},
+    {cap:'Frame',   gate:false, eyebrow:'Step 2 of 8', title:'It frames the brief and defines what “good” means before writing.', dur:4200},
+    {cap:'Data',    gate:false, eyebrow:'Step 3 of 8', title:'Fixed tools pull real data, and every number traces to a public source.', dur:5400},
     {cap:'Approve', gate:true,  eyebrow:'Step 4 of 8 · Human gate 1 of 2', title:'You approve the brief and sources before a deck is built.', dur:3800},
     {cap:'Draft',   gate:false, eyebrow:'Step 5 of 8', title:'A builder agent assembles the first draft, then fresh eyes flag issues for the fixer.', dur:4800},
     {cap:'De-AI',   gate:false, eyebrow:'Step 6 of 8', title:'AI tendencies get stripped from the writing and the design, so the deck reads and looks human-made.', dur:5000},
-    {cap:'Loop',    gate:false, eyebrow:'Step 7 of 8', title:'Fresh eyes flag the weak spots; a separate agent fixes them — the score climbs.', dur:6400},
+    {cap:'Loop',    gate:false, eyebrow:'Step 7 of 8', title:'Fresh eyes flag the weak spots; a separate agent fixes them, and the score climbs.', dur:6400},
     {cap:'Deliver', gate:true,  eyebrow:'Step 8 of 8 · Board ready', title:'It clears the ship bar, hits a perfect score, and the notification goes out.', dur:5000}
   ];
   const N = dScenes.length;
@@ -1327,7 +1327,7 @@ flowchart TD
       if(label) label.textContent = 'Sending to leadership…';
       later(function(){
         if(icon) icon.classList.add('sent');
-        if(label){ label.textContent = 'Sent — leadership notified'; label.classList.add('sent'); }
+        if(label){ label.textContent = 'Sent, leadership notified'; label.classList.add('sent'); }
       }, 700);
     }, 2200);
   }
