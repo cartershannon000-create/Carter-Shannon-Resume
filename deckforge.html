@@ -781,7 +781,7 @@ flowchart TD
   const panes = { overview:document.getElementById('overview'), demo:document.getElementById('demo'), spec:document.getElementById('spec') };
   function show(name){
     tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
-    Object.entries(panes).forEach(([k,el])=> el.style.display = k===name ? '' : 'none');
+    Object.entries(panes).forEach(([k,el])=> el.style.display = k===name ? 'block' : 'none');
     window.scrollTo({top:0});
     if(name==='demo'){ dReset(); setTimeout(dPlay,400); }
   }
