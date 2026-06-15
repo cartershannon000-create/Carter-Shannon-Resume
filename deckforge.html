@@ -78,40 +78,27 @@
 
   /* ============ INTERACTIVE FLOW MAP ============ */
   .flowwrap{background:var(--panel-strong); border:1px solid var(--line); border-radius:22px; padding:26px; margin-top:28px; box-shadow:var(--shadow)}
-  .legend{display:flex; gap:18px; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-bottom:18px}
-  .legend span{display:inline-flex; align-items:center; gap:7px}
-  .flowmap{display:grid; gap:26px; align-items:start}
-  @media(min-width:760px){ .flowmap{grid-template-columns:1fr 1fr} }
 
-  .flabel{font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
-  .pipeline{position:relative; padding-left:28px; border-left:3px dashed rgba(46,107,63,.3)}
-  .pnode{position:relative; display:flex; gap:11px; align-items:flex-start; padding:12px 14px; border-radius:12px;
-    border:1px solid var(--line); background:var(--panel); margin-bottom:11px; cursor:pointer; transition:.25s}
-  .pnode:hover{transform:translateX(3px); border-color:rgba(46,107,63,.4)}
-  .pnode.sel{background:var(--panel-strong); border-color:var(--green); box-shadow:0 8px 22px rgba(31,38,31,.12)}
-  .pnode::before{content:''; position:absolute; left:-36px; top:17px; width:12px; height:12px; border-radius:50%;
-    background:var(--bg); border:3px solid rgba(46,107,63,.4)}
-  .pnode.sel::before{background:var(--green); border-color:var(--green)}
-  .pnum{flex:none; width:28px; height:28px; border-radius:8px; display:grid; place-items:center; font-size:12px; font-weight:800;
-    background:var(--green-soft); color:#294323; border:1px solid rgba(46,107,63,.2)}
-  .pnode.llm .pnum{background:var(--blue-soft); color:#243f52; border-color:rgba(49,92,117,.2)}
-  .pt{font-weight:800; font-size:14.5px}
-  .pd{font-size:12.5px; color:var(--muted); margin-top:1px}
-  .psub{display:flex; gap:5px; flex-wrap:wrap; margin-top:6px}
-  .psub span{font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px; background:var(--bg); border:1px solid var(--line); color:var(--muted)}
-  .pnode.dyn .pnum{background:var(--gold-soft); color:#7a5424; border-color:rgba(158,113,50,.2)}
-  .pnode.out{background:var(--purple-soft); border-color:rgba(114,86,168,.35)}
-  .pnode.out .pnum{background:#fff; color:var(--purple); border-color:rgba(114,86,168,.3)}
-  .pnode.out::before{border-color:var(--purple)}
-  .feeds{display:flex; align-items:center; gap:8px; margin:4px 0 4px 28px; font-size:12px; font-weight:800; color:var(--gold)}
-
-  /* G2 cycle — linear */
-  .loopnote{margin:4px 0 11px 28px; font-size:12px; font-weight:700; color:var(--muted)}
-  .loopnote b{color:var(--green)}
-  .exit{margin-top:6px; padding-left:28px}
-  .exit .arr{font-size:12px; font-weight:800; color:var(--muted); margin-bottom:8px}
-  .exit .pnode{margin-bottom:0}
-  .exit .pnode::before{display:none}
+  /* simple 5-step flow */
+  .simpleflow{display:flex; align-items:stretch; gap:0; flex-wrap:wrap}
+  .sfnode{flex:1 1 160px; padding:16px 14px; border-radius:12px; border:1px solid var(--line); background:var(--panel);
+    cursor:pointer; transition:.2s; text-align:center}
+  .sfnode:hover{border-color:rgba(46,107,63,.4)}
+  .sfnode.sel{background:var(--panel-strong); border-color:var(--green)}
+  .sfnum{width:30px; height:30px; line-height:30px; border-radius:50%; margin:0 auto 8px; font-size:14px; font-weight:800;
+    background:var(--green-soft); color:#294323}
+  .sft{font-weight:800; font-size:15px; margin-bottom:4px}
+  .sfd{font-size:12.5px; color:var(--muted)}
+  .sfnode.loop{border-color:rgba(158,113,50,.35)}
+  .sfnode.loop .sfnum{background:var(--gold-soft); color:#7a5424}
+  .sfloop{margin-top:8px; display:inline-block; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+    color:#7a5424; border:1px solid rgba(158,113,50,.35); border-radius:999px; padding:3px 10px}
+  .sfarrow{flex:0 0 auto; display:flex; align-items:center; justify-content:center; width:28px; font-size:18px; color:var(--muted)}
+  @media(max-width:760px){
+    .simpleflow{flex-direction:column}
+    .sfnode{flex:1 1 auto}
+    .sfarrow{width:auto; transform:rotate(90deg); padding:2px 0}
+  }
 
   /* detail panel */
   .flowdetail{margin-top:24px; background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px; box-shadow:var(--shadow)}
@@ -219,8 +206,6 @@
     .pills{gap:8px} .pill{font-size:12px; padding:6px 11px}
 
     .flowwrap{padding:16px; border-radius:16px}
-    .flowmap{gap:30px}
-    .legend{gap:10px 14px; font-size:12px}
 
     .flowdetail{padding:18px}
     .flowdetail h3{font-size:18px}
@@ -286,55 +271,28 @@
   <section>
     <div class="wrap">
       <div class="eyebrow">The whole system at a glance</div>
-      <h2>How it works — two stages</h2>
-      <p class="lead">Stage one (G1) runs once to produce a first draft. Stage two (G2) is a loop that keeps
-      improving it. Click any step to read what happens there.</p>
+      <h2>How it works</h2>
+      <p class="lead">Five steps, start to finish. Click any step for more detail.</p>
 
       <div class="flowwrap">
-        <div class="legend">
-          <span><span class="dot det"></span> Deterministic tool (code)</span>
-          <span><span class="dot llm"></span> LLM agent (judgment)</span>
-          <span><span class="dot dyn"></span> Dynamic — decided in-loop</span>
-        </div>
-
-        <div class="flowmap">
-          <!-- G1 pipeline -->
-          <div>
-            <p class="flabel">G1 · Cold start — runs once</p>
-            <div class="pipeline">
-              <div class="pnode llm sel" data-id="prompt"><div class="pnum">→</div><div><div class="pt">Human-injected prompt</div><div class="pd">The question that kicks everything off.</div></div></div>
-              <div class="pnode llm" data-id="a1"><div class="pnum">A1</div><div><div class="pt">Scope Builder</div><div class="pd">Prompt → frozen brief.</div></div></div>
-              <div class="pnode llm" data-id="a2"><div class="pnum">A2</div><div><div class="pt">Rubric Builder</div><div class="pd">Defines success before generating.</div></div></div>
-              <div class="pnode det" data-id="a3"><div class="pnum">A3</div><div><div class="pt">Deterministic tools</div><div class="pd">Pulls the source-of-truth numbers.</div><div class="psub"><span>Doc parse</span><span>Analysis</span><span>SEC / EDGAR</span></div></div></div>
-              <div class="pnode llm" data-id="a4"><div class="pnum">A4</div><div><div class="pt">LLM agents — first draft</div><div class="pd">Writes the deck against the facts.</div><div class="psub"><span>Slide-create</span><span>Reviewer</span><span>Reviser</span></div></div></div>
-              <div class="pnode out" data-id="init"><div class="pnum">✓</div><div><div class="pt">Initial Output</div><div class="pd">First draft — clears the entry gate.</div></div></div>
-            </div>
-            <div class="feeds">Feeds the refinement cycle</div>
-          </div>
-
-          <!-- G2 cycle — linear -->
-          <div>
-            <p class="flabel">G2 · Refinement cycle — repeats each lap</p>
-            <div class="pipeline">
-              <div class="pnode llm" data-id="review"><div class="pnum">1</div><div><div class="pt">Review</div><div class="pd">Find the weakest parts — diagnose, don't edit.</div></div></div>
-              <div class="pnode dyn" data-id="plan"><div class="pnum">2</div><div><div class="pt">Plan</div><div class="pd">Choose the one fix — decided fresh each lap.</div></div></div>
-              <div class="pnode llm" data-id="revise"><div class="pnum">3</div><div><div class="pt">Revise</div><div class="pd">Build just that change — nothing more.</div></div></div>
-              <div class="pnode det" data-id="scorestep"><div class="pnum">4</div><div><div class="pt">Score</div><div class="pd">Fact-check and grade; keep the edit only if it's better.</div></div></div>
-            </div>
-            <div class="loopnote">Loops back to step 1 — the score <b>climbs each lap</b> until it clears the ship bar.</div>
-            <div class="exit">
-              <div class="arr">When score ≥ ship bar ↓</div>
-              <div class="pnode out" data-id="board"><div class="pnum">✓</div><div><div class="pt">Board-ready output</div><div class="pd">Frozen as a new version · notification sent.</div></div></div>
-            </div>
-          </div>
+        <div class="simpleflow">
+          <div class="sfnode sel" data-id="ask"><div class="sfnum">1</div><div class="sft">You ask</div><div class="sfd">Describe the deck you need, in plain language.</div></div>
+          <div class="sfarrow">&#8594;</div>
+          <div class="sfnode" data-id="research"><div class="sfnum">2</div><div class="sft">It researches</div><div class="sfd">Pulls real numbers from SEC filings — never guesses.</div></div>
+          <div class="sfarrow">&#8594;</div>
+          <div class="sfnode" data-id="draft"><div class="sfnum">3</div><div class="sft">It drafts</div><div class="sfd">Writes a first version of the deck from those numbers.</div></div>
+          <div class="sfarrow">&#8594;</div>
+          <div class="sfnode loop" data-id="improve"><div class="sfnum">4</div><div class="sft">It improves itself</div><div class="sfd">Reviews its own work and revises — repeats until it's ready.</div><div class="sfloop">repeats</div></div>
+          <div class="sfarrow">&#8594;</div>
+          <div class="sfnode" data-id="deliver"><div class="sfnum">5</div><div class="sft">You get the deck</div><div class="sfd">A finished, versioned deck — with a note on what changed.</div></div>
         </div>
 
         <!-- detail panel -->
         <div class="flowdetail" id="flowDetail">
-          <div class="fd-tag" id="fdTag">G1 · Kickoff</div>
-          <h3 id="fdTitle">Human-injected prompt</h3>
-          <p id="fdBody">A user describes the deck they need in plain language. That single prompt is the only
-          human input required to start a full run.</p>
+          <div class="fd-tag" id="fdTag">Step 1</div>
+          <h3 id="fdTitle">You ask</h3>
+          <p id="fdBody">You describe the deck you need in plain language — that's the only input required to
+          start a run.</p>
           <span class="fd-who llm" id="fdWho">Human input</span>
         </div>
       </div>
@@ -734,31 +692,19 @@ flowchart TD
 
   // ---------- interactive flow map ----------
   const flowInfo = {
-    prompt:{tag:'G1 · Kickoff', who:['llm','Human input'], title:'Human-injected prompt',
-      body:'A user describes the deck they need in plain language. That single prompt is the only human input required to start a full run.'},
-    a1:{tag:'G1 · Step A1', who:['llm','LLM agent'], title:'Scope Builder',
-      body:'Interprets the prompt into a frozen brief — tickers, thesis, audience, required sections, tone. This brief becomes the yardstick for "scope adherence"; nothing is allowed to quietly drift away from it.'},
-    a2:{tag:'G1 · Step A2', who:['llm','LLM agent'], title:'Rubric Builder',
-      body:'Defines what "good" means before any slide exists. Authors and calibrates R1 (the entry gate) and R2 (the loop rubric), versioned so future score changes can be traced to a rubric edit.'},
-    a3:{tag:'G1 · Step A3', who:['det','Deterministic tools'], title:'Doc parse · Analysis · SEC/EDGAR pull',
-      body:'Plain code — no LLM — pulls filings, parses tables, and computes the analysis. Every number lands in the fact store with its source, period and unit. This is the single source of truth the rest of the system is held to.'},
-    a4:{tag:'G1 · Step A4', who:['llm','LLM agents'], title:'Slide-create · Reviewer · Reviser',
-      body:'The LLM agents write the first draft from the brief and the fact store, tagging every figure to its source. The same Reviewer and Reviser then power the refinement cycle.'},
-    init:{tag:'G1 → G2', who:['out','Initial output'], title:'Initial Output',
-      body:'The first draft that clears the R1 entry gate. It enters the cycle as the starting "best-so-far" — from here, every change must prove it improves the score.'},
-    review:{tag:'G2 · Cycle ①', who:['llm','LLM — Reviewer'], title:'Review — find the weakest parts',
-      body:'The Reviewer scores the current deck against R2 and produces a ranked list of its weakest parts with specific comments. It never edits anything — it only diagnoses.'},
-    plan:{tag:'G2 · Cycle ②', who:['dyn','Dynamic — Orchestrator + Planner'], title:'Plan — the fix is chosen here, not scripted',
-      body:'This is the step that makes the loop adaptive. The Orchestrator and Planner read this lap’s weakest-parts list and pick whichever action the deck needs most: refresh an analysis, rewrite a section of the story, or fix a single graphic. Different laps take different actions.'},
-    revise:{tag:'G2 · Cycle ③', who:['llm','LLM — Reviser'], title:'Revise — build just that change',
-      body:'A different agent than the Reviewer executes exactly the work order — nothing more. If the plan called for fresh data, it first triggers the deterministic tools to pull it into the fact store.'},
-    scorestep:{tag:'G2 · Cycle ④', who:['det','Deterministic — fact-check + score'], title:'Score — keep it only if it is better',
-      body:'Code fact-checks every figure against the source, then computes the weighted R2 composite. The revision is accepted only if the score rose and no guardrail (truth, scope, story, visual) slipped — otherwise it rolls back. Then the cycle repeats.'},
-    board:{tag:'G2 → Done', who:['out','Version + Notify'], title:'Board-ready output',
-      body:'Once the score clears the ship bar (or the run hits its budget), the deck is frozen as a new immutable version and an email/message is sent with the score delta. Publishing externally still waits for human approval.'}
+    ask:{tag:'Step 1', who:['llm','Human input'], title:'You ask',
+      body:'You describe the deck you need in plain language — that\'s the only input required to start a run.'},
+    research:{tag:'Step 2', who:['det','Deterministic tools'], title:'It researches',
+      body:'Before writing anything, the agent turns your prompt into a brief, defines what "good" looks like, and pulls real numbers from SEC/EDGAR filings into a fact store — with the source, period, and unit attached to every figure.'},
+    draft:{tag:'Step 3', who:['llm','LLM agents'], title:'It drafts',
+      body:'Writes a first version of the deck against those facts, tagging every number to its source. This draft has to clear a quality bar — sourced, on-scope, no broken slides — before moving on.'},
+    improve:{tag:'Step 4 · repeats', who:['dyn','Reviewer → Planner → Reviser → Score'], title:'It improves itself',
+      body:'Each lap: a Reviewer finds the weakest part, a Planner picks the one fix the deck needs most, a Reviser makes just that change, and the result is fact-checked and re-scored. The edit is kept only if it\'s genuinely better. This repeats until the deck clears the bar.'},
+    deliver:{tag:'Step 5', who:['out','Version + Notify'], title:'You get the deck',
+      body:'The finished deck is frozen as a new, versioned copy — nothing is overwritten — and you get a note on what changed and how the score moved. Publishing it further still waits for your approval.'}
   };
   function selectNode(id){
-    document.querySelectorAll('.pnode').forEach(n=>n.classList.toggle('sel', n.dataset.id===id));
+    document.querySelectorAll('.sfnode').forEach(n=>n.classList.toggle('sel', n.dataset.id===id));
     const f = flowInfo[id]; if(!f) return;
     document.getElementById('fdTag').textContent = f.tag;
     document.getElementById('fdTitle').textContent = f.title;
@@ -766,7 +712,7 @@ flowchart TD
     const w = document.getElementById('fdWho');
     w.className = 'fd-who '+f.who[0]; w.textContent = f.who[1];
   }
-  document.querySelectorAll('.pnode').forEach(n=> n.addEventListener('click',()=>selectNode(n.dataset.id)) );
+  document.querySelectorAll('.sfnode').forEach(n=> n.addEventListener('click',()=>selectNode(n.dataset.id)) );
 
   // ---------- live demo ----------
   const PROMPT = "What is the pension risk due to AI for the PBGC?";
@@ -878,7 +824,7 @@ flowchart TD
   document.getElementById('dReset').addEventListener('click', dReset);
 
   // init
-  selectNode('prompt');
+  selectNode('ask');
   renderDims();
   dReset();
 </script>
