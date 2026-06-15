@@ -177,51 +177,146 @@
   .kpis{display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 0}
   .kpi{font-size:12.5px; padding:6px 11px; border-radius:9px; border:1px solid var(--line); background:var(--panel); color:var(--muted)}
 
-  /* ============ LIVE DEMO ============ */
+  /* ============ LIVE DEMO (step walkthrough) ============ */
   #demo{display:none}
-  .demohead{display:flex; flex-wrap:wrap; gap:14px; align-items:center; margin:18px 0 22px}
-  .term{background:#10160f; border:1px solid #2c3a2b; border-radius:14px; padding:16px 18px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:#cfe3c0; box-shadow:var(--shadow)}
+  @keyframes blink{50%{opacity:0}}
+  @keyframes drise{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+  @keyframes dpop{from{opacity:0; transform:scale(.96)} to{opacity:1; transform:none}}
+
+  /* progress timeline */
+  .dtimeline{display:flex; margin:24px 0 4px; overflow-x:auto; padding-bottom:4px}
+  .dt-item{flex:1 0 78px; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative}
+  .dt-item::before{content:''; position:absolute; top:13px; left:-50%; width:100%; height:2px; background:var(--line); z-index:0}
+  .dt-item:first-child::before{display:none}
+  .dt-item.done::before{background:var(--green)}
+  .dt-dot{position:relative; z-index:1; width:28px; height:28px; border-radius:50%; display:grid; place-items:center;
+    font-size:12px; font-weight:800; background:#fff; border:2px solid var(--line); color:var(--muted); transition:.2s}
+  .dt-item.gate .dt-dot{border-radius:8px}
+  .dt-item.done .dt-dot{background:var(--green); border-color:var(--green); color:#fff}
+  .dt-item.active .dt-dot{border-color:var(--green); color:var(--green); box-shadow:0 0 0 4px var(--green-soft)}
+  .dt-cap{font-size:10.5px; font-weight:700; color:var(--muted); margin-top:7px}
+  .dt-item.active .dt-cap{color:var(--ink)}
+
+  /* step header */
+  .dstephead{text-align:center; margin:16px 0 16px}
+  .dstephead .se{font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--green)}
+  .dstephead h3{font-size:clamp(18px,3.2vw,25px); margin:7px 0 0; letter-spacing:-.02em}
+
+  /* stage + scenes */
+  .dstage{position:relative; min-height:430px; border:1px solid var(--line); border-radius:18px; background:var(--panel-strong); padding:26px; box-shadow:var(--shadow)}
+  .scene{display:none}
+  .scene.active{display:block}
+  .scene.active .anim{animation:drise .5s both}
+  .scene.active .pop{animation:dpop .45s both}
+  .dcols{display:grid; gap:18px}
+  @media(min-width:780px){ .dcols{grid-template-columns:1fr 1fr} .dcols.lean{grid-template-columns:1.1fr .9fr} }
+
+  /* terminal (scene 1) */
+  .term{background:#10160f; border:1px solid #2c3a2b; border-radius:14px; padding:18px 20px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:#cfe3c0; font-size:16px}
   .term .tprompt{color:#7fae6b; font-weight:700}
   .term .tcursor{display:inline-block; width:9px; background:#9ccf86; animation:blink 1s steps(1) infinite; margin-left:2px}
-  @keyframes blink{50%{opacity:0}}
-  .demogrid{display:grid; gap:22px; margin-top:22px}
-  @media(min-width:940px){ .demogrid{grid-template-columns:1fr 1fr} }
-  .stage{background:var(--panel-strong); border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:var(--shadow); min-height:320px}
-  .stage .s-tag{font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--green)}
-  .stage h3{margin:6px 0 8px; font-size:22px}
-  .stage p{margin:0; color:var(--ink); font-size:15px}
-  .who2{display:inline-flex; gap:6px; align-items:center; font-size:12px; font-weight:800; margin-top:14px; padding:5px 10px; border-radius:8px}
-  .who2.det{background:var(--green-soft); color:#294323} .who2.llm{background:var(--blue-soft); color:#243f52}
-  .who2.dyn{background:var(--gold-soft); color:#7a5424} .who2.out{background:var(--purple-soft); color:#4c3a73}
+  .scene-lead{color:var(--muted); font-size:14px; margin:0 0 16px}
 
-  /* rubric math panel */
-  .rubric{background:var(--panel-strong); border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:var(--shadow)}
-  .rubric .r-tag{font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--gold)}
-  .formula{font-family:ui-monospace,Menlo,monospace; font-size:12.5px; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin:10px 0 16px; color:#243f52; overflow:auto}
-  .dim{display:grid; grid-template-columns:120px 1fr 42px; gap:10px; align-items:center; margin-bottom:9px; font-size:13px}
-  .dim .dl{color:var(--ink); font-weight:600}
-  .dim .dl small{color:var(--muted); font-weight:600}
-  .bar{height:11px; border-radius:6px; background:var(--bg); border:1px solid var(--line); overflow:hidden}
-  .bar > i{display:block; height:100%; width:40%; background:var(--green); transition:.7s}
-  .dim .dv{text-align:right; font-weight:800; color:var(--green)}
-  .composite{margin-top:16px; padding-top:14px; border-top:1px solid var(--line)}
-  .comp-row{display:flex; align-items:baseline; gap:10px}
-  .comp-row .cv{font-size:38px; font-weight:800; color:var(--green); letter-spacing:-.03em}
-  .comp-row .cof{font-size:13px; color:var(--muted)}
-  .shipbar{position:relative; height:12px; border-radius:7px; background:var(--bg); border:1px solid var(--line); margin-top:10px; overflow:hidden}
-  .shipbar > i{display:block; height:100%; width:24%; background:var(--green); transition:.7s}
-  .shipbar .mark{position:absolute; top:-4px; bottom:-4px; left:86%; width:2px; background:var(--rose)}
-  .shipbar-l{display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-top:5px}
-  .guards{display:flex; gap:8px; margin-top:14px}
-  .guard{flex:1; text-align:center; font-size:11px; font-weight:800; padding:8px 4px; border-radius:9px; border:1px solid var(--line); background:var(--bg); color:var(--muted)}
-  .guard b{display:block; font-size:14px; color:var(--green)}
-  /* mini cycle indicator in demo */
-  .miniloop{display:flex; gap:7px; margin-top:14px; flex-wrap:wrap}
-  .miniloop span{font-size:11px; font-weight:800; padding:5px 9px; border-radius:999px; border:1px solid var(--line); background:var(--bg); color:var(--muted)}
-  .miniloop span.on{background:var(--green-soft); color:#294323; border-color:rgba(46,107,63,.4)}
-  .progress{display:flex; gap:5px; margin-top:18px}
-  .progress i{flex:1; height:5px; border-radius:3px; background:var(--line)}
-  .progress i.on{background:var(--green)}
+  /* generic chips + cards */
+  .dchips{display:flex; flex-wrap:wrap; gap:8px}
+  .dchip{font-size:12.5px; font-weight:700; padding:6px 11px; border-radius:8px; background:var(--panel); border:1px solid var(--line); color:var(--ink)}
+  .dchip b{color:var(--green)}
+  .dpanel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px}
+  .dpanel-h{font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+
+  /* rubric mini */
+  .rbrow{display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; padding:7px 0; border-bottom:1px solid var(--line); font-size:13.5px}
+  .rbrow:last-child{border-bottom:0}
+  .rbw{font-size:11px; font-weight:800; color:var(--green); background:var(--green-soft); border-radius:6px; padding:2px 8px}
+
+  /* data tool cards (scene 3) */
+  .dtool{display:flex; gap:11px; align-items:flex-start; padding:12px; border:1px solid var(--line); border-radius:11px; background:var(--panel); margin-bottom:10px}
+  .dtool .ico{flex:none; width:30px; height:30px; border-radius:8px; background:var(--green-soft); color:#294323; display:grid; place-items:center; font-weight:800; font-size:14px}
+  .dtool .tt{font-weight:800; font-size:14px}
+  .dtool .ts{font-size:12px; color:var(--muted)}
+  .dtool .rows{margin-top:7px; display:flex; flex-direction:column; gap:3px}
+  .dtool .row{display:flex; justify-content:space-between; font-size:12px; color:var(--muted)}
+  .dtool .row b{color:var(--ink); font-weight:700}
+  .wl{border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff}
+  .wl-h{background:#1f3a2e; color:#eaf3ec; padding:10px 14px; font-weight:800; font-size:13px; display:flex; justify-content:space-between; align-items:center}
+  .wl-h small{font-weight:600; opacity:.8; font-size:10.5px}
+  .wl table{margin:0} .wl td,.wl th{padding:8px 14px; font-size:13px}
+  .tier{font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:999px}
+  .tier.high{background:var(--rose-soft); color:#7a3a38} .tier.watch{background:var(--gold-soft); color:#7a5424}
+  .src-note{font-size:12px; color:var(--muted); margin-top:12px}
+
+  /* human gate (scene 4 & 8) */
+  .dgate{max-width:540px; margin:14px auto 0; background:#234e39; color:#e9f2ec; border-radius:16px; padding:24px; position:relative}
+  .dgate .gtagline{font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; opacity:.85; text-align:center}
+  .dgate h4{text-align:center; font-size:20px; margin:6px 0 16px}
+  .dgate .gck{display:flex; gap:9px; align-items:flex-start; font-size:13px; padding:7px 0; border-top:1px solid rgba(255,255,255,.14)}
+  .dgate .gck:first-of-type{border-top:0}
+  .dgate .gck .ck{flex:none; width:18px; height:18px; border-radius:50%; background:rgba(255,255,255,.18); display:grid; place-items:center; font-size:11px}
+  .dgate .gfoot{display:flex; gap:10px; align-items:center; justify-content:center; margin-top:16px; font-size:12px; opacity:.9}
+  .dgate .gbtn{display:block; margin:14px auto 0; background:#eaf3ec; color:#234e39; border:0; border-radius:999px; padding:10px 20px; font-weight:800; font-size:13.5px; cursor:default}
+  .dgate .gbadge{position:absolute; top:16px; right:16px; opacity:0; background:#eaf3ec; color:#234e39; font-size:10.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:4px 10px; border-radius:999px; transition:.3s}
+  .dgate.approved .gbadge{opacity:1}
+  .dgate.approved .gbtn{background:rgba(255,255,255,.2); color:#e9f2ec}
+
+  /* slide deck grid (scene 5 & 7) */
+  .deck{display:grid; grid-template-columns:repeat(3,1fr); gap:11px}
+  .slide{border:1px solid var(--line); border-radius:8px; background:#fff; padding:9px; min-height:84px; position:relative; transition:.3s}
+  .slide .sh{height:5px; width:60%; border-radius:3px; background:var(--green); margin-bottom:7px}
+  .slide .sl{height:4px; border-radius:3px; background:var(--line); margin-bottom:4px}
+  .slide .sl.s2{width:85%} .slide .sl.s3{width:70%}
+  .slide .bars{display:flex; gap:4px; align-items:flex-end; height:24px; margin-top:8px}
+  .slide .bars i{flex:1; background:var(--blue-soft); border-radius:2px 2px 0 0}
+  .slide.flag{border-color:var(--rose); box-shadow:0 0 0 2px var(--rose-soft)}
+  .slide.flag .sh{background:var(--rose)}
+  .slide .ftag{position:absolute; top:-9px; right:6px; font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; background:var(--rose); color:#fff; padding:2px 7px; border-radius:999px; opacity:0; transition:.25s}
+  .slide.flag .ftag{opacity:1}
+  .slide.fixed{border-color:var(--green); box-shadow:0 0 0 2px var(--green-soft)}
+  .slide.fixed .sh{background:var(--green)}
+  .slide .xtag{position:absolute; top:-9px; right:6px; font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; background:var(--green); color:#fff; padding:2px 7px; border-radius:999px; opacity:0; transition:.25s}
+  .slide.fixed .xtag{opacity:1}
+
+  /* agent list (scene 5 & 7) */
+  .agents{display:flex; flex-direction:column; gap:10px}
+  .agent{display:flex; gap:11px; align-items:flex-start; padding:12px 14px; border:1px solid var(--line); border-radius:11px; background:var(--panel); opacity:.5; transition:.25s}
+  .agent.on{opacity:1; border-color:var(--green); background:var(--panel-strong)}
+  .agent .ai{flex:none; width:28px; height:28px; border-radius:8px; background:var(--bg); display:grid; place-items:center}
+  .agent .at{font-weight:800; font-size:13.5px}
+  .agent .as{font-size:11.5px; color:var(--muted)}
+
+  /* de-AI before/after (scene 6) */
+  .deai{display:grid; gap:14px}
+  @media(min-width:720px){ .deai{grid-template-columns:1fr 1fr} }
+  .deai .col{border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--panel)}
+  .deai .col.after{border-color:rgba(46,107,63,.4); background:#fafdf6}
+  .deai .lab{font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; margin-bottom:10px}
+  .deai .col.before .lab{color:var(--rose)} .deai .col.after .lab{color:var(--green)}
+  .deai p{margin:0 0 9px; font-size:13.5px; line-height:1.5}
+  .tell{color:var(--rose); text-decoration:line-through; text-decoration-thickness:2px}
+  .keep{color:var(--green); font-weight:700}
+  .deai .designnote{margin-top:6px; font-size:11.5px; color:var(--muted)}
+
+  /* score dial in demo */
+  .dgauge{position:relative; width:min(230px,70vw); aspect-ratio:1/1; margin:0 auto}
+  .dgauge .g-fill{transition:stroke-dashoffset 1s ease}
+  .laps{display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:12px}
+  .laps span{font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; border:1px solid var(--line); background:var(--panel); color:var(--muted)}
+  .laps span.on{background:var(--green-soft); color:#294323; border-color:rgba(46,107,63,.4)}
+
+  /* deliver card (scene 8) */
+  .deliver-note{max-width:520px; margin:16px auto 0; border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:16px 18px}
+  .deliver-note .dn-row{display:flex; gap:10px; align-items:center; font-size:13.5px; padding:5px 0}
+  .deliver-note .dn-row .k{font-weight:800; color:var(--green)}
+
+  /* playback controls */
+  .dcontrols{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px; margin-top:18px}
+  .dc-btn{appearance:none; cursor:pointer; font-weight:800; font-size:13px; padding:9px 15px; border-radius:9px; border:1px solid var(--line); background:var(--panel); color:var(--ink)}
+  .dc-btn:hover{border-color:var(--green); color:var(--green)}
+  .dc-btn.primary{background:var(--green); color:#fff; border-color:var(--green)}
+  .dc-btn.primary:hover{background:#275935; color:#fff}
+  .dc-speed{display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .dc-speed button{appearance:none; cursor:pointer; border:0; background:transparent; padding:9px 11px; font-weight:800; font-size:12px; color:var(--muted)}
+  .dc-speed button.on{background:var(--green-soft); color:#294323}
+  .dc-count{font-size:12px; font-weight:700; color:var(--muted); min-width:48px; text-align:center}
 
   /* ---- spec tab ---- */
   #spec{display:none}
@@ -538,64 +633,223 @@
   <section style="padding-top:42px">
     <div class="wrap">
       <div class="eyebrow">Live demo · worked example</div>
-      <h2>From a single question to a board-ready deck</h2>
-      <p class="lead">Press play. Watch the agent take a real prompt through the cold-start pipeline, then into
-      the scoring cycle — where a mathematical rubric drives each revision until the deck clears the ship bar.</p>
+      <h2>From a question to a board-ready deck</h2>
+      <p class="lead">Press play and watch one real question travel the whole pipeline — research, a first draft,
+      the de-AI pass, and the scoring loop — until the deck is board-ready. Step through it at your own pace.</p>
 
-      <div class="demohead">
-        <button class="btn" id="dPlay">Play</button>
-        <button class="btn ghost" id="dStep">Step</button>
-        <button class="btn ghost" id="dReset">Reset</button>
-        <button class="btn ghost" data-goto="overview">Back to flow map</button>
+      <!-- progress timeline (built by JS) -->
+      <div class="dtimeline" id="dTimeline"></div>
+
+      <!-- step header -->
+      <div class="dstephead">
+        <div class="se" id="dEyebrow">Step 1 of 8</div>
+        <h3 id="dHeadline">It starts with one plain-language question.</h3>
       </div>
 
-      <div class="term" id="term">
-        <span class="tprompt">deckforge ›</span> <span id="typed"></span><span class="tcursor">&nbsp;</span>
-      </div>
+      <!-- stage -->
+      <div class="dstage">
 
-      <div class="demogrid">
-        <!-- narration stage -->
-        <div class="stage">
-          <div class="s-tag" id="sTag">Ready</div>
-          <h3 id="sTitle">Press play to begin</h3>
-          <p id="sBody">The agent will interpret the prompt, gather grounded data, draft a deck, and then enter
-          the refinement cycle where the real work happens.</p>
-          <span class="who2 llm" id="sWho" style="display:none"></span>
-          <div class="miniloop" id="miniloop" style="display:none">
-            <span data-m="review">1 · Review</span>
-            <span data-m="plan">2 · Plan</span>
-            <span data-m="revise">3 · Revise</span>
-            <span data-m="score">4 · Score</span>
+        <!-- 1 · idea -->
+        <div class="scene active" data-scene="0">
+          <p class="scene-lead anim">No template, no setup — just a question, the way you'd ask a colleague.</p>
+          <div class="term anim" style="animation-delay:.1s">
+            <span class="tprompt">deckforge ›</span> <span id="dTyped"></span><span class="tcursor">&nbsp;</span>
           </div>
-          <div class="progress" id="prog"></div>
+          <div class="dchips anim" style="animation-delay:.25s; margin-top:16px">
+            <span class="dchip"><b>Audience:</b> state leadership</span>
+            <span class="dchip"><b>Output:</b> board-style deck</span>
+            <span class="dchip"><b>Human input:</b> one prompt</span>
+          </div>
         </div>
 
-        <!-- rubric math panel -->
-        <div class="rubric">
-          <div class="r-tag">The mathematical rubric (R2)</div>
-          <div class="formula">R2 = 0.25·Action + 0.20·Exec + 0.20·Visual + 0.20·Story + 0.15·Trace</div>
-          <div class="dim"><div class="dl">Actionability <small>·0.25</small></div><div class="bar"><i data-d="action"></i></div><div class="dv" data-v="action">2.8</div></div>
-          <div class="dim"><div class="dl">Exec altitude <small>·0.20</small></div><div class="bar"><i data-d="exec"></i></div><div class="dv" data-v="exec">2.6</div></div>
-          <div class="dim"><div class="dl">Visual <small>·0.20</small></div><div class="bar"><i data-d="visual"></i></div><div class="dv" data-v="visual">3.0</div></div>
-          <div class="dim"><div class="dl">Story <small>·0.20</small></div><div class="bar"><i data-d="story"></i></div><div class="dv" data-v="story">3.4</div></div>
-          <div class="dim"><div class="dl">Traceability <small>·0.15</small></div><div class="bar"><i data-d="trace"></i></div><div class="dv" data-v="trace">3.6</div></div>
-
-          <div class="composite">
-            <div class="comp-row"><span class="cv" id="compScore">3.2</span><span class="cof">composite / 5.0</span></div>
-            <div class="shipbar"><i id="shipFill"></i><div class="mark" title="ship bar 4.3"></div></div>
-            <div class="shipbar-l"><span>entry 3.2</span><span style="color:var(--rose)">ship bar 4.3</span></div>
-            <div class="guards">
-              <div class="guard">Truth<b id="dgT">✓</b></div>
-              <div class="guard">Story<b id="dgS">✓</b></div>
-              <div class="guard">Visuals<b id="dgV">✓</b></div>
+        <!-- 2 · frame + rubric -->
+        <div class="scene" data-scene="1">
+          <div class="dcols">
+            <div class="dpanel anim">
+              <p class="dpanel-h">The brief — frozen up front</p>
+              <div class="dchips" style="flex-direction:column; align-items:flex-start; gap:8px">
+                <span class="dchip"><b>Subject:</b> Virginia's economy &amp; AI adoption</span>
+                <span class="dchip"><b>Question:</b> cost of missing the AI boom</span>
+                <span class="dchip"><b>Sections:</b> exposure · mechanism · scenarios · actions</span>
+              </div>
             </div>
-            <div class="kpis" style="margin-top:14px"><span class="kpi" id="dVer">Awaiting run…</span></div>
+            <div class="dpanel anim" style="animation-delay:.15s">
+              <p class="dpanel-h">The rubric — what "good" means</p>
+              <div class="rbrow"><span>Actionability</span><span class="rbw">0.25</span></div>
+              <div class="rbrow"><span>Executive altitude</span><span class="rbw">0.20</span></div>
+              <div class="rbrow"><span>Visual digestibility</span><span class="rbw">0.20</span></div>
+              <div class="rbrow"><span>Clean story</span><span class="rbw">0.20</span></div>
+              <div class="rbrow"><span>Traceability</span><span class="rbw">0.15</span></div>
+            </div>
+          </div>
+          <p class="src-note anim" style="animation-delay:.3s">"Good" is defined <b>before</b> a single slide exists — so improvement can be measured, not guessed.</p>
+        </div>
+
+        <!-- 3 · data pull -->
+        <div class="scene" data-scene="2">
+          <div class="dcols lean">
+            <div>
+              <div class="dtool anim">
+                <div class="ico">BLS</div>
+                <div><div class="tt">Labor &amp; jobs data</div><div class="ts">BLS · Census — public series</div>
+                  <div class="rows"><div class="row">Tech-sector share of jobs <b>9.4%</b></div><div class="row">5-yr AI-role growth <b>+38%</b></div></div></div>
+              </div>
+              <div class="dtool anim" style="animation-delay:.12s">
+                <div class="ico">VA</div>
+                <div><div class="tt">State budget &amp; GDP</div><div class="ts">VA state filings — public</div>
+                  <div class="rows"><div class="row">Annual GDP <b>$0.68T</b></div><div class="row">Tech share of GDP <b>13%</b></div></div></div>
+              </div>
+              <div class="dtool anim" style="animation-delay:.24s">
+                <div class="ico">SEC</div>
+                <div><div class="tt">SEC EDGAR — VA employers</div><div class="ts">10-K / 10-Q filings</div>
+                  <div class="rows"><div class="row">Filings parsed <b>112</b></div><div class="row">Figures stored <b>1,940</b></div></div></div>
+              </div>
+            </div>
+            <div class="anim" style="animation-delay:.3s">
+              <div class="wl">
+                <div class="wl-h"><span>AI-exposure by sector</span><small>ranked · highest at top</small></div>
+                <table>
+                  <tr><th>Sector</th><th>Score</th><th>Tier</th></tr>
+                  <tr><td>Data centers / cloud</td><td>94</td><td><span class="tier high">High</span></td></tr>
+                  <tr><td>Federal &amp; defense tech</td><td>88</td><td><span class="tier high">High</span></td></tr>
+                  <tr><td>Logistics &amp; ports</td><td>71</td><td><span class="tier watch">Watch</span></td></tr>
+                  <tr><td>Higher education</td><td>63</td><td><span class="tier watch">Watch</span></td></tr>
+                </table>
+              </div>
+              <p class="src-note">Fixed, repeatable tools — never the model. Every number traces back to a public filing.</p>
+            </div>
           </div>
         </div>
+
+        <!-- 4 · human gate 1 -->
+        <div class="scene" data-scene="3">
+          <div class="dgate pop" id="dGate1">
+            <span class="gbadge">✓ Approved</span>
+            <div class="gtagline">Human gate 1 of 2</div>
+            <h4>Approve the brief &amp; sources</h4>
+            <div class="gck"><span class="ck">✓</span><div><b>Scope:</b> Virginia's exposure if it misses the AI boom</div></div>
+            <div class="gck"><span class="ck">✓</span><div><b>Sources:</b> BLS, Census, VA budget, SEC EDGAR — all public</div></div>
+            <div class="gck"><span class="ck">✓</span><div><b>Your call:</b> adjust scope or sources before any deck is built</div></div>
+            <div class="gfoot">You're in control. The same approval ritual, every gate.</div>
+            <button class="gbtn">✓ Approve and continue</button>
+          </div>
+        </div>
+
+        <!-- 5 · first draft -->
+        <div class="scene" data-scene="4">
+          <div class="dcols lean">
+            <div class="deck anim" id="deckDraft">
+              <div class="slide pop"><div class="sh"></div><div class="sl s2"></div><div class="sl s3"></div></div>
+              <div class="slide pop" style="animation-delay:.08s"><div class="sh"></div><div class="sl s2"></div><div class="sl s3"></div></div>
+              <div class="slide pop" style="animation-delay:.16s"><div class="sh"></div><div class="sl s2"></div><div class="bars"><i style="height:60%"></i><i style="height:90%"></i><i style="height:45%"></i></div></div>
+              <div class="slide pop" style="animation-delay:.24s"><div class="sh"></div><div class="sl s2"></div><div class="sl s3"></div></div>
+              <div class="slide pop" style="animation-delay:.32s"><div class="sh"></div><div class="bars"><i style="height:50%"></i><i style="height:70%"></i><i style="height:100%"></i></div></div>
+              <div class="slide pop" style="animation-delay:.4s"><div class="sh"></div><div class="sl s2"></div><div class="sl s3"></div></div>
+            </div>
+            <div class="agents anim" style="animation-delay:.2s">
+              <div class="agent on"><div class="ai">✍︎</div><div><div class="at">Builder agent</div><div class="as">assembles slides from the facts</div></div></div>
+              <div class="agent"><div class="ai">◎</div><div><div class="at">Fresh set of eyes</div><div class="as">reviews next — flags the weak spots</div></div></div>
+              <div class="agent"><div class="ai">✎</div><div><div class="at">Separate fixer agent</div><div class="as">fixes only what was flagged</div></div></div>
+            </div>
+          </div>
+          <p class="src-note anim" style="animation-delay:.45s">Every figure on every slide is tagged to its source in the fact store.</p>
+        </div>
+
+        <!-- 6 · de-AI pass -->
+        <div class="scene" data-scene="5">
+          <div class="deai">
+            <div class="col before anim">
+              <div class="lab">Before · AI tells</div>
+              <p>"<span class="tell">In today's fast-paced landscape,</span> it is <span class="tell">important to note</span> that Virginia <span class="tell">stands at a pivotal crossroads</span> <span class="tell">—</span> a state poised to <span class="tell">leverage</span> transformative opportunities."</p>
+              <p class="designnote">Design tells: gradient banners, glow shadows, emoji bullets.</p>
+            </div>
+            <div class="col after anim" style="animation-delay:.2s">
+              <div class="lab">After · human</div>
+              <p><span class="keep">Virginia risks $14B in foregone GDP by 2030 if AI adoption lags peer states.</span> The gap is concentrated in data centers and defense tech.</p>
+              <p class="designnote">Design: flat layout, plain charts, one idea per slide.</p>
+            </div>
+          </div>
+          <p class="src-note anim" style="animation-delay:.35s">The <b>de-AI / Humanizer tool</b> strips em-dashes, hedging, filler, and AI-looking design on every build — so the deck reads like a person wrote it.</p>
+        </div>
+
+        <!-- 7 · revision loop -->
+        <div class="scene" data-scene="6">
+          <div class="dcols lean">
+            <div>
+              <div class="deck" id="deckLoop">
+                <div class="slide" data-s="0"><span class="ftag">weak</span><span class="xtag">fixed</span><div class="sh"></div><div class="sl s2"></div><div class="sl s3"></div></div>
+                <div class="slide" data-s="1"><span class="ftag">weak</span><span class="xtag">fixed</span><div class="sh"></div><div class="bars"><i style="height:40%"></i><i style="height:80%"></i><i style="height:60%"></i></div></div>
+                <div class="slide" data-s="2"><span class="ftag">weak</span><span class="xtag">fixed</span><div class="sh"></div><div class="sl s2"></div><div class="sl s3"></div></div>
+                <div class="slide" data-s="3"><div class="sh"></div><div class="sl s2"></div><div class="sl s3"></div></div>
+                <div class="slide" data-s="4"><div class="sh"></div><div class="bars"><i style="height:70%"></i><i style="height:50%"></i><i style="height:90%"></i></div></div>
+                <div class="slide" data-s="5"><div class="sh"></div><div class="sl s2"></div><div class="sl s3"></div></div>
+              </div>
+              <div class="agents" style="margin-top:14px">
+                <div class="agent" id="agRev"><div class="ai">◎</div><div><div class="at">Fresh set of eyes</div><div class="as">flags the weakest slide this lap</div></div></div>
+                <div class="agent" id="agFix"><div class="ai">✎</div><div><div class="at">Separate fixer agent</div><div class="as">fixes only that — then re-scores</div></div></div>
+              </div>
+            </div>
+            <div>
+              <div class="dgauge">
+                <svg class="gauge" viewBox="0 0 200 200" aria-hidden="true">
+                  <path class="g-track" d="M49.1 150.9 A72 72 0 1 1 150.9 150.9"></path>
+                  <path class="g-fill" id="dLoopFill" pathLength="100" d="M49.1 150.9 A72 72 0 1 1 150.9 150.9" stroke-dasharray="100" stroke-dashoffset="36"></path>
+                  <line class="g-tick" x1="139.2" y1="49.4" x2="149.0" y2="36.8"></line>
+                  <line class="g-tick ship" x1="163.5" y1="108.2" x2="179.3" y2="110.2"></line>
+                  <text x="44" y="171">0</text><text x="156" y="171">5</text>
+                  <text class="t-entry" x="150" y="27">entry 3.2</text>
+                  <text class="t-ship" x="175" y="131">ship 4.3</text>
+                </svg>
+                <div class="gtext"><div class="gk">Composite</div><div class="gv" id="dLoopNum">3.2</div></div>
+              </div>
+              <div class="laps">
+                <span id="lap1">Lap 1 → 3.6</span>
+                <span id="lap2">Lap 2 → 4.0</span>
+                <span id="lap3">Lap 3 → 4.3</span>
+              </div>
+              <p class="src-note" style="text-align:center">An edit is kept only if the score rises and no guardrail slips.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8 · board ready -->
+        <div class="scene" data-scene="7">
+          <div class="dgauge anim">
+            <svg class="gauge" viewBox="0 0 200 200" aria-hidden="true">
+              <path class="g-track" d="M49.1 150.9 A72 72 0 1 1 150.9 150.9"></path>
+              <path class="g-fill" pathLength="100" d="M49.1 150.9 A72 72 0 1 1 150.9 150.9" stroke-dasharray="100" stroke-dashoffset="14"></path>
+              <line class="g-tick" x1="139.2" y1="49.4" x2="149.0" y2="36.8"></line>
+              <line class="g-tick ship" x1="163.5" y1="108.2" x2="179.3" y2="110.2"></line>
+              <text x="44" y="171">0</text><text x="156" y="171">5</text>
+              <text class="t-entry" x="150" y="27">entry 3.2</text>
+              <text class="t-ship" x="175" y="131">ship 4.3</text>
+            </svg>
+            <div class="gtext"><div class="gk">Composite</div><div class="gv">4.3</div><div class="gready">Board ready</div></div>
+          </div>
+          <div class="deliver-note anim" style="animation-delay:.2s">
+            <div class="dn-row"><span class="k">Saved</span> immutable version <b>v003</b> — nothing overwritten</div>
+            <div class="dn-row"><span class="k">Notified</span> "Run complete — Virginia / AI boom · 3.2 → 4.3 (+1.1)"</div>
+            <div class="dn-row"><span class="k">Gate 2</span> publishing to leadership still waits for your approval</div>
+          </div>
+        </div>
+
+      </div><!-- /dstage -->
+
+      <!-- playback controls -->
+      <div class="dcontrols">
+        <button class="dc-btn" id="dBack">‹ Back</button>
+        <button class="dc-btn primary" id="dPlay">▶ Play</button>
+        <div class="dc-speed" id="dSpeed">
+          <button data-spd="0.5">0.5×</button><button data-spd="1" class="on">1×</button><button data-spd="2">2×</button>
+        </div>
+        <button class="dc-btn" id="dNext">Next ›</button>
+        <span class="dc-count" id="dCount">1 / 8</span>
+        <button class="dc-btn" id="dRestart">↻ Restart</button>
+        <button class="dc-btn" data-goto="overview">Back to overview</button>
       </div>
     </div>
   </section>
-  <footer><div class="wrap">Illustrative walkthrough · the prompt is an example, the mechanics mirror the spec.</div></footer>
+  <footer><div class="wrap">Illustrative walkthrough · the question is an example; the mechanics mirror the system.</div></footer>
 </main>
 
 <!-- ================= SPEC ================= -->
@@ -858,118 +1112,112 @@ flowchart TD
   });
   showCallout('a1');
 
-  // ---------- live demo ----------
-  const PROMPT = "What is the pension risk due to AI for the PBGC?";
-  const typed = document.getElementById('typed');
-  const dims = ['action','exec','visual','story','trace'];
-  const weights = {action:.25, exec:.20, visual:.20, story:.20, trace:.15};
-  let dimVals = {action:2.8, exec:2.6, visual:3.0, story:3.4, trace:3.6};
-
-  function composite(v){ return dims.reduce((s,k)=> s + weights[k]*v[k], 0); }
-  function renderDims(){
-    dims.forEach(k=>{
-      document.querySelector('[data-d="'+k+'"]').style.width = (dimVals[k]/5*100)+'%';
-      document.querySelector('[data-v="'+k+'"]').textContent = dimVals[k].toFixed(1);
-    });
-    const c = composite(dimVals);
-    document.getElementById('compScore').textContent = c.toFixed(2);
-    document.getElementById('shipFill').style.width = Math.max(6,(c-2)/3*100)+'%';
-    return c;
-  }
-  function setGuards(a,b,c){ document.getElementById('dgT').textContent=a; document.getElementById('dgS').textContent=b; document.getElementById('dgV').textContent=c; }
-  function setMini(name){
-    const ml = document.getElementById('miniloop');
-    ml.style.display = name ? 'flex' : 'none';
-    ml.querySelectorAll('span').forEach(s=>s.classList.toggle('on', s.dataset.m===name));
-  }
-  function narrate(tag, who, title, body, ver){
-    document.getElementById('sTag').textContent = tag;
-    document.getElementById('sTitle').textContent = title;
-    document.getElementById('sBody').innerHTML = body;
-    const w = document.getElementById('sWho');
-    if(who){ w.style.display='inline-flex'; w.className='who2 '+who[0]; w.textContent=who[1]; } else w.style.display='none';
-    if(ver) document.getElementById('dVer').textContent = ver;
-  }
-
-  // demo steps
-  const D = [
-    {type:'type', tag:'Prompt', title:'A user asks a question',
-      body:'No setup, no template — just a plain-language question. The orchestrator wakes up and starts a cold-start run.', who:['llm','Human input'], ver:'Awaiting run…'},
-    {tag:'G1 · A1', title:'Scope Builder frames the brief', who:['llm','LLM agent'],
-      body:'Turns the question into a frozen brief: subject = PBGC pension insurance exposure; angle = AI-driven labor-market risk to covered plans; audience = board; required sections = exposure, mechanism, scenarios, mitigations.', ver:'Brief frozen.'},
-    {tag:'G1 · A2', title:'Rubric Builder sets the bar first', who:['llm','LLM agent'],
-      body:'Before a single slide exists, it defines and calibrates R1 and R2 — including the weighted formula shown on the right. "Good" is now measurable.', ver:'R1 / R2 calibrated.'},
-    {tag:'G1 · A3', title:'Deterministic tools gather the truth', who:['det','Deterministic tools'],
-      body:'Code pulls PBGC filings and actuarial tables, parses the numbers, and runs the exposure analysis — every figure written to the fact store with a citation. No model invented anything.', ver:'Fact store populated.'},
-    {tag:'G1 · A4', title:'First draft is written and gated', who:['llm','LLM agents'],
-      body:'Slide-create drafts the deck against the facts. It clears the R1 entry gate — sourced, on-scope, renders cleanly — at a composite of 3.2.', score:{}, guards:['✓','✓','✓'], ver:'Draft passes R1 at 3.2.'},
-    {tag:'G2 · Lap 1 ①', title:'Cycle begins — Review', who:['llm','LLM — Reviewer'], mini:'review',
-      body:'The Reviewer scores the draft and ranks its weakest parts. Top issue: the summary slide states findings but gives the board no decision to make — Exec altitude and Actionability are the lowest bars.', ver:'Weakest: no exec takeaway.'},
-    {tag:'G2 · Lap 1 ②', title:'Plan — chosen dynamically', who:['dyn','Dynamic — Orchestrator + Planner'], mini:'plan',
-      body:'Given that comment, the Planner routes this lap to refine the story / exec framing — not visuals, not data. The plan adapts to where the deck is weakest right now.', ver:'Plan: sharpen exec "so what".'},
-    {tag:'G2 · Lap 1 ③', title:'Revise, then Score', who:['llm','LLM — Reviser'], mini:'revise',
-      body:'The Reviser rewrites the summary into a clear recommendation with options. Fact-check passes; the weighted composite rises and no guardrail slips — so the change is kept.',
-      set:{exec:3.6, action:3.7}, score:{}, mini2:'score', guards:['✓','✓','✓'], ver:'Accepted: 3.2 → 3.6.'},
-    {tag:'G2 · Lap 2 ①', title:'New lap, fresh diagnosis', who:['llm','LLM — Reviewer'], mini:'review',
-      body:'Re-scoring the improved deck surfaces a different weakest part: the AI-displacement figure driving the scenario is now stale versus the latest filing. Traceability is flagged.', ver:'Weakest: stale AI figure.'},
-    {tag:'G2 · Lap 2 ②', title:'Plan routes to data this time', who:['dyn','Dynamic — Orchestrator + Planner'], mini:'plan',
-      body:'Same step, completely different action. Because the issue is a number, the Planner triggers a data refresh — re-pull the latest filing and re-run the model before touching any slide.', ver:'Plan: refresh analysis.'},
-    {tag:'G2 · Lap 2 ③', title:'Revise with fresh numbers', who:['det','Deterministic + LLM'], mini:'revise',
-      body:'Deterministic tools pull the new figures into the fact store; the Reviser updates the scenario slide against them. Fact-check confirms the new numbers trace to the new filing.',
-      set:{trace:4.2, action:4.0}, score:{}, mini2:'score', guards:['✓','✓','✓'], ver:'Accepted: 3.6 → 4.0.'},
-    {tag:'G2 · Lap 3 ①–③', title:'One more lap — polish the visuals', who:['llm','Reviewer → Plan → Reviser'], mini:'revise',
-      body:'The last weak part is a dense exposure table. The plan picks a visual fix; the Reviser turns it into a single waterfall chart. The composite clears the ship bar of 4.3.',
-      set:{visual:4.4, exec:4.2, story:4.0}, score:{}, mini2:'score', guards:['✓','✓','✓'], ver:'Accepted: 4.0 → 4.3.'},
-    {tag:'Done', title:'Board-ready — versioned and sent', who:['out','Version + Notify'], mini:null,
-      body:'Score clears the ship bar. The deck is frozen as an immutable version and a message goes out with the delta. It is ready for a human to approve for the board.',
-      ver:'v003 saved · "Run complete — 3.2 → 4.3 (+1.1)."'}
+  // ---------- live demo (step walkthrough) ----------
+  const PROMPT = "What is the impact on Virginia if they miss the AI boom?";
+  const dScenes = [
+    {cap:'Idea',    gate:false, eyebrow:'Step 1 of 8', title:'It starts with one plain-language question.', dur:3400},
+    {cap:'Frame',   gate:false, eyebrow:'Step 2 of 8', title:'It frames the brief and defines what “good” means — before writing.', dur:3800},
+    {cap:'Data',    gate:false, eyebrow:'Step 3 of 8', title:'Fixed tools pull real data — every number traces to a public source.', dur:4200},
+    {cap:'Approve', gate:true,  eyebrow:'Step 4 of 8 · Human gate 1 of 2', title:'You approve the brief and sources before a deck is built.', dur:3800},
+    {cap:'Draft',   gate:false, eyebrow:'Step 5 of 8', title:'A builder agent assembles the first draft.', dur:3600},
+    {cap:'De-AI',   gate:false, eyebrow:'Step 6 of 8', title:'AI tendencies get stripped, so the deck reads human-written.', dur:4800},
+    {cap:'Loop',    gate:false, eyebrow:'Step 7 of 8', title:'Fresh eyes flag the weak spots; a separate agent fixes them — the score climbs.', dur:6400},
+    {cap:'Deliver', gate:true,  eyebrow:'Step 8 of 8 · Board ready', title:'It clears the ship bar — versioned, and you’re notified.', dur:4600}
   ];
+  const N = dScenes.length;
+  const sceneEls = Array.prototype.slice.call(document.querySelectorAll('#demo .scene'));
+  const dEyebrow = document.getElementById('dEyebrow');
+  const dHeadline = document.getElementById('dHeadline');
+  const dCount = document.getElementById('dCount');
+  const dTimeline = document.getElementById('dTimeline');
+  const dPlayBtn = document.getElementById('dPlay');
+  let di = 0, speed = 1, playing = false, autoTimer = null, typeTimer = null, sceneTimers = [];
 
-  let di=0, dtimer=null, typeTimer=null;
-  function setProgress(){
-    const p = document.getElementById('prog'); p.innerHTML='';
-    D.forEach((_,k)=>{ const i=document.createElement('i'); if(k<di) i.classList.add('on'); p.appendChild(i); });
+  function clearScene(){ sceneTimers.forEach(clearTimeout); sceneTimers = []; clearInterval(typeTimer); }
+  function later(fn, ms){ const id = setTimeout(fn, ms/speed); sceneTimers.push(id); return id; }
+
+  function buildTimeline(){
+    dTimeline.innerHTML = '';
+    dScenes.forEach((s,k)=>{
+      const it = document.createElement('div');
+      it.className = 'dt-item'+(s.gate?' gate':'')+(k<di?' done':'')+(k===di?' active':'');
+      it.innerHTML = '<div class="dt-dot">'+(k<di?'✓':(k+1))+'</div><div class="dt-cap">'+s.cap+'</div>';
+      it.addEventListener('click', ()=>{ pause(); dShow(k); });
+      dTimeline.appendChild(it);
+    });
   }
-  function typePrompt(cb){
-    typed.textContent=''; let n=0;
-    clearInterval(typeTimer);
-    typeTimer=setInterval(()=>{ typed.textContent = PROMPT.slice(0,++n); if(n>=PROMPT.length){ clearInterval(typeTimer); cb&&cb(); } }, 38);
+  function typePrompt(){
+    const el = document.getElementById('dTyped'); if(!el) return;
+    el.textContent=''; let n=0; clearInterval(typeTimer);
+    typeTimer = setInterval(()=>{ el.textContent = PROMPT.slice(0,++n); if(n>=PROMPT.length) clearInterval(typeTimer); }, 42/speed);
   }
-  function applyDemo(idx){
-    const s = D[idx];
-    if(s.set){ Object.assign(dimVals, s.set); }
-    if(s.type==='type'){ typePrompt(); }
-    narrate(s.tag, s.who, s.title, s.body, s.ver);
-    if('mini' in s) setMini(s.mini);
-    if(s.score || s.set) renderDims();
-    if(s.mini2) setTimeout(()=>setMini(s.mini2), 700);
-    if(s.guards) setGuards(...s.guards);
+  function setGauge(fillEl, numEl, score){
+    if(fillEl) fillEl.style.strokeDashoffset = (100 - score/5*100).toFixed(1);
+    if(numEl) numEl.textContent = score.toFixed(1);
   }
-  function dStepFwd(){
-    if(di>=D.length){ stopD(); return; }
-    applyDemo(di); di++; setProgress();
+  function runLoop(){
+    const fill = document.getElementById('dLoopFill'), num = document.getElementById('dLoopNum');
+    const slides = Array.prototype.slice.call(document.querySelectorAll('#deckLoop .slide'));
+    const agRev = document.getElementById('agRev'), agFix = document.getElementById('agFix');
+    const laps = ['lap1','lap2','lap3'].map(function(id){return document.getElementById(id);});
+    setGauge(fill, num, 3.2);
+    slides.forEach(s=>s.classList.remove('flag','fixed'));
+    [agRev,agFix].forEach(a=>{ if(a) a.classList.remove('on'); });
+    laps.forEach(l=>{ if(l) l.classList.remove('on'); });
+    [[0,3.6],[1,4.0],[2,4.3]].forEach(function(step,i){
+      const slideIdx = step[0], score = step[1], base = 600 + i*1750;
+      later(function(){ if(agRev){agRev.classList.add('on');} if(agFix){agFix.classList.remove('on');} if(slides[slideIdx]) slides[slideIdx].classList.add('flag'); }, base);
+      later(function(){ if(agRev){agRev.classList.remove('on');} if(agFix){agFix.classList.add('on');} if(slides[slideIdx]){ slides[slideIdx].classList.remove('flag'); slides[slideIdx].classList.add('fixed'); } setGauge(fill,num,score); if(laps[i]) laps[i].classList.add('on'); }, base+900);
+    });
   }
-  function dPlay(){
-    stopD();
-    if(di>=D.length) di=0;
-    dStepFwd();
-    dtimer=setInterval(()=>{ dStepFwd(); if(di>=D.length) stopD(); }, 2300);
+  function gateApprove(id){
+    const g = document.getElementById(id); if(!g) return;
+    g.classList.remove('approved');
+    later(()=>g.classList.add('approved'), 1500);
   }
-  function stopD(){ if(dtimer){clearInterval(dtimer); dtimer=null;} }
-  function dReset(){
-    stopD(); clearInterval(typeTimer); di=0; typed.textContent='';
-    dimVals={action:2.8, exec:2.6, visual:3.0, story:3.4, trace:3.6};
-    renderDims(); setGuards('✓','✓','✓'); setMini(null); setProgress();
-    narrate('Ready', null, 'Press play to begin',
-      'The agent will interpret the prompt, gather grounded data, draft a deck, and then enter the refinement cycle where the real work happens.', 'Awaiting run…');
+  function onEnter(i){
+    if(i===0) typePrompt();
+    else if(i===3) gateApprove('dGate1');
+    else if(i===6) runLoop();
   }
-  document.getElementById('dPlay').addEventListener('click', dPlay);
-  document.getElementById('dStep').addEventListener('click', ()=>{ stopD(); dStepFwd(); });
-  document.getElementById('dReset').addEventListener('click', dReset);
+  function dShow(i){
+    clearScene();
+    di = Math.max(0, Math.min(N-1, i));
+    sceneEls.forEach((el,k)=> el.classList.toggle('active', k===di));
+    dEyebrow.textContent = dScenes[di].eyebrow;
+    dHeadline.textContent = dScenes[di].title;
+    dCount.textContent = (di+1)+' / '+N;
+    buildTimeline();
+    onEnter(di);
+  }
+  function scheduleAuto(){
+    clearTimeout(autoTimer);
+    if(!playing) return;
+    autoTimer = setTimeout(()=>{
+      if(di < N-1){ dShow(di+1); scheduleAuto(); } else { playing=false; updatePlay(); }
+    }, dScenes[di].dur/speed);
+  }
+  function updatePlay(){ dPlayBtn.textContent = playing ? '❚❚ Pause' : '▶ Play'; }
+  function play(){ if(di>=N-1) dShow(0); playing=true; updatePlay(); scheduleAuto(); }
+  function pause(){ playing=false; updatePlay(); clearTimeout(autoTimer); }
+  function dNext(){ pause(); if(di<N-1) dShow(di+1); }
+  function dBack(){ pause(); if(di>0) dShow(di-1); }
+  // tab integration hooks (called from show('demo'))
+  function dReset(){ pause(); dShow(0); }
+  function dPlay(){ play(); }
+
+  document.getElementById('dPlay').addEventListener('click', ()=>{ playing ? pause() : play(); });
+  document.getElementById('dNext').addEventListener('click', dNext);
+  document.getElementById('dBack').addEventListener('click', dBack);
+  document.getElementById('dRestart').addEventListener('click', ()=>{ dShow(0); play(); });
+  document.querySelectorAll('#dSpeed button').forEach(b=>b.addEventListener('click', ()=>{
+    speed = parseFloat(b.dataset.spd);
+    document.querySelectorAll('#dSpeed button').forEach(x=>x.classList.toggle('on', x===b));
+    if(playing){ clearTimeout(autoTimer); scheduleAuto(); }
+  }));
 
   // init
-  renderDims();
-  dReset();
+  dShow(0);
 </script>
 </body>
 </html>
