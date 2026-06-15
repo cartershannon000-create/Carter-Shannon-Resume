@@ -105,34 +105,46 @@
   .step .strip{color:#7a5424; font-weight:700}
   .g1out{margin:14px 0 0 8px; font-weight:800; font-size:14px; color:var(--purple)}
 
-  /* G2 — the loop circle (modern) */
+  /* G2 — the loop circle (4 nodes + score gauge) */
   .loopwrap{display:flex; flex-direction:column; align-items:center}
-  .ring{position:relative; width:min(430px,92vw); aspect-ratio:1/1}
-  .ring svg{position:absolute; inset:0; width:100%; height:100%}
+  .ring{position:relative; width:min(460px,94vw); aspect-ratio:1/1; margin:6px auto 0}
+  .ringsvg{position:absolute; inset:0; width:100%; height:100%}
   .ring .guide{fill:none; stroke:var(--line); stroke-width:1.4}
-  .rnode{position:absolute; transform:translate(-50%,-50%); text-align:center}
-  .rchip{position:relative; display:inline-flex; align-items:center; gap:6px; font-weight:800; font-size:13.5px; padding:9px 15px;
-    border-radius:999px; border:1.5px solid var(--line); background:#fcfcf7; box-shadow:0 1px 2px rgba(31,38,31,.05); transition:.18s}
-  .rnode.det .rchip{color:#294323} .rnode.llm .rchip{color:#243f52} .rnode.dyn .rchip{color:#7a5424}
-  .rnode:hover .rchip,.rnode.active .rchip{transform:translateY(-2px); box-shadow:0 6px 16px rgba(31,38,31,.13)}
-  .rnode.det:hover .rchip,.rnode.det.active .rchip{background:var(--green-soft); border-color:var(--green)}
-  .rnode.llm:hover .rchip,.rnode.llm.active .rchip{background:var(--blue-soft); border-color:var(--blue)}
-  .rnode.dyn:hover .rchip,.rnode.dyn.active .rchip{background:var(--gold-soft); border-color:var(--gold)}
-  .rbadge{font-size:9.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#7a5424;
-    background:var(--gold-soft); border:1px solid rgba(158,113,50,.4); border-radius:999px; padding:1px 6px}
-  .rcenter{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:44%; aspect-ratio:1/1; border-radius:50%;
-    background:var(--panel); border:1px solid var(--line); display:grid; place-content:center; text-align:center; padding:0 7%}
-  .rcenter .rk{font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--ink)}
-  .rcenter .rv{font-size:11.5px; color:var(--muted); margin-top:4px; line-height:1.35}
-  .n-top{left:50%; top:6%} .n-r{left:88%; top:30%} .n-lr{left:73%; top:85%}
-  .n-ll{left:27%; top:85%} .n-l{left:12%; top:30%}
-  .deploy{margin-top:14px; display:inline-flex; align-items:center; gap:9px; font-weight:800; font-size:14px;
-    padding:8px 14px; border-radius:999px; border:1px solid transparent; transition:.18s}
-  .deploy:hover,.deploy.active{background:var(--purple-soft); border-color:rgba(114,86,168,.35)}
-  .deploy .gate-d{font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--green); border:1px solid rgba(46,107,63,.4); border-radius:6px; padding:2px 7px}
-  .deploy .darrow{color:var(--muted)}
-  .deploy .dep{color:var(--purple)}
-  .looplegend{display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:16px; font-size:12px; color:var(--muted)}
+
+  .rnode{position:absolute; transform:translate(-50%,-50%); cursor:pointer}
+  .rcircle{position:relative; width:118px; height:118px; border-radius:50%; background:#fff; border:1px solid var(--line);
+    box-shadow:0 2px 8px rgba(31,38,31,.06); display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:0 12px; transition:.18s}
+  .rnode:hover .rcircle,.rnode.active .rcircle{transform:translateY(-3px); box-shadow:0 12px 24px rgba(31,38,31,.13)}
+  .rbadge{position:absolute; top:-11px; left:50%; transform:translateX(-50%); width:23px; height:23px; border-radius:50%;
+    background:#fff; border:1.5px solid var(--line); display:grid; place-items:center; font-size:11.5px; font-weight:800; color:var(--muted)}
+  .ricon{width:21px; height:21px; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; margin-bottom:3px}
+  .rname{font-size:13px; font-weight:800; letter-spacing:.04em; text-transform:uppercase}
+  .rcap{font-size:10px; color:var(--muted); line-height:1.25; margin-top:2px}
+  .rnode.llm .ricon{stroke:var(--blue)} .rnode.llm .rname{color:var(--blue)} .rnode.llm .rbadge{color:var(--blue); border-color:rgba(49,92,117,.5)}
+  .rnode.dyn .ricon{stroke:var(--gold)} .rnode.dyn .rname{color:var(--gold)} .rnode.dyn .rbadge{color:var(--gold); border-color:rgba(158,113,50,.5)}
+  .rnode.det .ricon{stroke:var(--green)} .rnode.det .rname{color:var(--green)} .rnode.det .rbadge{color:var(--green); border-color:rgba(46,107,63,.5)}
+  .rnode.llm:hover .rcircle,.rnode.llm.active .rcircle{border-color:var(--blue)}
+  .rnode.dyn:hover .rcircle,.rnode.dyn.active .rcircle{border-color:var(--gold)}
+  .rnode.det:hover .rcircle,.rnode.det.active .rcircle{border-color:var(--green)}
+  .n-top{left:50%; top:9%} .n-r{left:91%; top:50%} .n-bottom{left:50%; top:91%} .n-l{left:9%; top:50%}
+
+  /* center score gauge */
+  .rcenter{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:46%; aspect-ratio:1/1}
+  .gauge{position:absolute; inset:0; width:100%; height:100%}
+  .gauge .g-track{fill:none; stroke:var(--line); stroke-width:9; stroke-linecap:round}
+  .gauge .g-fill{fill:none; stroke:var(--green); stroke-width:9; stroke-linecap:round}
+  .gauge .g-tick{stroke:var(--muted); stroke-width:2.2}
+  .gauge .g-tick.ship{stroke:var(--rose)}
+  .gauge text{font-size:9px; font-weight:700; fill:var(--muted); text-anchor:middle}
+  .gauge .t-ship{fill:var(--rose)}
+  .gtext{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center}
+  .gtext .gk{font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+  .gtext .gv{font-size:clamp(30px,9vw,42px); font-weight:800; color:var(--green); line-height:1; letter-spacing:-.03em; margin-top:2px}
+  .gtext .gready{margin-top:7px; font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:#294323;
+    background:var(--green-soft); border:1px solid rgba(46,107,63,.35); border-radius:999px; padding:3px 9px}
+
+  .looplegend{display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:18px; font-size:12px; color:var(--muted)}
   .looplegend span{display:inline-flex; align-items:center; gap:6px}
 
   /* hover/tap description panel */
@@ -246,9 +258,11 @@
 
     .flowwrap{padding:16px; border-radius:16px}
     .flowgrid{gap:30px}
-    .rchip{font-size:12px; padding:7px 11px}
-    .rbadge{display:none}
-    .rcenter .rv{font-size:10.5px}
+    .ring{width:min(360px,96vw)}
+    .rcircle{width:96px; height:96px; padding:0 8px}
+    .ricon{width:18px; height:18px}
+    .rname{font-size:11.5px}
+    .rcap{font-size:9px}
     .flowinfo{flex-direction:column; gap:10px}
     .teaser{padding:18px; gap:12px}
     .teaser .btn{width:100%}
@@ -337,35 +351,61 @@
           <div class="loopwrap">
             <p class="stagelabel" style="align-self:flex-start"><b>G2</b> · The loop — up to 2×/day</p>
             <div class="ring">
-              <svg viewBox="0 0 400 400" aria-hidden="true">
+              <svg class="ringsvg" viewBox="0 0 400 400" aria-hidden="true">
                 <defs>
                   <marker id="ah" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto">
-                    <path d="M0,0 L6,3 L0,6 Z" fill="#7c8a7a"></path>
+                    <path d="M0,0 L6,3 L0,6 Z" fill="#aab1a5"></path>
                   </marker>
                 </defs>
-                <circle class="guide" cx="200" cy="200" r="150"></circle>
-                <g class="arcs" fill="none" stroke="#7c8a7a" stroke-width="2.2" stroke-linecap="round" marker-end="url(#ah)">
-                  <path d="M231.2 53.3 A150 150 0 0 1 329.9 125"></path>
-                  <path d="M349.2 184.3 A150 150 0 0 1 311.5 300.4"></path>
-                  <path d="M261.0 337.0 A150 150 0 0 1 139.0 337.0"></path>
-                  <path d="M88.5 300.4 A150 150 0 0 1 50.8 184.3"></path>
-                  <path d="M70.1 125 A150 150 0 0 1 168.8 53.3"></path>
+                <circle class="guide" cx="200" cy="200" r="164"></circle>
+                <g class="arcs" fill="none" stroke="#aab1a5" stroke-width="2.2" stroke-linecap="round" marker-end="url(#ah)">
+                  <path d="M261.4 47.9 A164 164 0 0 1 352.1 138.6"></path>
+                  <path d="M352.1 261.4 A164 164 0 0 1 261.4 352.1"></path>
+                  <path d="M138.6 352.1 A164 164 0 0 1 47.9 261.4"></path>
+                  <path d="M47.9 138.6 A164 164 0 0 1 138.6 47.9"></path>
                 </g>
               </svg>
 
+              <!-- center score gauge -->
               <div class="rcenter">
-                <div class="rk">The loop</div>
-                <div class="rv">keep only edits that score higher</div>
+                <svg class="gauge" viewBox="0 0 200 200" aria-hidden="true">
+                  <path class="g-track" d="M49.1 150.9 A72 72 0 1 1 150.9 150.9"></path>
+                  <path class="g-fill" d="M49.1 150.9 A72 72 0 1 1 171.4 109.2"></path>
+                  <line class="g-tick" x1="139.2" y1="49.4" x2="149.0" y2="36.8"></line>
+                  <line class="g-tick ship" x1="163.5" y1="108.2" x2="179.3" y2="110.2"></line>
+                  <text x="44" y="171">0</text>
+                  <text x="156" y="171">5</text>
+                  <text class="t-entry" x="150" y="27">entry 3.2</text>
+                  <text class="t-ship" x="175" y="131">ship 4.3</text>
+                </svg>
+                <div class="gtext">
+                  <div class="gk">Composite</div>
+                  <div class="gv">4.3</div>
+                  <div class="gready">Board ready</div>
+                </div>
               </div>
 
-              <div class="rnode llm n-top callout" data-id="review"><div class="rchip">Review</div></div>
-              <div class="rnode dyn n-r callout" data-id="plan"><div class="rchip">Plan</div></div>
-              <div class="rnode llm n-lr callout" data-id="revise"><div class="rchip">Revise</div></div>
-              <div class="rnode det n-ll callout" data-id="build"><div class="rchip">Build<span class="rbadge">de-AI</span></div></div>
-              <div class="rnode det n-l callout" data-id="score"><div class="rchip">Score</div></div>
+              <div class="rnode llm n-top callout" data-id="review">
+                <div class="rcircle"><span class="rbadge">1</span>
+                  <svg class="ricon" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"></circle><line x1="15" y1="15" x2="20.5" y2="20.5"></line></svg>
+                  <div class="rname">Review</div><div class="rcap">find the weakest part</div></div>
+              </div>
+              <div class="rnode dyn n-r callout" data-id="plan">
+                <div class="rcircle"><span class="rbadge">2</span>
+                  <svg class="ricon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="2.4"></circle></svg>
+                  <div class="rname">Plan</div><div class="rcap">choose the fix · adapts each lap</div></div>
+              </div>
+              <div class="rnode llm n-bottom callout" data-id="revise">
+                <div class="rcircle"><span class="rbadge">3</span>
+                  <svg class="ricon" viewBox="0 0 24 24"><path d="M4 20l1.2-4.2L16 5l3 3L8.2 18.8 4 20z"></path><line x1="14" y1="7" x2="17" y2="10"></line></svg>
+                  <div class="rname">Revise</div><div class="rcap">build just that one change</div></div>
+              </div>
+              <div class="rnode det n-l callout" data-id="score">
+                <div class="rcircle"><span class="rbadge">4</span>
+                  <svg class="ricon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
+                  <div class="rname">Score</div><div class="rcap">fact-check · keep if better</div></div>
+              </div>
             </div>
-
-            <div class="deploy callout" data-id="deploy"><span class="gate-d">gate · ship bar</span> <span class="darrow">→</span> <span class="dep">Deploy</span></div>
 
             <div class="looplegend">
               <span><span class="dot llm"></span> LLM agent</span>
@@ -798,13 +838,9 @@ flowchart TD
     plan:{type:'dyn', tag:'Loop ② — Dynamic', title:'Plan',
       text:'Picks the single highest-value fix for this lap: refresh a number, rewrite a section, or fix one visual. Different laps choose different actions — the loop adapts.'},
     revise:{type:'llm', tag:'Loop ③ — LLM agent', title:'Revise',
-      text:'A different agent than the Reviewer makes exactly that one change — nothing more. If the plan called for fresh data, it pulls it first.'},
-    build:{type:'det', tag:'Loop ④ — Deterministic code', title:'Build · de-AI pass',
-      text:'Renders the revised deck and runs the <span class="strip">Humanizer / de-AI tool</span> — stripping em-dashes, hedging, generic filler, and AI-looking design so the output reads as if a person made it.'},
-    score:{type:'det', tag:'Loop ⑤ — Deterministic code', title:'Score',
-      text:'Fact-checks every figure against its source, then computes the weighted score. The edit is kept only if the score rose and no guardrail slipped — otherwise it rolls back, and the loop tries again.'},
-    deploy:{type:'out', tag:'Exit — Gate (ship bar)', title:'Deploy',
-      text:'When the score clears the ship bar, the deck is frozen as a new version and you\'re notified with the score delta. Publishing it onward still waits for your approval.'}
+      text:'A different agent makes exactly that one change and rebuilds the deck — then runs a <span class="strip">de-AI pass</span> that strips em-dashes, hedging, filler, and AI-looking design so it reads as if a person made it.'},
+    score:{type:'det', tag:'Loop ④ — Deterministic code', title:'Score',
+      text:'Fact-checks every figure against its source, then computes the weighted score shown in the dial. The edit is kept only if the score rose and no guardrail slipped — otherwise it rolls back. When it clears the ship bar (4.3), the deck is board-ready.'}
   };
   const fiTag = document.getElementById('fiTag');
   const fiTitle = document.getElementById('fiTitle');
