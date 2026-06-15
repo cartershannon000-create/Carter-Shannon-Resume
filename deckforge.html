@@ -23,7 +23,7 @@
     --purple-soft:#e8e0f3;
     --rose:#9b4f4d;
     --rose-soft:#efd9d6;
-    --shadow: 0 18px 46px rgba(31,38,31,.11);
+    --shadow: 0 1px 3px rgba(31,38,31,.07);
     --radius:16px;
     --maxw:1160px;
   }
@@ -31,10 +31,7 @@
   html{scroll-behavior:smooth}
   body{
     margin:0;
-    background:
-      radial-gradient(circle at 18% 12%, rgba(96,129,80,.13), transparent 32%),
-      radial-gradient(circle at 78% 72%, rgba(149,117,74,.12), transparent 30%),
-      var(--bg);
+    background:var(--bg);
     color:var(--ink); font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
@@ -44,12 +41,11 @@
   h2{font-size:30px; margin:0 0 6px}
   .eyebrow{font-size:13px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--green)}
 
-  header.top{position:sticky; top:0; z-index:40; backdrop-filter:blur(10px);
-    background:rgba(232,232,223,.8); border-bottom:1px solid var(--line)}
+  header.top{position:sticky; top:0; z-index:40;
+    background:var(--bg); border-bottom:1px solid var(--line)}
   .nav{display:flex; align-items:center; gap:18px; height:64px}
   .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:-.02em; font-size:18px}
-  .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--green),var(--blue));
-    box-shadow:0 0 18px rgba(46,107,63,.35)}
+  .logo{width:26px;height:26px;border-radius:7px;background:var(--green)}
   .tabs{margin-left:auto; display:flex; gap:6px; background:var(--panel); padding:5px; border-radius:12px; border:1px solid var(--line)}
   .tab{padding:8px 15px; border-radius:8px; font-weight:700; font-size:14px; color:var(--muted); cursor:pointer; border:0; background:transparent}
   .tab.active{background:var(--green-soft); color:#294323; box-shadow:inset 0 0 0 1px rgba(46,107,63,.16)}
@@ -74,16 +70,18 @@
   .tag.llm{color:#243f52; background:var(--blue-soft); border:1px solid rgba(49,92,117,.25)}
   .dot{width:8px;height:8px;border-radius:50%}
   .dot.det{background:var(--green)} .dot.llm{background:var(--blue)} .dot.dyn{background:var(--gold)}
-  .btn{appearance:none; border:0; cursor:pointer; font-weight:800; font-size:14px; padding:11px 18px; border-radius:11px;
-    background:var(--green); color:#fff; box-shadow:0 8px 20px rgba(46,107,63,.25)}
-  .btn.ghost{background:var(--panel); color:var(--ink); border:1px solid var(--line); box-shadow:none}
+  .btn{appearance:none; border:1px solid var(--green); cursor:pointer; font-weight:700; font-size:14px; padding:11px 18px; border-radius:10px;
+    background:var(--green); color:#fff}
+  .btn:hover{background:#275935; border-color:#275935}
+  .btn.ghost{background:transparent; color:var(--ink); border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--green); color:var(--green)}
 
   /* ============ INTERACTIVE FLOW MAP ============ */
   .flowwrap{background:var(--panel-strong); border:1px solid var(--line); border-radius:22px; padding:26px; margin-top:28px; box-shadow:var(--shadow)}
   .legend{display:flex; gap:18px; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-bottom:18px}
   .legend span{display:inline-flex; align-items:center; gap:7px}
   .flowmap{display:grid; gap:26px; align-items:start}
-  @media(min-width:920px){ .flowmap{grid-template-columns:minmax(230px,.9fr) minmax(420px,1.1fr)} }
+  @media(min-width:760px){ .flowmap{grid-template-columns:1fr 1fr} }
 
   .flabel{font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
   .pipeline{position:relative; padding-left:28px; border-left:3px dashed rgba(46,107,63,.3)}
@@ -101,41 +99,19 @@
   .pd{font-size:12.5px; color:var(--muted); margin-top:1px}
   .psub{display:flex; gap:5px; flex-wrap:wrap; margin-top:6px}
   .psub span{font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px; background:var(--bg); border:1px solid var(--line); color:var(--muted)}
+  .pnode.dyn .pnum{background:var(--gold-soft); color:#7a5424; border-color:rgba(158,113,50,.2)}
   .pnode.out{background:var(--purple-soft); border-color:rgba(114,86,168,.35)}
   .pnode.out .pnum{background:#fff; color:var(--purple); border-color:rgba(114,86,168,.3)}
   .pnode.out::before{border-color:var(--purple)}
   .feeds{display:flex; align-items:center; gap:8px; margin:4px 0 4px 28px; font-size:12px; font-weight:800; color:var(--gold)}
 
-  /* the cycle */
-  .cyclecol{display:flex; flex-direction:column; align-items:center}
-  .cycle{position:relative; width:min(440px,86vw); aspect-ratio:1/1; margin:0 auto}
-  .cycle svg{position:absolute; inset:0; width:100%; height:100%}
-  .cnode{position:absolute; width:30%; transform:translate(-50%,-50%); text-align:center; cursor:pointer; transition:.25s}
-  .cnode .chip{background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:11px 8px; box-shadow:0 6px 16px rgba(31,38,31,.1)}
-  .cnode:hover .chip{transform:translateY(-2px)}
-  .cnode.sel .chip{border-color:var(--green); background:var(--panel-strong); box-shadow:0 10px 24px rgba(31,38,31,.16)}
-  .cnode .cn{font-size:11px; font-weight:800; letter-spacing:.04em; color:#294323}
-  .cnode.llm .cn{color:#243f52}
-  .cnode.dyn .cn{color:#7a5424}
-  .cnode .cs{font-size:11px; color:var(--muted); margin-top:2px; line-height:1.3}
-  .cnode .ci{display:inline-grid; place-items:center; width:24px; height:24px; border-radius:7px; font-size:12px; font-weight:800; margin-bottom:5px;
-    background:var(--green-soft); color:#294323}
-  .cnode.llm .ci{background:var(--blue-soft); color:#243f52}
-  .cnode.dyn .ci{background:var(--gold-soft); color:#7a5424}
-  .c-top{left:50%; top:15%} .c-right{left:85%; top:50%} .c-bottom{left:50%; top:85%} .c-left{left:15%; top:50%}
-  .hub{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:34%; aspect-ratio:1/1; border-radius:50%;
-    background:radial-gradient(circle at 50% 35%, #fff, var(--green-soft)); border:2px solid rgba(46,107,63,.35);
-    display:grid; place-items:center; text-align:center; box-shadow:inset 0 0 30px rgba(46,107,63,.12)}
-  .hub .hk{font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
-  .hub .hv{font-size:30px; font-weight:800; color:var(--green); letter-spacing:-.03em; line-height:1}
-  .hub .hf{font-size:9.5px; color:var(--muted); margin-top:3px; padding:0 6px}
-  .cycle-cap{margin-top:8px; font-size:12px; color:var(--muted); text-align:center}
-  .exit{margin-top:10px; display:flex; flex-direction:column; align-items:center; gap:8px}
-  .exit .arr{font-size:18px; color:var(--purple)}
-  .exit .out-node{background:var(--purple-soft); border:1px solid rgba(114,86,168,.35); border-radius:13px; padding:10px 16px; text-align:center; cursor:pointer; box-shadow:var(--shadow)}
-  .exit .out-node.sel{border-color:var(--purple)}
-  .exit .on-t{font-weight:800; font-size:14px; color:#4c3a73}
-  .exit .on-d{font-size:12px; color:var(--muted)}
+  /* G2 cycle — linear */
+  .loopnote{margin:4px 0 11px 28px; font-size:12px; font-weight:700; color:var(--muted)}
+  .loopnote b{color:var(--green)}
+  .exit{margin-top:6px; padding-left:28px}
+  .exit .arr{font-size:12px; font-weight:800; color:var(--muted); margin-bottom:8px}
+  .exit .pnode{margin-bottom:0}
+  .exit .pnode::before{display:none}
 
   /* detail panel */
   .flowdetail{margin-top:24px; background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px; box-shadow:var(--shadow)}
@@ -150,7 +126,7 @@
 
   /* teaser to demo */
   .teaser{display:flex; flex-wrap:wrap; align-items:center; gap:18px; justify-content:space-between;
-    background:linear-gradient(135deg,var(--green-soft),var(--blue-soft)); border:1px solid var(--line); border-radius:18px; padding:24px; margin-top:26px}
+    background:var(--green-soft); border:1px solid rgba(46,107,63,.25); border-radius:14px; padding:24px; margin-top:26px}
   .teaser .t-txt{max-width:560px}
   .teaser h3{margin:0 0 4px; font-size:20px}
   .teaser p{margin:0; color:var(--muted); font-size:14.5px}
@@ -188,14 +164,14 @@
   .dim .dl{color:var(--ink); font-weight:600}
   .dim .dl small{color:var(--muted); font-weight:600}
   .bar{height:11px; border-radius:6px; background:var(--bg); border:1px solid var(--line); overflow:hidden}
-  .bar > i{display:block; height:100%; width:40%; background:linear-gradient(90deg,var(--blue),var(--green)); transition:.7s}
+  .bar > i{display:block; height:100%; width:40%; background:var(--green); transition:.7s}
   .dim .dv{text-align:right; font-weight:800; color:var(--green)}
   .composite{margin-top:16px; padding-top:14px; border-top:1px solid var(--line)}
   .comp-row{display:flex; align-items:baseline; gap:10px}
   .comp-row .cv{font-size:38px; font-weight:800; color:var(--green); letter-spacing:-.03em}
   .comp-row .cof{font-size:13px; color:var(--muted)}
   .shipbar{position:relative; height:12px; border-radius:7px; background:var(--bg); border:1px solid var(--line); margin-top:10px; overflow:hidden}
-  .shipbar > i{display:block; height:100%; width:24%; background:linear-gradient(90deg,var(--green),var(--gold)); transition:.7s}
+  .shipbar > i{display:block; height:100%; width:24%; background:var(--green); transition:.7s}
   .shipbar .mark{position:absolute; top:-4px; bottom:-4px; left:86%; width:2px; background:var(--rose)}
   .shipbar-l{display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-top:5px}
   .guards{display:flex; gap:8px; margin-top:14px}
@@ -246,17 +222,6 @@
     .flowmap{gap:30px}
     .legend{gap:10px 14px; font-size:12px}
 
-    /* loop: smaller ring, tighter chips so nodes never clip the edge */
-    .cycle{width:min(330px,90vw)}
-    .cnode{width:30%}
-    .cnode .chip{padding:8px 5px; border-radius:11px}
-    .cnode .cn{font-size:10px}
-    .cnode .cs{font-size:9.5px}
-    .cnode .ci{width:20px; height:20px; font-size:11px; margin-bottom:3px}
-    .hub{width:38%}
-    .hub .hv{font-size:23px}
-    .hub .hf{font-size:8.5px}
-
     .flowdetail{padding:18px}
     .flowdetail h3{font-size:18px}
     .teaser{padding:18px; gap:12px}
@@ -282,7 +247,6 @@
   }
 
   @media (max-width:380px){
-    .cnode .cs{display:none}      /* keep just the step label on very small screens */
     .hero h1{font-size:26px}
   }
 </style>
@@ -295,7 +259,6 @@
     <div class="tabs" role="tablist">
       <button class="tab active" data-tab="overview">Overview</button>
       <button class="tab" data-tab="demo">Live Demo</button>
-      <button class="tab" data-tab="spec">Technical Spec</button>
     </div>
   </div>
 </header>
@@ -307,9 +270,9 @@
     <div class="wrap">
       <div class="eyebrow">Autonomous equity-research decks</div>
       <h1>An agent that writes a deck, then <span class="g">critiques and rewrites it</span> in a loop until it's boardroom-ready.</h1>
-      <p class="lead">Give it a prompt. It pulls the real numbers from SEC filings, drafts a presentation, and
-      then runs a tireless refinement <b>cycle</b> — scoring every version against a mathematical rubric and
-      keeping only the changes that genuinely raise the score, without ever drifting from the source numbers.</p>
+      <p class="lead">Give it a prompt. It pulls the real numbers from SEC filings, drafts the deck, then improves
+      it in a loop — scoring each version against a fixed rubric and keeping only the changes that raise the
+      score. The numbers always trace back to a filing.</p>
       <div class="pills">
         <span class="pill"><b>Grounded</b> in SEC / EDGAR filings</span>
         <span class="pill"><b>Scored</b> against a mathematical rubric</span>
@@ -323,10 +286,9 @@
   <section>
     <div class="wrap">
       <div class="eyebrow">The whole system at a glance</div>
-      <h2>How the agent flows — a linear cold start into a refinement cycle</h2>
-      <p class="lead">Click any node to read what happens there. The cold-start pipeline (G1) runs once to
-      produce a first draft; everything after lives inside the loop (G2), which spins until the deck is
-      board-ready.</p>
+      <h2>How it works — two stages</h2>
+      <p class="lead">Stage one (G1) runs once to produce a first draft. Stage two (G2) is a loop that keeps
+      improving it. Click any step to read what happens there.</p>
 
       <div class="flowwrap">
         <div class="legend">
@@ -347,43 +309,22 @@
               <div class="pnode llm" data-id="a4"><div class="pnum">A4</div><div><div class="pt">LLM agents — first draft</div><div class="pd">Writes the deck against the facts.</div><div class="psub"><span>Slide-create</span><span>Reviewer</span><span>Reviser</span></div></div></div>
               <div class="pnode out" data-id="init"><div class="pnum">✓</div><div><div class="pt">Initial Output</div><div class="pd">First draft — clears the entry gate.</div></div></div>
             </div>
-            <div class="feeds">↳ feeds the refinement cycle →</div>
+            <div class="feeds">Feeds the refinement cycle</div>
           </div>
 
-          <!-- G2 cycle -->
-          <div class="cyclecol">
-            <p class="flabel" style="align-self:flex-start">G2 · Refinement cycle — up to 2×/day</p>
-            <div class="cycle">
-              <svg viewBox="0 0 400 400" aria-hidden="true">
-                <defs>
-                  <marker id="ah" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L6,3 L0,6 Z" fill="#2e6b3f"></path>
-                  </marker>
-                </defs>
-                <path d="M236.2 64.8 A140 140 0 0 1 335.2 163.8" fill="none" stroke="#2e6b3f" stroke-width="2.4" marker-end="url(#ah)" opacity=".75"></path>
-                <path d="M335.2 236.2 A140 140 0 0 1 236.2 335.2" fill="none" stroke="#2e6b3f" stroke-width="2.4" marker-end="url(#ah)" opacity=".75"></path>
-                <path d="M163.8 335.2 A140 140 0 0 1 64.8 236.2" fill="none" stroke="#2e6b3f" stroke-width="2.4" marker-end="url(#ah)" opacity=".75"></path>
-                <path d="M64.8 163.8 A140 140 0 0 1 163.8 64.8" fill="none" stroke="#2e6b3f" stroke-width="2.4" marker-end="url(#ah)" opacity=".75"></path>
-              </svg>
-
-              <div class="hub">
-                <div>
-                  <div class="hk">Rubric score</div>
-                  <div class="hv" id="hubScore">3.2</div>
-                  <div class="hf">weighted R2 — climbs each lap</div>
-                </div>
-              </div>
-
-              <div class="cnode llm c-top sel" data-id="review"><div class="chip"><div class="ci">①</div><div class="cn">REVIEW</div><div class="cs">find the weakest parts</div></div></div>
-              <div class="cnode dyn c-right" data-id="plan"><div class="chip"><div class="ci">②</div><div class="cn">PLAN</div><div class="cs">choose the fix — dynamic</div></div></div>
-              <div class="cnode llm c-bottom" data-id="revise"><div class="chip"><div class="ci">③</div><div class="cn">REVISE</div><div class="cs">build just that change</div></div></div>
-              <div class="cnode det c-left" data-id="scorestep"><div class="chip"><div class="ci">④</div><div class="cn">SCORE</div><div class="cs">fact-check + grade; keep if better</div></div></div>
+          <!-- G2 cycle — linear -->
+          <div>
+            <p class="flabel">G2 · Refinement cycle — repeats each lap</p>
+            <div class="pipeline">
+              <div class="pnode llm" data-id="review"><div class="pnum">1</div><div><div class="pt">Review</div><div class="pd">Find the weakest parts — diagnose, don't edit.</div></div></div>
+              <div class="pnode dyn" data-id="plan"><div class="pnum">2</div><div><div class="pt">Plan</div><div class="pd">Choose the one fix — decided fresh each lap.</div></div></div>
+              <div class="pnode llm" data-id="revise"><div class="pnum">3</div><div><div class="pt">Revise</div><div class="pd">Build just that change — nothing more.</div></div></div>
+              <div class="pnode det" data-id="scorestep"><div class="pnum">4</div><div><div class="pt">Score</div><div class="pd">Fact-check and grade; keep the edit only if it's better.</div></div></div>
             </div>
-            <div class="cycle-cap">Each lap re-scores the deck; an edit is kept only if the composite rises and no guardrail slips.</div>
-
+            <div class="loopnote">Loops back to step 1 — the score <b>climbs each lap</b> until it clears the ship bar.</div>
             <div class="exit">
-              <div class="arr">↓ when score ≥ ship bar</div>
-              <div class="out-node" data-id="board"><div class="on-t">Board-ready output</div><div class="on-d">Frozen as a new version · notification sent</div></div>
+              <div class="arr">When score ≥ ship bar ↓</div>
+              <div class="pnode out" data-id="board"><div class="pnum">✓</div><div><div class="pt">Board-ready output</div><div class="pd">Frozen as a new version · notification sent.</div></div></div>
             </div>
           </div>
         </div>
@@ -405,7 +346,7 @@
           <p>See the agent take the prompt <i>"What is the pension risk due to AI for the PBGC?"</i> and drive it
           through the pipeline and the scoring cycle — all the way to a board-ready deck.</p>
         </div>
-        <button class="btn" data-goto="demo">▶ Open the live demo</button>
+        <button class="btn" data-goto="demo">Open the live demo</button>
       </div>
     </div>
   </section>
@@ -452,7 +393,7 @@
       <h2>It gets better at what matters — and never sacrifices the rest</h2>
       <div class="grid g2" style="margin-top:24px">
         <div class="card">
-          <h3 style="color:var(--gold)">Climbs ↑</h3>
+          <h3 style="color:var(--gold)">What it improves</h3>
           <table>
             <tr><td><b>Actionability</b></td><td>a clear "so what" and what to do</td></tr>
             <tr><td><b>Executive altitude</b></td><td>right level for a CEO/CFO/board</td></tr>
@@ -462,7 +403,7 @@
           </table>
         </div>
         <div class="card">
-          <h3 style="color:var(--green)">Never drops ↓</h3>
+          <h3 style="color:var(--green)">What it protects</h3>
           <table>
             <tr><td><b>Truth</b></td><td>every figure matches its SEC source (checked by code)</td></tr>
             <tr><td><b>Scope</b></td><td>still answers the original brief</td></tr>
@@ -495,14 +436,13 @@
           <h3 style="font-size:22px">A message when each run finishes</h3>
           <p>Every loop completion sends an email or message: the new version link, the status, and how much the
           score moved. Publishing to the C-suite still waits for your approval.</p>
-          <div class="kpis"><span class="kpi">📧 "Run complete — v003, 3.98 → 4.12 (+0.14)"</span></div>
+          <div class="kpis"><span class="kpi">"Run complete — v003, 3.98 → 4.12 (+0.14)"</span></div>
         </div>
       </div>
     </div>
   </section>
 
-  <footer><div class="wrap">DeckForge — concept &amp; design. See the <a href="#" data-goto="demo">Live Demo</a> or the
-  <a href="#" data-goto="spec">Technical Spec</a>.</div></footer>
+  <footer><div class="wrap">DeckForge — concept &amp; design. See the <a href="#" data-goto="demo">Live Demo</a>.</div></footer>
 </main>
 
 <!-- ================= LIVE DEMO ================= -->
@@ -515,10 +455,10 @@
       the scoring cycle — where a mathematical rubric drives each revision until the deck clears the ship bar.</p>
 
       <div class="demohead">
-        <button class="btn" id="dPlay">▶ Play</button>
-        <button class="btn ghost" id="dStep">Step ›</button>
-        <button class="btn ghost" id="dReset">↻ Reset</button>
-        <button class="btn ghost" data-goto="overview">‹ Back to flow map</button>
+        <button class="btn" id="dPlay">Play</button>
+        <button class="btn ghost" id="dStep">Step</button>
+        <button class="btn ghost" id="dReset">Reset</button>
+        <button class="btn ghost" data-goto="overview">Back to flow map</button>
       </div>
 
       <div class="term" id="term">
@@ -534,10 +474,10 @@
           the refinement cycle where the real work happens.</p>
           <span class="who2 llm" id="sWho" style="display:none"></span>
           <div class="miniloop" id="miniloop" style="display:none">
-            <span data-m="review">① Review</span>
-            <span data-m="plan">② Plan</span>
-            <span data-m="revise">③ Revise</span>
-            <span data-m="score">④ Score</span>
+            <span data-m="review">1 · Review</span>
+            <span data-m="plan">2 · Plan</span>
+            <span data-m="revise">3 · Revise</span>
+            <span data-m="score">4 · Score</span>
           </div>
           <div class="progress" id="prog"></div>
         </div>
@@ -817,9 +757,8 @@ flowchart TD
     board:{tag:'G2 → Done', who:['out','Version + Notify'], title:'Board-ready output',
       body:'Once the score clears the ship bar (or the run hits its budget), the deck is frozen as a new immutable version and an email/message is sent with the score delta. Publishing externally still waits for human approval.'}
   };
-  const hubScore = document.getElementById('hubScore');
   function selectNode(id){
-    document.querySelectorAll('.pnode,.cnode,.out-node').forEach(n=>n.classList.toggle('sel', n.dataset.id===id));
+    document.querySelectorAll('.pnode').forEach(n=>n.classList.toggle('sel', n.dataset.id===id));
     const f = flowInfo[id]; if(!f) return;
     document.getElementById('fdTag').textContent = f.tag;
     document.getElementById('fdTitle').textContent = f.title;
@@ -827,7 +766,7 @@ flowchart TD
     const w = document.getElementById('fdWho');
     w.className = 'fd-who '+f.who[0]; w.textContent = f.who[1];
   }
-  document.querySelectorAll('.pnode,.cnode,.out-node').forEach(n=> n.addEventListener('click',()=>selectNode(n.dataset.id)) );
+  document.querySelectorAll('.pnode').forEach(n=> n.addEventListener('click',()=>selectNode(n.dataset.id)) );
 
   // ---------- live demo ----------
   const PROMPT = "What is the pension risk due to AI for the PBGC?";
@@ -845,7 +784,6 @@ flowchart TD
     const c = composite(dimVals);
     document.getElementById('compScore').textContent = c.toFixed(2);
     document.getElementById('shipFill').style.width = Math.max(6,(c-2)/3*100)+'%';
-    hubScore.textContent = c.toFixed(1);
     return c;
   }
   function setGuards(a,b,c){ document.getElementById('dgT').textContent=a; document.getElementById('dgS').textContent=b; document.getElementById('dgV').textContent=c; }
@@ -894,7 +832,7 @@ flowchart TD
       set:{visual:4.4, exec:4.2, story:4.0}, score:{}, mini2:'score', guards:['✓','✓','✓'], ver:'Accepted: 4.0 → 4.3.'},
     {tag:'Done', title:'Board-ready — versioned and sent', who:['out','Version + Notify'], mini:null,
       body:'Score clears the ship bar. The deck is frozen as an immutable version and a message goes out with the delta. It is ready for a human to approve for the board.',
-      ver:'v003 saved · 📧 "Run complete — 3.2 → 4.3 (+1.1)."'}
+      ver:'v003 saved · "Run complete — 3.2 → 4.3 (+1.1)."'}
   ];
 
   let di=0, dtimer=null, typeTimer=null;
