@@ -211,6 +211,41 @@
   .dcols{display:grid; gap:18px}
   @media(min-width:780px){ .dcols{grid-template-columns:1fr 1fr} .dcols.lean{grid-template-columns:1.1fr .9fr} }
 
+  /* three-part flow: [steps] → [arrow] → [visual element] */
+  .dcols3{display:grid; gap:14px}
+  @media(min-width:780px){ .dcols3{grid-template-columns:minmax(0,1fr) 60px minmax(0,1.12fr); align-items:center} }
+
+  /* animated connecting arrow with travelling data dots */
+  .dflow{display:flex; align-items:center; justify-content:center}
+  .dflow-track{position:relative; background:var(--line); border-radius:3px}
+  .dflow-dot{width:7px; height:7px; border-radius:50%; background:var(--green)}
+  .dflow-dot.d2{animation-delay:.75s}
+  .dflow-head{width:0; height:0}
+  @keyframes flowx{0%{left:0; opacity:0}15%{opacity:1}85%{opacity:1}100%{left:100%; opacity:0}}
+  @keyframes flowy{0%{top:0; opacity:0}15%{opacity:1}85%{opacity:1}100%{top:100%; opacity:0}}
+  /* desktop: horizontal, points right */
+  @media(min-width:780px){
+    .dflow-track{width:48px; height:2px}
+    .dflow-dot{position:absolute; top:50%; left:0; transform:translate(-50%,-50%); animation:flowx 1.5s linear infinite}
+    .dflow-head{border-top:5px solid transparent; border-bottom:5px solid transparent; border-left:8px solid var(--green); margin-left:1px}
+  }
+  /* mobile (and forced-vertical): vertical, points down */
+  @media(max-width:779px){
+    .dflow{flex-direction:column; margin:2px 0}
+    .dflow-track{width:2px; height:30px}
+    .dflow-dot{position:absolute; left:50%; top:0; transform:translate(-50%,-50%); animation:flowy 1.5s linear infinite}
+    .dflow-head{border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--green); margin-top:1px}
+  }
+  .dflow.vert{flex-direction:column; margin:8px 0}
+  .dflow.vert .dflow-track{width:2px; height:30px}
+  .dflow.vert .dflow-dot{position:absolute; left:50%; top:0; transform:translate(-50%,-50%); animation:flowy 1.5s linear infinite}
+  .dflow.vert .dflow-head{border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--green); border-bottom:0; margin-top:1px}
+
+  /* frame scene "from your question" header */
+  .dframe-top{display:flex; flex-wrap:wrap; align-items:center; gap:10px; justify-content:center; text-align:center}
+  .dft-tag{font-size:10.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); background:var(--bg); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+  .dft-q{font-size:14.5px; font-weight:700; color:var(--ink)}
+
   /* terminal (legacy, unused) */
   .term{background:#10160f; border:1px solid #2c3a2b; border-radius:14px; padding:18px 20px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:#cfe3c0; font-size:16px}
   .term .tprompt{color:#7fae6b; font-weight:700}
@@ -274,6 +309,8 @@
   .dtool.hl{border-color:var(--green); box-shadow:0 0 0 2px var(--green-soft)}
   .wl table tr{transition:background .3s}
   .wl table tr.hl td{background:var(--green-soft)}
+  .wl table tr.r{opacity:0; transform:translateY(5px); transition:opacity .4s, transform .4s}
+  .wl table tr.r.show{opacity:1; transform:none}
 
   /* human gate (scene 4 & 8) */
   .dgate{max-width:540px; margin:14px auto 0; background:#234e39; color:#e9f2ec; border-radius:16px; padding:24px; position:relative}
@@ -728,8 +765,16 @@
 
         <!-- 2 · frame + rubric -->
         <div class="scene" data-scene="1">
+          <div class="dframe-top anim">
+            <span class="dft-tag">From your question</span>
+            <span class="dft-q">"What is the impact on Virginia if they miss the AI boom?"</span>
+          </div>
+          <div class="dflow vert anim" style="animation-delay:.12s" aria-hidden="true">
+            <span class="dflow-track"><span class="dflow-dot"></span><span class="dflow-dot d2"></span></span>
+            <span class="dflow-head"></span>
+          </div>
           <div class="dcols">
-            <div class="dpanel anim">
+            <div class="dpanel anim" style="animation-delay:.2s">
               <p class="dpanel-h">The brief, frozen up front</p>
               <div class="briefcard" id="dBrief">
                 <div class="briefrow"><span class="ck">✓</span><div><b>Subject</b>Virginia's economy &amp; AI adoption</div></div>
@@ -737,7 +782,7 @@
                 <div class="briefrow"><span class="ck">✓</span><div><b>Sections</b>Exposure · mechanism · scenarios · actions</div></div>
               </div>
             </div>
-            <div class="dpanel anim" style="animation-delay:.15s">
+            <div class="dpanel anim" style="animation-delay:.3s">
               <p class="dpanel-h">The rubric, what "good" means</p>
               <div class="rbar-row"><span class="rbar-label">Actionability</span><div class="rbar-track"><span class="rbar-fill" data-w="100"></span></div><span class="rbar-val">0.25</span></div>
               <div class="rbar-row"><span class="rbar-label">Executive altitude</span><div class="rbar-track"><span class="rbar-fill" data-w="80"></span></div><span class="rbar-val">0.20</span></div>
@@ -751,7 +796,7 @@
 
         <!-- 3 · data pull -->
         <div class="scene" data-scene="2">
-          <div class="dcols lean">
+          <div class="dcols3">
             <div>
               <div class="dtool anim">
                 <div class="ico">BLS</div>
@@ -769,20 +814,24 @@
                   <div class="rows"><div class="row">Filings parsed <b>112</b></div><div class="row">Figures stored <b>1,940</b></div></div></div>
               </div>
             </div>
-            <div class="anim" style="animation-delay:.3s">
+            <div class="dflow anim" style="animation-delay:.3s" aria-hidden="true">
+              <span class="dflow-track"><span class="dflow-dot"></span><span class="dflow-dot d2"></span></span>
+              <span class="dflow-head"></span>
+            </div>
+            <div class="anim" style="animation-delay:.36s">
               <div class="wl">
-                <div class="wl-h"><span>AI-exposure by sector</span><small>ranked · highest at top</small></div>
+                <div class="wl-h"><span>AI-exposure by sector</span><small>built from the sources</small></div>
                 <table>
                   <tr><th>Sector</th><th>Score</th><th>Tier</th></tr>
-                  <tr><td>Data centers / cloud</td><td>94</td><td><span class="tier high">High</span></td></tr>
-                  <tr><td>Federal &amp; defense tech</td><td>88</td><td><span class="tier high">High</span></td></tr>
-                  <tr><td>Logistics &amp; ports</td><td>71</td><td><span class="tier watch">Watch</span></td></tr>
-                  <tr><td>Higher education</td><td>63</td><td><span class="tier watch">Watch</span></td></tr>
+                  <tr class="r"><td>Data centers / cloud</td><td>94</td><td><span class="tier high">High</span></td></tr>
+                  <tr class="r"><td>Federal &amp; defense tech</td><td>88</td><td><span class="tier high">High</span></td></tr>
+                  <tr class="r"><td>Logistics &amp; ports</td><td>71</td><td><span class="tier watch">Watch</span></td></tr>
+                  <tr class="r"><td>Higher education</td><td>63</td><td><span class="tier watch">Watch</span></td></tr>
                 </table>
               </div>
-              <p class="src-note">Fixed, repeatable tools, never the model. Every number traces back to a public filing.</p>
             </div>
           </div>
+          <p class="src-note anim" style="animation-delay:.4s">Fixed, repeatable tools, never the model. Every source feeds the ranked table, and every number traces back to a public filing.</p>
         </div>
 
         <!-- 4 · human gate 1 -->
@@ -801,8 +850,17 @@
 
         <!-- 5 · first draft -->
         <div class="scene" data-scene="4">
-          <div class="dcols lean">
-            <div class="deck anim" id="deckDraft">
+          <div class="dcols3">
+            <div class="agents anim">
+              <div class="agent on" id="agBuild"><div class="ai">✍︎</div><div><div class="at">Builder agent</div><div class="as">assembles slides from the facts</div></div></div>
+              <div class="agent" id="agRevD"><div class="ai">◎</div><div><div class="at">Fresh set of eyes</div><div class="as">reviews next and flags the weak spots</div></div></div>
+              <div class="agent" id="agFixD"><div class="ai">✎</div><div><div class="at">Separate fixer agent</div><div class="as">fixes only what was flagged</div></div></div>
+            </div>
+            <div class="dflow anim" style="animation-delay:.15s" aria-hidden="true">
+              <span class="dflow-track"><span class="dflow-dot"></span><span class="dflow-dot d2"></span></span>
+              <span class="dflow-head"></span>
+            </div>
+            <div class="deck anim" style="animation-delay:.2s" id="deckDraft">
               <div class="slide pop" data-s="0"><div class="sh"></div><div class="sl s2"></div><div class="sl s3"></div></div>
               <div class="slide pop" style="animation-delay:.08s" data-s="1"><div class="sh"></div><div class="sl s2"></div><div class="sl s3"></div></div>
               <div class="slide pop" style="animation-delay:.16s" data-s="2"><span class="ftag">issue</span><span class="xtag">fixed</span><div class="sh"></div><div class="sl s2"></div><div class="bars"><i style="height:60%"></i><i style="height:90%"></i><i style="height:45%"></i></div></div>
@@ -810,13 +868,8 @@
               <div class="slide pop" style="animation-delay:.32s" data-s="4"><span class="ftag">issue</span><span class="xtag">fixed</span><div class="sh"></div><div class="bars"><i style="height:50%"></i><i style="height:70%"></i><i style="height:100%"></i></div></div>
               <div class="slide pop" style="animation-delay:.4s" data-s="5"><div class="sh"></div><div class="sl s2"></div><div class="sl s3"></div></div>
             </div>
-            <div class="agents anim" style="animation-delay:.2s">
-              <div class="agent on" id="agBuild"><div class="ai">✍︎</div><div><div class="at">Builder agent</div><div class="as">assembles slides from the facts</div></div></div>
-              <div class="agent" id="agRevD"><div class="ai">◎</div><div><div class="at">Fresh set of eyes</div><div class="as">reviews next and flags the weak spots</div></div></div>
-              <div class="agent" id="agFixD"><div class="ai">✎</div><div><div class="at">Separate fixer agent</div><div class="as">fixes only what was flagged</div></div></div>
-            </div>
           </div>
-          <p class="src-note anim" style="animation-delay:.45s">Every figure on every slide is tagged to its source in the fact store.</p>
+          <p class="src-note anim" style="animation-delay:.45s">Each agent acts on the deck in turn, build, flag, fix. Every figure on every slide stays tagged to its source.</p>
         </div>
 
         <!-- 6 · de-AI pass -->
@@ -1253,11 +1306,12 @@ flowchart TD
     if(fillEl) fillEl.style.strokeDashoffset = (100 - score/5*100).toFixed(1);
     if(numEl) numEl.textContent = score.toFixed(1);
   }
-  function animateNum(el, from, to, ms){
+  function animateNum(el, from, to, ms, dec){
+    if(dec===undefined) dec = 1;
     const start = performance.now();
     function step(t){
       const p = Math.min(1, (t-start)/ms);
-      el.textContent = (from + (to-from)*p).toFixed(1);
+      el.textContent = (from + (to-from)*p).toFixed(dec);
       if(p<1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
@@ -1265,28 +1319,35 @@ flowchart TD
   function animateFrame(){
     document.querySelectorAll('#dBrief .briefrow').forEach((el,k)=>{
       el.classList.remove('show');
-      later(()=>el.classList.add('show'), 250 + k*220);
+      later(()=>el.classList.add('show'), 300 + k*240);
     });
     document.querySelectorAll('#demo [data-scene="1"] .rbar-fill').forEach((el,k)=>{
       el.style.width = '0%';
-      later(()=>{ el.style.width = el.dataset.w + '%'; }, 500 + k*160);
+      later(()=>{ el.style.width = el.dataset.w + '%'; }, 700 + k*170);
+    });
+    document.querySelectorAll('#demo [data-scene="1"] .rbar-val').forEach((el,k)=>{
+      if(!el.dataset.t) el.dataset.t = el.textContent.trim();
+      const target = parseFloat(el.dataset.t);
+      el.textContent = '0.00';
+      later(()=>animateNum(el, 0, target, 800, 2), 700 + k*170);
     });
   }
   function animateData(){
     const tools = Array.prototype.slice.call(document.querySelectorAll('#demo [data-scene="2"] .dtool'));
-    const rows = Array.prototype.slice.call(document.querySelectorAll('#demo [data-scene="2"] .wl table tr')).slice(1);
-    let t = 500;
+    const rows = Array.prototype.slice.call(document.querySelectorAll('#demo [data-scene="2"] .wl table tr.r'));
+    tools.forEach(el=>el.classList.remove('hl'));
+    rows.forEach(el=>el.classList.remove('show','hl'));
+    let t = 400;
     tools.forEach(function(el){
-      el.classList.remove('hl');
       later(()=>el.classList.add('hl'), t);
-      later(()=>el.classList.remove('hl'), t + 550);
-      t += 650;
+      later(()=>el.classList.remove('hl'), t + 520);
+      t += 560;
     });
+    t += 250;
     rows.forEach(function(el){
-      el.classList.remove('hl');
-      later(()=>el.classList.add('hl'), t);
-      later(()=>el.classList.remove('hl'), t + 450);
-      t += 500;
+      later(()=>{ el.classList.add('show','hl'); }, t);
+      later(()=>el.classList.remove('hl'), t + 520);
+      t += 470;
     });
   }
   function runDraft(){
