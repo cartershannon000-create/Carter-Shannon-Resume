@@ -783,10 +783,10 @@ flowchart TD
     tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
     Object.entries(panes).forEach(([k,el])=> el.style.display = k===name ? '' : 'none');
     window.scrollTo({top:0});
-    if(name==='demo') dReset();
+    if(name==='demo'){ dReset(); setTimeout(dPlay,400); }
   }
   tabs.forEach(t=>t.addEventListener('click', ()=>show(t.dataset.tab)));
-  document.querySelectorAll('[data-goto]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.goto); if(a.dataset.goto==='demo'){ setTimeout(dPlay,400);} }));
+  document.querySelectorAll('[data-goto]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.goto);}));
 
   // ---------- mermaid ----------
   if(window.mermaid){ mermaid.initialize({startOnLoad:true, theme:'neutral',
@@ -921,7 +921,12 @@ flowchart TD
     if(di>=D.length){ stopD(); return; }
     applyDemo(di); di++; setProgress();
   }
-  function dPlay(){ stopD(); if(di===0 && typed.textContent==='') {} dtimer=setInterval(()=>{ dStepFwd(); if(di>=D.length) stopD(); }, 2300); }
+  function dPlay(){
+    stopD();
+    if(di>=D.length) di=0;
+    dStepFwd();
+    dtimer=setInterval(()=>{ dStepFwd(); if(di>=D.length) stopD(); }, 2300);
+  }
   function stopD(){ if(dtimer){clearInterval(dtimer); dtimer=null;} }
   function dReset(){
     stopD(); clearInterval(typeTimer); di=0; typed.textContent='';
