@@ -84,41 +84,71 @@
   .stagelabel{font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 16px}
   .stagelabel b{color:var(--green)}
 
+  /* shared callout interaction */
+  .callout{cursor:pointer}
+
   /* G1 — lean gated pipeline */
   .g1head{font-weight:800; font-size:15px; border-bottom:2px solid var(--ink); display:inline-block; padding-bottom:3px; margin-bottom:16px}
   .track{position:relative; margin-left:8px; padding-left:26px; border-left:2px dashed var(--line)}
-  .step{position:relative; margin-bottom:18px}
+  .step{position:relative; margin-bottom:8px; padding:7px 10px; border-radius:9px; border:1px solid transparent; transition:.18s}
   .step:last-child{margin-bottom:0}
+  .step:hover,.step.active{background:var(--panel); border-color:var(--line)}
+  .step.active{border-color:rgba(46,107,63,.45)}
   /* the gate tick on the line */
-  .step::before{content:''; position:absolute; left:-33px; top:8px; width:16px; height:2px; background:var(--green)}
-  .step.gate::before{width:13px; height:13px; left:-32px; top:2px; background:var(--bg); border:2px solid var(--green); transform:rotate(45deg)}
+  .step::before{content:''; position:absolute; left:-28px; top:15px; width:16px; height:2px; background:var(--green); transition:.18s}
+  .step:hover::before,.step.active::before{width:21px; left:-31px}
+  .step.gate::before{width:13px; height:13px; left:-34px; top:10px; background:var(--bg); border:2px solid var(--green); transform:rotate(45deg)}
+  .step.gate:hover::before,.step.gate.active::before{width:13px; left:-34px}
   .step b{font-weight:800; font-size:14.5px}
   .step .sub{display:block; font-size:12.5px; color:var(--muted); margin-top:2px}
   .step .gtag{display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--green); margin-left:6px}
   .step .strip{color:#7a5424; font-weight:700}
-  .g1out{margin:18px 0 0 8px; font-weight:800; font-size:14px; color:var(--purple)}
+  .g1out{margin:14px 0 0 8px; font-weight:800; font-size:14px; color:var(--purple)}
 
-  /* G2 — the loop circle */
+  /* G2 — the loop circle (modern) */
   .loopwrap{display:flex; flex-direction:column; align-items:center}
-  .ring{position:relative; width:min(420px,90vw); aspect-ratio:1/1}
+  .ring{position:relative; width:min(430px,92vw); aspect-ratio:1/1}
   .ring svg{position:absolute; inset:0; width:100%; height:100%}
-  .rnode{position:absolute; transform:translate(-50%,-50%); text-align:center; min-width:74px}
-  .rchip{font-weight:800; font-size:13px; padding:8px 12px; border-radius:10px; border:1px solid var(--line); background:var(--panel)}
-  .rnode.det .rchip{background:var(--green-soft); color:#294323; border-color:rgba(46,107,63,.3)}
-  .rnode.llm .rchip{background:var(--blue-soft); color:#243f52; border-color:rgba(49,92,117,.3)}
-  .rnode.dyn .rchip{background:var(--gold-soft); color:#7a5424; border-color:rgba(158,113,50,.35)}
-  .rsub{font-size:10.5px; color:var(--muted); margin-top:3px; line-height:1.25}
-  .rsub.strip{color:#7a5424; font-weight:700}
-  .rcenter{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); text-align:center; width:42%}
-  .rcenter .rk{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ink)}
-  .rcenter .rv{font-size:12px; color:var(--muted); margin-top:2px}
-  .n-top{left:50%; top:7%} .n-r{left:90%; top:31%} .n-lr{left:74%; top:84%}
-  .n-ll{left:26%; top:84%} .n-l{left:10%; top:31%}
-  .deploy{margin-top:6px; display:flex; align-items:center; gap:8px; font-weight:800; font-size:14px}
+  .ring .guide{fill:none; stroke:var(--line); stroke-width:1.4}
+  .rnode{position:absolute; transform:translate(-50%,-50%); text-align:center}
+  .rchip{position:relative; display:inline-flex; align-items:center; gap:6px; font-weight:800; font-size:13.5px; padding:9px 15px;
+    border-radius:999px; border:1.5px solid var(--line); background:#fcfcf7; box-shadow:0 1px 2px rgba(31,38,31,.05); transition:.18s}
+  .rnode.det .rchip{color:#294323} .rnode.llm .rchip{color:#243f52} .rnode.dyn .rchip{color:#7a5424}
+  .rnode:hover .rchip,.rnode.active .rchip{transform:translateY(-2px); box-shadow:0 6px 16px rgba(31,38,31,.13)}
+  .rnode.det:hover .rchip,.rnode.det.active .rchip{background:var(--green-soft); border-color:var(--green)}
+  .rnode.llm:hover .rchip,.rnode.llm.active .rchip{background:var(--blue-soft); border-color:var(--blue)}
+  .rnode.dyn:hover .rchip,.rnode.dyn.active .rchip{background:var(--gold-soft); border-color:var(--gold)}
+  .rbadge{font-size:9.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#7a5424;
+    background:var(--gold-soft); border:1px solid rgba(158,113,50,.4); border-radius:999px; padding:1px 6px}
+  .rcenter{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:44%; aspect-ratio:1/1; border-radius:50%;
+    background:var(--panel); border:1px solid var(--line); display:grid; place-content:center; text-align:center; padding:0 7%}
+  .rcenter .rk{font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--ink)}
+  .rcenter .rv{font-size:11.5px; color:var(--muted); margin-top:4px; line-height:1.35}
+  .n-top{left:50%; top:6%} .n-r{left:88%; top:30%} .n-lr{left:73%; top:85%}
+  .n-ll{left:27%; top:85%} .n-l{left:12%; top:30%}
+  .deploy{margin-top:14px; display:inline-flex; align-items:center; gap:9px; font-weight:800; font-size:14px;
+    padding:8px 14px; border-radius:999px; border:1px solid transparent; transition:.18s}
+  .deploy:hover,.deploy.active{background:var(--purple-soft); border-color:rgba(114,86,168,.35)}
   .deploy .gate-d{font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--green); border:1px solid rgba(46,107,63,.4); border-radius:6px; padding:2px 7px}
+  .deploy .darrow{color:var(--muted)}
   .deploy .dep{color:var(--purple)}
-  .looplegend{display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:14px; font-size:12px; color:var(--muted)}
+  .looplegend{display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:16px; font-size:12px; color:var(--muted)}
   .looplegend span{display:inline-flex; align-items:center; gap:6px}
+
+  /* hover/tap description panel */
+  .flowinfo{display:flex; gap:14px; align-items:flex-start; margin-top:26px; padding:18px 20px;
+    border:1px solid var(--line); border-radius:14px; background:var(--panel); min-height:92px}
+  .fi-tag{flex:none; font-size:10.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:5px 10px; border-radius:8px;
+    background:var(--bg); color:var(--muted); border:1px solid var(--line); margin-top:2px}
+  .fi-tag.det{background:var(--green-soft); color:#294323; border-color:rgba(46,107,63,.3)}
+  .fi-tag.llm{background:var(--blue-soft); color:#243f52; border-color:rgba(49,92,117,.3)}
+  .fi-tag.dyn{background:var(--gold-soft); color:#7a5424; border-color:rgba(158,113,50,.35)}
+  .fi-tag.gate{background:var(--bg); color:var(--green); border-color:rgba(46,107,63,.4)}
+  .fi-tag.out{background:var(--purple-soft); color:#4c3a73; border-color:rgba(114,86,168,.35)}
+  .fi-body h4{margin:0 0 4px; font-size:16px}
+  .fi-body p{margin:0; color:var(--ink); font-size:14px}
+  .fi-body .strip{color:#7a5424; font-weight:700}
+  .fi-hint{text-align:center; font-size:12px; color:var(--muted); margin:10px 0 0}
 
   /* teaser to demo */
   .teaser{display:flex; flex-wrap:wrap; align-items:center; gap:18px; justify-content:space-between;
@@ -216,9 +246,10 @@
 
     .flowwrap{padding:16px; border-radius:16px}
     .flowgrid{gap:30px}
-    .rchip{font-size:12px; padding:6px 9px}
-    .rnode{min-width:60px}
-    .rsub{display:none}
+    .rchip{font-size:12px; padding:7px 11px}
+    .rbadge{display:none}
+    .rcenter .rv{font-size:10.5px}
+    .flowinfo{flex-direction:column; gap:10px}
     .teaser{padding:18px; gap:12px}
     .teaser .btn{width:100%}
 
@@ -293,11 +324,11 @@
             <p class="stagelabel"><b>G1</b> · Setup — runs once</p>
             <div class="g1head">Human-injected prompt</div>
             <div class="track">
-              <div class="step"><b>A1 · Scope Builder</b><span class="sub">prompt → frozen brief</span></div>
-              <div class="step"><b>A2 · Rubric Builder</b><span class="sub">defines "good" before drafting</span></div>
-              <div class="step"><b>A3 · Deterministic tools</b><span class="sub">doc parse · analysis · SEC/EDGAR pull</span></div>
-              <div class="step"><b>A4 · LLM agents</b><span class="sub">slide-create · review · revise · <span class="strip">de-AI pass</span></span></div>
-              <div class="step gate"><b>Initial Output</b><span class="gtag">gate · R1</span><span class="sub">first draft must pass before the loop</span></div>
+              <div class="step callout" data-id="a1"><b>A1 · Scope Builder</b><span class="sub">prompt → frozen brief</span></div>
+              <div class="step callout" data-id="a2"><b>A2 · Rubric Builder</b><span class="sub">defines "good" before drafting</span></div>
+              <div class="step callout" data-id="a3"><b>A3 · Deterministic tools</b><span class="sub">doc parse · analysis · SEC/EDGAR pull</span></div>
+              <div class="step callout" data-id="a4"><b>A4 · LLM agents</b><span class="sub">slide-create · review · revise · <span class="strip">de-AI pass</span></span></div>
+              <div class="step gate callout" data-id="init"><b>Initial Output</b><span class="gtag">gate · R1</span><span class="sub">first draft must pass before the loop</span></div>
             </div>
             <div class="g1out">↓ feeds the loop</div>
           </div>
@@ -309,10 +340,11 @@
               <svg viewBox="0 0 400 400" aria-hidden="true">
                 <defs>
                   <marker id="ah" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto">
-                    <path d="M0,0 L6,3 L0,6 Z" fill="#596157"></path>
+                    <path d="M0,0 L6,3 L0,6 Z" fill="#7c8a7a"></path>
                   </marker>
                 </defs>
-                <g fill="none" stroke="#596157" stroke-width="2" marker-end="url(#ah)" opacity=".7">
+                <circle class="guide" cx="200" cy="200" r="150"></circle>
+                <g class="arcs" fill="none" stroke="#7c8a7a" stroke-width="2.2" stroke-linecap="round" marker-end="url(#ah)">
                   <path d="M231.2 53.3 A150 150 0 0 1 329.9 125"></path>
                   <path d="M349.2 184.3 A150 150 0 0 1 311.5 300.4"></path>
                   <path d="M261.0 337.0 A150 150 0 0 1 139.0 337.0"></path>
@@ -322,18 +354,18 @@
               </svg>
 
               <div class="rcenter">
-                <div class="rk">Loop</div>
+                <div class="rk">The loop</div>
                 <div class="rv">keep only edits that score higher</div>
               </div>
 
-              <div class="rnode llm n-top"><div class="rchip">Review</div><div class="rsub">find weakest part</div></div>
-              <div class="rnode dyn n-r"><div class="rchip">Plan</div><div class="rsub">pick the one fix</div></div>
-              <div class="rnode llm n-lr"><div class="rchip">Revise</div><div class="rsub">make that change</div></div>
-              <div class="rnode llm n-ll"><div class="rchip">Build</div><div class="rsub strip">render · strip AI tells</div></div>
-              <div class="rnode det n-l"><div class="rchip">Score</div><div class="rsub">grade · keep if better</div></div>
+              <div class="rnode llm n-top callout" data-id="review"><div class="rchip">Review</div></div>
+              <div class="rnode dyn n-r callout" data-id="plan"><div class="rchip">Plan</div></div>
+              <div class="rnode llm n-lr callout" data-id="revise"><div class="rchip">Revise</div></div>
+              <div class="rnode det n-ll callout" data-id="build"><div class="rchip">Build<span class="rbadge">de-AI</span></div></div>
+              <div class="rnode det n-l callout" data-id="score"><div class="rchip">Score</div></div>
             </div>
 
-            <div class="deploy"><span class="gate-d">gate · ship bar</span> <span>→</span> <span class="dep">Deploy</span></div>
+            <div class="deploy callout" data-id="deploy"><span class="gate-d">gate · ship bar</span> <span class="darrow">→</span> <span class="dep">Deploy</span></div>
 
             <div class="looplegend">
               <span><span class="dot llm"></span> LLM agent</span>
@@ -343,6 +375,16 @@
           </div>
 
         </div>
+
+        <!-- hover / tap description -->
+        <div class="flowinfo" id="flowInfo">
+          <span class="fi-tag" id="fiTag">Step</span>
+          <div class="fi-body">
+            <h4 id="fiTitle"></h4>
+            <p id="fiText"></p>
+          </div>
+        </div>
+        <p class="fi-hint">Hover or tap any step to see what it does.</p>
       </div>
 
       <!-- teaser -->
@@ -738,6 +780,47 @@ flowchart TD
   // ---------- mermaid ----------
   if(window.mermaid){ mermaid.initialize({startOnLoad:true, theme:'neutral',
     themeVariables:{ fontSize:'13px', primaryColor:'#dce8cd', primaryBorderColor:'#2e6b3f', lineColor:'#596157', primaryTextColor:'#151915', tertiaryColor:'#f6f6ef'}}); }
+
+  // ---------- flow callouts (hover / tap → description) ----------
+  const calloutInfo = {
+    a1:{type:'llm', tag:'G1 · A1 — LLM agent', title:'Scope Builder',
+      text:'Turns your prompt into a frozen brief — subject, thesis, audience, required sections. Everything downstream is measured against it, so the deck can\'t quietly drift off-topic.'},
+    a2:{type:'llm', tag:'G1 · A2 — LLM agent', title:'Rubric Builder',
+      text:'Defines what "good" means before a single slide exists — the weighted rubric the loop will later hill-climb. "Good" becomes measurable up front.'},
+    a3:{type:'det', tag:'G1 · A3 — Deterministic code', title:'Deterministic tools',
+      text:'Plain code — not the model — pulls filings, parses tables, and runs the analysis. Every figure lands in a fact store with its source, period, and unit. Nothing is invented.'},
+    a4:{type:'llm', tag:'G1 · A4 — LLM agents', title:'LLM agents — first draft',
+      text:'Writes the first draft from the facts and tags every number to its source, then runs a <span class="strip">de-AI pass</span> so the writing reads human, not machine-generated.'},
+    init:{type:'gate', tag:'G1 → G2 — Gate (R1)', title:'Initial Output',
+      text:'The entry gate. The draft must be fully sourced, on-scope, and cleanly rendered before it\'s allowed into the loop — otherwise it never gets there.'},
+    review:{type:'llm', tag:'Loop ① — LLM agent', title:'Review',
+      text:'Scores the current deck and ranks its weakest parts. It only diagnoses — it never edits, so it can\'t rationalize its own work later.'},
+    plan:{type:'dyn', tag:'Loop ② — Dynamic', title:'Plan',
+      text:'Picks the single highest-value fix for this lap: refresh a number, rewrite a section, or fix one visual. Different laps choose different actions — the loop adapts.'},
+    revise:{type:'llm', tag:'Loop ③ — LLM agent', title:'Revise',
+      text:'A different agent than the Reviewer makes exactly that one change — nothing more. If the plan called for fresh data, it pulls it first.'},
+    build:{type:'det', tag:'Loop ④ — Deterministic code', title:'Build · de-AI pass',
+      text:'Renders the revised deck and runs the <span class="strip">Humanizer / de-AI tool</span> — stripping em-dashes, hedging, generic filler, and AI-looking design so the output reads as if a person made it.'},
+    score:{type:'det', tag:'Loop ⑤ — Deterministic code', title:'Score',
+      text:'Fact-checks every figure against its source, then computes the weighted score. The edit is kept only if the score rose and no guardrail slipped — otherwise it rolls back, and the loop tries again.'},
+    deploy:{type:'out', tag:'Exit — Gate (ship bar)', title:'Deploy',
+      text:'When the score clears the ship bar, the deck is frozen as a new version and you\'re notified with the score delta. Publishing it onward still waits for your approval.'}
+  };
+  const fiTag = document.getElementById('fiTag');
+  const fiTitle = document.getElementById('fiTitle');
+  const fiText = document.getElementById('fiText');
+  const callouts = document.querySelectorAll('.callout');
+  function showCallout(id){
+    const f = calloutInfo[id]; if(!f) return;
+    callouts.forEach(n=>n.classList.toggle('active', n.dataset.id===id));
+    fiTag.className = 'fi-tag '+f.type; fiTag.textContent = f.tag;
+    fiTitle.textContent = f.title; fiText.innerHTML = f.text;
+  }
+  callouts.forEach(n=>{
+    n.addEventListener('mouseenter', ()=>showCallout(n.dataset.id));
+    n.addEventListener('click', ()=>showCallout(n.dataset.id));
+  });
+  showCallout('a1');
 
   // ---------- live demo ----------
   const PROMPT = "What is the pension risk due to AI for the PBGC?";
