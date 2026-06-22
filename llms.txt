@@ -1,0 +1,123 @@
+# CS Ventures
+
+CS Ventures enables individuals and small businesses to create new products, optimize business processes, gain more traction in their markets, and identify new opportunities.
+
+Founded and operated by Carter Shannon, a strategy and analytics professional based in Washington, D.C.
+
+Website: https://cs-ventures.us
+
+---
+
+## Carter Shannon
+
+Carter Shannon is a strategy and analytics consultant based in Washington, D.C. He works at Deloitte Consulting within the Government and Public Sector practice, focusing on technology, analytics, and financial management projects for federal and state clients.
+
+He began his career at Logistics Capital and Strategy, a boutique consulting firm focused on the transportation sector, supporting buy-side diligence and demand modeling for mid-market private equity decisions.
+
+Outside of client work, Carter is the founder of CS Ventures, where he designs and builds products and analytical systems that help individuals and small businesses operate more effectively.
+
+Contact: cartershannon000@gmail.com
+
+### Skills
+
+- Analytics: SQL, Snowflake, Tableau, Power BI
+- Financial Modeling: Excel, P&L Analysis, Risk Assessment
+- Strategy: Market Research, Demand Modeling, Go-to-Market
+- Product: Workflow Design, Process Optimization, KPI Tracking
+
+---
+
+## Experience
+
+### Client Delivery
+
+**Pension Benefit Guaranty Corporation** — Financial Analyst
+Deloitte GPS Consulting | Washington, D.C. | Feb 2026 - Present
+- Monitored a portfolio of 120 corporate pension plan sponsors, analyzing financial performance and pension liabilities to assess risk exposure.
+- Evaluated liquidity, debt profiles, and material financial events to identify emerging threats to long-term pension sustainability.
+- Conducted risk triage to prioritize companies with elevated probability of financial distress and potential pension claims.
+
+**State of Colorado** — Business Analyst
+Deloitte GPS Consulting | Denver, CO | Apr 2024 - Feb 2026
+- Engineered an end-to-end analytics suite using SQL, Snowflake, and Tableau to automate tracking for 15+ strategic KPIs.
+- Streamlined case management workflows across a 200,000+ claims system by analyzing process data and automating manual tasks.
+- Reduced appeal adjudication cycle times by 50% through workflow analysis, operational redesign, and implementation support.
+
+**Logistics Capital and Strategy** — Management Consultant
+Financial and Strategy Consulting | Jun 2023 - Apr 2024
+- Conducted market research and economic forecasting for buy-side diligence deals across the transportation sector.
+- Led demand modeling initiatives integrating company transaction data with macroeconomic datasets to forecast cross-border commodity flows between the U.S. and Mexico.
+- Built an Excel-based lane profitability model that transformed complex P&L data into actionable forecasts for real-time pricing and capacity optimization.
+
+### Firm Growth
+
+**Technology, Media, and Telecommunications Offering Portfolio** — Financial Analyst
+Deloitte TMT Portfolio | Washington, D.C. | May 2025 - Present
+- Conducted financial analytics and sector monitoring to identify strategic risks and growth opportunities across Deloitte's TMT offering portfolio.
+- Built Power BI dashboards tracking financial performance metrics across the TMT sector.
+
+**Anthropic Go-to-Market Strategy** — Go-to-Market Strategy Analyst
+Anthropic Alliance | Washington, D.C. | Aug 2024 - Present
+- Developed internal go-to-market strategy for Anthropic's Generative AI models across government and public sector markets.
+- Created monthly pricing and competitive analysis decks to synthesize trends in the generative AI landscape for senior leaders.
+
+### Nonprofit Leadership
+
+**Inspire Nonprofit** — Deloitte Lead
+National and Local Impact | Jan 2026 - Present
+- Led 8 local Deloitte office branches, generating 20+ yearly engagements with local and national nonprofits.
+- Architected a Deloitte marketing initiative to grow the active volunteer base, maintaining 100+ active participants.
+
+**Inspire Nonprofit** — DMV Area Lead
+Local Impact | Jan 2025 - Dec 2025
+- Led outreach and sales funnel for the Washington, D.C. area Inspire chapter.
+- Sold 3 consulting engagements to local nonprofits.
+
+**Washington Heads of Office Leadership Council** — Case Lead
+Local Impact | Oct 2024 - Jan 2025
+- Led a team of 6 consultants to build a local nonprofit's strategic growth roadmap.
+
+---
+
+## Portfolio
+
+### DeckForge
+
+DeckForge is an autonomous AI agent that writes an equity research deck, critiques it, and rewrites it in a scoring loop until it is board-ready.
+
+Give it a prompt. It pulls real numbers from public filings, builds the deck, then improves it until the composite score clears the ship bar. No manual iteration. No formatting passes. Just a finished deck.
+
+Tags: AI Agent, Finance, Research Decks, Agentic Workflow
+URL: https://cs-ventures.us/DeckForge/
+
+### Altro
+
+Altro is a travel ranking app for logging cities, comparing past trips, and building a personal map of the places that still pull you forward.
+
+Altro turns travel memories into a clear, ranked view of taste and return energy. Log every city you visit, rank and compare trips side by side, and build a living map colored by how strongly each place calls you back.
+
+Tags: Travel, Rankings, Personal Map, Mobile
+URL: https://cs-ventures.us/Altro/
+App: https://cartershannon000-create.github.io/Altro-travel/marketing.html
+
+### Nos
+
+Nos is a prayer and journaling app built around novenas, daily reflection, and honest journaling.
+
+A quiet home for prayer whether the answer is yes, no, or not yet. Nos gives structure without pressure and beauty without clutter. No streaks, no guilt, no notifications that shame. Built around the reality that prayer is a relationship, not a performance metric.
+
+Tags: Prayer, Journaling, Reflection, Mobile
+URL: https://cs-ventures.us/Nos/
+App: https://novena-prayer-app.github.io/nos-prayer-app/marketing.html
+
+---
+
+## Pages
+
+- Home: https://cs-ventures.us/
+- About Carter: https://cs-ventures.us/about/
+- Experience: https://cs-ventures.us/about/experience.html
+- Portfolio: https://cs-ventures.us/portfolio/
+- DeckForge: https://cs-ventures.us/DeckForge/
+- Altro: https://cs-ventures.us/Altro/
+- Nos: https://cs-ventures.us/Nos/
