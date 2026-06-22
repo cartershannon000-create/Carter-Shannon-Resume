@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio | CS Ventures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/site.css">
+<style>
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color: var(--green); text-decoration: none; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 28px; }
+  h1,h2,h3 { line-height: 1.2; letter-spacing: -.025em; margin: 0; }
+  .eyebrow { font-size: 11.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--green); margin-bottom: 14px; }
+
+  .page-hero { padding: 72px 0 52px; border-bottom: 1px solid var(--line); }
+  .page-hero h1 { font-size: clamp(32px,5vw,50px); letter-spacing: -.04em; margin-bottom: 16px; }
+  .page-hero .lead { font-size: 17px; color: var(--muted); max-width: 640px; line-height: 1.7; margin: 0; }
+
+  .port-section { padding: 60px 0; border-bottom: 1px solid var(--line); }
+  .port-section:last-of-type { border-bottom: none; padding-bottom: 80px; }
+
+  .port-card-lg {
+    display: grid; gap: 32px; align-items: start;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 20px;
+    padding: 36px; box-shadow: var(--shadow); margin-top: 28px;
+    transition: box-shadow .2s, border-color .2s;
+    text-decoration: none; color: inherit;
+  }
+  @media(min-width:760px){ .port-card-lg{ grid-template-columns: 1fr 1fr; } }
+  .port-card-lg:hover { box-shadow: 0 8px 32px rgba(31,38,31,.11); border-color: rgba(46,107,63,.32); }
+
+  .pc-meta { display: flex; flex-direction: column; gap: 16px; }
+  .pc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .pc-head h2 { font-size: clamp(24px,4vw,32px); }
+  .pc-head svg { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: var(--muted); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; margin-top: 6px; }
+  .pc-desc { font-size: 15px; color: var(--muted); line-height: 1.68; margin: 0; }
+  .pc-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pc-tag { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--green-soft); color: #294323; border: 1px solid rgba(46,107,63,.22); }
+  .pc-link { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13.5px; color: var(--green); margin-top: 4px; }
+  .pc-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .pc-link:hover { text-decoration: underline; }
+
+  .pc-preview { border-radius: 14px; overflow: hidden; background: var(--panel-strong); border: 1px solid var(--line); min-height: 200px; display: flex; align-items: center; justify-content: center; }
+  .pc-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pc-preview-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 40px; text-align: center; }
+  .pp-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--green-soft); display: grid; place-items: center; }
+  .pp-icon svg { width: 24px; height: 24px; fill: none; stroke: #294323; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .pp-name { font-weight: 800; font-size: 16px; color: var(--ink); }
+  .pp-sub { font-size: 13px; color: var(--muted); }
+
+  footer { padding: 40px 0 64px; text-align: center; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
+  footer a { color: var(--muted); }
+  footer a:hover { color: var(--green); }
+
+  @media(max-width:640px){
+    .page-hero { padding: 52px 0 36px; }
+    .port-card-lg { padding: 24px; }
+    .port-section { padding: 44px 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="csv-bar">
+  <a class="csv-brand" href="/"><span class="csv-logo"></span>CS Ventures</a>
+  <nav class="csv-nav">
+    <a href="/">Home</a>
+    <a href="/about/">About</a>
+    <a href="/portfolio/" class="active">Portfolio</a>
+  </nav>
+</div>
+
+<div class="page-hero">
+  <div class="wrap">
+    <p class="eyebrow">CS Ventures Portfolio</p>
+    <h1>Products and Tools</h1>
+    <p class="lead">A collection of apps, agents, and systems built to solve real problems for real users. Each one started as a clear question about how something could work better.</p>
+  </div>
+</div>
+
+<div class="port-section">
+  <div class="wrap">
+    <a class="port-card-lg" href="/DeckForge/">
+      <div class="pc-meta">
+        <div class="pc-head">
+          <h2>DeckForge</h2>
+          <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+        </div>
+        <p class="pc-desc">An autonomous agent that writes an equity research deck, critiques it, and rewrites it in a scoring loop until it is board-ready. Give it a prompt. It pulls real numbers from public filings, builds the deck, then improves it until the composite score clears the ship bar.</p>
+        <div class="pc-tags">
+          <span class="pc-tag">AI Agent</span>
+          <span class="pc-tag">Finance</span>
+          <span class="pc-tag">Research Decks</span>
+          <span class="pc-tag">Agentic Workflow</span>
+        </div>
+        <span class="pc-link">View DeckForge <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+      </div>
+      <div class="pc-preview">
+        <div class="pc-preview-placeholder">
+          <div class="pp-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+          <div class="pp-name">DeckForge</div>
+          <div class="pp-sub">AI equity research agent</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="port-section">
+  <div class="wrap">
+    <a class="port-card-lg" href="/Altro/">
+      <div class="pc-meta">
+        <div class="pc-head">
+          <h2>Altro</h2>
+          <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+        </div>
+        <p class="pc-desc">A travel ranking app for logging cities, comparing past trips, and building a personal map of the places that still pull you forward. Altro turns travel memories into a clear, ranked view of taste and return energy.</p>
+        <div class="pc-tags">
+          <span class="pc-tag">Travel</span>
+          <span class="pc-tag">Rankings</span>
+          <span class="pc-tag">Personal Map</span>
+          <span class="pc-tag">Mobile</span>
+        </div>
+        <span class="pc-link">View Altro <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+      </div>
+      <div class="pc-preview">
+        <img src="/tulipss.png" alt="Altro rankings screen showing city scores">
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="port-section">
+  <div class="wrap">
+    <a class="port-card-lg" href="/Nos/">
+      <div class="pc-meta">
+        <div class="pc-head">
+          <h2>Nos</h2>
+          <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+        </div>
+        <p class="pc-desc">A quiet home for novenas, daily reflection, honest journaling, and the grace to keep praying whether the answer is yes, no, or not yet. Nos gives structure without pressure and beauty without clutter.</p>
+        <div class="pc-tags">
+          <span class="pc-tag">Prayer</span>
+          <span class="pc-tag">Journaling</span>
+          <span class="pc-tag">Reflection</span>
+          <span class="pc-tag">Mobile</span>
+        </div>
+        <span class="pc-link">View Nos <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+      </div>
+      <div class="pc-preview">
+        <img src="/Library copy.png" alt="Nos library screen showing novena categories">
+      </div>
+    </a>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p><a href="/">CS Ventures</a> &nbsp;&middot;&nbsp; <a href="/about/">About Carter</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

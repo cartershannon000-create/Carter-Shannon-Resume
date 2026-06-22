@@ -1,293 +1,229 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>The Agentic Workflow</title>
-    <meta name="description" content="How a team of AI agents researches, builds, reviews, and delivers finished work — with a human in control of every key decision.">
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body>
-    <main class="page-shell" data-view="map">
-      <section class="hero" aria-labelledby="page-title">
-        <h1 id="page-title">The Agentic <span class="accent">Workflow</span></h1>
-        <p>
-          A team of AI agents that researches, builds, checks, and delivers finished work —
-          while you stay in charge of every decision that matters.
-        </p>
-        <p class="analogy">
-          <strong>Think of it like a small consulting firm.</strong> You're the client. One manager
-          runs the project, specialists do the work, an independent reviewer checks everything,
-          and an editor fixes only what gets flagged.
-        </p>
-        <div class="view-toggle" role="tablist" aria-label="View options">
-          <button type="button" class="is-active" data-view-target="map" role="tab" aria-selected="true">Flow Map</button>
-          <button type="button" data-view-target="story" role="tab" aria-selected="false">Step-by-Step</button>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS Ventures</title>
+<meta name="description" content="CS Ventures enables individuals and small businesses to create new products, optimize business processes, gain more traction in their markets, and identify new opportunities.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/site.css">
+<style>
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--green); text-decoration: none; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 28px; }
+  h1, h2, h3 { line-height: 1.2; letter-spacing: -.025em; margin: 0; }
+  .eyebrow { font-size: 11.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--green); margin-bottom: 14px; }
+  section { padding: 84px 0; border-bottom: 1px solid var(--line); }
+
+  /* hero */
+  .hero { padding: 100px 0 84px; }
+  .hero h1 { font-size: clamp(36px,5.6vw,58px); max-width: 800px; letter-spacing: -.04em; margin-bottom: 22px; }
+  .accent { color: var(--green); }
+  .hero .lead { font-size: 17.5px; color: var(--muted); max-width: 680px; line-height: 1.72; margin-bottom: 38px; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-weight: 700; font-size: 14px; padding: 11px 20px; border-radius: 10px;
+    border: 1px solid var(--green); background: var(--green); color: #fff;
+    cursor: pointer; transition: .14s; text-decoration: none;
+  }
+  .btn:hover { background: #275935; border-color: #275935; color: #fff; }
+  .btn.ghost { background: transparent; border-color: var(--line); color: var(--ink); }
+  .btn.ghost:hover { border-color: var(--green); color: var(--green); background: transparent; }
+
+  /* pillars */
+  .pillars-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px,1fr)); gap: 16px; margin-top: 40px; }
+  .pillar { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow); }
+  .pillar-num { font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+  .pillar h3 { font-size: 17px; margin-bottom: 9px; }
+  .pillar p { font-size: 14px; color: var(--muted); line-height: 1.58; margin: 0; }
+
+  /* portfolio preview */
+  .port-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px,1fr)); gap: 18px; margin-top: 40px; }
+  .port-card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 26px; display: flex; flex-direction: column; gap: 13px;
+    box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s, border-color .2s;
+    text-decoration: none; color: inherit;
+  }
+  .port-card:hover { box-shadow: 0 8px 28px rgba(31,38,31,.12); transform: translateY(-2px); border-color: rgba(46,107,63,.35); }
+  .port-card-head { display: flex; align-items: center; justify-content: space-between; }
+  .port-card-head h3 { font-size: 20px; }
+  .port-card-head svg { width: 17px; height: 17px; fill: none; stroke: var(--muted); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .port-card p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.58; flex: 1; }
+  .port-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+  .port-tag { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--green-soft); color: #294323; border: 1px solid rgba(46,107,63,.22); }
+
+  /* about strip */
+  .about-strip { display: flex; align-items: center; justify-content: space-between; gap: 36px; flex-wrap: wrap; }
+  .about-strip h2 { font-size: clamp(24px,3.5vw,34px); margin-bottom: 13px; }
+  .about-strip p { color: var(--muted); font-size: 15.5px; line-height: 1.7; max-width: 620px; margin: 0; }
+
+  /* contact */
+  .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 14px; margin-top: 38px; }
+  .contact-card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 20px 22px; display: flex; gap: 16px; align-items: flex-start;
+    box-shadow: var(--shadow); text-decoration: none; color: inherit; transition: .15s;
+  }
+  .contact-card:hover { border-color: rgba(46,107,63,.35); box-shadow: 0 4px 16px rgba(31,38,31,.09); }
+  .contact-icon { flex: none; width: 38px; height: 38px; border-radius: 10px; background: var(--green-soft); display: grid; place-items: center; }
+  .contact-icon svg { width: 18px; height: 18px; fill: none; stroke: #294323; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .contact-label { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+  .contact-val { font-size: 15px; font-weight: 700; color: var(--ink); }
+
+  footer { padding: 40px 0 64px; text-align: center; color: var(--muted); font-size: 13px; }
+  footer a { color: var(--muted); }
+  footer a:hover { color: var(--green); }
+
+  @media (max-width: 640px) {
+    section { padding: 56px 0; }
+    .hero { padding: 64px 0 52px; }
+    .hero h1 { font-size: 32px; }
+    .hero .lead { font-size: 15.5px; }
+    .about-strip { flex-direction: column; align-items: flex-start; gap: 20px; }
+    .about-strip .btn { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="csv-bar">
+  <a class="csv-brand" href="/"><span class="csv-logo"></span>CS Ventures</a>
+  <nav class="csv-nav">
+    <a href="/" class="active">Home</a>
+    <a href="/about/">About</a>
+    <a href="/portfolio/">Portfolio</a>
+  </nav>
+</div>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">CS Ventures</p>
+    <h1>Helping Individuals and Small Businesses <span class="accent">Build, Optimize, and Grow</span></h1>
+    <p class="lead">CS Ventures enables individuals and small businesses to create new products, optimize business processes, gain more traction in their markets, and identify new opportunities.</p>
+    <div class="btn-row">
+      <a class="btn" href="/portfolio/">View Portfolio</a>
+      <a class="btn ghost" href="/about/">About Carter</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">What we do</p>
+    <h2 style="font-size:clamp(24px,3.8vw,36px); max-width:600px">Four ways CS Ventures moves businesses forward</h2>
+    <div class="pillars-grid">
+      <div class="pillar">
+        <div class="pillar-num">01</div>
+        <h3>Create New Products</h3>
+        <p>From idea to working product, CS Ventures designs and builds tools that solve real problems for real users.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02</div>
+        <h3>Optimize Business Processes</h3>
+        <p>CS Ventures identifies friction in existing workflows and engineers systems that are faster, cleaner, and more reliable.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03</div>
+        <h3>Gain Market Traction</h3>
+        <p>CS Ventures builds the strategy and tools that help businesses connect with their markets and expand their reach.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">04</div>
+        <h3>Identify New Opportunities</h3>
+        <p>CS Ventures applies data-driven analysis to surface growth paths and strategic openings that competitors have not yet seen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Portfolio</p>
+    <h2 style="font-size:clamp(24px,3.8vw,36px)">Products built by CS Ventures</h2>
+    <div class="port-grid">
+      <a class="port-card" href="/DeckForge/">
+        <div class="port-card-head">
+          <h3>DeckForge</h3>
+          <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
         </div>
-        <p class="view-hint" data-show-view="map">The interactive map — hover or tap anything to see what it does.</p>
-        <p class="view-hint" data-show-view="story" hidden>The same workflow as a simple story, start to finish.</p>
-      </section>
-
-      <section class="glossary" aria-label="Key terms">
-        <article>
-          <h3>Agent</h3>
-          <p>An AI that can take actions — run tools, read files, write documents — not just chat.</p>
-        </article>
-        <article>
-          <h3>Orchestrator</h3>
-          <p>The agent in charge. It plans and delegates, but never does the work itself.</p>
-        </article>
-        <article>
-          <h3>Subagent</h3>
-          <p>A helper agent spun up for one job, then retired. Keeps the manager's head clear.</p>
-        </article>
-        <article>
-          <h3>Deterministic tool</h3>
-          <p>A plain script, not AI. Same input, same output — used wherever numbers must be exact.</p>
-        </article>
-      </section>
-
-      <!-- ===================== STORY VIEW ===================== -->
-      <section class="story-view" data-show-view="story" hidden aria-label="Step-by-step walkthrough">
-        <ol class="story-steps">
-          <li>
-            <span class="step-num">1</span>
-            <div>
-              <h3>You provide the brief</h3>
-              <p>Hand over whatever you have — meeting notes, a document dump, or just a question. It doesn't need to be tidy.</p>
-              <p class="under-hood"><b>Under the hood:</b> the orchestrator interviews you to pin down scope, then writes a structured mission brief.</p>
-            </div>
-          </li>
-          <li>
-            <span class="step-num">2</span>
-            <div>
-              <h3>The team builds a framework</h3>
-              <p>Before doing any work, the team decides what data to pull, how quality will be judged, and what the final output should look like.</p>
-              <p class="under-hood"><b>Under the hood:</b> skills define rubrics and templates; scope lives in config files so the whole mission is reusable.</p>
-            </div>
-          </li>
-          <li>
-            <span class="step-num">3</span>
-            <div>
-              <h3>You confirm the approach</h3>
-              <p>Nothing heavy starts until you approve the plan. No surprises later.</p>
-              <p class="under-hood"><b>Under the hood:</b> a human gate — scope, sources, and success criteria get explicit sign-off.</p>
-            </div>
-          </li>
-          <li>
-            <span class="step-num">4</span>
-            <div>
-              <h3>The pipeline runs</h3>
-              <p>Specialists fetch real data, analyze it, and build the deliverable — coordinated by the manager, who never touches the work itself.</p>
-              <p class="under-hood"><b>Under the hood:</b> deterministic scripts pull filings and figures; AI skills synthesize and build; the orchestrator only ever sees summaries, so its judgment stays sharp.</p>
-            </div>
-          </li>
-          <li>
-            <span class="step-num">5</span>
-            <div>
-              <h3>Independent review, targeted fixes</h3>
-              <p>A reviewer who didn't build anything checks the work against the sources. An editor then fixes exactly what was flagged — nothing more.</p>
-              <p class="under-hood"><b>Under the hood:</b> a read-only review agent produces findings; the reviser applies precise directives instead of reopening the project.</p>
-            </div>
-          </li>
-          <li>
-            <span class="step-num">6</span>
-            <div>
-              <h3>You receive the output</h3>
-              <p>The finished deck, the source behind every number, and an honest list of open questions.</p>
-              <p class="under-hood"><b>Under the hood:</b> artifacts, manifests, and unresolved items return through the orchestrator — the only agent that ever talks to you.</p>
-            </div>
-          </li>
-        </ol>
-      </section>
-
-      <!-- ===================== MAP VIEW ===================== -->
-      <nav class="flow-strip" data-show-view="map" aria-label="Workflow stages">
-        <span><b>1</b> Provide Brief</span>
-        <i></i>
-        <span><b>2</b> Build Framework</span>
-        <i></i>
-        <span><b>3</b> Confirm Approach</span>
-        <i></i>
-        <span><b>4</b> Run Pipeline</span>
-        <i></i>
-        <span><b>5</b> Review + Revise</span>
-        <i></i>
-        <span><b>6</b> Deliver Output</span>
-      </nav>
-
-      <section class="workflow-section" data-show-view="map" aria-label="Interactive workflow map">
-        <div class="workflow-map">
-          <svg class="flow-arrows" aria-hidden="true"></svg>
-
-          <button class="agent-card human-card" type="button" data-node="human"
-            data-kicker="Level 1"
-            data-title="The Human"
-            data-subtitle="You: scope and approvals"
-            data-plain="You kick things off with whatever you have, and you approve every decision that matters."
-            data-body="The human provides the messy signal: a transcript, call notes, an email thread, a document dump, or a direct prompt. The human also approves the key gates — scope, findings, delivery — and receives the finished output.">
-            <span class="icon">⌁</span>
-            <span class="tag">You</span>
-            <strong>The Human</strong>
-            <small>Scope + key approvals</small>
-          </button>
-
-          <button class="agent-card orchestrator-card" type="button" data-node="orchestrator"
-            data-kicker="Level 2"
-            data-title="Orchestrator"
-            data-subtitle="Mission Control: the main thread"
-            data-plain="The project manager. It plans, delegates, and is the only agent that ever talks to you — but it never does the work itself."
-            data-body="The orchestrator holds the research goal, runs the scope interview, and coordinates all specialists. Its defining rule: it never builds or edits anything itself. That keeps its reasoning sharp across a long run. It delegates building to worker subagents, quality checks to the review agent, and all edits to the reviser.">
-            <span class="icon">✣</span>
-            <span class="tag">Orchestrator</span>
-            <strong>Mission Control</strong>
-            <small>Coordinates everything. Never builds, never edits.</small>
-          </button>
-
-          <button class="agent-card output-card" type="button" data-node="output"
-            data-kicker="Return"
-            data-title="Deliverable"
-            data-subtitle="What you actually receive"
-            data-plain="The finished product — a polished deck plus the sources and notes that back up every number."
-            data-body="The orchestrator returns the final artifact to the human: an HTML deck, source notes, manifests, unresolved questions, and a clear explanation of what changed since the last review pass.">
-            <span class="icon">□</span>
-            <span class="tag">Output</span>
-            <strong>Deliverable</strong>
-            <small>Deck + supporting artifacts</small>
-          </button>
-
-          <button class="agent-card skill-card deterministic-card" type="button" data-node="deterministic"
-            data-kicker="Level 3A"
-            data-title="Specialist Builders"
-            data-subtitle="Worker subagents + deterministic tools"
-            data-plain="Reliable scripts and builders that fetch and crunch real data. Same input, same output — no guessing."
-            data-body="Repeatable scripts and parsers handle the bounded work: document parsing, SEC/EDGAR pulls, Form 5500 extraction, data cleanup, and artifact generation. These tools are predictable and inspectable, so every figure can be traced to a source.">
-            <span class="icon">▦</span>
-            <span class="tag">Worker subagents</span>
-            <strong>Specialist Builders</strong>
-            <small>Build headlessly. Return clean results.</small>
-          </button>
-
-          <button class="agent-card skill-card decision-card" type="button" data-node="decision"
-            data-kicker="Level 3B"
-            data-title="Analysis + Rubrics"
-            data-subtitle="Decision tools: the judgment layer"
-            data-plain="AI specialists for the judgment calls — analyzing, scoring, and writing the sections that need thinking, not just fetching."
-            data-body="LLM-backed skills handle the judgment-heavy work: rubric design, analysis, synthesis, scoring, and deck-section building. The skill owns the work pattern; the orchestrator owns the mission direction.">
-            <span class="icon">⌕</span>
-            <span class="tag">Decision tools</span>
-            <strong>Analysis + Rubrics</strong>
-            <small>Decision support, synthesis, scoring.</small>
-          </button>
-
-          <button class="agent-card skill-card review-card" type="button" data-node="review"
-            data-kicker="Level 3C"
-            data-title="Quality Auditor"
-            data-subtitle="Review subagent: fresh eyes, read-only"
-            data-plain="An independent checker that compares the work against the sources. It flags problems — it never fixes them itself."
-            data-body="The review agent is read-only and starts with zero build context, so it can't be biased by how the work was made. It checks against source data, brand, visual quality, actionability, and the rubric. It creates findings, not fixes.">
-            <span class="icon">✓</span>
-            <span class="tag">Review subagent</span>
-            <strong>Quality Auditor</strong>
-            <small>Fresh eyes. Zero build context.</small>
-          </button>
-
-          <button class="agent-card skill-card revise-card" type="button" data-node="revise"
-            data-kicker="Level 3D"
-            data-title="Precision Editor"
-            data-subtitle="Reviser subagent: exact directives only"
-            data-plain="The editor. It fixes exactly what the reviewer flagged — nothing more, nothing less."
-            data-body="The reviser only edits when the orchestrator gives exact directives. It performs targeted fixes from review findings instead of reopening the whole project or guessing at vague improvements.">
-            <span class="icon">✎</span>
-            <span class="tag">Reviser subagent</span>
-            <strong>Precision Editor</strong>
-            <small>Only edits. Exact directives.</small>
-          </button>
+        <p>An autonomous agent that writes an equity research deck, critiques it, and rewrites it in a loop until it is board-ready.</p>
+        <div class="port-tags"><span class="port-tag">AI Agent</span><span class="port-tag">Finance</span><span class="port-tag">Decks</span></div>
+      </a>
+      <a class="port-card" href="/Altro/">
+        <div class="port-card-head">
+          <h3>Altro</h3>
+          <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
         </div>
-
-        <aside class="inspector" aria-live="polite">
-          <div class="inspector-empty">
-            <span class="tag">Inspector</span>
-            <h2>Hover or tap any card.</h2>
-            <p>Each one explains itself in plain terms first, then in depth.</p>
-          </div>
-          <div class="inspector-content" hidden>
-            <span class="tag" id="detail-kicker"></span>
-            <h2 id="detail-title"></h2>
-            <p class="detail-subtitle" id="detail-subtitle"></p>
-            <p class="detail-plain" id="detail-plain"></p>
-            <p class="detail-depth-label">In more depth</p>
-            <p id="detail-body"></p>
-            <div class="connects">
-              <span>Connects to</span>
-              <div id="detail-links"></div>
-            </div>
-          </div>
-        </aside>
-      </section>
-
-      <section class="tool-lists" data-show-view="map" aria-labelledby="tools-title">
-        <h2 id="tools-title">What runs underneath</h2>
-        <div class="tool-columns">
-          <article class="tool-bridge deterministic-bridge" data-related-node="deterministic" tabindex="0">
-            <span class="bridge-label">Deterministic tools</span>
-            <h3>Scripts — exact, repeatable</h3>
-            <ul>
-              <li>fetch_5500.py</li>
-              <li>lookthrough_mtia.py</li>
-              <li>fetch_edgar_ai.py</li>
-              <li>analyze.py</li>
-            </ul>
-          </article>
-          <article class="tool-bridge decision-bridge" data-related-node="decision" tabindex="0">
-            <span class="bridge-label">Builder skills</span>
-            <h3>Skills — judgment and synthesis</h3>
-            <ul>
-              <li>pension-rubric-builder</li>
-              <li>efast-puller</li>
-              <li>chs.slide-create</li>
-            </ul>
-          </article>
+        <p>A travel ranking app for logging cities, comparing past trips, and building a personal map of the places that still pull you forward.</p>
+        <div class="port-tags"><span class="port-tag">Travel</span><span class="port-tag">Rankings</span><span class="port-tag">Mobile</span></div>
+      </a>
+      <a class="port-card" href="/Nos/">
+        <div class="port-card-head">
+          <h3>Nos</h3>
+          <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
         </div>
-      </section>
+        <p>A quiet home for novenas, daily reflection, and honest journaling. Structure without pressure, beauty without clutter.</p>
+        <div class="port-tags"><span class="port-tag">Prayer</span><span class="port-tag">Journaling</span><span class="port-tag">Mobile</span></div>
+      </a>
+    </div>
+  </div>
+</section>
 
-      <section class="principles" aria-labelledby="principles-title">
-        <p class="section-kicker" id="principles-title">Why the architecture looks like this</p>
-        <div class="principle-grid">
-          <article>
-            <span>+</span>
-            <h3>Context Hygiene Above All</h3>
-            <p>The manager delegates the building so its own working memory never fills with large files. It only sees summaries — which keeps its judgment sharp from start to finish.</p>
-          </article>
-          <article>
-            <span>✓</span>
-            <h3>Human Gates at Every Consequence</h3>
-            <p>You approve before anything that matters: the scope, the findings, and the final delivery. The AI moves fast between gates, never past them.</p>
-          </article>
-          <article>
-            <span>≡</span>
-            <h3>Every Number Sourced</h3>
-            <p>Figures come from real filings — Form 5500, SEC EDGAR, named source documents — pulled by exact scripts, never estimated by the AI.</p>
-          </article>
-          <article>
-            <span>⌕</span>
-            <h3>Objective Quality Review</h3>
-            <p>A builder can't grade its own homework. A fresh agent with no memory of the build critiques the work against the sources and the rubric.</p>
-          </article>
-          <article>
-            <span>▦</span>
-            <h3>Reusable by Design</h3>
-            <p>Scope lives in config files and briefs, not in code. Point the same workflow at a new target and it runs again without a rebuild.</p>
-          </article>
-          <article>
-            <span>✎</span>
-            <h3>Precision Over Vague Directives</h3>
-            <p>The editor only acts on exact instructions, producing clean targeted fixes instead of loops of guesswork.</p>
-          </article>
+<section>
+  <div class="wrap">
+    <div class="about-strip">
+      <div>
+        <p class="eyebrow">About</p>
+        <h2>Carter Shannon</h2>
+        <p style="margin-top:13px">Strategy backed by data. Carter is a strategy and analytics professional with experience across financial risk, government technology, and go-to-market work. CS Ventures is where that background gets applied to products and tools that help people and businesses move forward.</p>
+      </div>
+      <a class="btn" href="/about/" style="flex-shrink:0">View Full Profile</a>
+    </div>
+  </div>
+</section>
+
+<section style="border-bottom:none">
+  <div class="wrap">
+    <p class="eyebrow">Contact</p>
+    <h2 style="font-size:clamp(24px,3.8vw,36px)">Get in touch</h2>
+    <div class="contact-grid">
+      <a class="contact-card" href="mailto:cartershannon000@gmail.com">
+        <div class="contact-icon">
+          <svg viewBox="0 0 24 24"><path d="m4 6 8 7 8-7"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
         </div>
-      </section>
-    </main>
+        <div>
+          <div class="contact-label">Email</div>
+          <div class="contact-val">cartershannon000@gmail.com</div>
+        </div>
+      </a>
+      <a class="contact-card" href="tel:+13364553421">
+        <div class="contact-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.7.6 2.5a2 2 0 0 1-.5 2.1L8 9.5a16 16 0 0 0 6.5 6.5l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.6.5 2.5.6A2 2 0 0 1 22 16.9Z"/></svg>
+        </div>
+        <div>
+          <div class="contact-label">Phone</div>
+          <div class="contact-val">(336) 455-3421</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
 
-    <script src="script.js"></script>
-  </body>
+<footer>
+  <div class="wrap">
+    <p>CS Ventures &copy; 2026 &nbsp;&middot;&nbsp; <a href="/about/">About Carter</a> &nbsp;&middot;&nbsp; <a href="/portfolio/">Portfolio</a></p>
+  </div>
+</footer>
+
+</body>
 </html>
