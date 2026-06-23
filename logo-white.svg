@@ -1,25 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 95 400 340" fill="#f0f0e8">
-  <text
-    font-family="'Playfair Display',Georgia,'Times New Roman',serif"
-    font-size="265"
-    font-weight="400"
-    x="60"
-    y="308"
-  >C</text>
-  <text
-    font-family="'Playfair Display',Georgia,'Times New Roman',serif"
-    font-size="215"
-    font-weight="400"
-    x="130"
-    y="268"
-  >s</text>
-  <text
-    font-family="'Playfair Display',Georgia,'Times New Roman',serif"
-    font-size="23"
-    font-weight="400"
-    letter-spacing="9"
-    x="200"
-    y="393"
-    text-anchor="middle"
-  >VENTURES</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 200" fill="#f0f0e8">
+  <text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="150" font-weight="400" x="4" y="108">C</text>
+  <text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="125" font-weight="400" x="78" y="129">S</text>
+  <text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="24" font-weight="400" letter-spacing="15" x="110" y="182" text-anchor="middle">VENTURES</text>
 </svg>

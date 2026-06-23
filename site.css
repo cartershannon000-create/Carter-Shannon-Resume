@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Bodoni+Moda:opsz,wght@6..96,400&display=swap');
 
 :root {
   --bg: #eae9e0;
@@ -21,6 +21,8 @@
   --radius: 4px;
   --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-body: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-logo: Didot, 'Bodoni Moda', 'Bodoni 72', 'Bodoni MT', Georgia, serif;
+  --logo-green: #173d2b;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -108,21 +110,27 @@ html { scroll-behavior: smooth; }
 details[open] .faq-toggle::after { transform: translate(-50%,-50%) rotate(90deg); }
 .faq-answer { padding: 2px 0 24px; font-size: 14.5px; color: var(--muted); line-height: 1.74; max-width: 680px; margin: 0; }
 
-/* ── Footer brand logo (overrides per-page inline .footer-brand via higher specificity) ── */
-footer .footer-brand {
-  font-size: 0;
-  color: transparent;
-  display: block;
-  width: 130px;
-  height: 42px;
-  flex-shrink: 0;
-  background: var(--on-dark);
-  -webkit-mask-image: url('/logo.svg');
-  -webkit-mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: left center;
-  mask-image: url('/logo.svg');
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: left center;
+/* ── CS Ventures logo component ── */
+.cs-logo {
+  width: 220px;
+  text-align: center;
+  font-family: var(--font-logo);
+  color: var(--logo-green);
 }
+.monogram {
+  position: relative;
+  width: 170px;
+  height: 150px;
+  margin: 0 auto 18px;
+}
+.monogram span {
+  position: absolute;
+  font-size: 150px;
+  font-weight: 400;
+  line-height: 1;
+  color: inherit;
+}
+.monogram .c { left: 4px; top: 0; transform: scaleX(1.05); z-index: 1; }
+.monogram .s { left: 78px; top: 39px; font-size: 125px; transform: scaleX(0.96); z-index: 2; }
+.ventures-wordmark { font-size: 24px; letter-spacing: 15px; font-weight: 400; margin-left: 14px; color: inherit; }
+.cs-logo-light { color: var(--on-dark); }
