@@ -55,20 +55,12 @@ html { scroll-behavior: smooth; }
   flex-shrink: 0;
 }
 
-.csv-logo {
-  display: inline-block;
-  width: 26px;
-  height: 22px;
+.csv-mark {
+  width: 28px;
+  height: 24px;
   flex-shrink: 0;
-  background: var(--on-dark);
-  -webkit-mask-image: url('/logo-mark.svg');
-  -webkit-mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-image: url('/logo-mark.svg');
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: center;
+  color: var(--on-dark);
+  overflow: visible;
 }
 
 .csv-nav { display: flex; gap: 0; }
