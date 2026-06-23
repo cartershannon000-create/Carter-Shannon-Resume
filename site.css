@@ -85,3 +85,25 @@ html { scroll-behavior: smooth; }
   .csv-bar { padding: 0 18px; }
   .csv-nav a { padding: 7px 10px; }
 }
+
+/* ── FAQ accordion ── */
+.faq-list details { border-top: 1px solid var(--line); }
+.faq-list details:last-child { border-bottom: 1px solid var(--line); }
+.faq-list summary {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px; padding: 22px 0; cursor: pointer; list-style: none;
+  font: 600 15px/1.4 var(--font-body); color: var(--ink);
+}
+.faq-list summary::-webkit-details-marker { display: none; }
+.faq-toggle {
+  flex-shrink: 0; width: 18px; height: 18px; position: relative;
+}
+.faq-toggle::before, .faq-toggle::after {
+  content: ''; position: absolute; background: var(--muted);
+  top: 50%; left: 50%; border-radius: 1px;
+  transition: transform .18s;
+}
+.faq-toggle::before { width: 11px; height: 1.5px; transform: translate(-50%,-50%); }
+.faq-toggle::after  { width: 1.5px; height: 11px; transform: translate(-50%,-50%); }
+details[open] .faq-toggle::after { transform: translate(-50%,-50%) rotate(90deg); }
+.faq-answer { padding: 2px 0 24px; font-size: 14.5px; color: var(--muted); line-height: 1.74; max-width: 680px; margin: 0; }
