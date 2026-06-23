@@ -10,11 +10,11 @@ Website: https://cs-ventures.us
 
 ## Carter Shannon
 
-Carter Shannon is a strategy and analytics consultant based in Washington, D.C. He works at Deloitte Consulting within the Government and Public Sector practice, focusing on technology, analytics, and financial management projects for federal and state clients.
+Carter Shannon works at the intersection of strategy, analytics, and product. He is a consultant at Deloitte's Government and Public Sector practice and the founder of CS Ventures, based in Washington, D.C.
 
-He began his career at Logistics Capital and Strategy, a boutique consulting firm focused on the transportation sector, supporting buy-side diligence and demand modeling for mid-market private equity decisions.
+Technology has automated the deterministic layer of business. Data pipelines run without analysts. Decisions that once required teams now happen in real time. The bottleneck has shifted from execution to judgment. Carter works at that gap: knowing which problem is worth solving, building the system that solves it, and driving it to delivery.
 
-Outside of client work, Carter is the founder of CS Ventures, where he designs and builds products and analytical systems that help individuals and small businesses operate more effectively.
+His path spans financial diligence and demand modeling at Logistics Capital and Strategy, public sector technology and analytics at Deloitte, go-to-market strategy for Anthropic's AI models in the federal market, and product development across AI agents, mobile apps, and analytical systems.
 
 Contact: info@cs-ventures.us
 
