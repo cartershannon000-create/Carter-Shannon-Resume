@@ -1,16 +1,12 @@
-/* ============ CS VENTURES SHARED NAV BAR ============ */
-/* Imported by every page on the site. Defines the shared top bar
-   and the CSS custom properties used across all pages. */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
 :root {
   --bg: #e8e8df;
-  --panel: rgba(246,246,239,0.74);
-  --panel-strong: rgba(249,249,242,0.94);
-  --ink: #151915;
-  --muted: #596157;
-  --line: rgba(35,48,39,0.18);
+  --panel: rgba(246,246,239,0.78);
+  --panel-strong: rgba(249,249,242,0.96);
+  --ink: #141914;
+  --muted: #58604f;
+  --line: rgba(35,48,39,0.16);
   --green: #2e6b3f;
   --green-soft: #dce8cd;
   --blue: #315c75;
@@ -19,23 +15,29 @@
   --gold-soft: #efe3c9;
   --rose: #9b4f4d;
   --rose-soft: #efd9d6;
-  --shadow: 0 1px 3px rgba(31,38,31,.07);
+  --shadow: 0 1px 4px rgba(31,38,31,.07), 0 4px 12px rgba(31,38,31,.04);
+  --shadow-md: 0 4px 20px rgba(31,38,31,.10), 0 1px 4px rgba(31,38,31,.06);
   --radius: 16px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
+html { scroll-behavior: smooth; }
+
+/* ── Nav bar ── */
 .csv-bar {
   position: sticky;
   top: 0;
   z-index: 200;
-  background: var(--bg);
+  background: rgba(232,232,223,0.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  height: 52px;
+  padding: 0 28px;
+  height: 54px;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -43,21 +45,30 @@
 .csv-brand {
   font-weight: 800;
   font-size: 15px;
-  letter-spacing: -.02em;
+  letter-spacing: -.025em;
   color: var(--ink);
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   flex-shrink: 0;
 }
 
 .csv-logo {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
   background: var(--green);
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.csv-logo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.18) 0%, transparent 60%);
 }
 
 .csv-nav {
@@ -67,20 +78,20 @@
 
 .csv-nav a {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
-  font-weight: 700;
-  font-size: 13px;
+  font-weight: 600;
+  font-size: 13.5px;
   color: var(--muted);
   text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  transition: background .14s, color .14s;
+  padding: 6px 13px;
+  border-radius: 9px;
+  transition: background .15s, color .15s;
   white-space: nowrap;
 }
 
 .csv-nav a:hover { background: var(--panel); color: var(--ink); }
-.csv-nav a.active { background: var(--green-soft); color: #294323; }
+.csv-nav a.active { background: var(--green-soft); color: #254220; font-weight: 700; }
 
 @media (max-width: 500px) {
-  .csv-bar { padding: 0 14px; }
-  .csv-nav a { padding: 6px 8px; font-size: 12px; }
+  .csv-bar { padding: 0 16px; }
+  .csv-nav a { padding: 6px 9px; font-size: 12.5px; }
 }
