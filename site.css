@@ -56,11 +56,19 @@ html { scroll-behavior: smooth; }
 }
 
 .csv-logo {
-  width: 18px;
-  height: 18px;
-  border-radius: 3px;
-  background: var(--green);
+  display: inline-block;
+  width: 26px;
+  height: 22px;
   flex-shrink: 0;
+  background: var(--on-dark);
+  -webkit-mask-image: url('/logo-mark.svg');
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-image: url('/logo-mark.svg');
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 
 .csv-nav { display: flex; gap: 0; }
@@ -107,3 +115,22 @@ html { scroll-behavior: smooth; }
 .faq-toggle::after  { width: 1.5px; height: 11px; transform: translate(-50%,-50%); }
 details[open] .faq-toggle::after { transform: translate(-50%,-50%) rotate(90deg); }
 .faq-answer { padding: 2px 0 24px; font-size: 14.5px; color: var(--muted); line-height: 1.74; max-width: 680px; margin: 0; }
+
+/* ── Footer brand logo (overrides per-page inline .footer-brand via higher specificity) ── */
+footer .footer-brand {
+  font-size: 0;
+  color: transparent;
+  display: block;
+  width: 130px;
+  height: 42px;
+  flex-shrink: 0;
+  background: var(--on-dark);
+  -webkit-mask-image: url('/logo.svg');
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: left center;
+  mask-image: url('/logo.svg');
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: left center;
+}
