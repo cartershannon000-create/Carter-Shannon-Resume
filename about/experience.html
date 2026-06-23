@@ -12,12 +12,110 @@
     <meta name="twitter:card" content="summary">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/legacy.css" />
     <link rel="stylesheet" href="/site.css" />
+    <link rel="stylesheet" href="/legacy.css" />
+    <style>
+      /* ── Layout offsets ── */
+      .site-shell { padding-top: 0; }
+      .profile-rail { top: 56px; height: calc(100vh - 56px); }
+      .top-nav { top: 56px; }
+
+      /* ── Dark sidebar ── */
+      .profile-rail {
+        background: var(--dark);
+        border-right: 1px solid var(--on-dark-line);
+      }
+      .brand-lockup { color: var(--on-dark); font-family: var(--font-body); }
+      .brand-lockup::after { background: var(--green); }
+      .profile-line { color: var(--on-dark-muted); font-size: 13px; }
+      .side-nav-link { color: var(--on-dark-muted); border-radius: 3px; }
+      .side-nav-link:hover { background: rgba(255,255,255,0.06); color: var(--on-dark); }
+      .side-nav-link.active {
+        background: rgba(255,255,255,0.07);
+        border-color: rgba(255,255,255,0.11);
+        color: var(--on-dark);
+      }
+      .social-links a { border-color: var(--on-dark-line); color: var(--on-dark-muted); border-radius: 3px; }
+      .social-links a:hover { color: var(--on-dark); background: rgba(255,255,255,0.07); }
+      .headshot { border-color: rgba(255,255,255,0.08); }
+
+      /* ── Top nav ── */
+      .top-nav {
+        background: rgba(234,233,224,0.94);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--line);
+        height: 52px;
+      }
+      .top-nav-link { font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: .01em; }
+      .top-nav-link.active { color: var(--green); }
+      .top-nav-link.active::after { background: var(--green); height: 2px; }
+
+      /* ── Content ── */
+      body { background: var(--bg); }
+      .page-section { background: var(--bg); }
+      h1 {
+        font-family: var(--font-display) !important;
+        font-size: clamp(28px, 3.5vw, 42px) !important;
+        color: var(--ink) !important;
+        letter-spacing: -.01em !important;
+        margin-bottom: 18px !important;
+      }
+      .intro { font-size: 15.5px !important; color: var(--muted) !important; line-height: 1.74 !important; }
+
+      /* ── Tab shell ── */
+      .tab-shell {
+        border-radius: var(--radius) !important;
+        border: 1px solid var(--line) !important;
+        background: var(--panel) !important;
+      }
+      .tab-button {
+        border-radius: 3px !important;
+        font-family: var(--font-body);
+        font-size: 13px !important;
+        letter-spacing: .01em;
+      }
+      .tab-button.active {
+        background: var(--dark) !important;
+        border-color: transparent !important;
+        color: var(--on-dark) !important;
+      }
+
+      /* ── Experience cards ── */
+      .experience-card {
+        border-radius: var(--radius) !important;
+        background: var(--panel) !important;
+        transition: box-shadow .18s, border-color .18s, transform .18s !important;
+      }
+      .experience-card:hover {
+        transform: translateY(-2px) scale(1) !important;
+        border-color: rgba(46,107,63,.28) !important;
+        box-shadow: var(--shadow-md) !important;
+      }
+      .experience-card h2 {
+        font-family: var(--font-display);
+        font-size: 20px !important;
+        letter-spacing: -.01em;
+      }
+      .experience-role { color: var(--green) !important; font-size: 13.5px !important; }
+      .experience-meta { font-size: 11px !important; letter-spacing: .1em !important; }
+      .tag-row span {
+        border-radius: var(--radius) !important;
+        background: var(--green-soft) !important;
+        color: #294323 !important;
+        border-color: rgba(46,107,63,.18) !important;
+      }
+
+      /* ── Section rule ── */
+      .s-rule {
+        display: flex; align-items: center; gap: 14px; margin-bottom: 6px;
+      }
+      .s-rule::before {
+        content: ''; display: block; flex: 0 0 28px; height: 1px; background: var(--ink);
+      }
+      .s-rule span {
+        font: 700 10px/1 var(--font-body); letter-spacing: .18em; text-transform: uppercase; color: var(--muted);
+      }
+    </style>
   </head>
   <body>
 
@@ -80,11 +178,11 @@
       <main class="page-content">
         <header class="top-nav">
           <a class="top-nav-link" href="/about/">About Carter</a>
-          <a class="top-nav-link" href="/about/">About Carter</a>
           <a class="top-nav-link active" href="/about/experience.html">Experience</a>
         </header>
 
         <section class="page-section" aria-labelledby="experience-title">
+          <div class="s-rule"><span>Experience</span></div>
           <h1 id="experience-title">Experience</h1>
           <p class="intro">
             Carter started his career with Logistics Capital &amp; Strategy (LCS)
@@ -112,11 +210,7 @@
             </button>
           </div>
 
-          <div
-            class="experience-list tab-panel active"
-            id="client-delivery"
-            aria-label="Client delivery experience"
-          >
+          <div class="experience-list tab-panel active" id="client-delivery" aria-label="Client delivery experience">
             <article class="experience-card">
               <div class="experience-meta">
                 <span>Deloitte GPS Consulting</span>
@@ -125,20 +219,9 @@
               <h2>Pension Benefit Guaranty Corporation</h2>
               <p class="experience-role">Financial Analyst</p>
               <ul>
-                <li>
-                  Monitored a portfolio of 120 corporate pension plan sponsors,
-                  analyzing financial performance and pension liabilities to
-                  assess risk exposure.
-                </li>
-                <li>
-                  Evaluated liquidity, debt profiles, and material financial
-                  events to identify emerging threats to long-term pension
-                  sustainability.
-                </li>
-                <li>
-                  Conducted risk triage to prioritize companies with elevated
-                  probability of financial distress and potential pension claims.
-                </li>
+                <li>Monitored a portfolio of 120 corporate pension plan sponsors, analyzing financial performance and pension liabilities to assess risk exposure.</li>
+                <li>Evaluated liquidity, debt profiles, and material financial events to identify emerging threats to long-term pension sustainability.</li>
+                <li>Conducted risk triage to prioritize companies with elevated probability of financial distress and potential pension claims.</li>
               </ul>
               <div class="tag-row" aria-label="Focus areas">
                 <span>Financial Risk</span>
@@ -155,20 +238,9 @@
               <h2>State of Colorado</h2>
               <p class="experience-role">Business Analyst</p>
               <ul>
-                <li>
-                  Engineered an end-to-end analytics suite using SQL,
-                  Snowflake, and Tableau to automate tracking for 15+ strategic
-                  KPIs and support leadership-level data strategy.
-                </li>
-                <li>
-                  Streamlined case management workflows across a 200,000+ claims
-                  system by analyzing process data and automating manual tasks.
-                </li>
-                <li>
-                  Reduced appeal adjudication cycle times by 50% through
-                  workflow analysis, operational redesign, and implementation
-                  support.
-                </li>
+                <li>Engineered an end-to-end analytics suite using SQL, Snowflake, and Tableau to automate tracking for 15+ strategic KPIs and support leadership-level data strategy.</li>
+                <li>Streamlined case management workflows across a 200,000+ claims system by analyzing process data and automating manual tasks.</li>
+                <li>Reduced appeal adjudication cycle times by 50% through workflow analysis, operational redesign, and implementation support.</li>
               </ul>
               <div class="tag-row" aria-label="Focus areas">
                 <span>Analytics Suite</span>
@@ -185,21 +257,9 @@
               <h2>Logistics Capital &amp; Strategy</h2>
               <p class="experience-role">Management Consultant</p>
               <ul>
-                <li>
-                  Conducted market research and economic forecasting for
-                  buy-side diligence deals across the transportation sector,
-                  supporting mid-market private equity decisions.
-                </li>
-                <li>
-                  Led demand modeling initiatives by integrating company
-                  transaction data with macroeconomic datasets to forecast
-                  cross-border commodity flows between the U.S. and Mexico.
-                </li>
-                <li>
-                  Built an Excel-based lane profitability model that transformed
-                  complex P&amp;L data into actionable forecasts for real-time
-                  pricing and capacity optimization.
-                </li>
+                <li>Conducted market research and economic forecasting for buy-side diligence deals across the transportation sector, supporting mid-market private equity decisions.</li>
+                <li>Led demand modeling initiatives by integrating company transaction data with macroeconomic datasets to forecast cross-border commodity flows between the U.S. and Mexico.</li>
+                <li>Built an Excel-based lane profitability model that transformed complex P&amp;L data into actionable forecasts for real-time pricing and capacity optimization.</li>
               </ul>
               <div class="tag-row" aria-label="Focus areas">
                 <span>Market Research</span>
@@ -209,11 +269,7 @@
             </article>
           </div>
 
-          <div
-            class="experience-list tab-panel"
-            id="firm-growth"
-            aria-label="Firm growth experience"
-          >
+          <div class="experience-list tab-panel" id="firm-growth" aria-label="Firm growth experience">
             <article class="experience-card">
               <div class="experience-meta">
                 <span>Deloitte TMT Portfolio</span>
@@ -222,22 +278,9 @@
               <h2>Technology, Media, and Telecommunications Offering Portfolio</h2>
               <p class="experience-role">Financial Analyst</p>
               <ul>
-                <li>
-                  Conducted financial analytics and sector monitoring to
-                  identify strategic risks and growth opportunities across
-                  Deloitte's Technology, Media, and Telecommunications offering
-                  portfolio.
-                </li>
-                <li>
-                  Informed practice-level investment and resource allocation
-                  decisions by translating sector performance trends into
-                  leadership-ready insights.
-                </li>
-                <li>
-                  Built Power BI dashboards tracking financial performance
-                  metrics across the TMT sector, enabling strategic
-                  early-warning systems for portfolio management.
-                </li>
+                <li>Conducted financial analytics and sector monitoring to identify strategic risks and growth opportunities across Deloitte's Technology, Media, and Telecommunications offering portfolio.</li>
+                <li>Informed practice-level investment and resource allocation decisions by translating sector performance trends into leadership-ready insights.</li>
+                <li>Built Power BI dashboards tracking financial performance metrics across the TMT sector, enabling strategic early-warning systems for portfolio management.</li>
               </ul>
               <div class="tag-row" aria-label="Focus areas">
                 <span>Sector Analytics</span>
@@ -254,21 +297,9 @@
               <h2>Anthropic Go-to-Market Strategy</h2>
               <p class="experience-role">Go-to-Market Strategy Analyst</p>
               <ul>
-                <li>
-                  Developed internal go-to-market strategy for Anthropic's
-                  Generative AI models across government and public sector
-                  markets.
-                </li>
-                <li>
-                  Helped increase the internal sales pipeline for Deloitte-led
-                  AI projects by connecting model capabilities to public sector
-                  use cases and buyer priorities.
-                </li>
-                <li>
-                  Created monthly pricing and competitive analysis decks to
-                  synthesize trends in the generative AI landscape for senior
-                  leaders.
-                </li>
+                <li>Developed internal go-to-market strategy for Anthropic's Generative AI models across government and public sector markets.</li>
+                <li>Helped increase the internal sales pipeline for Deloitte-led AI projects by connecting model capabilities to public sector use cases and buyer priorities.</li>
+                <li>Created monthly pricing and competitive analysis decks to synthesize trends in the generative AI landscape for senior leaders.</li>
               </ul>
               <div class="tag-row" aria-label="Focus areas">
                 <span>Go-to-Market</span>
@@ -278,11 +309,7 @@
             </article>
           </div>
 
-          <div
-            class="experience-list tab-panel"
-            id="nonprofit-leadership"
-            aria-label="Nonprofit leadership experience"
-          >
+          <div class="experience-list tab-panel" id="nonprofit-leadership" aria-label="Nonprofit leadership experience">
             <article class="experience-card">
               <div class="experience-meta">
                 <span>National &amp; Local Impact</span>
@@ -291,19 +318,9 @@
               <h2>Inspire Nonprofit</h2>
               <p class="experience-role">Deloitte Lead</p>
               <ul>
-                <li>
-                  Led 8 local Deloitte office branches, generating 20+ yearly
-                  engagements with local and national nonprofits.
-                </li>
-                <li>
-                  Built Deloitte-specific workflows to track Deloitte sales
-                  activity by office and region.
-                </li>
-                <li>
-                  Architected a Deloitte marketing initiative to grow the active
-                  volunteer base across Deloitte, maintaining 100+ active
-                  participants and an alumni network.
-                </li>
+                <li>Led 8 local Deloitte office branches, generating 20+ yearly engagements with local and national nonprofits.</li>
+                <li>Built Deloitte-specific workflows to track Deloitte sales activity by office and region.</li>
+                <li>Architected a Deloitte marketing initiative to grow the active volunteer base across Deloitte, maintaining 100+ active participants and an alumni network.</li>
               </ul>
               <div class="tag-row" aria-label="Focus areas">
                 <span>Program Leadership</span>
@@ -320,14 +337,8 @@
               <h2>Inspire Nonprofit</h2>
               <p class="experience-role">DMV Area Lead</p>
               <ul>
-                <li>
-                  Led the outreach and sales funnel for the local Washington,
-                  D.C. area Inspire chapter.
-                </li>
-                <li>
-                  Sold 3 consulting engagements to local nonprofits, connecting
-                  community organizations with pro bono consulting support.
-                </li>
+                <li>Led the outreach and sales funnel for the local Washington, D.C. area Inspire chapter.</li>
+                <li>Sold 3 consulting engagements to local nonprofits, connecting community organizations with pro bono consulting support.</li>
               </ul>
               <div class="tag-row" aria-label="Focus areas">
                 <span>Outreach</span>
@@ -344,15 +355,8 @@
               <h2>Washington Heads of Office Leadership Council</h2>
               <p class="experience-role">Case Lead</p>
               <ul>
-                <li>
-                  Led a team of 6 consultants to build a local nonprofit's
-                  strategic growth roadmap.
-                </li>
-                <li>
-                  Developed recommendations to continue the organization's
-                  growth and increase income generation for greater community
-                  impact.
-                </li>
+                <li>Led a team of 6 consultants to build a local nonprofit's strategic growth roadmap.</li>
+                <li>Developed recommendations to continue the organization's growth and increase income generation for greater community impact.</li>
               </ul>
               <div class="tag-row" aria-label="Focus areas">
                 <span>Case Leadership</span>

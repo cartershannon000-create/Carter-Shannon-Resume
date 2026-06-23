@@ -4,64 +4,72 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Altro | CS Ventures</title>
+<meta name="description" content="A travel ranking app for logging cities, comparing past trips, and building a personal map of the places that still pull you forward.">
+<meta property="og:title" content="Altro | CS Ventures">
+<meta property="og:description" content="Altro turns travel memories into a clear, ranked view of taste and return energy.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/site.css">
 <style>
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif; -webkit-font-smoothing:antialiased; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 var(--font-body); -webkit-font-smoothing: antialiased; }
   a { color: var(--green); text-decoration: none; }
-  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 28px; }
-  h1,h2,h3 { line-height: 1.2; letter-spacing: -.025em; margin: 0; }
-  .eyebrow { font-size: 11.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--green); margin-bottom: 14px; }
-  section { padding: 72px 0; border-bottom: 1px solid var(--line); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+  h1,h2,h3 { margin: 0; }
 
-  /* hero */
-  .hero { padding: 84px 0 72px; }
-  .hero-inner { display: grid; gap: 48px; align-items: center; }
-  @media(min-width:760px){ .hero-inner { grid-template-columns: 1fr 1fr; } }
-  .hero h1 { font-size: clamp(36px,5.5vw,54px); letter-spacing: -.04em; margin-bottom: 20px; }
-  .hero .lead { font-size: 17px; color: var(--muted); line-height: 1.72; margin-bottom: 32px; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-family: Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;
-    font-weight: 700; font-size: 14px; padding: 11px 20px; border-radius: 10px;
-    border: 1px solid var(--green); background: var(--green); color: #fff;
-    text-decoration: none; transition: .14s;
+  /* ── Hero ── */
+  .hero {
+    background: var(--dark);
+    padding: 88px 0 80px;
   }
-  .btn:hover { background: #275935; border-color: #275935; color: #fff; }
-  .btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .hero-eyebrow { font: 700 10.5px/1 var(--font-body); letter-spacing: .18em; text-transform: uppercase; color: var(--green-bright); margin-bottom: 22px; }
+  .hero-inner { display: grid; gap: 56px; align-items: center; }
+  @media(min-width:760px){ .hero-inner { grid-template-columns: 1fr 280px; } }
+  .hero h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(44px,6vw,68px); color: var(--on-dark); letter-spacing: -.01em; line-height: 1.04; margin-bottom: 20px; }
+  .hero .lead { font-size: 16.5px; color: var(--on-dark-muted); line-height: 1.74; margin-bottom: 36px; }
+  .hero-ctas { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 9px; font: 700 13px/1 var(--font-body); letter-spacing: .02em; padding: 12px 22px; border-radius: var(--radius); background: var(--green); color: #fff; text-decoration: none; transition: background .14s; }
+  .btn-primary:hover { background: #275934; color: #fff; }
+  .txt-link { display: inline-flex; align-items: center; gap: 8px; font: 600 13px/1 var(--font-body); letter-spacing: .01em; color: var(--on-dark-muted); text-decoration: none; transition: color .13s, gap .15s; }
+  .txt-link:hover { color: var(--on-dark); gap: 12px; }
+  .txt-link svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .hero-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 28px; }
+  .htag { font: 700 10px/1 var(--font-body); letter-spacing: .1em; text-transform: uppercase; padding: 5px 10px; border-radius: var(--radius); background: rgba(255,255,255,0.07); color: var(--on-dark-muted); }
 
-  /* phone mockup */
+  /* ── Phone mockup ── */
   .phone-wrap { display: flex; justify-content: center; }
-  .phone { width: min(240px, 68vw); border-radius: 28px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 12px 40px rgba(31,38,31,.14); }
+  .phone { width: min(240px,80vw); border-radius: 22px; overflow: hidden; border: 1px solid var(--on-dark-line); box-shadow: 0 24px 64px rgba(0,0,0,.4); }
   .phone img { width: 100%; display: block; }
 
-  /* features */
-  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 16px; margin-top: 40px; }
-  .feat { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px; box-shadow: var(--shadow); }
-  .feat-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--green-soft); display: grid; place-items: center; margin-bottom: 12px; }
-  .feat-icon svg { width: 18px; height: 18px; fill: none; stroke: #294323; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .feat h3 { font-size: 15.5px; margin-bottom: 7px; }
-  .feat p { font-size: 13.5px; color: var(--muted); line-height: 1.55; margin: 0; }
+  /* ── Features ── */
+  .features { padding: 88px 0; }
+  .section-label { display: flex; align-items: center; gap: 14px; margin-bottom: 44px; }
+  .section-label::before { content: ''; display: block; flex: 0 0 28px; height: 1px; background: var(--ink); }
+  .section-label span { font: 700 10.5px/1 var(--font-body); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .section-h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(26px,3.8vw,40px); letter-spacing: -.01em; line-height: 1.1; color: var(--ink); max-width: 520px; margin-bottom: 0; }
+  .feat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-top: 52px; }
+  .feat { background: var(--panel); padding: 28px 26px; }
+  .feat-icon { width: 34px; height: 34px; border-radius: var(--radius); background: var(--green-soft); display: grid; place-items: center; margin-bottom: 14px; }
+  .feat-icon svg { width: 17px; height: 17px; fill: none; stroke: #294323; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .feat h3 { font-family: var(--font-display); font-size: 18px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0; }
+  .feat p { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin: 0; }
 
-  /* tags */
-  .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
-  .tag { font-size: 11.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; background: var(--green-soft); color: #294323; border: 1px solid rgba(46,107,63,.22); }
+  /* ── Bottom nav ── */
+  .bottom-bar { border-top: 1px solid var(--line); padding: 48px 0 64px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+  .back-link { display: inline-flex; align-items: center; gap: 8px; font: 600 13px/1 var(--font-body); letter-spacing: .01em; color: var(--muted); text-decoration: none; transition: color .13s, gap .15s; }
+  .back-link:hover { color: var(--ink); gap: 12px; }
+  .back-link svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* bottom nav */
-  .bottom-nav { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 48px 0; border-top: 1px solid var(--line); }
-  .back-link { font-size: 13.5px; font-weight: 700; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; }
-  .back-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-  .back-link:hover { color: var(--green); }
+  /* ── Footer ── */
+  footer { background: var(--dark); padding: 52px 0 44px; }
+  .footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .footer-brand { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--on-dark); }
+  .footer-links { display: flex; gap: 0; flex-wrap: wrap; }
+  .footer-links a { font: 500 12.5px/1 var(--font-body); color: var(--on-dark-muted); text-decoration: none; transition: color .13s; }
+  .footer-links a + a::before { content: '·'; margin: 0 12px; color: var(--on-dark-line); }
+  .footer-links a:hover { color: var(--on-dark); }
+  .footer-copy { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--on-dark-line); font: 400 11.5px/1 var(--font-body); color: rgba(240,240,232,0.26); }
 
-  footer { padding: 32px 0 56px; text-align: center; color: var(--muted); font-size: 13px; }
-  footer a { color: var(--muted); }
-  footer a:hover { color: var(--green); }
-
-  @media(max-width:640px){
-    .hero { padding: 56px 0 48px; }
-    section { padding: 52px 0; }
-  }
+  @media(max-width:640px){ .features { padding: 60px 0; } }
 </style>
 </head>
 <body>
@@ -75,22 +83,27 @@
   </nav>
 </div>
 
-<section class="hero">
+<div class="hero">
   <div class="wrap">
+    <p class="hero-eyebrow">CS Ventures</p>
     <div class="hero-inner">
       <div>
-        <p class="eyebrow">CS Ventures</p>
         <h1>Altro</h1>
         <p class="lead">A travel ranking app for logging cities, comparing past trips, and building a personal map of the places that still pull you forward. Altro turns travel memories into a clear, ranked view of taste and return energy.</p>
-        <a class="btn" href="https://cartershannon000-create.github.io/Altro-travel/marketing.html" target="_blank" rel="noopener noreferrer">
-          View App
-          <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
-        </a>
-        <div class="tag-row">
-          <span class="tag">Travel</span>
-          <span class="tag">Rankings</span>
-          <span class="tag">Personal Map</span>
-          <span class="tag">Mobile</span>
+        <div class="hero-ctas">
+          <a class="btn-primary" href="https://cartershannon000-create.github.io/Altro-travel/marketing.html" target="_blank" rel="noopener noreferrer">
+            View App
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
+          <a class="txt-link" href="/portfolio/">
+            ← Back to Portfolio
+          </a>
+        </div>
+        <div class="hero-tags">
+          <span class="htag">Travel</span>
+          <span class="htag">Rankings</span>
+          <span class="htag">Personal Map</span>
+          <span class="htag">Mobile</span>
         </div>
       </div>
       <div class="phone-wrap">
@@ -100,13 +113,13 @@
       </div>
     </div>
   </div>
-</section>
+</div>
 
-<section>
+<div class="features">
   <div class="wrap">
-    <p class="eyebrow">What it does</p>
-    <h2 style="font-size:clamp(24px,3.8vw,34px); max-width:560px">Your cities, ranked the way you actually feel about them</h2>
-    <div class="features-grid">
+    <div class="section-label"><span>What it does</span></div>
+    <h2 class="section-h2">Your cities, ranked the way you actually feel about them</h2>
+    <div class="feat-grid">
       <div class="feat">
         <div class="feat-icon">
           <svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
@@ -137,24 +150,33 @@
       </div>
     </div>
   </div>
-</section>
+</div>
 
 <div class="wrap">
-  <div class="bottom-nav">
+  <div class="bottom-bar">
     <a class="back-link" href="/portfolio/">
       <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
       Back to Portfolio
     </a>
-    <a class="btn" href="https://cartershannon000-create.github.io/Altro-travel/marketing.html" target="_blank" rel="noopener noreferrer">
+    <a class="btn-primary" href="https://cartershannon000-create.github.io/Altro-travel/marketing.html" target="_blank" rel="noopener noreferrer">
       View Full App Page
-      <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
     </a>
   </div>
 </div>
 
 <footer>
   <div class="wrap">
-    <p><a href="/">CS Ventures</a> &nbsp;&middot;&nbsp; <a href="/portfolio/">Portfolio</a> &nbsp;&middot;&nbsp; <a href="/about/">About Carter</a></p>
+    <div class="footer-inner">
+      <div class="footer-brand">CS Ventures</div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/portfolio/">Portfolio</a>
+        <a href="/about/">About Carter</a>
+        <a href="mailto:info@cs-ventures.us">info@cs-ventures.us</a>
+      </div>
+    </div>
+    <div class="footer-copy">CS Ventures &copy; 2026</div>
   </div>
 </footer>
 

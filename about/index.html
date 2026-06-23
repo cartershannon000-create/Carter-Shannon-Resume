@@ -12,9 +12,94 @@
     <meta name="twitter:card" content="summary">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/site.css" />
     <link rel="stylesheet" href="/legacy.css" />
+    <style>
+      /* ── Layout offsets for 56px dark nav ── */
+      .site-shell { padding-top: 0; }
+      .profile-rail { top: 56px; height: calc(100vh - 56px); }
+      .top-nav { top: 56px; }
+
+      /* ── Dark sidebar ── */
+      .profile-rail {
+        background: var(--dark);
+        border-right: 1px solid var(--on-dark-line);
+      }
+      .brand-lockup { color: var(--on-dark); font-family: var(--font-body); }
+      .brand-lockup::after { background: var(--green); }
+      .profile-line { color: var(--on-dark-muted); font-size: 13px; }
+      .side-nav-link { color: var(--on-dark-muted); border-radius: 3px; }
+      .side-nav-link:hover { background: rgba(255,255,255,0.06); color: var(--on-dark); }
+      .side-nav-link.active {
+        background: rgba(255,255,255,0.07);
+        border-color: rgba(255,255,255,0.11);
+        color: var(--on-dark);
+      }
+      .social-links a {
+        border-color: var(--on-dark-line);
+        color: var(--on-dark-muted);
+        border-radius: 3px;
+      }
+      .social-links a:hover { color: var(--on-dark); background: rgba(255,255,255,0.07); }
+      .headshot { border-color: rgba(255,255,255,0.08); }
+
+      /* ── Top nav ── */
+      .top-nav {
+        background: rgba(234,233,224,0.94);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--line);
+        height: 52px;
+      }
+      .top-nav-link { font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: .01em; }
+      .top-nav-link.active { color: var(--green); }
+      .top-nav-link.active::after { background: var(--green); height: 2px; }
+
+      /* ── Main content ── */
+      body { background: var(--bg); }
+      .page-section { background: var(--bg); }
+      h1 {
+        font-family: var(--font-display) !important;
+        font-size: clamp(28px, 3.5vw, 42px) !important;
+        color: var(--ink) !important;
+        letter-spacing: -.01em !important;
+        margin-bottom: 20px !important;
+      }
+      .intro {
+        font-size: 16px !important;
+        color: var(--muted) !important;
+        line-height: 1.74 !important;
+      }
+
+      /* ── Skills ── */
+      .skills-section h2 {
+        font-family: var(--font-display);
+        font-size: 24px; font-weight: 700;
+        letter-spacing: -.01em; color: var(--ink);
+      }
+      .skill-group {
+        background: var(--panel); border: 1px solid var(--line);
+        border-radius: var(--radius); padding: 18px 20px;
+      }
+      .skill-label {
+        font: 800 10px/1 var(--font-body);
+        letter-spacing: .12em; text-transform: uppercase;
+        color: var(--green); margin-bottom: 7px;
+      }
+      .skill-items { font-size: 13.5px; color: var(--muted); line-height: 1.55; }
+
+      /* ── Section rule ── */
+      .s-rule {
+        display: flex; align-items: center; gap: 14px; margin-bottom: 6px;
+      }
+      .s-rule::before {
+        content: ''; display: block; flex: 0 0 28px;
+        height: 1px; background: var(--ink);
+      }
+      .s-rule span {
+        font: 700 10px/1 var(--font-body);
+        letter-spacing: .18em; text-transform: uppercase; color: var(--muted);
+      }
+    </style>
   </head>
   <body>
 
@@ -81,7 +166,8 @@
         </header>
 
         <section class="page-section" aria-labelledby="about-title">
-          <h1 id="about-title">About Carter</h1>
+          <div class="s-rule"><span>About</span></div>
+          <h1 id="about-title">Carter Shannon</h1>
           <p class="intro">
             Carter Shannon is a strategy and analytics professional based in Washington, D.C.
             He works at Deloitte Consulting within the Government and Public Sector practice,
@@ -101,9 +187,9 @@
             operate more effectively.
           </p>
 
-          <div class="skills-section" style="margin-top:36px">
-            <h2 style="font-size:20px; margin-bottom:20px">Skills and Tools</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px">
+          <div class="skills-section" style="margin-top:44px">
+            <div class="s-rule" style="margin-bottom:18px"><span>Skills and Tools</span></div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px">
               <div class="skill-group">
                 <div class="skill-label">Analytics</div>
                 <div class="skill-items">SQL, Snowflake, Tableau, Power BI</div>
@@ -126,12 +212,5 @@
       </main>
     </div>
 
-    <style>
-      .site-shell { padding-top: 0; }
-      .skill-group { background: var(--panel, #f6f6ef); border: 1px solid rgba(35,48,39,.14); border-radius: 12px; padding: 16px 18px; }
-      .skill-label { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--deep-moss, #2f3e2c); margin-bottom: 6px; }
-      .skill-items { font-size: 13.5px; color: var(--warm-stone, #5a6358); line-height: 1.5; }
-      .secondary-intro { margin-top: 14px; }
-    </style>
   </body>
 </html>

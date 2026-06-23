@@ -10,124 +10,240 @@
 <meta property="og:title" content="CS Ventures">
 <meta property="og:description" content="CS Ventures enables individuals and small businesses to create new products, optimize business processes, gain more traction in their markets, and identify new opportunities.">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="CS Ventures">
-<meta name="twitter:description" content="CS Ventures enables individuals and small businesses to create new products, optimize business processes, gain more traction in their markets, and identify new opportunities.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/site.css">
 <style>
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font: 16px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 var(--font-body); -webkit-font-smoothing: antialiased; }
   a { color: var(--green); text-decoration: none; }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 28px; }
-  h1, h2, h3 { line-height: 1.2; letter-spacing: -.03em; margin: 0; }
-  .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; color: var(--green); margin-bottom: 14px; }
-  section { padding: 88px 0; border-bottom: 1px solid var(--line); }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+  h1,h2,h3 { margin: 0; }
 
-  /* hero */
+  /* ── Hero ── */
   .hero {
-    padding: 108px 0 92px;
+    background: var(--dark);
+    padding: 108px 0 96px;
     position: relative;
     overflow: hidden;
   }
-  .hero::before {
-    content: '';
-    position: absolute;
-    top: -120px; left: -80px;
-    width: 640px; height: 640px;
-    background: radial-gradient(circle, rgba(46,107,63,0.10) 0%, transparent 68%);
-    pointer-events: none;
+  .hero-eyebrow {
+    font: 700 11px/1 var(--font-body);
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--green-bright);
+    margin-bottom: 28px;
   }
-  .hero::after {
-    content: '';
-    position: absolute;
-    bottom: -80px; right: -60px;
-    width: 480px; height: 480px;
-    background: radial-gradient(circle, rgba(46,107,63,0.06) 0%, transparent 70%);
-    pointer-events: none;
+  .hero h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(48px, 7vw, 84px);
+    line-height: 1.04;
+    letter-spacing: -.01em;
+    color: var(--on-dark);
+    max-width: 820px;
+    margin-bottom: 28px;
   }
-  .hero-inner { position: relative; z-index: 1; }
-  .hero h1 { font-size: clamp(36px, 5.4vw, 60px); max-width: 820px; letter-spacing: -.04em; margin-bottom: 22px; line-height: 1.1; }
-  .accent { color: var(--green); }
-  .hero .lead { font-size: 17.5px; color: var(--muted); max-width: 680px; line-height: 1.74; margin-bottom: 40px; }
-  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; }
-  .btn {
+  .hero h1 em { font-style: italic; color: var(--green-bright); }
+  .hero .lead {
+    font-size: 17px;
+    color: var(--on-dark-muted);
+    max-width: 580px;
+    line-height: 1.76;
+    margin-bottom: 48px;
+  }
+  .hero-ctas { display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-body); font-weight: 700; font-size: 13px;
+    padding: 12px 24px; border-radius: var(--radius);
+    background: var(--green); color: #fff; border: none;
+    text-decoration: none; transition: background .14s;
+    letter-spacing: .02em;
+  }
+  .btn-primary:hover { background: #275934; color: #fff; }
+  .txt-link {
     display: inline-flex; align-items: center; gap: 8px;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
-    font-weight: 700; font-size: 14px; padding: 12px 22px; border-radius: 11px;
-    border: 1.5px solid var(--green); background: var(--green); color: #fff;
-    cursor: pointer; transition: background .15s, border-color .15s, transform .15s, box-shadow .15s;
-    text-decoration: none;
+    font-family: var(--font-body); font-weight: 600; font-size: 13.5px;
+    color: var(--on-dark-muted); text-decoration: none;
+    transition: color .13s, gap .15s; letter-spacing: .01em;
   }
-  .btn:hover { background: #265c35; border-color: #265c35; color: #fff; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(46,107,63,.24); }
-  .btn:active { transform: translateY(0); }
-  .btn.ghost { background: transparent; border-color: var(--line); color: var(--ink); box-shadow: none; }
-  .btn.ghost:hover { border-color: var(--green); color: var(--green); background: rgba(46,107,63,.05); box-shadow: none; }
+  .txt-link:hover { color: var(--on-dark); gap: 13px; }
+  .txt-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* pillars */
-  .pillars-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 16px; margin-top: 44px; }
-  .pillar {
-    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 28px; box-shadow: var(--shadow);
-    transition: box-shadow .2s, border-color .2s, transform .2s;
+  /* ── Sections ── */
+  .section { padding: 96px 0; border-bottom: 1px solid var(--line); }
+  .section:last-of-type { border-bottom: none; }
+  .section-label {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 48px;
   }
-  .pillar:hover { box-shadow: var(--shadow-md); border-color: rgba(46,107,63,.25); transform: translateY(-2px); }
-  .pillar-num { font-size: 10.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
-  .pillar h3 { font-size: 17px; margin-bottom: 10px; letter-spacing: -.02em; }
-  .pillar p { font-size: 14px; color: var(--muted); line-height: 1.6; margin: 0; }
+  .section-label::before {
+    content: ''; display: block; flex: 0 0 32px; height: 1px; background: var(--ink);
+  }
+  .section-label span {
+    font: 700 10.5px/1 var(--font-body);
+    letter-spacing: .18em; text-transform: uppercase; color: var(--muted);
+  }
+  .section-h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(30px, 4vw, 46px);
+    letter-spacing: -.01em;
+    line-height: 1.1;
+    color: var(--ink);
+    max-width: 600px;
+    margin-bottom: 0;
+  }
 
-  /* portfolio preview */
-  .port-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 18px; margin-top: 44px; }
-  .port-card {
-    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 28px; display: flex; flex-direction: column; gap: 14px;
-    box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s, border-color .2s;
+  /* ── What we do (editorial list) ── */
+  .pillar-list { margin-top: 56px; }
+  .pillar-row {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 0 32px;
+    padding: 40px 0;
+    border-top: 1px solid var(--line);
+    align-items: start;
+  }
+  .pillar-row:last-child { border-bottom: 1px solid var(--line); }
+  .pillar-n {
+    font: 700 11px/1 var(--font-body);
+    letter-spacing: .12em;
+    color: var(--muted);
+    padding-top: 5px;
+  }
+  .pillar-body h3 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: var(--ink);
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .pillar-body p {
+    font-size: 14.5px;
+    color: var(--muted);
+    line-height: 1.68;
+    margin: 0;
+    max-width: 560px;
+  }
+
+  /* ── Portfolio (McKinsey row list) ── */
+  .port-list { margin-top: 56px; }
+  .port-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px; padding: 32px 0; border-top: 1px solid var(--line);
     text-decoration: none; color: inherit;
+    transition: padding-left .18s;
   }
-  .port-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: rgba(46,107,63,.28); }
-  .port-card-head { display: flex; align-items: center; justify-content: space-between; }
-  .port-card-head h3 { font-size: 20px; letter-spacing: -.025em; }
-  .port-card-head svg { width: 16px; height: 16px; fill: none; stroke: var(--muted); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; transition: stroke .15s; }
-  .port-card:hover .port-card-head svg { stroke: var(--green); }
-  .port-card p { font-size: 14px; color: var(--muted); margin: 0; line-height: 1.6; flex: 1; }
-  .port-tags { display: flex; flex-wrap: wrap; gap: 7px; }
-  .port-tag { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--green-soft); color: #254220; border: 1px solid rgba(46,107,63,.2); }
-
-  /* about strip */
-  .about-strip { display: flex; align-items: center; justify-content: space-between; gap: 40px; flex-wrap: wrap; }
-  .about-strip h2 { font-size: clamp(24px, 3.5vw, 36px); margin-bottom: 14px; letter-spacing: -.035em; }
-  .about-strip p { color: var(--muted); font-size: 15.5px; line-height: 1.72; max-width: 620px; margin: 0; }
-
-  /* contact */
-  .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 14px; margin-top: 40px; }
-  .contact-card {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
-    padding: 22px 24px; display: flex; gap: 16px; align-items: flex-start;
-    box-shadow: var(--shadow); text-decoration: none; color: inherit;
-    transition: border-color .15s, box-shadow .15s, transform .15s;
+  .port-row:last-child { border-bottom: 1px solid var(--line); }
+  .port-row:hover { padding-left: 10px; }
+  .port-row-left { min-width: 0; }
+  .port-row-left h3 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: var(--ink);
+    margin-bottom: 4px;
+    line-height: 1.2;
   }
-  .contact-card:hover { border-color: rgba(46,107,63,.32); box-shadow: var(--shadow-md); transform: translateY(-1px); }
-  .contact-icon { flex: none; width: 40px; height: 40px; border-radius: 11px; background: var(--green-soft); display: grid; place-items: center; }
-  .contact-icon svg { width: 18px; height: 18px; fill: none; stroke: #294323; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .contact-label { font-size: 10.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
-  .contact-val { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .port-row-left p { font-size: 13.5px; color: var(--muted); margin: 0; }
+  .port-row-right { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
+  .port-tags { display: flex; gap: 7px; }
+  .port-tag {
+    font: 700 10.5px/1 var(--font-body);
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 5px 10px; background: var(--green-soft); color: #294323;
+    border-radius: var(--radius);
+  }
+  .port-arr {
+    color: var(--green); font-size: 20px; line-height: 1;
+    transition: transform .18s;
+  }
+  .port-row:hover .port-arr { transform: translateX(5px); }
 
-  footer { padding: 44px 0 68px; text-align: center; color: var(--muted); font-size: 13px; }
-  footer a { color: var(--muted); transition: color .14s; }
-  footer a:hover { color: var(--green); }
+  /* ── About strip ── */
+  .about-inner {
+    display: grid; gap: 48px;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+  @media(max-width:640px){ .about-inner { grid-template-columns: 1fr; } }
+  .about-inner h2 {
+    font-family: var(--font-display);
+    font-size: clamp(30px,4vw,46px);
+    font-weight: 700; letter-spacing: -.01em; line-height: 1.1;
+    margin-bottom: 18px;
+  }
+  .about-inner p { font-size: 15.5px; color: var(--muted); line-height: 1.74; margin: 0; max-width: 620px; }
+  .about-link {
+    display: inline-flex; align-items: center; gap: 10px;
+    font: 600 13.5px/1 var(--font-body); letter-spacing: .01em;
+    color: var(--ink); text-decoration: none; flex-shrink: 0;
+    border-bottom: 1.5px solid var(--ink); padding-bottom: 3px;
+    transition: color .13s, gap .15s;
+  }
+  .about-link:hover { color: var(--green); border-color: var(--green); gap: 14px; }
+
+  /* ── Contact ── */
+  .contact-row {
+    display: flex; flex-wrap: wrap; gap: 16px; margin-top: 52px;
+  }
+  .contact-item {
+    display: flex; gap: 16px; align-items: flex-start;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-decoration: none; color: inherit;
+    transition: border-color .14s, box-shadow .14s;
+    flex: 1; min-width: 220px;
+  }
+  .contact-item:hover { border-color: rgba(46,107,63,.35); box-shadow: var(--shadow-md); }
+  .contact-icon {
+    width: 36px; height: 36px; border-radius: var(--radius);
+    background: var(--green-soft); display: grid; place-items: center; flex: none;
+  }
+  .contact-icon svg { width: 16px; height: 16px; fill: none; stroke: #294323; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .contact-label { font: 700 10px/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .contact-val { font: 700 14.5px/1 var(--font-body); color: var(--ink); }
+
+  /* ── Footer ── */
+  footer {
+    background: var(--dark);
+    padding: 64px 0 52px;
+  }
+  .footer-inner {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 40px; flex-wrap: wrap;
+  }
+  .footer-brand {
+    font-family: var(--font-display);
+    font-size: 22px; font-weight: 700;
+    color: var(--on-dark); margin-bottom: 10px;
+  }
+  .footer-tagline { font-size: 13px; color: var(--on-dark-muted); }
+  .footer-links {
+    display: flex; gap: 12px; flex-wrap: wrap; padding-top: 4px;
+  }
+  .footer-links a {
+    font: 500 12.5px/1 var(--font-body); letter-spacing: .01em;
+    color: var(--on-dark-muted); text-decoration: none; padding: 4px 0;
+    transition: color .13s;
+  }
+  .footer-links a:hover { color: var(--on-dark); }
+  .footer-links a + a::before { content: '·'; margin-right: 12px; color: var(--on-dark-line); }
+  .footer-bottom {
+    margin-top: 52px; padding-top: 24px;
+    border-top: 1px solid var(--on-dark-line);
+    font: 400 12px/1 var(--font-body);
+    color: rgba(240,240,232,0.28);
+  }
 
   @media (max-width: 640px) {
-    section { padding: 60px 0; }
-    .hero { padding: 68px 0 56px; }
-    .hero h1 { font-size: 34px; }
-    .hero .lead { font-size: 15.5px; }
-    .about-strip { flex-direction: column; align-items: flex-start; gap: 22px; }
-    .about-strip .btn { width: 100%; justify-content: center; }
+    .section { padding: 64px 0; }
+    .hero { padding: 72px 0 64px; }
+    .hero h1 { font-size: 42px; }
+    .port-row-right { display: none; }
   }
 </style>
 </head>
@@ -142,110 +258,137 @@
   </nav>
 </div>
 
-<section class="hero">
+<div class="hero">
   <div class="wrap">
-    <div class="hero-inner">
-      <p class="eyebrow">CS Ventures</p>
-      <h1>Helping Individuals and Small Businesses <span class="accent">Build, Optimize, and Grow</span></h1>
-      <p class="lead">CS Ventures enables individuals and small businesses to create new products, optimize business processes, gain more traction in their markets, and identify new opportunities.</p>
-      <div class="btn-row">
-        <a class="btn" href="/portfolio/">View Portfolio</a>
-        <a class="btn ghost" href="/about/">About Carter</a>
+    <p class="hero-eyebrow">CS Ventures</p>
+    <h1>Strategy, Products, <em>and Growth.</em></h1>
+    <p class="lead">CS Ventures enables individuals and small businesses to create new products, optimize business processes, gain more traction in their markets, and identify new opportunities.</p>
+    <div class="hero-ctas">
+      <a class="btn-primary" href="/portfolio/">View Portfolio</a>
+      <a class="txt-link" href="/about/">
+        About Carter
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="wrap">
+    <div class="section-label"><span>What we do</span></div>
+    <h2 class="section-h2">Four ways CS Ventures moves businesses forward</h2>
+    <div class="pillar-list">
+      <div class="pillar-row">
+        <span class="pillar-n">01</span>
+        <div class="pillar-body">
+          <h3>Create New Products</h3>
+          <p>From idea to working product, CS Ventures designs and builds tools that solve real problems for real users.</p>
+        </div>
+      </div>
+      <div class="pillar-row">
+        <span class="pillar-n">02</span>
+        <div class="pillar-body">
+          <h3>Optimize Business Processes</h3>
+          <p>CS Ventures identifies friction in existing workflows and engineers systems that are faster, cleaner, and more reliable.</p>
+        </div>
+      </div>
+      <div class="pillar-row">
+        <span class="pillar-n">03</span>
+        <div class="pillar-body">
+          <h3>Gain Market Traction</h3>
+          <p>CS Ventures builds the strategy and tools that help businesses connect with their markets and expand their reach.</p>
+        </div>
+      </div>
+      <div class="pillar-row">
+        <span class="pillar-n">04</span>
+        <div class="pillar-body">
+          <h3>Identify New Opportunities</h3>
+          <p>CS Ventures applies data-driven analysis to surface growth paths and strategic openings that competitors have not yet seen.</p>
+        </div>
       </div>
     </div>
   </div>
-</section>
+</div>
 
-<section>
+<div class="section">
   <div class="wrap">
-    <p class="eyebrow">What we do</p>
-    <h2 style="font-size:clamp(24px,3.8vw,38px); max-width:600px; letter-spacing:-.035em">Four ways CS Ventures moves businesses forward</h2>
-    <div class="pillars-grid">
-      <div class="pillar">
-        <div class="pillar-num">01</div>
-        <h3>Create New Products</h3>
-        <p>From idea to working product, CS Ventures designs and builds tools that solve real problems for real users.</p>
-      </div>
-      <div class="pillar">
-        <div class="pillar-num">02</div>
-        <h3>Optimize Business Processes</h3>
-        <p>CS Ventures identifies friction in existing workflows and engineers systems that are faster, cleaner, and more reliable.</p>
-      </div>
-      <div class="pillar">
-        <div class="pillar-num">03</div>
-        <h3>Gain Market Traction</h3>
-        <p>CS Ventures builds the strategy and tools that help businesses connect with their markets and expand their reach.</p>
-      </div>
-      <div class="pillar">
-        <div class="pillar-num">04</div>
-        <h3>Identify New Opportunities</h3>
-        <p>CS Ventures applies data-driven analysis to surface growth paths and strategic openings that competitors have not yet seen.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <p class="eyebrow">Portfolio</p>
-    <h2 style="font-size:clamp(24px,3.8vw,38px); letter-spacing:-.035em">Products built by CS Ventures</h2>
-    <div class="port-grid">
-      <a class="port-card" href="/DeckForge/">
-        <div class="port-card-head">
+    <div class="section-label"><span>Portfolio</span></div>
+    <h2 class="section-h2">Products built by CS Ventures</h2>
+    <div class="port-list">
+      <a class="port-row" href="/DeckForge/">
+        <div class="port-row-left">
           <h3>DeckForge</h3>
-          <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+          <p>Autonomous equity research agent that writes, critiques, and rewrites until board-ready</p>
         </div>
-        <p>An autonomous agent that writes an equity research deck, critiques it, and rewrites it in a loop until it is board-ready.</p>
-        <div class="port-tags"><span class="port-tag">AI Agent</span><span class="port-tag">Finance</span><span class="port-tag">Decks</span></div>
+        <div class="port-row-right">
+          <div class="port-tags">
+            <span class="port-tag">AI Agent</span>
+            <span class="port-tag">Finance</span>
+          </div>
+          <span class="port-arr">→</span>
+        </div>
       </a>
-      <a class="port-card" href="/Altro/">
-        <div class="port-card-head">
+      <a class="port-row" href="/Altro/">
+        <div class="port-row-left">
           <h3>Altro</h3>
-          <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+          <p>Travel ranking app for logging cities, comparing trips, and mapping return energy</p>
         </div>
-        <p>A travel ranking app for logging cities, comparing past trips, and building a personal map of the places that still pull you forward.</p>
-        <div class="port-tags"><span class="port-tag">Travel</span><span class="port-tag">Rankings</span><span class="port-tag">Mobile</span></div>
+        <div class="port-row-right">
+          <div class="port-tags">
+            <span class="port-tag">Travel</span>
+            <span class="port-tag">Mobile</span>
+          </div>
+          <span class="port-arr">→</span>
+        </div>
       </a>
-      <a class="port-card" href="/Nos/">
-        <div class="port-card-head">
+      <a class="port-row" href="/Nos/">
+        <div class="port-row-left">
           <h3>Nos</h3>
-          <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+          <p>Prayer and journaling app for novenas, daily reflection, and honest journaling</p>
         </div>
-        <p>A quiet home for novenas, daily reflection, and honest journaling. Structure without pressure, beauty without clutter.</p>
-        <div class="port-tags"><span class="port-tag">Prayer</span><span class="port-tag">Journaling</span><span class="port-tag">Mobile</span></div>
+        <div class="port-row-right">
+          <div class="port-tags">
+            <span class="port-tag">Prayer</span>
+            <span class="port-tag">Mobile</span>
+          </div>
+          <span class="port-arr">→</span>
+        </div>
       </a>
     </div>
   </div>
-</section>
+</div>
 
-<section>
+<div class="section">
   <div class="wrap">
-    <div class="about-strip">
+    <div class="section-label"><span>About</span></div>
+    <div class="about-inner">
       <div>
-        <p class="eyebrow">About</p>
         <h2>Carter Shannon</h2>
-        <p style="margin-top:14px">Strategy backed by data. Carter is a strategy and analytics professional with experience across financial risk, government technology, and go-to-market work. CS Ventures is where that background gets applied to products and tools that help people and businesses move forward.</p>
+        <p style="margin-top:16px">Strategy backed by data. Carter is a strategy and analytics professional with experience across financial risk, government technology, and go-to-market work for federal and state clients. CS Ventures is where that background gets applied to products and tools that help people and businesses move forward.</p>
       </div>
-      <a class="btn" href="/about/" style="flex-shrink:0">View Full Profile</a>
+      <a class="about-link" href="/about/">
+        View Profile
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
     </div>
   </div>
-</section>
+</div>
 
-<section style="border-bottom:none">
+<div class="section" style="border-bottom:none">
   <div class="wrap">
-    <p class="eyebrow">Contact</p>
-    <h2 style="font-size:clamp(24px,3.8vw,38px); letter-spacing:-.035em">Get in touch</h2>
-    <div class="contact-grid">
-      <a class="contact-card" href="mailto:info@cs-ventures.us">
+    <div class="section-label"><span>Contact</span></div>
+    <h2 class="section-h2">Get in touch</h2>
+    <div class="contact-row">
+      <a class="contact-item" href="mailto:info@cs-ventures.us">
         <div class="contact-icon">
-          <svg viewBox="0 0 24 24"><path d="m4 6 8 7 8-7"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
+          <svg viewBox="0 0 24 24"><path d="m4 6 8 7 8-7"/><rect x="3" y="5" width="18" height="14" rx="1"/></svg>
         </div>
         <div>
           <div class="contact-label">Email</div>
           <div class="contact-val">info@cs-ventures.us</div>
         </div>
       </a>
-      <a class="contact-card" href="tel:+13364553421">
+      <a class="contact-item" href="tel:+13364553421">
         <div class="contact-icon">
           <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.7.6 2.5a2 2 0 0 1-.5 2.1L8 9.5a16 16 0 0 0 6.5 6.5l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.6.5 2.5.6A2 2 0 0 1 22 16.9Z"/></svg>
         </div>
@@ -256,11 +399,26 @@
       </a>
     </div>
   </div>
-</section>
+</div>
 
 <footer>
   <div class="wrap">
-    <p>CS Ventures &copy; 2026 &nbsp;&middot;&nbsp; <a href="/about/">About Carter</a> &nbsp;&middot;&nbsp; <a href="/portfolio/">Portfolio</a> &nbsp;&middot;&nbsp; <a href="mailto:info@cs-ventures.us">info@cs-ventures.us</a></p>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">CS Ventures</div>
+        <div class="footer-tagline">Strategy, Products, and Growth.</div>
+      </div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/portfolio/">Portfolio</a>
+        <a href="/DeckForge/">DeckForge</a>
+        <a href="/Altro/">Altro</a>
+        <a href="/Nos/">Nos</a>
+        <a href="mailto:info@cs-ventures.us">info@cs-ventures.us</a>
+      </div>
+    </div>
+    <div class="footer-bottom">CS Ventures &copy; 2026</div>
   </div>
 </footer>
 
