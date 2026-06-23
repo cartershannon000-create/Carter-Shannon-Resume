@@ -1,0 +1,90 @@
+# Editable cliché / AI-tell phrase list (one per line, # = comment).
+# Matched whole-word, case-insensitive. Keep these short and high-signal.
+# Add/remove freely — this file is the knob for what counts as "AI language".
+
+# --- single-word tells ---
+delve
+delved
+delving
+tapestry
+realm
+realms
+leverage
+leveraging
+robust
+seamless
+seamlessly
+elevate
+elevates
+elevating
+unlock
+unlocks
+unlocking
+embark
+embarks
+boast
+boasts
+boasting
+vibrant
+crucial
+pivotal
+moreover
+furthermore
+additionally
+notably
+underscore
+underscores
+underscoring
+navigate
+navigating
+streamline
+streamlines
+streamlined
+holistic
+intricate
+multifaceted
+plethora
+myriad
+nuanced
+paramount
+testament
+
+# --- phrase tells ---
+in today's
+in the realm of
+ever-evolving
+ever-changing
+fast-paced world
+when it comes to
+at the end of the day
+that said
+needless to say
+rest assured
+look no further
+dive in
+let's dive
+deep dive
+treasure trove
+game changer
+game-changer
+stand the test of time
+in conclusion
+key takeaways
+it is important to note
+it's worth noting
+worth noting
+a wide range of
+a testament to
+plays a vital role
+plays a crucial role
+plays a key role
+the world of
+unleash the power
+harness the power
+take it to the next level
+whether you're
+whether you are
+not to mention
+on the other hand
+first and foremost
+last but not least
