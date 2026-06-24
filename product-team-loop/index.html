@@ -85,39 +85,53 @@
   .loopband .lead{color:var(--muted); margin-top:14px}
   .loopband h2 em{font-style:italic; color:var(--green)}
 
-  .loopmap{margin-top:44px}
-  .lp-stages{display:grid; gap:14px}
-  @media(min-width:880px){ .lp-stages{grid-template-columns:1fr 30px 1fr 30px 1fr 30px 1fr; align-items:stretch} }
-  .lp-stage{position:relative; text-align:left; cursor:pointer; background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:20px 18px 18px; transition:.18s; display:flex; flex-direction:column; min-height:158px; color:inherit; font-family:inherit}
-  .lp-stage:hover,.lp-stage.active{border-color:var(--green); transform:translateY(-3px); box-shadow:var(--shadow-md)}
-  .lp-head{display:flex; align-items:center; gap:11px; margin-bottom:13px}
-  .lp-num{font:800 11px/1 var(--font-body); letter-spacing:.1em; color:var(--green); border:1px solid rgba(46,107,63,.35); border-radius:3px; padding:4px 7px}
-  .lp-ico{width:22px; height:22px; fill:none; stroke:var(--green); stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; margin-left:auto}
-  .lp-name{font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--ink); letter-spacing:-.01em}
-  .lp-desc{font-size:12.5px; color:var(--muted); line-height:1.5; margin-top:7px}
-  .lp-foot{margin-top:auto; padding-top:12px}
-  /* sprint mix bar */
-  .lp-mix{margin-top:12px}
-  .lp-mixbar{display:flex; height:8px; border-radius:999px; overflow:hidden; border:1px solid var(--line)}
-  .lp-mixbar .enh{background:var(--green); flex:0 0 85%}
-  .lp-mixbar .fix{background:var(--gold); flex:0 0 15%}
-  .lp-mixlabels{display:flex; justify-content:space-between; margin-top:6px; font:700 10px/1 var(--font-body); letter-spacing:.03em}
-  .lp-mixlabels .e{color:var(--green)} .lp-mixlabels .f{color:var(--gold)}
-  .lp-tag{display:inline-block; font:800 9.5px/1 var(--font-body); letter-spacing:.08em; text-transform:uppercase; padding:4px 8px; border-radius:999px}
-  .lp-tag.cont{background:var(--green-soft); color:#294323; border:1px solid rgba(46,107,63,.25)}
-  .lp-tag.det{background:var(--green-soft); color:#294323}
-  /* connectors */
-  .lp-conn{display:flex; align-items:center; justify-content:center; color:var(--green); opacity:.6}
-  .lp-conn svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
-  @media(max-width:879px){ .lp-conn{transform:rotate(90deg); height:22px} }
+  .loopmap{margin-top:30px; display:grid; gap:18px; align-items:center}
+  @media(min-width:900px){ .loopmap{grid-template-columns:minmax(0,460px) 1fr; gap:40px} }
 
-  /* return / keeps-going bar */
-  .lp-return{margin-top:16px; cursor:pointer; display:flex; align-items:center; gap:14px; border:1px dashed rgba(46,107,63,.45); border-radius:var(--radius); background:var(--green-soft); padding:16px 20px; transition:.18s}
-  .lp-return:hover,.lp-return.active{background:#d3e3c1; border-color:var(--green)}
-  .lp-return .lr-ico{flex:none; width:34px; height:34px; border-radius:50%; border:1px solid rgba(46,107,63,.4); display:grid; place-items:center; color:var(--green)}
-  .lp-return .lr-ico svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
-  .lp-return .lr-txt{font-size:13.5px; color:var(--ink)}
-  .lp-return .lr-txt b{color:var(--green)}
+  /* the orbit ring */
+  .ring{position:relative; width:min(470px,92vw); aspect-ratio:1/1; margin:6px auto}
+  .ringsvg{position:absolute; inset:0; width:100%; height:100%; overflow:visible}
+  .ring .guide{fill:none; stroke:var(--line); stroke-width:1.2}
+  .ring .arc{fill:none; stroke:#9db8a6; stroke-width:2.4; stroke-linecap:round}
+  .ring .arc.ret{stroke:var(--green); stroke-dasharray:1 9; stroke-width:3}
+  .orbitdot{fill:var(--green)}
+  .orbitdot.tail{opacity:.35}
+
+  .rnode{position:absolute; transform:translate(-50%,-50%); cursor:pointer; border:0; background:transparent; padding:0; font-family:inherit; z-index:2}
+  .rdisc{position:relative; width:126px; height:126px; border-radius:50%; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:0 10px; transition:.18s}
+  .rnode:hover .rdisc,.rnode.active .rdisc{transform:translateY(-3px); border-color:var(--green); box-shadow:var(--shadow-md)}
+  .rbadge{position:absolute; top:-10px; left:50%; transform:translateX(-50%); width:22px; height:22px; border-radius:50%; background:var(--green); color:#fff; display:grid; place-items:center; font:800 11px/1 var(--font-body)}
+  .ricon{width:23px; height:23px; fill:none; stroke:var(--green); stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; margin-bottom:5px}
+  .rname{font:800 12px/1 var(--font-body); letter-spacing:.09em; text-transform:uppercase; color:var(--ink)}
+  .rcap{font-size:9.5px; color:var(--muted); line-height:1.25; margin-top:4px}
+  .rmix{display:flex; height:6px; width:60px; border-radius:999px; overflow:hidden; border:1px solid var(--line); margin-top:7px}
+  .rmix .e{background:var(--green); flex:0 0 85%} .rmix .f{background:var(--gold); flex:0 0 15%}
+  .n-top{left:50%; top:6.5%} .n-r{left:93.5%; top:50%} .n-bottom{left:50%; top:93.5%} .n-l{left:6.5%; top:50%}
+
+  /* center backlog core */
+  .rhub{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:44%; aspect-ratio:1/1; border-radius:50%; background:var(--panel); border:1px solid var(--line); box-shadow:inset 0 0 0 7px #fff, var(--shadow); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:7px; z-index:1}
+  .rhub-k{font:800 9.5px/1 var(--font-body); letter-spacing:.16em; text-transform:uppercase; color:var(--muted)}
+  .rhub-bars{display:flex; align-items:flex-end; gap:5px; height:34px}
+  .rhub-bars i{width:8px; height:100%; background:var(--green-soft); border:1px solid rgba(46,107,63,.3); border-radius:2px; transform-origin:bottom; animation:drainfill 4.4s ease-in-out infinite}
+  .rhub-bars i:nth-child(1){animation-delay:.0s}
+  .rhub-bars i:nth-child(2){animation-delay:.18s}
+  .rhub-bars i:nth-child(3){animation-delay:.36s}
+  .rhub-bars i:nth-child(4){animation-delay:.54s}
+  .rhub-bars i:nth-child(5){animation-delay:.72s}
+  .rhub-c{font-size:9px; color:var(--muted); max-width:96px; line-height:1.3}
+  @keyframes drainfill{0%,100%{transform:scaleY(1); background:var(--green-soft)} 46%{transform:scaleY(.16); background:#d8e1cd} 76%{transform:scaleY(1); background:var(--green-soft)}}
+
+  /* replenish chip on the return arc */
+  .retchip{position:absolute; left:20.5%; top:20.5%; transform:translate(-50%,-50%); display:inline-flex; align-items:center; gap:6px; background:var(--green-soft); border:1px dashed rgba(46,107,63,.5); color:#294323; border-radius:999px; padding:6px 11px; font:800 9.5px/1 var(--font-body); letter-spacing:.06em; text-transform:uppercase; cursor:pointer; z-index:3; white-space:nowrap; transition:.16s}
+  .retchip svg{width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+  .retchip:hover,.retchip.active{background:#d3e3c1; border-color:var(--green); color:var(--green)}
+
+  /* legend + right column */
+  .looplegend{display:flex; gap:16px; flex-wrap:wrap; margin-top:8px; font:600 11.5px/1 var(--font-body); color:var(--muted)}
+  .looplegend span{display:inline-flex; align-items:center; gap:6px}
+  .looplegend .sw{width:14px; height:0; border-top:2.4px solid #9db8a6}
+  .looplegend .sw.ret{border-top:3px dotted var(--green)}
+  .looplegend .sw.dot{width:9px; height:9px; border:0; border-radius:50%; background:var(--green)}
 
   /* hover detail panel (light) */
   .flowinfo{display:flex; gap:14px; align-items:flex-start; margin-top:16px; padding:18px 20px; border:1px solid var(--line); border-radius:var(--radius); background:#fff; min-height:84px}
@@ -407,72 +421,71 @@
       discover, prioritize, ship a sprint of fixes and enhancements, then refill the backlog and go again.</p>
 
       <div class="loopmap">
-        <div class="lp-stages">
 
-          <button class="lp-stage callout" data-id="discover">
-            <div class="lp-head">
-              <span class="lp-num">01</span>
-              <svg class="lp-ico" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.5" y1="15.5" x2="21" y2="21"></line></svg>
-            </div>
-            <div class="lp-name">Discover</div>
-            <div class="lp-desc">Five lenses sweep the feature in parallel and surface real defects and gaps, each anchored to evidence.</div>
-            <div class="lp-foot"><span class="lp-tag cont">Runs continuously</span></div>
+        <div class="ring" role="img" aria-label="A continuous loop: discover, prioritize, sprint, ship, then replenish and repeat.">
+          <svg class="ringsvg" viewBox="0 0 400 400" aria-hidden="true">
+            <defs>
+              <marker id="ah" markerWidth="7" markerHeight="7" refX="4.4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9db8a6"></path></marker>
+              <marker id="ahg" markerWidth="7.5" markerHeight="7.5" refX="4.4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2e6b3f"></path></marker>
+              <path id="orbit" d="M200 36 A164 164 0 0 1 200 364 A164 164 0 0 1 200 36" fill="none"></path>
+            </defs>
+            <circle class="guide" cx="200" cy="200" r="164"></circle>
+            <path class="arc" d="M261.4 47.9 A164 164 0 0 1 352.1 138.6" marker-end="url(#ah)"></path>
+            <path class="arc" d="M352.1 261.4 A164 164 0 0 1 261.4 352.1" marker-end="url(#ah)"></path>
+            <path class="arc" d="M138.6 352.1 A164 164 0 0 1 47.9 261.4" marker-end="url(#ah)"></path>
+            <path class="arc ret" d="M47.9 138.6 A164 164 0 0 1 138.6 47.9" marker-end="url(#ahg)"></path>
+            <circle class="orbitdot tail" r="4.5"><animateMotion dur="7s" begin="-0.45s" repeatCount="indefinite"><mpath href="#orbit"></mpath></animateMotion></circle>
+            <circle class="orbitdot" r="6.5"><animateMotion dur="7s" repeatCount="indefinite"><mpath href="#orbit"></mpath></animateMotion></circle>
+          </svg>
+
+          <div class="rhub">
+            <div class="rhub-k">Backlog</div>
+            <div class="rhub-bars"><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="rhub-c">drains, refills, repeats</div>
+          </div>
+
+          <button class="rnode n-top callout" data-id="discover">
+            <span class="rdisc"><span class="rbadge">1</span>
+              <svg class="ricon" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.5" y1="15.5" x2="21" y2="21"></line></svg>
+              <span class="rname">Discover</span><span class="rcap">find work + evidence</span></span>
+          </button>
+          <button class="rnode n-r callout" data-id="prioritize">
+            <span class="rdisc"><span class="rbadge">2</span>
+              <svg class="ricon" viewBox="0 0 24 24"><path d="M4 18h6M4 12h10M4 6h16"></path></svg>
+              <span class="rname">Prioritize</span><span class="rcap">score &amp; rank</span></span>
+          </button>
+          <button class="rnode n-bottom callout" data-id="sprint">
+            <span class="rdisc"><span class="rbadge">3</span>
+              <svg class="ricon" viewBox="0 0 24 24"><path d="M4 20l1.2-4.2L16 5l3 3L8.2 18.8 4 20z"></path><line x1="14" y1="7" x2="17" y2="10"></line></svg>
+              <span class="rname">Sprint</span><span class="rmix"><span class="e"></span><span class="f"></span></span></span>
+          </button>
+          <button class="rnode n-l callout" data-id="ship">
+            <span class="rdisc"><span class="rbadge">4</span>
+              <svg class="ricon" viewBox="0 0 24 24"><path d="M12 19V6M5 12l7-7 7 7"></path></svg>
+              <span class="rname">Ship</span><span class="rcap">what passes deploys</span></span>
           </button>
 
-          <div class="lp-conn"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"></path></svg></div>
-
-          <button class="lp-stage callout" data-id="prioritize">
-            <div class="lp-head">
-              <span class="lp-num">02</span>
-              <svg class="lp-ico" viewBox="0 0 24 24"><path d="M4 18h6M4 12h10M4 6h16"></path></svg>
-            </div>
-            <div class="lp-name">Prioritize</div>
-            <div class="lp-desc">One deterministic pass scores and ranks the survivors with the same rubric every time.</div>
-            <div class="lp-foot"><span class="lp-tag det">(impact x fit) / effort</span></div>
+          <button class="retchip callout" data-id="replenish">
+            <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 4v5h-5"></path></svg>
+            Replenish
           </button>
-
-          <div class="lp-conn"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"></path></svg></div>
-
-          <button class="lp-stage callout" data-id="sprint">
-            <div class="lp-head">
-              <span class="lp-num">03</span>
-              <svg class="lp-ico" viewBox="0 0 24 24"><path d="M4 20l1.2-4.2L16 5l3 3L8.2 18.8 4 20z"></path><line x1="14" y1="7" x2="17" y2="10"></line></svg>
-            </div>
-            <div class="lp-name">Sprint</div>
-            <div class="lp-desc">Build, review, revise. Each sprint mixes enhancements with bug fixes over disjoint files.</div>
-            <div class="lp-mix">
-              <div class="lp-mixbar"><span class="enh"></span><span class="fix"></span></div>
-              <div class="lp-mixlabels"><span class="e">85% enhancements</span><span class="f">15% fixes</span></div>
-            </div>
-          </button>
-
-          <div class="lp-conn"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"></path></svg></div>
-
-          <button class="lp-stage callout" data-id="ship">
-            <div class="lp-head">
-              <span class="lp-num">04</span>
-              <svg class="lp-ico" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>
-            </div>
-            <div class="lp-name">Ship</div>
-            <div class="lp-desc">What passes the Definition of Done is committed and deployed. Risky work stays gated for a human.</div>
-            <div class="lp-foot"><span class="lp-tag cont">Reports at each ship</span></div>
-          </button>
-
         </div>
 
-        <div class="lp-return callout" data-id="replenish">
-          <span class="lr-ico"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 4v5h-5"></path></svg></span>
-          <span class="lr-txt"><b>Replenish &amp; repeat.</b> Backlog drops below the low-water mark, so the loop re-runs discovery to refill it and keeps shipping. It stops only when the goal is met or you say so.</span>
-        </div>
-
-        <div class="flowinfo" id="flowInfo">
-          <span class="fi-tag" id="fiTag">Stage</span>
-          <div class="fi-body">
-            <h4 id="fiTitle"></h4>
-            <p id="fiText"></p>
+        <div>
+          <div class="flowinfo" id="flowInfo">
+            <span class="fi-tag" id="fiTag">Stage</span>
+            <div class="fi-body">
+              <h4 id="fiTitle"></h4>
+              <p id="fiText"></p>
+            </div>
+          </div>
+          <p class="fi-hint" style="text-align:left">Hover or tap any node, or the green Replenish link, to see what it does.</p>
+          <div class="looplegend">
+            <span><span class="sw"></span> Stage hand-off</span>
+            <span><span class="sw ret"></span> Replenish (closes the loop)</span>
+            <span><span class="sw dot"></span> Work in flight</span>
           </div>
         </div>
-        <p class="fi-hint">Hover or tap any stage to see what it does.</p>
       </div>
 
       <div class="teaser">
