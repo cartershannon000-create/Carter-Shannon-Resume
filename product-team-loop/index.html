@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Product Team Loop stands up a full product team out of AI agents and runs it as one continuous loop: discovery finds work, prioritization ranks it, and a Builder-Reviewer-Reviser pipeline ships sprints of fixes and enhancements, then refills the backlog and goes again.">
+<meta property="og:title" content="Product Team Loop: an autonomous product team that never stops shipping">
+<meta property="og:description" content="Point it at a feature. Agents discover what to build, score what survives, and ship sprints of fixes and enhancements. Then refill the backlog and go again.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cs-ventures.us/product-team-loop/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Product Team Loop: an autonomous product team that never stops shipping">
+<meta name="twitter:description" content="Point it at a feature. Agents discover what to build, score what survives, and ship sprints of fixes and enhancements. Then refill the backlog and go again.">
 <link rel="canonical" href="https://cs-ventures.us/product-team-loop/">
 <title>Product Team Loop: an autonomous product team that never stops shipping</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -122,7 +129,7 @@
   @keyframes drainfill{0%,100%{transform:scaleY(1); background:var(--green-soft)} 46%{transform:scaleY(.16); background:#d8e1cd} 76%{transform:scaleY(1); background:var(--green-soft)}}
 
   /* replenish chip on the return arc */
-  .retchip{position:absolute; left:20.5%; top:20.5%; transform:translate(-50%,-50%); display:inline-flex; align-items:center; gap:6px; background:var(--green-soft); border:1px dashed rgba(46,107,63,.5); color:#294323; border-radius:999px; padding:6px 11px; font:800 9.5px/1 var(--font-body); letter-spacing:.06em; text-transform:uppercase; cursor:pointer; z-index:3; white-space:nowrap; transition:.16s}
+  .retchip{position:absolute; left:20.5%; top:20.5%; transform:translate(-50%,-50%); display:inline-flex; align-items:center; gap:6px; background:var(--green-soft); border:1px dashed rgba(46,107,63,.5); color:#294323; border-radius:999px; padding:12px 14px; font:800 9.5px/1 var(--font-body); letter-spacing:.06em; text-transform:uppercase; cursor:pointer; z-index:3; white-space:nowrap; transition:.16s}
   .retchip svg{width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
   .retchip:hover,.retchip.active{background:#d3e3c1; border-color:var(--green); color:var(--green)}
 
@@ -333,6 +340,7 @@
   .dcontrols{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px; margin-top:18px}
   .dc-btn{appearance:none; cursor:pointer; font:800 13px/1 var(--font-body); padding:10px 15px; border-radius:var(--radius); border:1px solid var(--line); background:var(--panel); color:var(--ink)}
   .dc-btn:hover{border-color:var(--green); color:var(--green)}
+  .dc-btn:disabled{opacity:.35; cursor:not-allowed; pointer-events:none}
   .dc-btn.primary{background:var(--green); color:#fff; border-color:var(--green)}
   .dc-btn.primary:hover{background:#275935; color:#fff}
   .dc-speed{display:inline-flex; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
@@ -401,8 +409,8 @@
   <div class="wrap prodbar-in">
     <div class="prod-name"><span class="pn-dot"></span>Product Team Loop</div>
     <div class="tabs" role="tablist">
-      <button class="tab active" data-tab="overview">Overview</button>
-      <button class="tab" data-tab="demo">Live Demo</button>
+      <button class="tab active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+      <button class="tab" data-tab="demo" role="tab" aria-selected="false">Live Demo</button>
     </div>
   </div>
 </div>
@@ -421,7 +429,7 @@
         <span class="pill"><b>Continuous</b> discovery, not a one-shot idea list</span>
         <span class="pill"><b>Evidence-anchored</b> intake filter</span>
         <span class="pill"><b>Fixes + enhancements</b> every sprint</span>
-        <span class="pill"><b>Loops</b> until the work is done</span>
+        <span class="pill"><b>Self-replenishing</b> backlog, automatically refilled</span>
       </div>
     </div>
   </section>
@@ -914,7 +922,7 @@
   const tabs = document.querySelectorAll('.tab');
   const panes = { overview:document.getElementById('overview'), demo:document.getElementById('demo') };
   function show(name){
-    tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+    tabs.forEach(t=>{ t.classList.toggle('active', t.dataset.tab===name); t.setAttribute('aria-selected', t.dataset.tab===name ? 'true' : 'false'); });
     Object.entries(panes).forEach(([k,el])=> el.style.display = k===name ? 'block' : 'none');
     window.scrollTo({top:0});
     if(name==='demo'){ dReset(); setTimeout(dPlay,400); }
@@ -1095,18 +1103,20 @@
     dHeadline.textContent = dScenes[di].title;
     dCount.textContent = (di+1)+' / '+N;
     buildTimeline();
+    updateControls();
     onEnter(di);
   }
   function scheduleAuto(){
     clearTimeout(autoTimer);
     if(!playing) return;
     autoTimer = setTimeout(()=>{
-      if(di < N-1){ dShow(di+1); scheduleAuto(); } else { playing=false; updatePlay(); }
+      if(di < N-1){ dShow(di+1); scheduleAuto(); } else { playing=false; updatePlay(); updateControls(); }
     }, dScenes[di].dur/speed);
   }
   function updatePlay(){ dPlayBtn.innerHTML = playing ? '&#10073;&#10073; Pause' : '&#9654; Play'; }
-  function play(){ if(di>=N-1) dShow(0); playing=true; updatePlay(); scheduleAuto(); }
-  function pause(){ playing=false; updatePlay(); clearTimeout(autoTimer); }
+  function updateControls(){ var nb=document.getElementById('dNext'); var bb=document.getElementById('dBack'); var pb=document.getElementById('dPlay'); if(nb) nb.disabled=(di>=N-1); if(bb) bb.disabled=(di<=0); if(pb) pb.disabled=(!playing && di>=N-1); }
+  function play(){ if(di>=N-1) return; playing=true; updatePlay(); scheduleAuto(); }
+  function pause(){ playing=false; updatePlay(); clearTimeout(autoTimer); updateControls(); }
   function dNext(){ pause(); if(di<N-1) dShow(di+1); }
   function dBack(){ pause(); if(di>0) dShow(di-1); }
   function dReset(){ pause(); dShow(0); }
