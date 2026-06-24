@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Product Team Loop stands up a full product team out of AI agents and runs it as a loop: discovery finds work, prioritization ranks it, and a Builder-Reviewer-Reviser pipeline ships it sprint after sprint until the backlog drains.">
+<link rel="canonical" href="https://cs-ventures.us/product-team-loop/">
+<title>Product Team Loop: an autonomous product team that finds, ranks, and ships its own work</title>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Product Team Loop",
+  "url": "https://cs-ventures.us/product-team-loop/",
+  "applicationCategory": "DeveloperApplication",
+  "description": "Product Team Loop stands up a product team out of AI agents and runs it as a loop. Five read-only discovery lenses find work and ground every candidate in evidence, a strict intake filter rejects slop, deterministic prioritization ranks the survivors, a product agent writes dev-ready stories, and a Builder-Reviewer-Reviser pipeline ships them as sprints until the backlog drains and discovery refills it.",
+  "featureList": [
+    "Autonomous discovery across five evidence-grounded lenses",
+    "Strict intake filter that rejects unanchored or cosmetic suggestions",
+    "Deterministic, auditable prioritization with an anchored rubric",
+    "Dev-ready story writing with a Definition of Ready",
+    "Builder-Reviewer-Reviser sprint pipeline with disjoint-file parallelism",
+    "Self-replenishing backlog with human gates for risky work"
+  ],
+  "keywords": "AI agents, product team, autonomous backlog, multi-agent orchestration, agentic workflow, sprint loop",
+  "author": {
+    "@type": "Organization",
+    "name": "CS Ventures",
+    "url": "https://cs-ventures.us"
+  }
+}
+</script>
+<style>
+  :root{
+    --bg:#e8e8df;
+    --panel: rgba(246,246,239,0.74);
+    --panel-strong: rgba(249,249,242,0.94);
+    --ink:#151915;
+    --muted:#596157;
+    --line: rgba(35,48,39,0.18);
+    --green:#2e6b3f;
+    --green-soft:#dce8cd;
+    --blue:#315c75;
+    --blue-soft:#dce7ed;
+    --gold:#9e7132;
+    --gold-soft:#efe3c9;
+    --purple:#7256a8;
+    --purple-soft:#e8e0f3;
+    --rose:#9b4f4d;
+    --rose-soft:#efd9d6;
+    --shadow: 0 1px 3px rgba(31,38,31,.07);
+    --shadow-md: 0 12px 24px rgba(31,38,31,.13);
+    --radius:16px;
+    --maxw:1160px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink); font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--green); text-decoration:none}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px}
+  h1,h2,h3{line-height:1.2; letter-spacing:-.02em}
+  h2{font-size:30px; margin:0 0 6px}
+  .eyebrow{font-size:13px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--green)}
+
+  header.top{position:sticky; top:0; z-index:40; background:var(--bg); border-bottom:1px solid var(--line)}
+  .nav{display:flex; align-items:center; gap:18px; height:64px}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:-.02em; font-size:18px}
+  .logo{width:26px;height:26px;border-radius:7px;background:var(--green)}
+  .tabs{margin-left:auto; display:flex; gap:6px; background:var(--panel); padding:5px; border-radius:12px; border:1px solid var(--line)}
+  .tab{padding:8px 15px; border-radius:8px; font-weight:700; font-size:14px; color:var(--muted); cursor:pointer; border:0; background:transparent}
+  .tab.active{background:var(--green-soft); color:#294323; box-shadow:inset 0 0 0 1px rgba(46,107,63,.16)}
+
+  section{padding:60px 0; border-bottom:1px solid var(--line)}
+  .lead{color:var(--muted); font-size:18px; max-width:760px}
+
+  .hero{padding:80px 0 48px}
+  .hero h1{font-size:clamp(38px,6vw,62px); margin:0 0 18px; letter-spacing:-.04em}
+  .hero h1 .g{color:var(--green)}
+  .pills{display:flex; flex-wrap:wrap; gap:10px; margin-top:24px}
+  .pill{font-size:13px; font-weight:700; padding:7px 13px; border-radius:999px; border:1px solid var(--line); background:var(--panel); color:var(--muted)}
+  .pill b{color:var(--ink)}
+
+  .grid{display:grid; gap:18px}
+  @media(min-width:760px){ .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:1fr 1fr} }
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow)}
+  .card h3{margin:.2em 0 .4em; font-size:18px}
+  .card p{margin:0; color:var(--muted); font-size:15px}
+  .tag{display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:4px 9px; border-radius:7px}
+  .tag.det{color:#294323; background:var(--green-soft); border:1px solid rgba(46,107,63,.25)}
+  .tag.llm{color:#243f52; background:var(--blue-soft); border:1px solid rgba(49,92,117,.25)}
+  .dot{width:8px;height:8px;border-radius:50%}
+  .dot.det{background:var(--green)} .dot.llm{background:var(--blue)} .dot.dyn{background:var(--gold)}
+  .btn{appearance:none; border:1px solid var(--green); cursor:pointer; font-weight:700; font-size:14px; padding:11px 18px; border-radius:10px; background:var(--green); color:#fff}
+  .btn:hover{background:#275935; border-color:#275935}
+
+  /* ============ INTERACTIVE FLOW MAP ============ */
+  .flowwrap{background:var(--panel-strong); border:1px solid var(--line); border-radius:22px; padding:26px; margin-top:28px; box-shadow:var(--shadow)}
+  .flowgrid{display:grid; gap:34px; align-items:center}
+  @media(min-width:860px){ .flowgrid{grid-template-columns:0.85fr 1.15fr} }
+  .stagelabel{font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 16px}
+  .stagelabel b{color:var(--green)}
+  .callout{cursor:pointer}
+
+  /* G1 - discovery intake (gated pipeline) */
+  .g1head{font-weight:800; font-size:15px; border-bottom:2px solid var(--ink); display:inline-block; padding-bottom:3px; margin-bottom:16px}
+  .track{position:relative; margin-left:8px; padding-left:26px; border-left:2px dashed var(--line)}
+  .step{position:relative; margin-bottom:8px; padding:7px 10px; border-radius:9px; border:1px solid transparent; transition:.18s}
+  .step:last-child{margin-bottom:0}
+  .step:hover,.step.active{background:var(--panel); border-color:var(--line)}
+  .step.active{border-color:rgba(46,107,63,.45)}
+  .step::before{content:''; position:absolute; left:-28px; top:15px; width:16px; height:2px; background:var(--green); transition:.18s}
+  .step:hover::before,.step.active::before{width:21px; left:-31px}
+  .step.gate::before{width:13px; height:13px; left:-34px; top:10px; background:var(--bg); border:2px solid var(--green); transform:rotate(45deg)}
+  .step.gate:hover::before,.step.gate.active::before{width:13px; left:-34px}
+  .step b{font-weight:800; font-size:14.5px}
+  .step .sub{display:block; font-size:12.5px; color:var(--muted); margin-top:2px}
+  .step .gtag{display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--green); margin-left:6px}
+  .g1out{margin:14px 0 0 8px; font-weight:800; font-size:14px; color:var(--purple)}
+
+  /* G2 - the loop circle (4 phase nodes + backlog center) */
+  .loopwrap{display:flex; flex-direction:column; align-items:center}
+  .ring{position:relative; width:min(460px,94vw); aspect-ratio:1/1; margin:6px auto 0}
+  .ringsvg{position:absolute; inset:0; width:100%; height:100%}
+  .ring .guide{fill:none; stroke:var(--line); stroke-width:1.4}
+  .rnode{position:absolute; transform:translate(-50%,-50%); cursor:pointer}
+  .rcircle{position:relative; width:118px; height:118px; border-radius:50%; background:#fff; border:1px solid var(--line);
+    box-shadow:0 2px 8px rgba(31,38,31,.06); display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:0 12px; transition:.18s}
+  .rnode:hover .rcircle,.rnode.active .rcircle{transform:translateY(-3px); box-shadow:0 12px 24px rgba(31,38,31,.13)}
+  .rbadge{position:absolute; top:-11px; left:50%; transform:translateX(-50%); width:23px; height:23px; border-radius:50%;
+    background:#fff; border:1.5px solid var(--line); display:grid; place-items:center; font-size:11.5px; font-weight:800; color:var(--muted)}
+  .ricon{width:21px; height:21px; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; margin-bottom:3px}
+  .rname{font-size:13px; font-weight:800; letter-spacing:.04em; text-transform:uppercase}
+  .rcap{font-size:10px; color:var(--muted); line-height:1.25; margin-top:2px}
+  .rnode.llm .ricon{stroke:var(--blue)} .rnode.llm .rname{color:var(--blue)} .rnode.llm .rbadge{color:var(--blue); border-color:rgba(49,92,117,.5)}
+  .rnode.dyn .ricon{stroke:var(--gold)} .rnode.dyn .rname{color:var(--gold)} .rnode.dyn .rbadge{color:var(--gold); border-color:rgba(158,113,50,.5)}
+  .rnode.det .ricon{stroke:var(--green)} .rnode.det .rname{color:var(--green)} .rnode.det .rbadge{color:var(--green); border-color:rgba(46,107,63,.5)}
+  .rnode.llm:hover .rcircle,.rnode.llm.active .rcircle{border-color:var(--blue)}
+  .rnode.dyn:hover .rcircle,.rnode.dyn.active .rcircle{border-color:var(--gold)}
+  .rnode.det:hover .rcircle,.rnode.det.active .rcircle{border-color:var(--green)}
+  .n-top{left:50%; top:9%} .n-r{left:91%; top:50%} .n-bottom{left:50%; top:91%} .n-l{left:9%; top:50%}
+
+  /* center backlog badge */
+  .rcenter{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:42%; aspect-ratio:1/1;
+    border-radius:50%; background:#fff; border:1px solid var(--line); box-shadow:0 2px 10px rgba(31,38,31,.07);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center}
+  .rcenter .ck{font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+  .rcenter .cv{font-size:clamp(26px,8vw,38px); font-weight:800; color:var(--green); line-height:1; letter-spacing:-.03em; margin-top:3px}
+  .rcenter .cs{font-size:9.5px; font-weight:700; color:var(--muted); margin-top:5px; max-width:84px; line-height:1.3}
+  .rcenter .clow{margin-top:6px; font-size:9px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#7a5424;
+    background:var(--gold-soft); border:1px solid rgba(158,113,50,.35); border-radius:999px; padding:2px 8px}
+
+  .looplegend{display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:18px; font-size:12px; color:var(--muted)}
+  .looplegend span{display:inline-flex; align-items:center; gap:6px}
+
+  .flowinfo{display:flex; gap:14px; align-items:flex-start; margin-top:26px; padding:18px 20px; border:1px solid var(--line); border-radius:14px; background:var(--panel); min-height:92px}
+  .fi-tag{flex:none; font-size:10.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:5px 10px; border-radius:8px; background:var(--bg); color:var(--muted); border:1px solid var(--line); margin-top:2px}
+  .fi-tag.det{background:var(--green-soft); color:#294323; border-color:rgba(46,107,63,.3)}
+  .fi-tag.llm{background:var(--blue-soft); color:#243f52; border-color:rgba(49,92,117,.3)}
+  .fi-tag.dyn{background:var(--gold-soft); color:#7a5424; border-color:rgba(158,113,50,.35)}
+  .fi-tag.gate{background:var(--bg); color:var(--green); border-color:rgba(46,107,63,.4)}
+  .fi-body h4{margin:0 0 4px; font-size:16px}
+  .fi-body p{margin:0; color:var(--ink); font-size:14px}
+  .fi-hint{text-align:center; font-size:12px; color:var(--muted); margin:10px 0 0}
+
+  .teaser{display:flex; flex-wrap:wrap; align-items:center; gap:18px; justify-content:space-between; background:var(--green-soft); border:1px solid rgba(46,107,63,.25); border-radius:14px; padding:24px; margin-top:26px}
+  .teaser .t-txt{max-width:560px}
+  .teaser h3{margin:0 0 4px; font-size:20px}
+  .teaser p{margin:0; color:var(--muted); font-size:14.5px}
+
+  table{width:100%; border-collapse:collapse; font-size:14px; margin-top:14px}
+  th,td{text-align:left; padding:11px 13px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.07em}
+  td code{background:var(--green-soft); padding:2px 6px; border-radius:5px; font-size:12.5px; color:#294323}
+  .kpis{display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 0}
+  .kpi{font-size:12.5px; padding:6px 11px; border-radius:9px; border:1px solid var(--line); background:var(--panel); color:var(--muted)}
+  .formula{display:inline-block; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; background:var(--panel-strong); border:1px solid var(--line); border-radius:8px; padding:8px 12px; color:#243f52; margin-top:12px}
+  .formula b{color:var(--green)}
+
+  /* roster table role chips */
+  .role{display:inline-flex; align-items:center; gap:7px; font-weight:800; font-size:13.5px}
+  .mtag{font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; border-radius:6px; background:var(--bg); border:1px solid var(--line); color:var(--muted)}
+  .mtag.ro{color:#243f52; background:var(--blue-soft); border-color:rgba(49,92,117,.25)}
+  .mtag.wr{color:#294323; background:var(--green-soft); border-color:rgba(46,107,63,.25)}
+
+  /* ============ LIVE DEMO ============ */
+  #demo{display:none}
+  @keyframes blink{50%{opacity:0}}
+  @keyframes drise{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+  @keyframes dpop{from{opacity:0; transform:scale(.96)} to{opacity:1; transform:none}}
+
+  .dtimeline{display:flex; margin:24px 0 4px; overflow-x:auto; padding-bottom:4px}
+  .dt-item{flex:1 0 78px; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative}
+  .dt-item::before{content:''; position:absolute; top:13px; left:-50%; width:100%; height:2px; background:var(--line); z-index:0}
+  .dt-item:first-child::before{display:none}
+  .dt-item.done::before{background:var(--green)}
+  .dt-dot{position:relative; z-index:1; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; font-size:12px; font-weight:800; background:#fff; border:2px solid var(--line); color:var(--muted); transition:.2s}
+  .dt-item.gate .dt-dot{border-radius:8px}
+  .dt-item.done .dt-dot{background:var(--green); border-color:var(--green); color:#fff}
+  .dt-item.active .dt-dot{border-color:var(--green); color:var(--green); box-shadow:0 0 0 4px var(--green-soft)}
+  .dt-cap{font-size:10.5px; font-weight:700; color:var(--muted); margin-top:7px}
+  .dt-item.active .dt-cap{color:var(--ink)}
+
+  .dstephead{text-align:center; margin:16px 0 16px}
+  .dstephead .se{font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--green)}
+  .dstephead h3{font-size:clamp(18px,3.2vw,25px); margin:7px 0 0; letter-spacing:-.02em}
+
+  .dstage{position:relative; min-height:440px; border:1px solid var(--line); border-radius:18px; background:var(--panel-strong); padding:26px; box-shadow:var(--shadow)}
+  .scene{display:none}
+  .scene.active{display:block}
+  .scene.active .anim{animation:drise .5s both}
+  .scene.active .pop{animation:dpop .45s both}
+  .dcols{display:grid; gap:18px}
+  @media(min-width:780px){ .dcols{grid-template-columns:1fr 1fr} }
+  .dcols3{display:grid; gap:14px}
+  @media(min-width:780px){ .dcols3{grid-template-columns:minmax(0,1fr) 60px minmax(0,1.12fr); align-items:center} }
+
+  .dflow{display:flex; align-items:center; justify-content:center}
+  .dflow-track{position:relative; background:var(--line); border-radius:3px}
+  .dflow-dot{width:7px; height:7px; border-radius:50%; background:var(--green)}
+  .dflow-dot.d2{animation-delay:.75s}
+  .dflow-head{width:0; height:0}
+  @keyframes flowx{0%{left:0; opacity:0}15%{opacity:1}85%{opacity:1}100%{left:100%; opacity:0}}
+  @keyframes flowy{0%{top:0; opacity:0}15%{opacity:1}85%{opacity:1}100%{top:100%; opacity:0}}
+  @media(min-width:780px){
+    .dflow-track{width:48px; height:2px}
+    .dflow-dot{position:absolute; top:50%; left:0; transform:translate(-50%,-50%); animation:flowx 1.5s linear infinite}
+    .dflow-head{border-top:5px solid transparent; border-bottom:5px solid transparent; border-left:8px solid var(--green); margin-left:1px}
+  }
+  @media(max-width:779px){
+    .dflow{flex-direction:column; margin:2px 0}
+    .dflow-track{width:2px; height:30px}
+    .dflow-dot{position:absolute; left:50%; top:0; transform:translate(-50%,-50%); animation:flowy 1.5s linear infinite}
+    .dflow-head{border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--green); margin-top:1px}
+  }
+
+  .dframe-top{display:flex; flex-wrap:wrap; align-items:center; gap:10px; justify-content:center; text-align:center}
+  .dft-tag{font-size:10.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); background:var(--bg); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+  .dft-q{font-size:14.5px; font-weight:700; color:var(--ink)}
+  .scene-lead{color:var(--muted); font-size:14px; margin:0 0 16px}
+  .src-note{font-size:12.5px; color:var(--muted); margin-top:14px}
+  .src-note b{color:var(--ink)}
+
+  /* chat-style instruction input (scene 1) */
+  .tcursor{display:inline-block; width:9px; background:var(--muted); animation:blink 1s steps(1) infinite; margin-left:2px}
+  .dinput{max-width:660px; margin:4px auto 0}
+  .dinput-box{display:flex; align-items:center; gap:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:17px 14px 17px 22px; box-shadow:0 6px 20px rgba(31,38,31,.08); font-size:16px; color:var(--ink); min-height:26px}
+  .dinput-text{flex:1; word-break:break-word}
+  .dinput-text .tcursor{background:var(--ink)}
+  .dinput-send{flex:none; width:38px; height:38px; border-radius:50%; background:var(--green); border:0; color:#fff; display:grid; place-items:center}
+  .dinput-send svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round}
+  .dinput-send.sent{background:#275935}
+  .dchips{display:flex; flex-wrap:wrap; gap:8px}
+  .dchip{font-size:12.5px; font-weight:700; padding:6px 11px; border-radius:8px; background:var(--panel); border:1px solid var(--line); color:var(--ink)}
+  .dchip b{color:var(--green)}
+
+  .dpanel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px}
+  .dpanel-h{font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+
+  /* lens grid (scene 2) */
+  .lensgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:9px}
+  @media(min-width:520px){ .lensgrid{grid-template-columns:repeat(3,1fr)} }
+  .lens{border:1px solid var(--line); border-radius:11px; background:var(--panel); padding:11px 12px; opacity:.5; transition:.25s}
+  .lens.on{opacity:1; border-color:var(--blue); background:var(--panel-strong); box-shadow:0 0 0 2px var(--blue-soft)}
+  .lens .ln{font-weight:800; font-size:13px; display:flex; align-items:center; gap:7px}
+  .lens .ln .d{width:7px;height:7px;border-radius:50%;background:var(--blue)}
+  .lens .lh{font-size:11px; color:var(--muted); margin-top:4px; line-height:1.35}
+  .lens .lc{margin-top:8px; font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--blue); opacity:0; transition:.3s}
+  .lens.on .lc{opacity:1}
+
+  /* candidate rows (scene 2 & 3) */
+  .candlist{display:flex; flex-direction:column; gap:8px}
+  .cand{display:flex; gap:11px; align-items:flex-start; border:1px solid var(--line); border-radius:11px; background:#fff; padding:11px 13px; opacity:0; transform:translateY(6px); transition:.35s}
+  .cand.show{opacity:1; transform:none}
+  .cand .ct{font-size:10px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 7px; border-radius:6px; flex:none; margin-top:1px}
+  .cand .ct.bug{background:var(--rose-soft); color:#7a3a38}
+  .cand .ct.enh{background:var(--green-soft); color:#294323}
+  .cand .cb{min-width:0}
+  .cand .cti{font-weight:700; font-size:13.5px}
+  .cand .canchor{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; color:var(--blue); background:var(--blue-soft); border-radius:5px; padding:1px 6px; margin-top:4px; display:inline-block}
+  .cand .clens{font-size:11px; color:var(--muted); margin-top:4px}
+  /* verdicts (scene 3 filter) */
+  .cand .verdict{margin-left:auto; flex:none; font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:4px 9px; border-radius:999px; opacity:0; transition:.3s; align-self:center}
+  .cand.keep.ruled .verdict{opacity:1; background:var(--green-soft); color:#294323; border:1px solid rgba(46,107,63,.3)}
+  .cand.drop.ruled .verdict{opacity:1; background:var(--rose-soft); color:#7a3a38; border:1px solid rgba(155,79,77,.3)}
+  .cand.drop.ruled{opacity:.5}
+  .cand.drop.ruled .cti{text-decoration:line-through; text-decoration-thickness:2px; text-decoration-color:var(--rose)}
+  .cand.keep.ruled{border-color:rgba(46,107,63,.4); box-shadow:0 0 0 2px var(--green-soft)}
+
+  /* backlog table (scene 4) */
+  .bwrap{border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff}
+  .bwrap-h{background:#1f3a2e; color:#eaf3ec; padding:10px 14px; font-weight:800; font-size:13px; display:flex; justify-content:space-between; align-items:center}
+  .bwrap-h small{font-weight:600; opacity:.8; font-size:10.5px}
+  .bwrap table{margin:0}
+  .bwrap td,.bwrap th{padding:9px 13px; font-size:13px}
+  .btrow{opacity:0; transform:translateY(5px); transition:.4s}
+  .btrow.show{opacity:1; transform:none}
+  .btrow.p1 td:first-child{position:relative}
+  .bid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; color:var(--ink); font-weight:700}
+  .bscore{font-weight:800; color:var(--green); text-align:right}
+  .p1tag{font-size:9.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; background:var(--rose); color:#fff; border-radius:999px; padding:2px 7px; margin-left:6px}
+
+  /* Definition of Ready (scene 5) */
+  .briefcard{display:flex; flex-direction:column; gap:11px}
+  .briefrow{display:flex; gap:10px; align-items:flex-start; font-size:13px; opacity:0; transform:translateX(-6px); transition:.4s}
+  .briefrow.show{opacity:1; transform:none}
+  .briefrow .ck{flex:none; width:20px; height:20px; border-radius:50%; background:var(--green-soft); color:#294323; display:grid; place-items:center; font-size:11px; font-weight:800; margin-top:1px}
+  .briefrow b{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); display:block; margin-bottom:2px}
+  .verifybox{margin-top:14px; border:1px solid var(--line); border-radius:11px; background:var(--panel); padding:13px 15px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; color:#243f52}
+  .verifybox .vk{color:var(--muted)}
+  .verifybox .vok{color:var(--green); font-weight:700; opacity:0; transition:.3s}
+  .verifybox.done .vok{opacity:1}
+
+  /* sprint pipeline (scene 6) */
+  .agents{display:flex; flex-direction:column; gap:10px}
+  .agent{display:flex; gap:11px; align-items:flex-start; padding:12px 14px; border:1px solid var(--line); border-radius:11px; background:var(--panel); opacity:.5; transition:.25s}
+  .agent.on{opacity:1; border-color:var(--green); background:var(--panel-strong)}
+  .agent .ai{flex:none; width:28px; height:28px; border-radius:8px; background:var(--bg); display:grid; place-items:center}
+  .agent .at{font-weight:800; font-size:13.5px}
+  .agent .as{font-size:11.5px; color:var(--muted)}
+  .stories{display:flex; flex-direction:column; gap:9px}
+  .story{border:1px solid var(--line); border-radius:10px; background:#fff; padding:11px 13px; position:relative; transition:.3s}
+  .story .sid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; color:var(--muted); font-weight:700}
+  .story .stt{font-weight:700; font-size:13px; margin-top:2px}
+  .story .sfile{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; color:var(--blue); margin-top:4px}
+  .story .ftag{position:absolute; top:-9px; right:8px; font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; background:var(--gold); color:#fff; padding:2px 7px; border-radius:999px; opacity:0; transition:.25s}
+  .story.flag{border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-soft)}
+  .story.flag .ftag{opacity:1}
+  .story .xtag{position:absolute; top:-9px; right:8px; font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; background:var(--green); color:#fff; padding:2px 7px; border-radius:999px; opacity:0; transition:.25s}
+  .story.fixed{border-color:var(--green); box-shadow:0 0 0 2px var(--green-soft)}
+  .story.fixed .xtag{opacity:1}
+
+  /* human gate (scene 7) */
+  .dgate{max-width:560px; margin:14px auto 0; background:#234e39; color:#e9f2ec; border-radius:16px; padding:24px; position:relative}
+  .dgate .gtagline{font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; opacity:.85; text-align:center}
+  .dgate h4{text-align:center; font-size:20px; margin:6px 0 16px}
+  .dgate .gck{display:flex; gap:9px; align-items:flex-start; font-size:13px; padding:7px 0; border-top:1px solid rgba(255,255,255,.14)}
+  .dgate .gck:first-of-type{border-top:0}
+  .dgate .gck .ck{flex:none; width:18px; height:18px; border-radius:50%; background:rgba(255,255,255,.18); display:grid; place-items:center; font-size:11px}
+  .dgate .gfoot{display:flex; gap:10px; align-items:center; justify-content:center; margin-top:16px; font-size:12px; opacity:.9}
+  .dgate .gbtn{display:block; margin:14px auto 0; background:#eaf3ec; color:#234e39; border:0; border-radius:999px; padding:10px 20px; font-weight:800; font-size:13.5px; cursor:default}
+  .dgate .gbadge{position:absolute; top:16px; right:16px; opacity:0; background:#eaf3ec; color:#234e39; font-size:10.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:4px 10px; border-radius:999px; transition:.3s}
+  .dgate.approved .gbadge{opacity:1}
+  .dgate.approved .gbtn{background:rgba(255,255,255,.2); color:#e9f2ec}
+
+  /* replenish loop close (scene 8) */
+  .replwrap{display:flex; flex-direction:column; align-items:center; text-align:center}
+  .replcount{display:flex; align-items:center; gap:14px; justify-content:center; margin:6px 0 18px}
+  .replbadge{border:1px solid var(--line); border-radius:14px; background:#fff; padding:14px 22px; min-width:120px}
+  .replbadge .rk{font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  .replbadge .rv{font-size:34px; font-weight:800; line-height:1; letter-spacing:-.03em; margin-top:4px; color:var(--green); transition:color .3s}
+  .replbadge.low .rv{color:var(--gold)}
+  .replarrow{font-size:24px; color:var(--muted)}
+  .repllaps{display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:6px}
+  .repllaps span{font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; border:1px solid var(--line); background:var(--panel); color:var(--muted)}
+  .repllaps span.on{background:var(--green-soft); color:#294323; border-color:rgba(46,107,63,.4)}
+  .cycle{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; align-items:center; margin-top:20px}
+  .cyc{font-size:12px; font-weight:800; padding:7px 13px; border-radius:999px; border:1px solid var(--line); background:var(--panel); color:var(--muted); transition:.3s}
+  .cyc.on{background:var(--green); color:#fff; border-color:var(--green)}
+  .cyc-arr{color:var(--muted); font-weight:800}
+
+  /* playback controls */
+  .dcontrols{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px; margin-top:18px}
+  .dc-btn{appearance:none; cursor:pointer; font-weight:800; font-size:13px; padding:9px 15px; border-radius:9px; border:1px solid var(--line); background:var(--panel); color:var(--ink)}
+  .dc-btn:hover{border-color:var(--green); color:var(--green)}
+  .dc-btn.primary{background:var(--green); color:#fff; border-color:var(--green)}
+  .dc-btn.primary:hover{background:#275935; color:#fff}
+  .dc-speed{display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .dc-speed button{appearance:none; cursor:pointer; border:0; background:transparent; padding:9px 11px; font-weight:800; font-size:12px; color:var(--muted)}
+  .dc-speed button.on{background:var(--green-soft); color:#294323}
+  .dc-count{font-size:12px; font-weight:700; color:var(--muted); min-width:48px; text-align:center}
+
+  footer{padding:40px 0 70px; color:var(--muted); font-size:13px; text-align:center}
+
+  /* ============ MOBILE ============ */
+  @media (max-width:680px){
+    .wrap{padding:0 16px}
+    section{padding:40px 0}
+    h2{font-size:23px}
+    .lead{font-size:15.5px}
+    .nav{flex-wrap:wrap; height:auto; gap:10px; padding:10px 0}
+    .brand{font-size:16px}
+    .tabs{margin-left:0; width:100%; justify-content:flex-start; overflow-x:auto; -webkit-overflow-scrolling:touch; gap:4px}
+    .tab{flex:0 0 auto; padding:7px 12px; font-size:13px}
+    .hero{padding:48px 0 32px}
+    .hero h1{font-size:30px}
+    .pills{gap:8px} .pill{font-size:12px; padding:6px 11px}
+    .flowwrap{padding:16px; border-radius:16px}
+    .flowgrid{gap:30px}
+    .ring{width:min(360px,96vw)}
+    .rcircle{width:96px; height:96px; padding:0 8px}
+    .ricon{width:18px; height:18px}
+    .rname{font-size:11.5px}
+    .rcap{font-size:9px}
+    .flowinfo{flex-direction:column; gap:10px}
+    .teaser{padding:18px; gap:12px}
+    .teaser .btn{width:100%}
+    .card{padding:18px}
+    .dstage{padding:18px; min-height:0}
+    .lensgrid{grid-template-columns:repeat(2,1fr)}
+    table{font-size:13px}
+    th,td{padding:9px 10px}
+  }
+  @media (max-width:380px){ .hero h1{font-size:26px} }
+
+  /* cs ventures back link */
+  .csv-back{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--muted); text-decoration:none; flex-shrink:0; padding:4px 2px; transition:.14s}
+  .csv-back:hover{color:var(--green)}
+  .csv-back svg{width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round}
+  .csv-sep{color:var(--line); margin:0 2px; font-size:14px; user-select:none}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap nav">
+    <a class="csv-back" href="/"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>CS Ventures</a>
+    <span class="csv-sep">|</span>
+    <div class="brand"><span class="logo"></span> Product Team Loop</div>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="demo">Live Demo</button>
+    </div>
+  </div>
+</header>
+
+<!-- ================= OVERVIEW ================= -->
+<main id="overview">
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">An autonomous product team, built from agents</div>
+      <h1>It finds its own work, ranks it, and <span class="g">ships it sprint after sprint</span> until the backlog is empty.</h1>
+      <p class="lead">Point it at a feature. A team of agents discovers what to build, grounds every candidate in
+      evidence, throws out the slop, scores and ranks what survives, writes dev-ready stories, then runs a
+      build-review-revise pipeline that ships each one. When the backlog runs low, it discovers more. A human
+      orchestrates and never writes a line of code.</p>
+      <div class="pills">
+        <span class="pill"><b>Evidence-anchored</b> discovery, not an idea generator</span>
+        <span class="pill"><b>Auditable</b> (impact x fit) / effort scoring</span>
+        <span class="pill"><b>Reviewer never the Reviser</b></span>
+        <span class="pill"><b>Loops</b> until the backlog drains</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTERACTIVE FLOW MAP -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">The whole system at a glance</div>
+      <h2>How it works</h2>
+      <p class="lead">Discovery is a strict intake filter, not a brainstorm. What clears the filter feeds a loop
+      that prioritizes, writes stories, and ships sprints, then refills itself. Walk through it live in the demo.</p>
+
+      <div class="flowwrap">
+        <div class="flowgrid">
+
+          <!-- G1 - discovery intake -->
+          <div>
+            <p class="stagelabel"><b>G1</b> &middot; Discovery, the intake filter</p>
+            <div class="g1head">Point it at a feature</div>
+            <div class="track">
+              <div class="step callout" data-id="lenses"><b>5 lens agents</b><span class="sub">flow &middot; runtime &middot; coverage &middot; consistency &middot; gates, all read-only and in parallel</span></div>
+              <div class="step gate callout" data-id="anchor"><b>Evidence gate</b><span class="gtag">gate</span><span class="sub">every candidate cites file:line, a flow, or a spec. No anchor, dropped</span></div>
+              <div class="step gate callout" data-id="dedup"><b>Dedup gate</b><span class="gtag">gate</span><span class="sub">re-run against the whole backlog &amp; sprint log, so nothing is raised twice</span></div>
+              <div class="step callout" data-id="survivors"><b>Survivors</b><span class="sub">real defects &amp; missing capability, each with an anchor</span></div>
+            </div>
+            <div class="g1out">&darr; feeds the loop</div>
+          </div>
+
+          <!-- G2 - the loop -->
+          <div class="loopwrap">
+            <p class="stagelabel" style="align-self:flex-start"><b>G2</b> &middot; The product-team loop</p>
+            <div class="ring">
+              <svg class="ringsvg" viewBox="0 0 400 400" aria-hidden="true">
+                <defs>
+                  <marker id="ah" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto">
+                    <path d="M0,0 L6,3 L0,6 Z" fill="#aab1a5"></path>
+                  </marker>
+                </defs>
+                <circle class="guide" cx="200" cy="200" r="164"></circle>
+                <g class="arcs" fill="none" stroke="#aab1a5" stroke-width="2.2" stroke-linecap="round" marker-end="url(#ah)">
+                  <path d="M261.4 47.9 A164 164 0 0 1 352.1 138.6"></path>
+                  <path d="M352.1 261.4 A164 164 0 0 1 261.4 352.1"></path>
+                  <path d="M138.6 352.1 A164 164 0 0 1 47.9 261.4"></path>
+                  <path d="M47.9 138.6 A164 164 0 0 1 138.6 47.9"></path>
+                </g>
+              </svg>
+
+              <div class="rcenter">
+                <div class="ck">Backlog</div>
+                <div class="cv">ready</div>
+                <div class="cs">drains, then discovery refills it</div>
+                <div class="clow">low-water 3</div>
+              </div>
+
+              <div class="rnode det n-top callout" data-id="prioritize">
+                <div class="rcircle"><span class="rbadge">1</span>
+                  <svg class="ricon" viewBox="0 0 24 24"><path d="M4 18h6M4 12h10M4 6h16"></path></svg>
+                  <div class="rname">Prioritize</div><div class="rcap">score &middot; rank &middot; assign ids</div></div>
+              </div>
+              <div class="rnode llm n-r callout" data-id="stories">
+                <div class="rcircle"><span class="rbadge">2</span>
+                  <svg class="ricon" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"></path><path d="M9 9h6M9 13h6M9 17h3"></path></svg>
+                  <div class="rname">Stories</div><div class="rcap">dev-ready, files locked</div></div>
+              </div>
+              <div class="rnode llm n-bottom callout" data-id="sprint">
+                <div class="rcircle"><span class="rbadge">3</span>
+                  <svg class="ricon" viewBox="0 0 24 24"><path d="M4 20l1.2-4.2L16 5l3 3L8.2 18.8 4 20z"></path><line x1="14" y1="7" x2="17" y2="10"></line></svg>
+                  <div class="rname">Sprint</div><div class="rcap">build &middot; review &middot; revise</div></div>
+              </div>
+              <div class="rnode dyn n-l callout" data-id="replenish">
+                <div class="rcircle"><span class="rbadge">4</span>
+                  <svg class="ricon" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 4v5h-5"></path></svg>
+                  <div class="rname">Replenish</div><div class="rcap">low backlog, re-discover</div></div>
+              </div>
+            </div>
+
+            <div class="looplegend">
+              <span><span class="dot llm"></span> Agent work (judgment)</span>
+              <span><span class="dot det"></span> Deterministic, scored</span>
+              <span><span class="dot dyn"></span> Adapts each cycle</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="flowinfo" id="flowInfo">
+          <span class="fi-tag" id="fiTag">Step</span>
+          <div class="fi-body">
+            <h4 id="fiTitle"></h4>
+            <p id="fiText"></p>
+          </div>
+        </div>
+        <p class="fi-hint">Hover or tap any step to see what it does.</p>
+      </div>
+
+      <div class="teaser">
+        <div class="t-txt">
+          <h3>Watch it run on a real screen</h3>
+          <p>See the team take the instruction <i>"Run the product team on Altro's rankings screen"</i> from
+          discovery and the slop filter all the way through a shipped sprint, then loop back for more.</p>
+        </div>
+        <button class="btn" data-goto="demo">Open the live demo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY NOT SLOP -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">Why the output isn't slop</div>
+      <h2>Two jobs, kept strictly apart</h2>
+      <p class="lead">The default failure of agentic discovery is confident, well-formatted nonsense. The fix is to
+      make discovery a strict intake gate and the build a self-checking pipeline. Every move is either a human
+      <b>orchestrating</b> or an agent <b>doing</b>, and the two never blur.</p>
+      <div class="grid g2" style="margin-top:24px">
+        <div class="card" style="border-color:rgba(46,107,63,.3)">
+          <span class="tag det"><span class="dot det"></span> The orchestrator</span>
+          <h3>Routes, never writes code</h3>
+          <p>A human scrum-master slices work, writes tight briefs, scores, accepts, ships, and keeps the backlog.
+          Not one line of feature code. It stays lean by passing pointers like file paths and symbol names,
+          never pasting files into its own head.</p>
+        </div>
+        <div class="card" style="border-color:rgba(49,92,117,.3)">
+          <span class="tag llm"><span class="dot llm"></span> The agents</span>
+          <h3>Do the work, return receipts</h3>
+          <p>Lens agents find work, the prioritizer scores it, the product agent writes stories, and builders ship
+          them. Each returns a terse manifest, never a code dump, so the orchestrator stays sharp across dozens of
+          hand-offs.</p>
+        </div>
+      </div>
+      <div class="grid g3" style="margin-top:18px">
+        <div class="card"><h3>Evidence or it's dropped</h3><p>Every candidate must cite a <code>file:line</code>, a
+          reproducible flow, or a spec it violates. No anchor, no intake. "This could be nicer" never makes it in.</p></div>
+        <div class="card"><h3>Reviewer &ne; Reviser</h3><p>One agent audits a diff for runtime correctness; a
+          different agent fixes what it flagged. A critic grading its own rework drifts into self-justification.</p></div>
+        <div class="card"><h3>Agents never self-score</h3><p>Discovery can't set its own impact or priority. One
+          deterministic pass scores the whole filtered union against an anchored rubric, so two runs rank the same.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE TEAM -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">The roster</div>
+      <h2>A full product team, dispatched as agents</h2>
+      <p class="lead">Each role has a model, a dispatch mode, and a single job. Read-only roles always run in
+      parallel; anything that writes the same file is sequenced, never raced.</p>
+      <table>
+        <tr><th>Role</th><th>Mode</th><th>Job</th></tr>
+        <tr>
+          <td><span class="role">Orchestrator</span></td>
+          <td><span class="mtag">you / scrum-master</span></td>
+          <td>Lifecycle, briefs, scoring, accept, ship, bookkeeping. Writes no feature code.</td>
+        </tr>
+        <tr>
+          <td><span class="role">Discovery &times; 5 lenses</span></td>
+          <td><span class="mtag ro">read-only</span></td>
+          <td>Each owns one lens, sweeps every surface, surfaces candidates <b>with evidence</b>.</td>
+        </tr>
+        <tr>
+          <td><span class="role">Prioritization</span></td>
+          <td><span class="mtag wr">write</span></td>
+          <td>Dedupe, score, rank, assign stable ids, write the backlog.</td>
+        </tr>
+        <tr>
+          <td><span class="role">Product</span></td>
+          <td><span class="mtag ro">read-only</span></td>
+          <td>Turn top items into dev-ready stories that meet a Definition of Ready.</td>
+        </tr>
+        <tr>
+          <td><span class="role">Builder</span></td>
+          <td><span class="mtag wr">write</span></td>
+          <td>Implement one story over one disjoint file set.</td>
+        </tr>
+        <tr>
+          <td><span class="role">Diff Reviewer</span></td>
+          <td><span class="mtag ro">read-only</span></td>
+          <td>Audit the diff for runtime correctness, rank findings P1 / P2 / P3.</td>
+        </tr>
+        <tr>
+          <td><span class="role">Reviser</span></td>
+          <td><span class="mtag wr">write</span></td>
+          <td>Fix P1 / P2, usually the original Builder resumed. Max two rounds.</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- THE FIVE LENSES -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">Phase 1 &middot; Discover</div>
+      <h2>Five lenses, each hunting one kind of problem</h2>
+      <p class="lead">Run in parallel, every lens sweeps the whole feature but only through its own question.
+      Convergence across lenses on one gap is the highest-confidence signal there is.</p>
+      <div class="grid g3" style="margin-top:24px">
+        <div class="card"><h3 style="color:var(--blue)">Flow</h3><p>Dead ends, missing CTAs, multi-tap core jobs,
+          states with no way out.</p></div>
+        <div class="card"><h3 style="color:var(--blue)">Runtime</h3><p>Stale state and closures, wrong-state
+          conditionals, broken CRUD wiring, off-by-one, null/NaN, empty/loading/error paths.</p></div>
+        <div class="card"><h3 style="color:var(--blue)">Coverage</h3><p>Specced-or-listed but not actually built
+          or usable. Real capability gaps against the design.</p></div>
+        <div class="card"><h3 style="color:var(--blue)">Consistency</h3><p>House-style and pattern drift across
+          surfaces, plus cross-document conflicts.</p></div>
+        <div class="card"><h3 style="color:var(--blue)">Gates</h3><p>Brand and token violations, accessibility
+          (labels and hit targets), AI-tells, and other hard-gate failures.</p></div>
+        <div class="card" style="background:var(--green-soft); border-color:rgba(46,107,63,.25)"><h3>The signal vs. the noise</h3>
+          <p style="color:#3a4b39">Highest signal: human device reports and runtime-correctness audits. Lowest:
+          generic best-practice suggestions, which the filter rejects.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIORITIZE + SPRINT -->
+  <section>
+    <div class="wrap">
+      <div class="grid g2">
+        <div class="card">
+          <div class="eyebrow">Phase 2 &middot; Prioritize</div>
+          <h3 style="font-size:22px">One number, computed the same way every time</h3>
+          <p>An anchored rubric turns each item into impact, fit, and effort points, then a single deterministic
+          pass ranks the whole union. Fit is persisted, ids are never reused, ties break impact &rarr; effort &rarr; id.
+          Every input ends as scored, merged, rejected, or deferred, with no silent drops.</p>
+          <div class="formula">priority score = (<b>impact</b> &times; <b>fit</b>) / <b>effort</b></div>
+        </div>
+        <div class="card">
+          <div class="eyebrow">Phase 4 &middot; Sprint</div>
+          <h3 style="font-size:22px">Build, review, revise, then ship what passes</h3>
+          <p>Each sprint pulls 3 to 5 disjoint-file stories at an 85% enhancement / 15% bug mix. Builder builds,
+          a fresh Reviewer audits runtime correctness, a Reviser clears P1/P2 in at most two rounds. Any P1,
+          regression, or device-reported bug is drain-first. Partial sprint? Ship only the files that passed.</p>
+          <div class="kpis"><span class="kpi">85 / 15 mix</span><span class="kpi">disjoint files only</span><span class="kpi">max 2 reviser rounds</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GUARDRAILS -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">Safety rails</div>
+      <h2>It runs on its own, but never off a cliff</h2>
+      <div class="grid g2" style="margin-top:24px">
+        <div class="card">
+          <h3 style="color:var(--green)">Humans keep the keys</h3>
+          <table>
+            <tr><td><b>Native builds</b></td><td>routed to a human gate, never auto-shipped</td></tr>
+            <tr><td><b>SQL &amp; migrations</b></td><td>blocked, queued for human review</td></tr>
+            <tr><td><b>Can't-see-in-source</b></td><td>renders &amp; runtime go to a device report</td></tr>
+            <tr><td><b>Each ship</b></td><td>standing authorization, or pause for approval, your call</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--gold)">When something breaks</h3>
+          <table>
+            <tr><td><b>Regression</b></td><td>a shipped item that breaks reopens, exempt from do-not-propose</td></tr>
+            <tr><td><b>Bad ship</b></td><td>revert the deploy first, then fix forward</td></tr>
+            <tr><td><b>P1 crash</b></td><td>preempts the running sprint as a solo hotfix, then resumes</td></tr>
+            <tr><td><b>Empty sweep</b></td><td>discovery returns nothing valid? pause and notify, never spin</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>Stops on its own terms</h3>
+        <p>The loop ends on the project's completion condition. For example, the feature score clears its
+        target and no high-impact items remain, backed by a hard iteration cap as a safety stop. Between
+        sprints it self-paces, and you can hand it standing authority or keep a checkpoint at every ship.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer><div class="wrap">Product Team Loop concept &amp; design. See the <a href="#" data-goto="demo">Live Demo</a>.</div></footer>
+</main>
+
+<!-- ================= LIVE DEMO ================= -->
+<main id="demo">
+  <section style="padding-top:42px">
+    <div class="wrap">
+      <div class="eyebrow">Live demo &middot; worked example</div>
+      <h2>From one instruction to a shipped sprint</h2>
+      <p class="lead">Press play and watch the team take a single instruction through discovery, the slop filter,
+      scoring, stories, a build-review-revise sprint, the ship gate, and the loop back for more. Step through it
+      at your own pace.</p>
+
+      <div class="dtimeline" id="dTimeline"></div>
+
+      <div class="dstephead">
+        <div class="se" id="dEyebrow">Step 1 of 8</div>
+        <h3 id="dHeadline">It starts with one plain instruction.</h3>
+      </div>
+
+      <div class="dstage">
+
+        <!-- 1 · kickoff -->
+        <div class="scene active" data-scene="0">
+          <div class="dinput anim">
+            <div class="dinput-box">
+              <span class="dinput-text" id="dTyped"></span><span class="tcursor">&nbsp;</span>
+              <button class="dinput-send" id="dSendBtn" aria-hidden="true" tabindex="-1">
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+          <p class="scene-lead anim" style="animation-delay:.2s; text-align:center; max-width:660px; margin:18px auto 0">
+            You give it one feature and a goal. The team handles discovery, prioritization, stories, and the
+            build, sprint after sprint, reporting at each ship instead of asking what to do next.
+          </p>
+          <div class="dchips anim" style="animation-delay:.35s; margin-top:18px; justify-content:center">
+            <span class="dchip"><b>Surface:</b> Altro rankings screen</span>
+            <span class="dchip"><b>Mix:</b> 85% enhancement / 15% bug</span>
+            <span class="dchip"><b>Human input:</b> one instruction</span>
+          </div>
+        </div>
+
+        <!-- 2 · discover -->
+        <div class="scene" data-scene="1">
+          <div class="dcols3">
+            <div>
+              <p class="dpanel-h">5 lenses sweep in parallel</p>
+              <div class="lensgrid">
+                <div class="lens" id="lensFlow"><div class="ln"><span class="d"></span>Flow</div><div class="lh">dead ends, missing CTAs</div><div class="lc">2 found</div></div>
+                <div class="lens" id="lensRuntime"><div class="ln"><span class="d"></span>Runtime</div><div class="lh">stale state, off-by-one</div><div class="lc">2 found</div></div>
+                <div class="lens" id="lensCoverage"><div class="ln"><span class="d"></span>Coverage</div><div class="lh">specced, not built</div><div class="lc">1 found</div></div>
+                <div class="lens" id="lensConsistency"><div class="ln"><span class="d"></span>Consistency</div><div class="lh">pattern drift</div><div class="lc">1 found</div></div>
+                <div class="lens" id="lensGates"><div class="ln"><span class="d"></span>Gates</div><div class="lh">a11y, brand, AI-tells</div><div class="lc">1 found</div></div>
+              </div>
+            </div>
+            <div class="dflow anim" style="animation-delay:.3s" aria-hidden="true">
+              <span class="dflow-track"><span class="dflow-dot"></span><span class="dflow-dot d2"></span></span>
+              <span class="dflow-head"></span>
+            </div>
+            <div>
+              <p class="dpanel-h">Candidates, each with an anchor</p>
+              <div class="candlist" id="dCandFind">
+                <div class="cand"><span class="ct bug">bug</span><div class="cb"><div class="cti">Drag-reorder writes a stale rank index</div><span class="canchor">useRankings.ts:88</span><div class="clens">runtime &middot; reproducible on fast moves</div></div></div>
+                <div class="cand"><span class="ct enh">enh</span><div class="cb"><div class="cti">Ranked list has no empty state or CTA</div><span class="canchor">RankingsScreen.tsx:142</span><div class="clens">flow &middot; new users see a blank screen</div></div></div>
+                <div class="cand"><span class="ct enh">enh</span><div class="cb"><div class="cti">Reorder handles lack a11y labels, hit target &lt; 44px</div><span class="canchor">RankRow.tsx:31</span><div class="clens">gates &middot; fails the a11y hard gate</div></div></div>
+                <div class="cand"><span class="ct enh">enh</span><div class="cb"><div class="cti">Compare-trips view specced but never wired</div><span class="canchor">design/altro.md &sect;4</span><div class="clens">coverage &middot; capability gap vs design</div></div></div>
+              </div>
+            </div>
+          </div>
+          <p class="src-note anim" style="animation-delay:.45s">Read-only agents, in parallel. Each finding names a <b>defect or a missing capability</b> and points at exactly where it lives.</p>
+        </div>
+
+        <!-- 3 · slop filter -->
+        <div class="scene" data-scene="2">
+          <p class="dpanel-h" style="text-align:center">The intake filter rules on every candidate</p>
+          <div class="candlist" id="dCandFilter" style="max-width:720px; margin:0 auto">
+            <div class="cand keep"><span class="ct bug">bug</span><div class="cb"><div class="cti">Drag-reorder writes a stale rank index</div><span class="canchor">useRankings.ts:88</span></div><span class="verdict">kept</span></div>
+            <div class="cand keep"><span class="ct enh">enh</span><div class="cb"><div class="cti">Ranked list has no empty state or CTA</div><span class="canchor">RankingsScreen.tsx:142</span></div><span class="verdict">kept</span></div>
+            <div class="cand keep"><span class="ct enh">enh</span><div class="cb"><div class="cti">Reorder handles lack a11y labels</div><span class="canchor">RankRow.tsx:31</span></div><span class="verdict">kept</span></div>
+            <div class="cand drop"><span class="ct enh">enh</span><div class="cb"><div class="cti">Make the rankings screen pop more</div><span class="canchor" style="color:var(--rose); background:var(--rose-soft)">no anchor</span></div><span class="verdict">no evidence</span></div>
+            <div class="cand drop"><span class="ct enh">enh</span><div class="cb"><div class="cti">Add a gradient header banner</div><span class="canchor" style="color:var(--rose); background:var(--rose-soft)">cosmetic</span></div><span class="verdict">fails brand gate</span></div>
+            <div class="cand drop"><span class="ct bug">bug</span><div class="cb"><div class="cti">Reindex gap on city delete</div><span class="canchor">already ENH-009</span></div><span class="verdict">duplicate</span></div>
+          </div>
+          <p class="src-note anim" style="text-align:center; max-width:640px; margin-left:auto; margin-right:auto">Three rejected: <b>no evidence anchor</b>, <b>cosmetic-only</b>, and a <b>duplicate</b> of an existing backlog row. This gate is the whole difference between a product team and an idea generator.</p>
+        </div>
+
+        <!-- 4 · prioritize -->
+        <div class="scene" data-scene="3">
+          <div class="bwrap anim" style="max-width:820px; margin:0 auto">
+            <div class="bwrap-h"><span>BACKLOG.md &middot; scored &amp; ranked</span><small>(impact &times; fit) / effort</small></div>
+            <table>
+              <tr><th>id</th><th>title</th><th>i</th><th>f</th><th>e</th><th style="text-align:right">score</th></tr>
+              <tr class="btrow p1"><td><span class="bid">BUG-014</span></td><td>Stale rank index<span class="p1tag">P1</span></td><td>H</td><td>High</td><td>L</td><td class="bscore" data-s="4.5">0.0</td></tr>
+              <tr class="btrow"><td><span class="bid">ENH-031</span></td><td>Empty state + CTA</td><td>H</td><td>High</td><td>M</td><td class="bscore" data-s="2.3">0.0</td></tr>
+              <tr class="btrow"><td><span class="bid">ENH-032</span></td><td>a11y labels + hit target</td><td>M</td><td>Med</td><td>L</td><td class="bscore" data-s="2.0">0.0</td></tr>
+              <tr class="btrow"><td><span class="bid">ENH-033</span></td><td>Wire compare-trips</td><td>H</td><td>Med</td><td>H</td><td class="bscore" data-s="0.8">0.0</td></tr>
+              <tr class="btrow"><td><span class="bid">ENH-034</span></td><td>Rank chips to brand tokens</td><td>L</td><td>Low</td><td>L</td><td class="bscore" data-s="0.5">0.0</td></tr>
+            </table>
+          </div>
+          <p class="src-note anim" style="text-align:center; max-width:660px; margin-left:auto; margin-right:auto">One deterministic pass. The <b>P1 bug drains first</b>, overriding the ratio; the rest sort by score. Two runs of this rubric produce the same ranking.</p>
+        </div>
+
+        <!-- 5 · stories -->
+        <div class="scene" data-scene="4">
+          <div class="dcols">
+            <div class="dpanel anim">
+              <p class="dpanel-h">ENH-031 &rarr; Definition of Ready</p>
+              <div class="briefcard" id="dDor">
+                <div class="briefrow"><span class="ck">&check;</span><div><b>User value</b>New users land on a screen that tells them what to do</div></div>
+                <div class="briefrow"><span class="ck">&check;</span><div><b>Acceptance</b>Empty list shows headline, blurb, and an "Add a city" CTA</div></div>
+                <div class="briefrow"><span class="ck">&check;</span><div><b>Owns files</b>RankingsEmpty.tsx (new), RankingsScreen.tsx</div></div>
+                <div class="briefrow"><span class="ck">&check;</span><div><b>Constraints</b>brand tokens, a11y labels, no AI-tells</div></div>
+              </div>
+            </div>
+            <div class="anim" style="animation-delay:.2s">
+              <p class="dpanel-h">Contract symbols verified to exist</p>
+              <div class="verifybox" id="dVerify">
+                <div><span class="vk">$</span> rg -n "useRankings" RankingsScreen.tsx</div>
+                <div style="margin-top:6px"><span class="vok">&check; 142: const { items } = useRankings()</span></div>
+                <div style="margin-top:10px"><span class="vk">$</span> rg -n "AddCityButton" components/</div>
+                <div style="margin-top:6px"><span class="vok">&check; Cta.tsx:8: export function AddCityButton</span></div>
+              </div>
+              <p class="src-note">A story is <b>ready</b> only when its files are disjoint and every symbol it leans on is confirmed real. Missing symbol &rarr; the story is blocked, not built.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 · sprint -->
+        <div class="scene" data-scene="5">
+          <div class="dcols3">
+            <div class="agents anim">
+              <div class="agent on" id="agB"><div class="ai">&#9998;</div><div><div class="at">Builder</div><div class="as">implements each story over its own files</div></div></div>
+              <div class="agent" id="agR"><div class="ai">&#9678;</div><div><div class="at">Diff Reviewer</div><div class="as">audits runtime correctness, flags P1/P2</div></div></div>
+              <div class="agent" id="agV"><div class="ai">&#9999;</div><div><div class="at">Reviser</div><div class="as">fixes only what was flagged</div></div></div>
+            </div>
+            <div class="dflow anim" style="animation-delay:.15s" aria-hidden="true">
+              <span class="dflow-track"><span class="dflow-dot"></span><span class="dflow-dot d2"></span></span>
+              <span class="dflow-head"></span>
+            </div>
+            <div class="stories anim" style="animation-delay:.2s">
+              <div class="story" id="stA"><span class="ftag">P1</span><span class="xtag">passed</span><div class="sid">BUG-014</div><div class="stt">Stale rank index</div><div class="sfile">useRankings.ts</div></div>
+              <div class="story" id="stB"><span class="ftag">P2</span><span class="xtag">passed</span><div class="sid">ENH-031</div><div class="stt">Empty state + CTA</div><div class="sfile">RankingsEmpty.tsx</div></div>
+              <div class="story" id="stC"><span class="xtag">passed</span><div class="sid">ENH-032</div><div class="stt">a11y labels + hit target</div><div class="sfile">RankRow.tsx</div></div>
+            </div>
+          </div>
+          <p class="src-note anim" style="animation-delay:.45s">Three stories, three disjoint file sets &rarr; built in parallel. The Reviewer flags a <b>P1</b> and a <b>P2</b>; the Reviser clears both. Disjoint files are why they could run at once instead of in a line.</p>
+        </div>
+
+        <!-- 7 · ship gate -->
+        <div class="scene" data-scene="6">
+          <div class="dgate pop" id="dGate">
+            <span class="gbadge">&check; Shipped</span>
+            <div class="gtagline">Definition of Done met &middot; ship gate</div>
+            <h4>Ship the sprint</h4>
+            <div class="gck"><span class="ck">&check;</span><div><b>Passed:</b> hard gates clean, typecheck green, P1/P2 cleared</div></div>
+            <div class="gck"><span class="ck">&check;</span><div><b>Commit:</b> only the 3 story file sets, no lockfiles or migrations</div></div>
+            <div class="gck"><span class="ck">&check;</span><div><b>Held back:</b> a SQL migration stays blocked for your review</div></div>
+            <div class="gfoot">Standing authorization ships it, or pause for approval at every sprint. Your call.</div>
+            <button class="gbtn">&check; Ship &amp; deploy</button>
+          </div>
+        </div>
+
+        <!-- 8 · replenish -->
+        <div class="scene" data-scene="7">
+          <div class="replwrap">
+            <p class="dpanel-h">Backlog drains as the sprint ships</p>
+            <div class="replcount">
+              <div class="replbadge" id="replReady"><div class="rk">Ready</div><div class="rv" id="replNum">5</div></div>
+              <span class="replarrow">&rarr;</span>
+              <div class="replbadge"><div class="rk">Low-water</div><div class="rv" style="color:var(--muted)">3</div></div>
+            </div>
+            <div class="repllaps">
+              <span id="lapA">shipped 3</span>
+              <span id="lapB">ready 2</span>
+              <span id="lapC">below low-water</span>
+            </div>
+            <div class="cycle">
+              <span class="cyc" id="cyc1">Discover</span><span class="cyc-arr">&rarr;</span>
+              <span class="cyc" id="cyc2">Prioritize</span><span class="cyc-arr">&rarr;</span>
+              <span class="cyc" id="cyc3">Stories</span><span class="cyc-arr">&rarr;</span>
+              <span class="cyc" id="cyc4">Sprint</span><span class="cyc-arr">&#8634;</span>
+            </div>
+            <p class="src-note" style="text-align:center; max-width:640px; margin-top:18px">Ready drops below the low-water mark, so the loop re-runs discovery to refill it, rotating one lens to control cost, and keeps shipping. It stops only when the completion condition is met or the human says so.</p>
+          </div>
+        </div>
+
+      </div><!-- /dstage -->
+
+      <div class="dcontrols">
+        <button class="dc-btn" id="dBack">&lsaquo; Back</button>
+        <button class="dc-btn primary" id="dPlay">&#9654; Play</button>
+        <div class="dc-speed" id="dSpeed">
+          <button data-spd="0.5">0.5&times;</button><button data-spd="1" class="on">1&times;</button><button data-spd="2">2&times;</button>
+        </div>
+        <button class="dc-btn" id="dNext">Next &rsaquo;</button>
+        <span class="dc-count" id="dCount">1 / 8</span>
+        <button class="dc-btn" id="dRestart">&#8635; Restart</button>
+        <button class="dc-btn" data-goto="overview">Back to overview</button>
+      </div>
+    </div>
+  </section>
+  <footer><div class="wrap">Illustrative walkthrough &middot; the screen and findings are an example; the mechanics mirror the system.</div></footer>
+</main>
+
+<script>
+  // ---------- tabs ----------
+  const tabs = document.querySelectorAll('.tab');
+  const panes = { overview:document.getElementById('overview'), demo:document.getElementById('demo') };
+  function show(name){
+    tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+    Object.entries(panes).forEach(([k,el])=> el.style.display = k===name ? 'block' : 'none');
+    window.scrollTo({top:0});
+    if(name==='demo'){ dReset(); setTimeout(dPlay,400); }
+  }
+  tabs.forEach(t=>t.addEventListener('click', ()=>show(t.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.goto);}));
+
+  // ---------- flow callouts ----------
+  const calloutInfo = {
+    lenses:{type:'llm', tag:'G1 · Discovery, read-only agents', title:'Five lens agents',
+      text:'Flow, runtime, coverage, consistency, and gates each run as a separate read-only agent, in parallel, sweeping the whole feature through one question. They find work but never score it and never write code.'},
+    anchor:{type:'gate', tag:'G1 · Intake gate', title:'Evidence gate',
+      text:'Every candidate must cite a concrete anchor: a file:line, a reproducible flow, or a spec section it violates. "This could look nicer" has no anchor, so it is dropped on the spot.'},
+    dedup:{type:'gate', tag:'G1 · Intake gate', title:'Dedup gate',
+      text:'The orchestrator re-checks every survivor against the entire existing backlog and the sprint log. Anything already raised, in any status, is dropped so the team never re-litigates old work.'},
+    survivors:{type:'llm', tag:'G1 to G2 · Filtered union', title:'Survivors',
+      text:'What clears both gates is a set of real defects and genuinely missing capabilities, each anchored to where it lives. Only this filtered union is handed to prioritization.'},
+    prioritize:{type:'det', tag:'Loop ① · Deterministic', title:'Prioritize',
+      text:'One write-capable pass scores the union with (impact x fit) / effort against an anchored rubric, assigns stable ids, and ranks. Agents never score their own finds, so the ranking is reproducible.'},
+    stories:{type:'llm', tag:'Loop ② · Agent (read-only)', title:'Write stories',
+      text:'The top items become dev-ready stories: user value, testable acceptance criteria, the disjoint files each owns, and contract symbols verified to actually exist. A story missing any of these is blocked, not built.'},
+    sprint:{type:'llm', tag:'Loop ③ · Build, Review, Revise', title:'Sprint',
+      text:'A batch of disjoint-file stories runs Builder, then Diff Reviewer, then Reviser. The Reviewer is never the Reviser. P1/P2 findings get at most two revise rounds, and only what passes the Definition of Done ships.'},
+    replenish:{type:'dyn', tag:'Loop ④ · Adapts each cycle', title:'Replenish',
+      text:'At each sprint close the orchestrator counts ready stories. Below the low-water mark it jumps back to discovery to refill the backlog, rotating one lens to control cost. An empty sweep pauses and notifies rather than spinning.'}
+  };
+  const fiTag = document.getElementById('fiTag');
+  const fiTitle = document.getElementById('fiTitle');
+  const fiText = document.getElementById('fiText');
+  const callouts = document.querySelectorAll('.callout');
+  function showCallout(id){
+    const f = calloutInfo[id]; if(!f) return;
+    callouts.forEach(n=>n.classList.toggle('active', n.dataset.id===id));
+    fiTag.className = 'fi-tag '+f.type; fiTag.textContent = f.tag;
+    fiTitle.textContent = f.title; fiText.innerHTML = f.text;
+  }
+  callouts.forEach(n=>{
+    n.addEventListener('mouseenter', ()=>showCallout(n.dataset.id));
+    n.addEventListener('click', ()=>showCallout(n.dataset.id));
+  });
+  showCallout('lenses');
+
+  // ---------- live demo ----------
+  const PROMPT = "Run the product team on Altro's rankings screen.";
+  const dScenes = [
+    {cap:'Kickoff',    gate:false, eyebrow:'Step 1 of 8', title:'It starts with one plain instruction.', dur:4200},
+    {cap:'Discover',   gate:false, eyebrow:'Step 2 of 8', title:'Five lenses sweep in parallel and anchor every find in evidence.', dur:5400},
+    {cap:'Filter',     gate:true,  eyebrow:'Step 3 of 8 · Intake gate', title:'The slop filter rejects anything without an anchor, cosmetic, or already raised.', dur:5200},
+    {cap:'Prioritize', gate:false, eyebrow:'Step 4 of 8', title:'One deterministic pass scores and ranks the survivors.', dur:5000},
+    {cap:'Stories',    gate:false, eyebrow:'Step 5 of 8', title:'Top items become dev-ready stories with files locked and symbols verified.', dur:5000},
+    {cap:'Sprint',     gate:false, eyebrow:'Step 6 of 8', title:'Build, review, and revise: disjoint stories ship in parallel.', dur:6000},
+    {cap:'Ship',       gate:true,  eyebrow:'Step 7 of 8 · Ship gate', title:'What passes the Definition of Done ships; risky work stays gated.', dur:4200},
+    {cap:'Replenish',  gate:false, eyebrow:'Step 8 of 8', title:'The backlog drains, so the loop re-discovers and keeps going.', dur:5600}
+  ];
+  const N = dScenes.length;
+  const sceneEls = Array.prototype.slice.call(document.querySelectorAll('#demo .scene'));
+  const dEyebrow = document.getElementById('dEyebrow');
+  const dHeadline = document.getElementById('dHeadline');
+  const dCount = document.getElementById('dCount');
+  const dTimeline = document.getElementById('dTimeline');
+  const dPlayBtn = document.getElementById('dPlay');
+  let di = 0, speed = 1, playing = false, autoTimer = null, typeTimer = null, sceneTimers = [];
+
+  function clearScene(){ sceneTimers.forEach(clearTimeout); sceneTimers = []; clearInterval(typeTimer); }
+  function later(fn, ms){ const id = setTimeout(fn, ms/speed); sceneTimers.push(id); return id; }
+
+  function buildTimeline(){
+    dTimeline.innerHTML = '';
+    dScenes.forEach((s,k)=>{
+      const it = document.createElement('div');
+      it.className = 'dt-item'+(s.gate?' gate':'')+(k<di?' done':'')+(k===di?' active':'');
+      it.innerHTML = '<div class="dt-dot">'+(k<di?'✓':(k+1))+'</div><div class="dt-cap">'+s.cap+'</div>';
+      it.addEventListener('click', ()=>{ pause(); dShow(k); });
+      dTimeline.appendChild(it);
+    });
+  }
+  function typePrompt(){
+    const el = document.getElementById('dTyped'); if(!el) return;
+    const btn = document.getElementById('dSendBtn');
+    if(btn) btn.classList.remove('sent');
+    el.textContent=''; let n=0; clearInterval(typeTimer);
+    typeTimer = setInterval(()=>{
+      el.textContent = PROMPT.slice(0,++n);
+      if(n>=PROMPT.length){
+        clearInterval(typeTimer);
+        if(btn) later(()=>btn.classList.add('sent'), 300);
+      }
+    }, 42/speed);
+  }
+  function animateNum(el, from, to, ms, dec){
+    if(dec===undefined) dec = 1;
+    const start = performance.now();
+    function step(t){
+      const p = Math.min(1, (t-start)/ms);
+      el.textContent = (from + (to-from)*p).toFixed(dec);
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  function runDiscover(){
+    const lenses = ['lensFlow','lensRuntime','lensCoverage','lensConsistency','lensGates'].map(id=>document.getElementById(id));
+    const cands = Array.prototype.slice.call(document.querySelectorAll('#dCandFind .cand'));
+    lenses.forEach(l=>{ if(l) l.classList.remove('on'); });
+    cands.forEach(c=>c.classList.remove('show'));
+    lenses.forEach((l,k)=> later(()=>{ if(l) l.classList.add('on'); }, 300 + k*260));
+    cands.forEach((c,k)=> later(()=>c.classList.add('show'), 1700 + k*320));
+  }
+  function runFilter(){
+    const cands = Array.prototype.slice.call(document.querySelectorAll('#dCandFilter .cand'));
+    cands.forEach(c=>c.classList.remove('ruled'));
+    cands.forEach((c,k)=> later(()=>c.classList.add('ruled'), 500 + k*520));
+  }
+  function runPrioritize(){
+    const rows = Array.prototype.slice.call(document.querySelectorAll('#dCandFilter, #demo [data-scene="3"] .btrow'));
+    const btrows = Array.prototype.slice.call(document.querySelectorAll('#demo [data-scene="3"] .btrow'));
+    btrows.forEach(r=>{ r.classList.remove('show'); const c = r.querySelector('.bscore'); if(c) c.textContent='0.0'; });
+    btrows.forEach((r,k)=>{
+      later(()=>{
+        r.classList.add('show');
+        const c = r.querySelector('.bscore');
+        if(c) animateNum(c, 0, parseFloat(c.dataset.s), 700, 1);
+      }, 400 + k*360);
+    });
+  }
+  function runStories(){
+    const rows = Array.prototype.slice.call(document.querySelectorAll('#dDor .briefrow'));
+    rows.forEach(el=>el.classList.remove('show'));
+    rows.forEach((el,k)=> later(()=>el.classList.add('show'), 300 + k*260));
+    const vb = document.getElementById('dVerify');
+    if(vb){ vb.classList.remove('done'); later(()=>vb.classList.add('done'), 1400); }
+  }
+  function runSprint(){
+    const ag = {b:document.getElementById('agB'), r:document.getElementById('agR'), v:document.getElementById('agV')};
+    const stories = [document.getElementById('stA'), document.getElementById('stB')];
+    const all = [document.getElementById('stA'), document.getElementById('stB'), document.getElementById('stC')];
+    all.forEach(s=>{ if(s) s.classList.remove('flag','fixed'); });
+    Object.values(ag).forEach(a=>{ if(a) a.classList.remove('on'); });
+    if(ag.b) ag.b.classList.add('on');
+    later(()=>{
+      if(ag.b) ag.b.classList.remove('on');
+      if(ag.r) ag.r.classList.add('on');
+      stories.forEach(s=>{ if(s) s.classList.add('flag'); });
+    }, 1600);
+    later(()=>{
+      if(ag.r) ag.r.classList.remove('on');
+      if(ag.v) ag.v.classList.add('on');
+    }, 2900);
+    later(()=>{
+      all.forEach(s=>{ if(s){ s.classList.remove('flag'); s.classList.add('fixed'); } });
+    }, 3800);
+  }
+  function gateApprove(id){
+    const g = document.getElementById(id); if(!g) return;
+    g.classList.remove('approved');
+    later(()=>g.classList.add('approved'), 1500);
+  }
+  function runReplenish(){
+    const num = document.getElementById('replNum');
+    const badge = document.getElementById('replReady');
+    const laps = ['lapA','lapB','lapC'].map(id=>document.getElementById(id));
+    const cyc = ['cyc1','cyc2','cyc3','cyc4'].map(id=>document.getElementById(id));
+    if(num) num.textContent='5';
+    if(badge) badge.classList.remove('low');
+    laps.forEach(l=>{ if(l) l.classList.remove('on'); });
+    cyc.forEach(c=>{ if(c) c.classList.remove('on'); });
+    later(()=>{ if(num) num.textContent='2'; if(laps[0]) laps[0].classList.add('on'); if(laps[1]) laps[1].classList.add('on'); }, 700);
+    later(()=>{ if(badge) badge.classList.add('low'); if(laps[2]) laps[2].classList.add('on'); }, 1500);
+    cyc.forEach((c,k)=> later(()=>{ cyc.forEach(x=>x&&x.classList.remove('on')); if(c) c.classList.add('on'); }, 2300 + k*650));
+  }
+  function onEnter(i){
+    if(i===0) typePrompt();
+    else if(i===1) runDiscover();
+    else if(i===2) runFilter();
+    else if(i===3) runPrioritize();
+    else if(i===4) runStories();
+    else if(i===5) runSprint();
+    else if(i===6) gateApprove('dGate');
+    else if(i===7) runReplenish();
+  }
+  function dShow(i){
+    clearScene();
+    di = Math.max(0, Math.min(N-1, i));
+    sceneEls.forEach((el,k)=> el.classList.toggle('active', k===di));
+    dEyebrow.textContent = dScenes[di].eyebrow;
+    dHeadline.textContent = dScenes[di].title;
+    dCount.textContent = (di+1)+' / '+N;
+    buildTimeline();
+    onEnter(di);
+  }
+  function scheduleAuto(){
+    clearTimeout(autoTimer);
+    if(!playing) return;
+    autoTimer = setTimeout(()=>{
+      if(di < N-1){ dShow(di+1); scheduleAuto(); } else { playing=false; updatePlay(); }
+    }, dScenes[di].dur/speed);
+  }
+  function updatePlay(){ dPlayBtn.innerHTML = playing ? '&#10073;&#10073; Pause' : '&#9654; Play'; }
+  function play(){ if(di>=N-1) dShow(0); playing=true; updatePlay(); scheduleAuto(); }
+  function pause(){ playing=false; updatePlay(); clearTimeout(autoTimer); }
+  function dNext(){ pause(); if(di<N-1) dShow(di+1); }
+  function dBack(){ pause(); if(di>0) dShow(di-1); }
+  function dReset(){ pause(); dShow(0); }
+  function dPlay(){ play(); }
+
+  document.getElementById('dPlay').addEventListener('click', ()=>{ playing ? pause() : play(); });
+  document.getElementById('dNext').addEventListener('click', dNext);
+  document.getElementById('dBack').addEventListener('click', dBack);
+  document.getElementById('dRestart').addEventListener('click', ()=>{ dShow(0); play(); });
+  document.querySelectorAll('#dSpeed button').forEach(b=>b.addEventListener('click', ()=>{
+    speed = parseFloat(b.dataset.spd);
+    document.querySelectorAll('#dSpeed button').forEach(x=>x.classList.toggle('on', x===b));
+    if(playing){ clearTimeout(autoTimer); scheduleAuto(); }
+  }));
+
+  dShow(0);
+</script>
+</body>
+</html>
