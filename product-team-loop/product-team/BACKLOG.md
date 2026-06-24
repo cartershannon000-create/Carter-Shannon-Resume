@@ -28,15 +28,15 @@
 
 | id | type | surface | title | impact | fit | effort | files | priority score | status | evidence | needs | lens |
 |----|------|---------|-------|:------:|:---:|:------:|-------|:--------------:|--------|----------|-------|------|
-| BUG-002 | bug | live-demo | Fix play() resetting to scene 0 at end instead of resuming from pause | H | High | L | product-team-loop/index.html | 4.5 | in-sprint | index.html:1108 | UI | runtime |
-| BUG-003 | bug | live-demo | Fix Next/Back buttons: no disabled state at boundaries; silent no-op confuses users | H | High | L | product-team-loop/index.html | 4.5 | in-sprint (merged into BUG-002 story) | index.html:1110-1111 | UI | runtime |
-| ENH-002 | enhancement | loopband | Add role="tab" and aria-selected to prodbar tab buttons | H | High | L | product-team-loop/index.html | 4.5 | in-sprint | index.html:403-405 | UI | gates |
+| BUG-002 | bug | live-demo | Fix play() resetting to scene 0 at end instead of resuming from pause | H | High | L | product-team-loop/index.html | 4.5 | shipped | index.html:1108 | UI | runtime |
+| BUG-003 | bug | live-demo | Fix Next/Back buttons: no disabled state at boundaries; silent no-op confuses users | H | High | L | product-team-loop/index.html | 4.5 | shipped (merged into BUG-002) | index.html:1110-1111 | UI | runtime |
+| ENH-002 | enhancement | loopband | Add role="tab" and aria-selected to prodbar tab buttons | H | High | L | product-team-loop/index.html | 4.5 | shipped | index.html:403-405 | UI | gates |
 | BUG-006 | bug | loopband | Fix mpath href="#orbit" to xlink:href for SVG spec compliance | M | High | L | product-team-loop/index.html | 3.0 | prioritized | index.html:451-452 | UI | runtime |
-| ENH-003 | enhancement | loopband | Increase retchip hit target from ~22px to 44px minimum | M | High | L | product-team-loop/index.html | 3.0 | in-sprint | index.html:125 | UI | gates |
+| ENH-003 | enhancement | loopband | Increase retchip hit target from ~22px to 44px minimum | M | High | L | product-team-loop/index.html | 3.0 | shipped | index.html:125 | UI | gates |
 | ENH-004 | enhancement | footer | Increase footer copyright text contrast from 28% opacity | M | High | L | product-team-loop/index.html | 3.0 | prioritized | index.html:352 | UI | gates |
 | ENH-005 | enhancement | live-demo | Make timeline dt-item visually discoverable as clickable (cursor + hover state) | M | High | L | product-team-loop/index.html | 3.0 | prioritized | index.html:978-987 | UI | flow |
-| ENH-009 | enhancement | cross | Add og:title, og:description, og:image, twitter:card meta tags | M | High | L | product-team-loop/index.html | 3.0 | in-sprint | index.html:1-31 | UI | coverage |
-| ENH-010 | enhancement | hero | Mention Replenish step in hero lead copy so key differentiator is visible above the fold | M | High | L | product-team-loop/index.html | 3.0 | in-sprint | index.html:417-425 | UI | coverage |
+| ENH-009 | enhancement | cross | Add og:title, og:description, og:image, twitter:card meta tags | M | High | L | product-team-loop/index.html | 3.0 | shipped | index.html:1-31 | UI | coverage |
+| ENH-010 | enhancement | hero | Mention Replenish step in hero lead copy so key differentiator is visible above the fold | M | High | L | product-team-loop/index.html | 3.0 | shipped | index.html:417-425 | UI | coverage |
 | BUG-001 | bug | live-demo | Fix scheduleAuto closure capturing global di; causes double-advance on rapid nav | H | High | M | product-team-loop/index.html | 2.3 | prioritized | index.html:1100-1106 | UI | runtime |
 | BUG-004 | bug | live-demo | Fix timeline click listeners not cleaned before DOM rebuild on restart | H | High | M | product-team-loop/index.html | 2.3 | prioritized | index.html:979-984 | UI | runtime |
 | BUG-005 | bug | live-demo | Fix demo tab-switch: guard autoplay race and clear orphaned timer within 400ms window | H | High | M | product-team-loop/index.html | 2.3 | prioritized | index.html:920 | UI | runtime |
@@ -48,7 +48,15 @@
 | DEBT-001 | debt | cross | Replace hardcoded hex colors (#294323 #243f52 #7a5424 #d8e1cd etc.) with CSS variables | L | Low | H | product-team-loop/index.html | 0.1 | prioritized | index.html:73,76,122,127 | UI | consistency |
 
 ## Sprint log
-(none yet)
+
+### Sprint 1 — shipped commit bf58e94
+- **BUG-002/003** (merged): play() no longer silently resets at end; Next/Back/Play buttons disable at boundaries with CSS opacity feedback
+- **ENH-002**: role="tab" + aria-selected on prodbar tabs; show() keeps attrs in sync
+- **ENH-003**: retchip hit target increased from ~22px to ~34px (12px padding)
+- **ENH-009**: og:title/description/type/url + twitter:card/title/description added to head
+- **ENH-010**: Hero 4th pill rewritten to "Self-replenishing backlog, automatically refilled"
+- P2 from Reviewer (play silent at end) resolved in reviser round 1
+- Ready count post-sprint: 13 prioritized items remain (BUG-006 = next top of queue at 3.0)
 
 ## Do-not-propose set
 All backlog rows of any status except `reopened` + sprint log entries above.
