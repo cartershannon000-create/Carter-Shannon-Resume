@@ -645,7 +645,7 @@
     <div class="wrap">
       <div class="grid g2">
         <div class="card">
-          <div class="eyebrow">Phase 2 &middot; Prioritize</div>
+          <div class="eyebrow">Stage 02 &middot; Prioritize</div>
           <h3 style="font-size:22px; margin-top:10px">One number, computed the same way every time</h3>
           <p style="margin-top:8px">An anchored rubric turns each item into impact, fit, and effort points, then a
           single deterministic pass ranks the whole union. Fit is persisted, ids are never reused, ties break
@@ -653,7 +653,7 @@
           <div class="formula">priority score = (<b>impact</b> &times; <b>fit</b>) / <b>effort</b></div>
         </div>
         <div class="card">
-          <div class="eyebrow">Phase 4 &middot; Sprint</div>
+          <div class="eyebrow">Stage 03 &middot; Sprint</div>
           <h3 style="font-size:22px; margin-top:10px">Fixes and enhancements, shipped together</h3>
           <p style="margin-top:8px">Each sprint pulls 3 to 5 disjoint-file stories at an 85% enhancement / 15% bug
           mix. Builder builds, a fresh Reviewer audits runtime correctness, a Reviser clears P1/P2 in at most two
@@ -925,10 +925,11 @@
   const tabs = document.querySelectorAll('.tab');
   const panes = { overview:document.getElementById('overview'), demo:document.getElementById('demo') };
   function show(name){
+    if(dIntroTimer){ clearTimeout(dIntroTimer); dIntroTimer=null; }
     tabs.forEach(t=>{ t.classList.toggle('active', t.dataset.tab===name); t.setAttribute('aria-selected', t.dataset.tab===name ? 'true' : 'false'); });
     Object.entries(panes).forEach(([k,el])=> el.style.display = k===name ? 'block' : 'none');
     window.scrollTo({top:0});
-    if(name==='demo'){ dReset(); setTimeout(dPlay,400); }
+    if(name==='demo'){ dReset(); dIntroTimer=setTimeout(()=>{ dIntroTimer=null; dPlay(); },400); }
   }
   tabs.forEach(t=>t.addEventListener('click', ()=>show(t.dataset.tab)));
   document.querySelectorAll('[data-goto]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.goto);}));
@@ -940,7 +941,7 @@
     prioritize:{type:'det', tag:'Stage 02 · Deterministic', title:'Prioritize',
       text:'One write-capable pass scores the surviving union with (impact x fit) / effort against an anchored rubric, assigns stable ids, and ranks. Agents never score their own finds, so two runs of the rubric produce the same order. A P1 bug always drains first.'},
     sprint:{type:'llm', tag:'Stage 03 · Build, Review, Revise', title:'Sprint',
-      text:'A batch of 3 to 5 disjoint-file stories runs Builder, then Diff Reviewer, then Reviser, mixing 85% enhancements with 15% fixes. The Reviewer is never the Reviser. P1/P2 findings get at most two revise rounds, and only what passes the Definition of Done ships.'},
+      text:'A batch of 3 to 5 disjoint-file stories runs Builder, then Diff Reviewer, then Reviser, mixing 85% enhancements with 15% fixes. The Reviewer is never the Reviser. P1/P2 findings get at most two revise rounds. Partial sprint: a story that fails DoD does not block the rest. Only the files that passed ship.'},
     ship:{type:'gate', tag:'Stage 04 · Ship gate', title:'Ship',
       text:'What clears the Definition of Done is committed, only the story files, and deployed. Native builds, SQL, and migrations stay blocked for a human. You can hand it standing authority or keep an approval checkpoint at every sprint.'},
     replenish:{type:'dyn', tag:'Loop · Adapts each cycle', title:'Replenish & repeat',
@@ -981,7 +982,7 @@
   const dCount = document.getElementById('dCount');
   const dTimeline = document.getElementById('dTimeline');
   const dPlayBtn = document.getElementById('dPlay');
-  let di = 0, speed = 1, playing = false, autoTimer = null, typeTimer = null, sceneTimers = [];
+  let di = 0, speed = 1, playing = false, autoTimer = null, typeTimer = null, sceneTimers = [], dIntroTimer = null;
 
   function clearScene(){ sceneTimers.forEach(clearTimeout); sceneTimers = []; clearInterval(typeTimer); }
   function later(fn, ms){ const id = setTimeout(fn, ms/speed); sceneTimers.push(id); return id; }
@@ -1124,9 +1125,11 @@
   function scheduleAuto(){
     clearTimeout(autoTimer);
     if(!playing) return;
+    var snap = di;
     autoTimer = setTimeout(()=>{
+      if(!playing || di !== snap) return;
       if(di < N-1){ dShow(di+1); scheduleAuto(); } else { playing=false; updatePlay(); updateControls(); }
-    }, dScenes[di].dur/speed);
+    }, dScenes[snap].dur/speed);
   }
   function updatePlay(){ dPlayBtn.innerHTML = playing ? '&#10073;&#10073; Pause' : '&#9654; Play'; }
   function updateControls(){ var nb=document.getElementById('dNext'); var bb=document.getElementById('dBack'); var pb=document.getElementById('dPlay'); if(nb) nb.disabled=(di>=N-1); if(bb) bb.disabled=(di<=0); if(pb) pb.disabled=(!playing && di>=N-1); }
@@ -1145,6 +1148,7 @@
     speed = parseFloat(b.dataset.spd);
     document.querySelectorAll('#dSpeed button').forEach(x=>x.classList.toggle('on', x===b));
     if(playing){ clearTimeout(autoTimer); scheduleAuto(); }
+    if(di===0){ typePrompt(); }
   }));
 
   dShow(0);
