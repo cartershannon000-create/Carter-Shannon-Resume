@@ -169,6 +169,26 @@
   .btn:hover{background:#286038; transform:translateY(-1px); box-shadow:0 6px 18px -6px rgba(46,107,63,.5)}
   .btn:active{transform:translateY(0)}
 
+  /* hero call-to-action */
+  .hero-cta{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:38px}
+  .btn-ghost{display:inline-flex; align-items:center; gap:8px; font:600 14px/1 var(--font-body); color:var(--on-dark); background:transparent; border:0; cursor:pointer; padding:14px 16px; border-radius:999px; text-decoration:none; transition:color .2s var(--ease)}
+  .btn-ghost svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:transform .25s var(--ease)}
+  .btn-ghost:hover{color:var(--green-bright)}
+  .btn-ghost:hover svg{transform:translateX(3px)}
+
+  /* alternating section rhythm */
+  .band{background:var(--panel-strong)}
+  .band .card{background:#fff}
+
+  /* framed table */
+  .tablecard{margin-top:24px; border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden; background:#fff; box-shadow:var(--shadow)}
+  .tablecard table{margin:0}
+  .tablecard th{background:var(--panel-strong); padding-top:14px; padding-bottom:14px}
+  .tablecard td,.tablecard th{padding-left:20px; padding-right:20px}
+  .tablecard tr:last-child td{border-bottom:0}
+  .tablecard tbody tr{transition:background .18s var(--ease)}
+  .tablecard tbody tr:hover td{background:rgba(46,107,63,.035)}
+
   /* tables */
   table{width:100%; border-collapse:collapse; font-size:14px; margin-top:14px}
   th,td{text-align:left; padding:11px 13px; border-bottom:1px solid var(--line); vertical-align:top}
@@ -444,11 +464,17 @@
         <span class="pill"><b>Fixes + enhancements</b> every sprint</span>
         <span class="pill"><b>Self-replenishing</b> backlog, automatically refilled</span>
       </div>
+      <div class="hero-cta">
+        <button class="btn" data-goto="demo">Watch the live demo</button>
+        <a class="btn-ghost" href="#how">See how it works
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
     </div>
   </section>
 
   <!-- CONTINUOUS LOOP -->
-  <div class="loopband">
+  <div class="loopband" id="how" style="scroll-margin-top:120px">
     <div class="wrap">
       <div class="eyebrow">What makes it different</div>
       <h2 class="display">One loop that <em>never stops</em></h2>
@@ -607,22 +633,28 @@
   </section>
 
   <!-- THE TEAM -->
-  <section>
+  <section class="band">
     <div class="wrap">
       <div class="eyebrow">The roster</div>
       <h2 class="sech">A full product team, dispatched as agents</h2>
       <p class="lead" style="margin-top:14px">Each role has a mode and a single job. Read-only roles always run in
       parallel; anything that writes the same file is sequenced, never raced.</p>
-      <table>
-        <tr><th>Role</th><th>Mode</th><th>Job</th></tr>
-        <tr><td><span class="role">Orchestrator</span></td><td><span class="mtag">scrum-master</span></td><td>Lifecycle, briefs, scoring, accept, ship, bookkeeping. Writes no feature code.</td></tr>
-        <tr><td><span class="role">Discovery &times; 5 lenses</span></td><td><span class="mtag ro">read-only</span></td><td>Each owns one lens, sweeps every surface, surfaces candidates <b>with evidence</b>.</td></tr>
-        <tr><td><span class="role">Prioritization</span></td><td><span class="mtag wr">write</span></td><td>Dedupe, score, rank, assign stable ids, write the backlog.</td></tr>
-        <tr><td><span class="role">Product</span></td><td><span class="mtag ro">read-only</span></td><td>Turn top items into dev-ready stories that meet a Definition of Ready.</td></tr>
-        <tr><td><span class="role">Builder</span></td><td><span class="mtag wr">write</span></td><td>Implement one story over one disjoint file set.</td></tr>
-        <tr><td><span class="role">Diff Reviewer</span></td><td><span class="mtag ro">read-only</span></td><td>Audit the diff for runtime correctness, rank findings P1 / P2 / P3.</td></tr>
-        <tr><td><span class="role">Reviser</span></td><td><span class="mtag wr">write</span></td><td>Fix P1 / P2, usually the original Builder resumed. Max two rounds.</td></tr>
-      </table>
+      <div class="tablecard">
+        <table>
+          <thead>
+            <tr><th>Role</th><th>Mode</th><th>Job</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="role">Orchestrator</span></td><td><span class="mtag">scrum-master</span></td><td>Lifecycle, briefs, scoring, accept, ship, bookkeeping. Writes no feature code.</td></tr>
+            <tr><td><span class="role">Discovery &times; 5 lenses</span></td><td><span class="mtag ro">read-only</span></td><td>Each owns one lens, sweeps every surface, surfaces candidates <b>with evidence</b>.</td></tr>
+            <tr><td><span class="role">Prioritization</span></td><td><span class="mtag wr">write</span></td><td>Dedupe, score, rank, assign stable ids, write the backlog.</td></tr>
+            <tr><td><span class="role">Product</span></td><td><span class="mtag ro">read-only</span></td><td>Turn top items into dev-ready stories that meet a Definition of Ready.</td></tr>
+            <tr><td><span class="role">Builder</span></td><td><span class="mtag wr">write</span></td><td>Implement one story over one disjoint file set.</td></tr>
+            <tr><td><span class="role">Diff Reviewer</span></td><td><span class="mtag ro">read-only</span></td><td>Audit the diff for runtime correctness, rank findings P1 / P2 / P3.</td></tr>
+            <tr><td><span class="role">Reviser</span></td><td><span class="mtag wr">write</span></td><td>Fix P1 / P2, usually the original Builder resumed. Max two rounds.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -652,8 +684,12 @@
   </section>
 
   <!-- PRIORITIZE + SPRINT -->
-  <section>
+  <section class="band">
     <div class="wrap">
+      <div class="eyebrow">The mechanics</div>
+      <h2 class="sech">Scored once, then built in disjoint slices</h2>
+      <p class="lead" style="margin:14px 0 30px">Prioritization is a single deterministic pass. The sprint that
+      follows runs a Builder, a separate Reviewer, and a Reviser over file sets that never overlap.</p>
       <div class="grid g2">
         <div class="card">
           <div class="eyebrow">Stage 02 &middot; Prioritize</div>
