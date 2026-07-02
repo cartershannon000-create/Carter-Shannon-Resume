@@ -77,5 +77,20 @@
 - Reviser round 1: removed em dash from ENH-008 copy
 - Ready count post-sprint: 1 item remains (DEBT-001, score 0.1 — triggers replenish pass)
 
+### Design modernization pass — user-directed
+Elevated the page to an Apple-tier craft bar within the existing green editorial brand:
+- Tokens: softer layered shadows, 12px base radius + 22px card radius, refined easing curve
+- Hero: more breathing room, tighter display tracking (-.032em), larger lead
+- Cards: near-white surface, 22px radius, generous padding, hairline borders
+- Controls: pill segmented tabs, pill CTA buttons with tactile hover lift, pill demo controls
+- Sticky sub-bar: stronger frosted blur + saturate
+- Motion: unified cubic-bezier easing across nodes, buttons, tabs
+- Language: scanned for AI tells (em/en dashes, curly quotes, cliché words) — none present
+Folded-in correctness/a11y fixes (discovery, flow+gates lenses):
+- BUG-008: kept candidates in the slop-filter scene were stuck at opacity:0; now visible
+- BUG-009: autoplay no longer runs on the hidden demo DOM after switching tabs (pause on leave)
+- ENH-011: focus moves to the active pane on tab switch
+- BUG-010: decorative ship-gate button hidden from assistive tech (aria-hidden, tabindex -1)
+
 ## Do-not-propose set
 All backlog rows of any status except `reopened` + sprint log entries above.
