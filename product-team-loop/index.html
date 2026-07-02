@@ -189,6 +189,30 @@
   .btn-ghost:hover{color:var(--green-bright)}
   .btn-ghost:hover svg{transform:translateX(3px)}
 
+  /* hero product console */
+  .hero-showcase{margin-top:66px; max-width:960px; background:linear-gradient(180deg,#16181c,#101215); border:1px solid rgba(255,255,255,.09); border-radius:18px; box-shadow:0 44px 90px -34px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.05); overflow:hidden}
+  .hsc-bar{display:flex; align-items:center; gap:9px; padding:13px 16px; border-bottom:1px solid rgba(255,255,255,.07)}
+  .hsc-dots{display:flex; gap:6px}
+  .hsc-dots i{width:11px; height:11px; border-radius:50%; background:rgba(255,255,255,.15)}
+  .hsc-title{margin-left:6px; font:600 12px/1 var(--font-body); color:rgba(245,245,247,.5)}
+  .hsc-live{margin-left:auto; display:inline-flex; align-items:center; gap:7px; font:700 10.5px/1 var(--font-body); letter-spacing:.08em; text-transform:uppercase; color:var(--green-bright)}
+  .hsc-live .d{width:7px; height:7px; border-radius:50%; background:var(--green-bright); animation:hscpulse 2s var(--ease) infinite}
+  @keyframes hscpulse{0%{box-shadow:0 0 0 0 rgba(86,187,110,.45)}70%{box-shadow:0 0 0 7px rgba(86,187,110,0)}100%{box-shadow:0 0 0 0 rgba(86,187,110,0)}}
+  .hsc-body{padding:20px}
+  .hsc-prompt{display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:12px; padding:14px 15px}
+  .hsc-prompt .ptxt{flex:1; min-width:0; font:500 15px/1.45 var(--font-body); color:var(--on-dark)}
+  .hsc-prompt .pcur{display:inline-block; width:8px; height:17px; vertical-align:-3px; background:var(--green-bright); margin-left:2px; animation:blink 1.1s steps(1) infinite}
+  .hsc-prompt .psend{flex:none; width:34px; height:34px; border-radius:9px; background:var(--green); display:grid; place-items:center}
+  .hsc-prompt .psend svg{width:16px; height:16px; fill:none; stroke:#fff; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round}
+  .hsc-steps{display:flex; flex-direction:column; margin-top:8px}
+  .hsc-step{display:flex; align-items:center; gap:14px; padding:12px 6px; border-top:1px solid rgba(255,255,255,.06)}
+  .hsc-k{flex:none; width:92px; font:700 11px/1 var(--font-body); letter-spacing:.08em; text-transform:uppercase; color:rgba(245,245,247,.52)}
+  .hsc-v{flex:1; min-width:0; font:500 13.5px/1.5 var(--font-body); color:var(--on-dark-muted)}
+  .hsc-v b{color:var(--on-dark); font-weight:600}
+  .hsc-badge{flex:none; font:700 10px/1 var(--font-body); letter-spacing:.04em; text-transform:uppercase; padding:5px 9px; border-radius:999px; background:rgba(86,187,110,.14); color:var(--green-bright); white-space:nowrap}
+  .hsc-badge.p1{background:rgba(200,90,70,.18); color:#e59a8c}
+  @media(max-width:680px){ .hsc-k{width:70px} .hsc-prompt .ptxt{font-size:13px} .hsc-v{font-size:12.5px} .hsc-step{gap:10px} }
+
   /* alternating section rhythm */
   .band{background:var(--panel-strong)}
   .band .card{background:#fff}
@@ -482,6 +506,27 @@
         <a class="btn-ghost" href="#how">See how it works
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
+      </div>
+
+      <div class="hero-showcase" aria-hidden="true">
+        <div class="hsc-bar">
+          <span class="hsc-dots"><i></i><i></i><i></i></span>
+          <span class="hsc-title">product-team-loop</span>
+          <span class="hsc-live"><span class="d"></span>Running</span>
+        </div>
+        <div class="hsc-body">
+          <div class="hsc-prompt">
+            <span class="ptxt">Run the product team on the rankings screen.<span class="pcur"></span></span>
+            <span class="psend"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+          </div>
+          <div class="hsc-steps">
+            <div class="hsc-step"><span class="hsc-k">Discover</span><span class="hsc-v">5 lenses swept in parallel · <b>9 candidates</b>, each with a file and line</span></div>
+            <div class="hsc-step"><span class="hsc-k">Filter</span><span class="hsc-v"><b>3 dropped</b> · no anchor, cosmetic, or duplicate</span></div>
+            <div class="hsc-step"><span class="hsc-k">Prioritize</span><span class="hsc-v"><b>BUG-014</b> scored highest</span><span class="hsc-badge p1">P1 · drains first</span></div>
+            <div class="hsc-step"><span class="hsc-k">Sprint</span><span class="hsc-v">Build, review, revise · <b>3 stories</b></span><span class="hsc-badge">shipped</span></div>
+            <div class="hsc-step"><span class="hsc-k">Replenish</span><span class="hsc-v">Backlog refilled · the loop keeps going</span></div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
