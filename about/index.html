@@ -66,10 +66,31 @@
 }
 </script>
     <style>
-      body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 var(--font-body); -webkit-font-smoothing: antialiased; }
+      :root{
+        /* cool, modern neutral canvas — matches product-team-loop */
+        --bg:#eff0f2;
+        --panel:#f7f8fa;
+        --panel-strong:#ffffff;
+        --ink:#161719;
+        --muted:#565961;
+        --line:rgba(18,22,29,.10);
+        --dark:#0a0b0d;
+        --dark-sub:#15161a;
+        --on-dark:#f5f5f7;
+        --on-dark-muted:rgba(245,245,247,.58);
+        --on-dark-line:rgba(255,255,255,.10);
+        --shadow:0 1px 2px rgba(18,22,29,.04), 0 8px 22px -10px rgba(18,22,29,.12);
+        --shadow-md:0 18px 50px -16px rgba(18,22,29,.24), 0 4px 12px -6px rgba(18,22,29,.10);
+        --radius:12px;
+        --r-lg:22px;
+        --ease:cubic-bezier(.32,.72,0,1);
+        --font-display:-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Inter, system-ui, "Helvetica Neue", Arial, sans-serif;
+      }
+      body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 var(--font-body); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
       a { color: var(--green); text-decoration: none; }
       .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
       h1,h2,h3 { margin: 0; }
+      :focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 6px; }
 
       .page-hero {
         background: var(--dark);
@@ -82,11 +103,11 @@
       }
       .page-hero h1 {
         font-family: var(--font-display);
-        font-weight: 700; font-size: clamp(40px,5.5vw,64px);
-        color: var(--on-dark); line-height: 1.06; letter-spacing: -.01em;
-        margin-bottom: 24px; max-width: 760px;
+        font-weight: 700; font-size: clamp(42px,5.8vw,68px);
+        color: var(--on-dark); line-height: 1.03; letter-spacing: -.04em;
+        margin-bottom: 24px; max-width: 780px;
       }
-      .page-hero h1 em { font-style: italic; color: var(--green-bright); }
+      .page-hero h1 em { font-style: normal; color: var(--green-bright); }
       .page-hero .lead {
         font-size: 17px; color: var(--on-dark-muted);
         max-width: 580px; line-height: 1.76; margin: 0;
@@ -101,27 +122,30 @@
         font-family: var(--font-display);
         font-weight: 700;
         font-size: clamp(28px,3.8vw,44px);
-        letter-spacing: -.01em; line-height: 1.1;
-        color: var(--ink); max-width: 600px; margin-bottom: 0;
+        letter-spacing: -.033em; line-height: 1.06;
+        color: var(--ink); max-width: 640px; margin-bottom: 0;
       }
+      .band { background: var(--panel-strong); }
 
       .body-text { font-size: 15.5px; color: var(--muted); line-height: 1.74; max-width: 680px; margin-top: 28px; }
       .body-text + .body-text { margin-top: 18px; }
 
-      .skill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 44px; }
-      .skill-group { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+      .skill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; margin-top: 44px; }
+      .skill-group { background: var(--panel-strong); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px 24px; box-shadow: var(--shadow); }
       .skill-label { font: 800 10px/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--green); margin-bottom: 8px; }
       .skill-items { font-size: 13.5px; color: var(--muted); line-height: 1.55; }
 
       .contact-row { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 40px; }
       .contact-item {
         display: flex; gap: 16px; align-items: flex-start;
-        background: var(--panel); border: 1px solid var(--line);
-        border-radius: var(--radius); padding: 20px 24px;
+        background: var(--panel-strong); border: 1px solid var(--line);
+        border-radius: var(--r-lg); padding: 22px 26px;
         text-decoration: none; color: inherit;
-        transition: border-color .14s, box-shadow .14s;
+        box-shadow: var(--shadow);
+        transition: border-color .25s var(--ease), box-shadow .25s var(--ease), transform .25s var(--ease);
         flex: 1; min-width: 220px;
       }
+      .contact-item:hover { transform: translateY(-2px); }
       .contact-item:hover { border-color: rgba(46,107,63,.35); box-shadow: var(--shadow-md); }
       .contact-icon { width: 36px; height: 36px; border-radius: var(--radius); background: var(--green-soft); display: grid; place-items: center; flex: none; }
       .contact-icon svg { width: 16px; height: 16px; fill: none; stroke: #294323; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -136,7 +160,7 @@
       .footer-links a { font: 500 12.5px/1 var(--font-body); letter-spacing: .01em; color: var(--on-dark-muted); text-decoration: none; padding: 4px 0; transition: color .13s; }
       .footer-links a:hover { color: var(--on-dark); }
       .footer-links a + a::before { content: '·'; margin-right: 12px; color: var(--on-dark-line); }
-      .footer-bottom { margin-top: 52px; padding-top: 24px; border-top: 1px solid var(--on-dark-line); font: 400 12px/1 var(--font-body); color: rgba(240,240,232,0.28); }
+      .footer-bottom { margin-top: 52px; padding-top: 24px; border-top: 1px solid var(--on-dark-line); font: 400 12px/1 var(--font-body); color: var(--on-dark-muted); }
     </style>
   </head>
   <body>
@@ -191,7 +215,7 @@
       </div>
     </div>
 
-    <div class="section">
+    <div class="section band">
       <div class="wrap">
         <div class="section-label"><span>Contact</span></div>
         <h2 class="section-h2">Get in touch</h2>
