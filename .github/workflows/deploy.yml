@@ -1,0 +1,30 @@
+name: Deploy to Cloudflare
+
+# Publishes the repo to Cloudflare Workers (cs-ventures) on every push to
+# main, and can be run on demand from the Actions tab. This replaces the
+# Cloudflare git-build queue, which stalled silently, with a pipeline that
+# has visible logs and a real re-run button.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy with Wrangler
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
