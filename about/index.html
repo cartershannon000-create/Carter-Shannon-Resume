@@ -67,7 +67,7 @@
 </script>
     <style>
       :root{
-        /* cool, modern neutral canvas — matches product-team-loop */
+        /* cool, modern neutral canvas to match product-team-loop */
         --bg:#eff0f2;
         --panel:#f7f8fa;
         --panel-strong:#ffffff;
@@ -129,6 +129,40 @@
 
       .body-text { font-size: 15.5px; color: var(--muted); line-height: 1.74; max-width: 680px; margin-top: 28px; }
       .body-text + .body-text { margin-top: 18px; }
+
+      .serve-grid { display: grid; gap: 16px; margin-top: 44px; }
+      @media(min-width:760px){ .serve-grid { grid-template-columns: repeat(3,1fr); } }
+      .serve-card {
+        background: var(--panel-strong); border: 1px solid var(--line);
+        border-radius: var(--r-lg); padding: 28px; box-shadow: var(--shadow);
+      }
+      .serve-card h3 { font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); margin-bottom: 10px; }
+      .serve-card p { font-size: 14px; color: var(--muted); line-height: 1.68; margin: 0; }
+
+      .engage-list { margin-top: 44px; }
+      .engage-row {
+        display: grid; grid-template-columns: 56px 1fr; gap: 0 28px;
+        padding: 30px 0; border-top: 1px solid var(--line); align-items: start;
+      }
+      .engage-row:last-child { border-bottom: 1px solid var(--line); }
+      .engage-n { font: 700 11px/1 var(--font-body); letter-spacing: .12em; color: var(--muted); padding-top: 6px; }
+      .engage-row h3 { font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); margin-bottom: 8px; }
+      .engage-row p { font-size: 14.5px; color: var(--muted); line-height: 1.7; margin: 0; max-width: 640px; }
+
+      .founder-grid { display: grid; gap: 40px; margin-top: 44px; align-items: start; }
+      @media(min-width:760px){ .founder-grid { grid-template-columns: 200px 1fr; } }
+      .founder-photo { width: 200px; height: 200px; border-radius: var(--r-lg); object-fit: cover; box-shadow: var(--shadow-md); }
+      .founder-body h3 { font-family: var(--font-display); font-size: 24px; font-weight: 700; letter-spacing: -.025em; color: var(--ink); margin-bottom: 4px; }
+      .founder-role { font: 600 13px/1 var(--font-body); color: var(--green); margin-bottom: 18px; }
+      .founder-body p { font-size: 15px; color: var(--muted); line-height: 1.74; margin: 0 0 14px; max-width: 640px; }
+      .founder-link {
+        display: inline-flex; align-items: center; gap: 9px; margin-top: 6px;
+        font: 600 13.5px/1 var(--font-body); color: var(--ink);
+        border-bottom: 1.5px solid var(--ink); padding-bottom: 3px;
+        transition: color .2s var(--ease), border-color .2s var(--ease);
+      }
+      .founder-link:hover { color: var(--green); border-color: var(--green); }
+      .founder-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
       .skill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; margin-top: 44px; }
       .skill-group { background: var(--panel-strong); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px 24px; box-shadow: var(--shadow); }
@@ -210,6 +244,71 @@
           <div class="skill-group">
             <div class="skill-label">Product and AI</div>
             <div class="skill-items">Agentic Workflows, Process Design, Idea to Delivery</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section band">
+      <div class="wrap">
+        <div class="section-label"><span>Who we serve</span></div>
+        <h2 class="section-h2">Built for the people doing the work</h2>
+        <div class="serve-grid">
+          <div class="serve-card">
+            <h3>Founders &amp; individuals</h3>
+            <p>You have an idea and need it turned into something real: an app, a website, an agent that does the work. CS Ventures takes it from a one-page description to a shipped build you can put in front of users.</p>
+          </div>
+          <div class="serve-card">
+            <h3>Small businesses</h3>
+            <p>You need the analysis and tooling a larger company takes for granted: dashboards that answer real questions, financial models you can act on, and automation that removes the manual steps slowing you down.</p>
+          </div>
+          <div class="serve-card">
+            <h3>Larger organizations</h3>
+            <p>You need experienced hands on a specific problem. CS Ventures leadership has delivered financial risk analysis, technology implementations, and analytics for commercial, federal, and state clients.</p>
+          </div>
+        </div>
+
+        <div class="section-label" style="margin-top:64px"><span>How we engage</span></div>
+        <div class="engage-list">
+          <div class="engage-row">
+            <span class="engage-n">01</span>
+            <div>
+              <h3>Advisory</h3>
+              <p>Analysis and a recommendation. Market research, demand modeling, financial and risk analysis, or a second set of eyes on a decision you are about to make. You get the thinking and the numbers behind it.</p>
+            </div>
+          </div>
+          <div class="engage-row">
+            <span class="engage-n">02</span>
+            <div>
+              <h3>Fixed-scope builds</h3>
+              <p>A defined product, site, agent, or dashboard, shipped. Scope is written down before the build starts, work ships in tight loops so you see progress early, and delivery includes documentation and a clean handoff.</p>
+            </div>
+          </div>
+          <div class="engage-row">
+            <span class="engage-n">03</span>
+            <div>
+              <h3>Ongoing partnership</h3>
+              <p>For work that is continuous rather than a single deliverable: a product that keeps evolving, analytics that grow with the business, or an AI workflow that needs tuning as it runs in production.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="wrap">
+        <div class="section-label"><span>Leadership</span></div>
+        <div class="founder-grid">
+          <img class="founder-photo" src="/carter-shannon-headshot.png" alt="Carter Shannon, founder of CS Ventures">
+          <div class="founder-body">
+            <h3>Carter Shannon</h3>
+            <div class="founder-role">Founder</div>
+            <p>Carter is a strategy and analytics professional based in Washington, D.C. He works at Deloitte Consulting in the Government and Public Sector practice, where his work spans financial risk analysis, technology implementations, and analytics for federal and state clients.</p>
+            <p>Before Deloitte, his experience covered go-to-market strategy and demand modeling in private equity contexts and early-stage products. CS Ventures is where that experience gets applied directly: every product in the portfolio was scoped, designed, and shipped under his direction.</p>
+            <a class="founder-link" href="/about/experience.html">
+              Full experience
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </a>
           </div>
         </div>
       </div>

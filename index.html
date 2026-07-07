@@ -52,7 +52,7 @@
 </script>
 <style>
   :root{
-    /* cool, modern neutral canvas — matches product-team-loop */
+    /* cool, modern neutral canvas to match product-team-loop */
     --bg:#eff0f2;
     --panel:#f7f8fa;
     --panel-strong:#ffffff;
@@ -188,6 +188,40 @@
     margin: 0;
     max-width: 560px;
   }
+  .pillar-deliv {
+    font-size: 13.5px; color: var(--ink); line-height: 1.65;
+    margin-top: 14px; max-width: 560px;
+  }
+  .pillar-deliv b { font-weight: 700; color: var(--muted); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 4px; }
+  .pillar-proof { margin-top: 12px; font-size: 13px; }
+  .pillar-proof a { font-weight: 600; color: var(--green); }
+  .pillar-proof a + a::before { content: '·'; margin: 0 8px; color: var(--line); }
+
+  /* how we work */
+  .step-grid { display: grid; gap: 16px; margin-top: 52px; }
+  @media(min-width:760px){ .step-grid { grid-template-columns: repeat(3,1fr); } }
+  .step-card {
+    background: var(--panel-strong); border: 1px solid var(--line);
+    border-radius: var(--r-lg); padding: 28px; box-shadow: var(--shadow);
+  }
+  .step-card .n {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--green); color: #fff;
+    display: grid; place-items: center; font: 800 13px/1 var(--font-body); margin-bottom: 16px;
+  }
+  .step-card h3 { font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 8px; color: var(--ink); }
+  .step-card p { font-size: 14px; color: var(--muted); line-height: 1.68; margin: 0; }
+  .engage-note {
+    margin-top: 28px; padding: 20px 24px; background: var(--panel-strong);
+    border: 1px solid var(--line); border-left: 3px solid var(--green);
+    border-radius: var(--r-lg); font-size: 14.5px; color: var(--muted); line-height: 1.7; max-width: 760px;
+  }
+  .engage-note b { color: var(--ink); }
+
+  .port-group-label {
+    font: 700 11px/1 var(--font-body); letter-spacing: .16em; text-transform: uppercase;
+    color: var(--green); margin: 44px 0 0; padding-bottom: 14px;
+  }
+  .port-group-label:first-child { margin-top: 0; }
 
   /* ── Portfolio (McKinsey row list) ── */
   .port-list { margin-top: 56px; }
@@ -338,46 +372,78 @@
 
 <div class="section">
   <div class="wrap">
-    <div class="section-label"><span>What we do</span></div>
-    <h2 class="section-h2">Four ways CS Ventures moves businesses forward</h2>
+    <div class="section-label"><span>Services</span></div>
+    <h2 class="section-h2">What you can hire CS Ventures to do</h2>
     <div class="pillar-list">
       <div class="pillar-row">
         <span class="pillar-n">01</span>
         <div class="pillar-body">
-          <h3>Create New Products</h3>
-          <p>From idea to working product, CS Ventures designs and builds tools that solve real problems for real users.</p>
+          <h3>AI Agents &amp; Automation</h3>
+          <p>Agentic systems that carry real knowledge work from a one-line instruction to a finished, quality-checked result: research decks, product backlogs, reporting pipelines. Every build includes review gates so the output holds up to human scrutiny.</p>
+          <div class="pillar-deliv"><b>Typical engagements</b>Agent workflow design and build · automating a research or reporting process · adding AI to an existing workflow with human checkpoints</div>
+          <div class="pillar-proof">Proof: <a href="/DeckForge/">DeckForge</a><a href="/product-team-loop/">Product Team Loop</a></div>
         </div>
       </div>
       <div class="pillar-row">
         <span class="pillar-n">02</span>
         <div class="pillar-body">
-          <h3>Optimize Business Processes</h3>
-          <p>CS Ventures identifies friction in existing workflows and engineers systems that are faster, cleaner, and more reliable.</p>
+          <h3>Product Design &amp; Build</h3>
+          <p>Apps and websites taken from a one-page idea to a shipped build: product definition, interface design, and the engineering to make it real. One team owns the whole path, so nothing gets lost between strategy and delivery.</p>
+          <div class="pillar-deliv"><b>Typical engagements</b>Mobile app from concept to launch · marketing site design and build · an MVP a founder can put in front of users</div>
+          <div class="pillar-proof">Proof: <a href="/Altro/">Altro</a><a href="/Nos/">Nos</a><a href="https://cartershannon000-create.github.io/Altro-travel/marketing.html" target="_blank" rel="noopener">Altro Travel Site</a></div>
         </div>
       </div>
       <div class="pillar-row">
         <span class="pillar-n">03</span>
         <div class="pillar-body">
-          <h3>Gain Market Traction</h3>
-          <p>CS Ventures builds the strategy and tools that help businesses connect with their markets and expand their reach.</p>
+          <h3>Analytics &amp; Financial Modeling</h3>
+          <p>Decision-grade analysis built on real pipelines: SQL and Snowflake data work, Tableau and Power BI reporting, P&amp;L models, and risk assessment. The kind of numbers you can take into a board meeting or a lender conversation.</p>
+          <div class="pillar-deliv"><b>Typical engagements</b>Executive dashboards · financial models and P&amp;L analysis · risk assessment for a decision you are about to make</div>
         </div>
       </div>
       <div class="pillar-row">
         <span class="pillar-n">04</span>
         <div class="pillar-body">
-          <h3>Identify New Opportunities</h3>
-          <p>CS Ventures applies data-driven analysis to surface growth paths and strategic openings that competitors have not yet seen.</p>
+          <h3>Strategy &amp; Go-to-Market</h3>
+          <p>Market research, demand modeling, and go-to-market plans grounded in data rather than opinion. Useful when you know the product is good and the open question is who buys it, at what price, through what channel.</p>
+          <div class="pillar-deliv"><b>Typical engagements</b>Market entry analysis · demand and pricing models · a go-to-market plan you can execute quarter by quarter</div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<div class="section">
+  <div class="wrap">
+    <div class="section-label"><span>How we work</span></div>
+    <h2 class="section-h2">A short path from question to working result</h2>
+    <div class="step-grid">
+      <div class="step-card">
+        <div class="n">1</div>
+        <h3>Scope</h3>
+        <p>A short discovery to define the question, the users, and what done looks like. You get a written scope before any build starts, so there are no surprises about what you are paying for.</p>
+      </div>
+      <div class="step-card">
+        <div class="n">2</div>
+        <h3>Build</h3>
+        <p>Work ships in tight loops. You see working software and real analysis early and often, not a single reveal at the end. Feedback lands while it is still cheap to act on.</p>
+      </div>
+      <div class="step-card">
+        <div class="n">3</div>
+        <h3>Deliver</h3>
+        <p>Delivery includes documentation and a clean handoff. The result is yours to run, and CS Ventures stays available for the questions that come up after launch.</p>
+      </div>
+    </div>
+    <div class="engage-note"><b>Three ways to engage:</b> advisory work when you need analysis and a recommendation, fixed-scope builds when you need a product or tool shipped, and ongoing partnerships when the work is continuous.</div>
+  </div>
+</div>
+
 <div class="section band">
   <div class="wrap">
     <div class="section-label"><span>Portfolio</span></div>
-    <h2 class="section-h2">Products built by CS Ventures</h2>
+    <h2 class="section-h2">Built and shipped by CS Ventures</h2>
     <div class="port-list">
+      <div class="port-group-label">Agents &amp; AI</div>
       <a class="port-row" href="/DeckForge/">
         <div class="port-row-left">
           <h3>DeckForge</h3>
@@ -404,6 +470,7 @@
           <span class="port-arr">&rarr;</span>
         </div>
       </a>
+      <div class="port-group-label">Apps &amp; Websites</div>
       <a class="port-row" href="/Altro/">
         <div class="port-row-left">
           <h3>Altro</h3>
@@ -428,6 +495,19 @@
             <span class="port-tag">Mobile</span>
           </div>
           <span class="port-arr">→</span>
+        </div>
+      </a>
+      <a class="port-row" href="https://cartershannon000-create.github.io/Altro-travel/marketing.html" target="_blank" rel="noopener">
+        <div class="port-row-left">
+          <h3>Altro Travel Site</h3>
+          <p>Marketing website for the Altro app, designed and built end to end</p>
+        </div>
+        <div class="port-row-right">
+          <div class="port-tags">
+            <span class="port-tag">Website</span>
+            <span class="port-tag">Marketing</span>
+          </div>
+          <span class="port-arr">↗</span>
         </div>
       </a>
     </div>
@@ -495,7 +575,7 @@
       </details>
       <details>
         <summary>What products has CS Ventures built?<span class="faq-toggle"></span></summary>
-        <p class="faq-answer">CS Ventures has built three products: DeckForge, an autonomous AI agent that writes and self-refines equity research decks until they are board-ready; Altro, a travel ranking app for logging cities and mapping return energy; and Nos, a prayer and journaling app for novenas and daily reflection.</p>
+        <p class="faq-answer">CS Ventures has shipped work in two categories. In agents and AI: DeckForge, an autonomous agent that writes and self-refines equity research decks until they are board-ready, and Product Team Loop, an autonomous product team of agents that finds, ranks, and ships its own backlog. In apps and websites: Altro, a travel ranking app for logging cities and mapping return energy; Nos, a prayer and journaling app for novenas and daily reflection; and the Altro travel marketing site, designed and built end to end.</p>
       </details>
       <details>
         <summary>How can I contact CS Ventures?<span class="faq-toggle"></span></summary>
@@ -531,7 +611,7 @@
       "name": "What products has CS Ventures built?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "CS Ventures has built three products: DeckForge, an autonomous AI agent that writes and self-refines equity research decks until they are board-ready; Altro, a travel ranking app for logging cities and mapping return energy; and Nos, a prayer and journaling app for novenas and daily reflection."
+        "text": "CS Ventures has shipped work in two categories. In agents and AI: DeckForge, an autonomous agent that writes and self-refines equity research decks, and Product Team Loop, an autonomous product team of agents. In apps and websites: Altro, a travel ranking app; Nos, a prayer and journaling app; and the Altro travel marketing site, designed and built end to end."
       }
     },
     {
