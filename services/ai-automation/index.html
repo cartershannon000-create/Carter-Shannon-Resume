@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI &amp; Automation | CS Ventures Services</title>
+<meta name="description" content="CS Ventures AI and automation offerings: process audits, workflow automation, AI at judgment steps, and agentic system design.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cs-ventures.us/services/ai-automation/">
+<meta property="og:title" content="AI &amp; Automation | CS Ventures Services">
+<meta property="og:description" content="CS Ventures AI and automation offerings: process audits, workflow automation, AI at judgment steps, and agentic system design.">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="https://cs-ventures.us/services/ai-automation/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/site.css">
+<style>
+  :root{
+    --bg:#eff0f2; --panel:#f7f8fa; --panel-strong:#ffffff;
+    --ink:#161719; --muted:#565961; --line:rgba(18,22,29,.10);
+    --dark:#0a0b0d; --dark-sub:#15161a;
+    --on-dark:#f5f5f7; --on-dark-muted:rgba(245,245,247,.58); --on-dark-line:rgba(255,255,255,.10);
+    --shadow:0 1px 2px rgba(18,22,29,.04), 0 8px 22px -10px rgba(18,22,29,.12);
+    --shadow-md:0 18px 50px -16px rgba(18,22,29,.24), 0 4px 12px -6px rgba(18,22,29,.10);
+    --radius:12px; --r-lg:22px; --ease:cubic-bezier(.32,.72,0,1);
+    --font-display:-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Inter, system-ui, "Helvetica Neue", Arial, sans-serif;
+  }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 var(--font-body); -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  a { color:var(--green); text-decoration:none; }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 32px; }
+  h1,h2,h3,h4 { margin:0; }
+  :focus-visible { outline:2px solid var(--green); outline-offset:3px; border-radius:6px; }
+
+  .page-hero { background:var(--dark); padding:84px 0 72px; border-bottom:1px solid var(--on-dark-line); }
+  .crumb { font:600 12px/1 var(--font-body); color:var(--on-dark-muted); margin-bottom:22px; }
+  .crumb a { color:var(--on-dark-muted); }
+  .crumb a:hover { color:var(--on-dark); }
+  .crumb .sep { margin:0 8px; opacity:.5; }
+  .line-num { font:700 12px/1 var(--font-body); letter-spacing:.16em; color:var(--green-bright); text-transform:uppercase; margin-bottom:16px; }
+  .page-hero h1 { font-family:var(--font-display); font-weight:700; font-size:clamp(38px,5.2vw,62px); color:var(--on-dark); line-height:1.03; letter-spacing:-.04em; margin-bottom:18px; max-width:800px; }
+  .page-hero .lead { font-size:16.5px; color:var(--on-dark-muted); max-width:600px; line-height:1.72; margin:0; }
+  .off-nav { display:flex; gap:10px; flex-wrap:wrap; margin-top:32px; }
+  .off-pill { display:inline-flex; align-items:center; font:600 13px/1 var(--font-body); color:var(--on-dark);
+    border:1px solid var(--on-dark-line); background:rgba(255,255,255,.04); padding:11px 18px; border-radius:999px;
+    transition:background .2s var(--ease), border-color .2s var(--ease); }
+  .off-pill:hover { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.2); color:var(--on-dark); }
+
+  .off-section { padding:80px 0; border-bottom:1px solid var(--line); scroll-margin-top:80px; }
+  .off-section.band { background:var(--panel-strong); }
+  .off-kicker { font:700 11px/1 var(--font-body); letter-spacing:.16em; text-transform:uppercase; color:var(--green); margin-bottom:14px; }
+  .off-section h2 { font-family:var(--font-display); font-weight:700; font-size:clamp(26px,3.4vw,38px); letter-spacing:-.033em; line-height:1.06; color:var(--ink); max-width:640px; }
+  .off-over { font-size:15.5px; color:var(--muted); line-height:1.74; max-width:700px; margin:20px 0 0; }
+  .off-cols { display:grid; gap:16px; margin-top:36px; }
+  @media(min-width:760px){ .off-cols { grid-template-columns:1fr 1fr; } }
+  .off-box { background:var(--panel-strong); border:1px solid var(--line); border-radius:var(--r-lg); padding:26px 28px; box-shadow:var(--shadow); }
+  .off-section.band .off-box { background:var(--panel); box-shadow:none; }
+  .off-box h4 { font:700 11px/1 var(--font-body); letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-bottom:16px; }
+  .off-box ul, .off-box ol { margin:0; padding:0; list-style:none; }
+  .off-box ul li { position:relative; padding:0 0 12px 24px; font-size:14px; color:var(--ink); line-height:1.6; }
+  .off-box ul li:last-child { padding-bottom:0; }
+  .off-box ul li::before { content:''; position:absolute; left:0; top:8px; width:7px; height:7px; border-radius:50%; background:var(--green); }
+  .off-box ol { counter-reset:step; }
+  .off-box ol li { position:relative; padding:0 0 12px 34px; font-size:14px; color:var(--ink); line-height:1.6; counter-increment:step; }
+  .off-box ol li:last-child { padding-bottom:0; }
+  .off-box ol li::before { content:counter(step); position:absolute; left:0; top:1px; width:21px; height:21px; border-radius:50%;
+    background:var(--green); color:#fff; font:700 11px/21px var(--font-body); text-align:center; }
+  .off-proof { margin-top:22px; font-size:13.5px; color:var(--muted); }
+  .off-proof a { font-weight:600; color:var(--green); }
+  .off-proof a + a::before { content:'\00B7'; margin:0 8px; color:var(--line); }
+
+  .svc-ctabar { margin:80px 0; background:var(--dark); border-radius:var(--r-lg); padding:34px 38px;
+    display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; box-shadow:var(--shadow-md); }
+  .svc-ctabar .t { color:var(--on-dark); font:600 17px/1.4 var(--font-body); max-width:480px; }
+  .svc-ctabar .t small { display:block; font:400 13.5px/1.5 var(--font-body); color:var(--on-dark-muted); margin-top:6px; }
+  .btn-solid { display:inline-flex; align-items:center; font:600 14px/1 var(--font-body); letter-spacing:.01em;
+    padding:14px 24px; border-radius:999px; background:var(--green); color:#fff;
+    box-shadow:0 1px 2px rgba(0,0,0,.2); transition:transform .25s var(--ease), background .2s var(--ease); }
+  .btn-solid:hover { background:#286038; color:#fff; transform:translateY(-1px); }
+
+  .nextline { display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap; padding:0 0 80px; }
+  .nextline a { display:inline-flex; align-items:center; gap:9px; font:600 13.5px/1 var(--font-body); color:var(--ink);
+    border-bottom:1.5px solid var(--ink); padding-bottom:3px; transition:color .2s var(--ease), border-color .2s var(--ease); }
+  .nextline a:hover { color:var(--green); border-color:var(--green); }
+
+  footer { background:var(--dark); padding:56px 0 44px; }
+  .footer-inner { display:flex; justify-content:space-between; align-items:flex-start; gap:32px; flex-wrap:wrap; }
+  .footer-brand { font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--on-dark); margin-bottom:8px; }
+  .footer-links { display:flex; gap:0; flex-wrap:wrap; }
+  .footer-links a { font:500 12.5px/1 var(--font-body); color:var(--on-dark-muted); padding:4px 0; transition:color .13s; }
+  .footer-links a + a::before { content:'\00B7'; margin:0 12px; color:var(--on-dark-line); }
+  .footer-links a:hover { color:var(--on-dark); }
+  .footer-copy { margin-top:40px; padding-top:20px; border-top:1px solid var(--on-dark-line); font:400 11.5px/1 var(--font-body); color:var(--on-dark-muted); }
+</style>
+</head>
+<body>
+
+<div class="csv-bar">
+  <a class="csv-brand" href="/"><svg class="csv-mark" viewBox="0 0 205 155" aria-hidden="true" fill="currentColor"><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="150" font-weight="400" x="4" y="108">C</text><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="125" font-weight="400" x="78" y="129">S</text></svg>CS Ventures</a>
+  <nav class="csv-nav">
+    <a href="/">Home</a>
+    <a href="/about/">About</a>
+    <a href="/portfolio/" class="active">Portfolio</a>
+  </nav>
+</div>
+
+<div class="page-hero">
+  <div class="wrap">
+    <div class="crumb"><a href="/portfolio/#services">Services</a><span class="sep">/</span>AI &amp; Automation</div>
+    <div class="line-num">Service line 01</div>
+    <h1>AI &amp; Automation</h1>
+    <p class="lead">Automation first, AI where judgment lives. The routine steps get deterministic automation; AI is added only where rules stop working.</p>
+    <div class="off-nav"><a class="off-pill" href="#audit">Process automation audit</a><a class="off-pill" href="#build">Workflow automation build</a><a class="off-pill" href="#ai-judgment">AI at judgment steps</a><a class="off-pill" href="#agentic">Agentic system design</a></div>
+  </div>
+</div>
+
+<div class="off-section band" id="audit">
+  <div class="wrap">
+    <div class="off-kicker">Offering 1 of 4</div>
+    <h2>Process automation audit</h2>
+    <p class="off-over">A free two-week mapping of where the hours actually go. Every workflow gets documented and scored for automation fit, so the roadmap ranks the work by payback instead of by gut feel. You keep the roadmap whether or not you hire us for the build.</p>
+    <div class="off-cols">
+      <div class="off-box"><h4>What you get</h4><ul><li>A process map of the workflows that absorb the most manual hours</li><li>Each workflow scored for automation fit, effort, and payback</li><li>A ranked automation roadmap with a fixed-fee quote for the build</li></ul></div>
+      <div class="off-box"><h4>How it runs</h4><ol><li>Week one: shadow the work, pull the numbers, and map the workflows</li><li>Week two: score and rank every workflow, then pressure-test with your team</li><li>Delivery: the roadmap, the quote, and a working session to walk through both</li></ol></div>
+    </div>
+    <div class="off-proof">Proof: <a href="/decks/process-automation-smb/">The SMB automation deck</a></div>
+  </div>
+</div>
+
+<div class="off-section" id="build">
+  <div class="wrap">
+    <div class="off-kicker">Offering 2 of 4</div>
+    <h2>Workflow automation build</h2>
+    <p class="off-over">Deterministic automation for the routine steps: invoicing, data entry, scheduling, reporting, onboarding. Rules-based automation is fast, auditable, and cheap to run, which is why it comes before any AI. The build is modular, so intelligence can layer on later without rework.</p>
+    <div class="off-cols">
+      <div class="off-box"><h4>What you get</h4><ul><li>Working automations in production, not recommendations on a slide</li><li>An audit trail for every automated step</li><li>Documentation and training so your team owns the result</li></ul></div>
+      <div class="off-box"><h4>How it runs</h4><ol><li>Start from the audit roadmap, highest payback first</li><li>Ship the first automation quickly, then expand workflow by workflow</li><li>Handoff: monitoring in place and your team trained to run it</li></ol></div>
+    </div>
+    <div class="off-proof">Proof: <a href="/decks/process-automation-smb/">The SMB automation deck</a></div>
+  </div>
+</div>
+
+<div class="off-section band" id="ai-judgment">
+  <div class="wrap">
+    <div class="off-kicker">Offering 3 of 4</div>
+    <h2>AI at judgment steps</h2>
+    <p class="off-over">Most process steps are rules. Some need judgment: classifying a messy request, drafting a reply, triaging what matters. This offering adds AI to exactly those steps and nowhere else, with human checkpoints where the cost of a wrong answer is real.</p>
+    <div class="off-cols">
+      <div class="off-box"><h4>What you get</h4><ul><li>AI on the steps where rules stop working: classification, drafting, triage</li><li>Human checkpoints designed into the flow, not bolted on</li><li>Clear measurement of what the AI step catches and what it hands off</li></ul></div>
+      <div class="off-box"><h4>How it runs</h4><ol><li>Identify the judgment steps inside an automated flow</li><li>Add AI to one step at a time and measure it against the human baseline</li><li>Expand only what earns it; keep checkpoints where stakes are high</li></ol></div>
+    </div>
+  </div>
+</div>
+
+<div class="off-section" id="agentic">
+  <div class="wrap">
+    <div class="off-kicker">Offering 4 of 4</div>
+    <h2>Agentic system design</h2>
+    <p class="off-over">Multi-agent systems that carry real knowledge work from a one-line instruction to a finished, quality-checked result. The design principle is separation of duties: agents that produce are never the agents that grade, and every output passes a defined quality bar before it ships.</p>
+    <div class="off-cols">
+      <div class="off-box"><h4>What you get</h4><ul><li>An agent workflow designed around your actual work product</li><li>Quality gates: review and revision loops with defined ship criteria</li><li>A system your team can run, monitor, and extend</li></ul></div>
+      <div class="off-box"><h4>How it runs</h4><ol><li>Define the work product and the quality bar it must clear</li><li>Design the agent roles and the review loop between them</li><li>Pilot on real work, tune the gates, then hand over the keys</li></ol></div>
+    </div>
+    <div class="off-proof">Proof: <a href="/DeckForge/">DeckForge</a><a href="/product-team-loop/">Product Team Loop</a></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="svc-ctabar">
+    <div class="t">Sounds like your problem?
+      <small>Describe it in one email. We will tell you what we would do, what it involves, and whether we are the right fit.</small>
+    </div>
+    <a class="btn-solid" href="mailto:info@cs-ventures.us">Start the conversation</a>
+  </div>
+  <div class="nextline">
+    <a href="/portfolio/#services">&larr; All service offerings</a>
+    <a href="/services/product-design-build/">Next: Product Design &amp; Build &rarr;</a>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div><div class="footer-brand">CS Ventures</div></div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/portfolio/">Portfolio</a>
+        <a href="mailto:info@cs-ventures.us">info@cs-ventures.us</a>
+      </div>
+    </div>
+    <div class="footer-copy">CS Ventures &copy; 2026</div>
+  </div>
+</footer>
+
+</body>
+</html>

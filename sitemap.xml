@@ -49,4 +49,28 @@
     <priority>0.7</priority>
   </url>
 
+  <url>
+    <loc>https://cs-ventures.us/services/ai-automation/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://cs-ventures.us/services/product-design-build/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://cs-ventures.us/services/analytics-financial-modeling/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://cs-ventures.us/services/strategy-go-to-market/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
 </urlset>
