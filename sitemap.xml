@@ -43,4 +43,10 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://cs-ventures.us/decks/process-automation-smb/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
 </urlset>
