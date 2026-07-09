@@ -199,93 +199,128 @@
   .fi-body h4{font-family:var(--font-display); font-weight:700; margin:0 0 5px; font-size:16px; color:var(--ink)}
   .fi-body p{margin:0; color:var(--muted); font-size:14px; line-height:1.6}
 
-  /* ============ DAILY RUN SIMULATOR ============ */
+  /* ============ DAILY RUN — VISUAL EXPLAINER ============ */
   .simhead{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap}
   .simctl{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
   .sim-btn{appearance:none; cursor:pointer; display:inline-flex; align-items:center; gap:9px; font:600 14px/1 var(--font-body); padding:13px 22px; border-radius:999px; border:1px solid var(--green); background:var(--green); color:#fff; transition:background .2s var(--ease), transform .25s var(--ease)}
   .sim-btn:hover{background:#286038; transform:translateY(-1px)}
   .sim-btn svg{width:14px; height:14px; fill:currentColor}
-  .sim-btn[disabled]{opacity:.5; pointer-events:none}
-  .sim-speed{display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:var(--panel)}
-  .sim-speed button{appearance:none; cursor:pointer; border:0; background:transparent; padding:11px 13px; font:800 12px/1 var(--font-body); color:var(--muted)}
-  .sim-speed button.on{background:var(--green-soft); color:#294323}
 
   .simphases{display:flex; margin:30px 0 22px; overflow-x:auto; padding-bottom:4px}
-  .sp{flex:1 0 76px; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative}
+  .sp{appearance:none; border:0; background:transparent; font-family:inherit; padding:0; cursor:pointer; flex:1 0 88px; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative}
   .sp::before{content:''; position:absolute; top:13px; left:-50%; width:100%; height:2px; background:var(--line); z-index:0}
   .sp:first-child::before{display:none}
   .sp.done::before{background:var(--green)}
   .sp-dot{position:relative; z-index:1; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; font:800 12px/1 var(--font-body); background:var(--panel); border:2px solid var(--line); color:var(--muted); transition:.25s}
+  .sp:hover .sp-dot{border-color:var(--green); color:var(--green)}
   .sp.done .sp-dot{background:var(--green); border-color:var(--green); color:#fff}
   .sp.active .sp-dot{border-color:var(--green); color:var(--green); box-shadow:0 0 0 4px var(--green-soft)}
   .sp-cap{font:700 10.5px/1.2 var(--font-body); color:var(--muted); margin-top:7px}
   .sp.active .sp-cap{color:var(--ink)}
 
-  .simgrid{display:grid; gap:18px; align-items:start}
-  @media(min-width:920px){ .simgrid{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)} }
+  .vstage{position:relative; background:var(--panel-strong); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow); padding:32px 36px 28px; min-height:500px}
+  .vscene{display:none}
+  .vscene.active{display:block}
+  .vscene [data-s]{opacity:0; transform:translateY(9px); transition:opacity .5s var(--ease), transform .5s var(--ease)}
+  .vscene [data-s].on{opacity:1; transform:none}
+  .vx-static .vscene [data-s]{opacity:1; transform:none; transition:none}
+  .vhead .vk{font:800 10.5px/1 var(--font-body); letter-spacing:.14em; text-transform:uppercase; color:var(--green)}
+  .vhead h3{font-family:var(--font-display); font-weight:700; font-size:clamp(20px,2.7vw,28px); letter-spacing:-.02em; margin:8px 0 0; color:var(--ink)}
+  .vfoot{margin:28px 0 0; font-size:14px; color:var(--muted); border-top:1px solid var(--line); padding-top:16px; max-width:660px; line-height:1.6}
+  .vfoot b{color:var(--ink)}
 
-  .simterm{background:linear-gradient(180deg,#141619,#0f1114); border:1px solid rgba(255,255,255,.09); border-radius:16px; box-shadow:var(--shadow-md); overflow:hidden}
-  .simterm-bar{display:flex; align-items:center; gap:9px; padding:12px 15px; border-bottom:1px solid rgba(255,255,255,.07)}
-  .simterm-bar .hsc-dots i{width:10px; height:10px}
-  .simterm-title{font:600 12px/1 var(--font-body); color:rgba(245,245,247,.5)}
-  .simterm-state{margin-left:auto; font:700 10.5px/1 var(--font-body); letter-spacing:.08em; text-transform:uppercase; color:rgba(245,245,247,.4)}
-  .simterm-state.run{color:var(--green-bright)}
-  .simlog{height:460px; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:7px; scroll-behavior:smooth}
-  .sl{display:flex; gap:10px; align-items:flex-start; font:500 12.5px/1.55 var(--mono); color:rgba(245,245,247,.78); animation:slrise .35s both}
-  @keyframes slrise{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
-  .sl .t{flex:none; color:rgba(245,245,247,.34); font-size:11px; padding-top:2px; width:52px}
-  .sl .k{flex:none; font:800 9px/1 var(--font-body); letter-spacing:.06em; text-transform:uppercase; padding:4px 7px; border-radius:3px; margin-top:1px; width:52px; text-align:center}
-  .sl.sys .k{background:rgba(255,255,255,.08); color:rgba(245,245,247,.6)}
-  .sl.tool .k{background:rgba(93,150,184,.18); color:#8fc0dd}
-  .sl.llm .k{background:rgba(86,187,110,.16); color:var(--green-bright)}
-  .sl.db .k{background:rgba(206,159,84,.16); color:#dcb679}
-  .sl.guard .k{background:rgba(200,90,70,.18); color:#e59a8c}
-  .sl.gate .k{background:rgba(178,140,220,.16); color:#c7aee6}
-  .sl.learn .k{background:rgba(86,187,110,.16); color:var(--green-bright); border:1px dashed rgba(86,187,110,.5)}
-  .sl .x{min-width:0}
-  .sl .x b{color:#fff; font-weight:600}
-  .sl.llm .x{color:rgba(220,240,225,.85)}
-  .simlog .idle{margin:auto; text-align:center; color:rgba(245,245,247,.4); font:500 13.5px/1.6 var(--font-body); padding:40px 20px}
+  /* scene 1 · wake + gather */
+  .vs1{display:flex; flex-direction:column; align-items:center; gap:0; margin-top:26px}
+  .vclock{display:flex; flex-direction:column; align-items:center; gap:2px; background:var(--dark); color:var(--on-dark); border-radius:16px; padding:16px 34px; box-shadow:var(--shadow-md)}
+  .vclock .vtime{font-family:var(--font-display); font-weight:700; font-size:34px; letter-spacing:-.02em}
+  .vclock .vtime small{font-size:15px; font-weight:700; color:var(--green-bright); margin-left:6px}
+  .vclock .vsub{font:600 10.5px/1 var(--font-body); letter-spacing:.1em; text-transform:uppercase; color:var(--on-dark-muted)}
+  .vdown{width:2px; height:26px; background:var(--blue); margin:10px 0}
+  .vsources{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; width:100%; max-width:720px}
+  .vsrc{background:#fff; border:1px solid var(--line); border-top:3px solid var(--blue); border-radius:12px; padding:13px 15px; text-align:center}
+  .vsrc.mem{border-top-color:var(--gold)}
+  .vsrc b{display:block; font:700 13px/1.3 var(--font-body); color:var(--ink)}
+  .vsrc span{display:block; font:500 11.5px/1.4 var(--font-body); color:var(--muted); margin-top:4px}
+  .vwm{margin-top:22px; display:inline-flex; flex-direction:column; align-items:center; gap:8px; background:#1d4a2b; color:#fff; border-radius:999px; padding:16px 34px; box-shadow:var(--shadow-md)}
+  .vwm .vk2{font:800 10px/1 var(--font-body); letter-spacing:.13em; text-transform:uppercase; color:var(--green-bright)}
+  .vwm .vk3{font:600 13px/1.4 var(--font-body); color:rgba(245,245,247,.85)}
 
-  .simside{display:flex; flex-direction:column; gap:14px}
-  .statrow{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
-  @media(min-width:520px){ .statrow{grid-template-columns:repeat(4,1fr)} }
-  @media(min-width:920px){ .statrow{grid-template-columns:repeat(2,1fr)} }
-  .stat{background:var(--panel-strong); border:1px solid var(--line); border-radius:14px; padding:14px 16px; box-shadow:var(--shadow)}
-  .stat .sv{font-family:var(--font-display); font-weight:700; font-size:26px; line-height:1.1; color:var(--ink); letter-spacing:-.02em}
-  .stat .sk{font:700 10px/1.35 var(--font-body); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-top:5px}
-  .stat.good .sv{color:var(--green)}
+  /* scene 2 · judge */
+  .vs2{display:grid; gap:20px; margin-top:24px}
+  @media(min-width:880px){ .vs2{grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr); align-items:start} }
+  .vinvs{display:flex; flex-direction:column; gap:10px}
+  .vinv{position:relative; display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid var(--line); border-radius:12px; padding:13px 15px; background:#fff; transition:border-color .3s var(--ease), box-shadow .3s var(--ease), opacity .5s var(--ease), transform .5s var(--ease)}
+  .vinv.hl{border-color:var(--green); box-shadow:0 0 0 3px var(--green-soft)}
+  .vinv .n b{display:block; font:700 13.5px/1.2 var(--font-body); color:var(--ink)}
+  .vinv .n span{font:600 11px/1 var(--mono); color:var(--muted)}
+  .vinv .m{font:700 12.5px/1.3 var(--font-body); color:var(--ink); text-align:right; white-space:nowrap}
+  .vinv .m small{display:block; font:600 10.5px/1 var(--font-body); color:var(--rose); margin-top:3px}
+  .vstamp{position:absolute; top:-10px; right:10px; font:800 9.5px/1 var(--font-body); letter-spacing:.05em; text-transform:uppercase; padding:5px 9px; border-radius:999px; color:#fff; box-shadow:var(--shadow)}
+  .vstamp.esc{background:var(--rose)} .vstamp.rem{background:var(--green)} .vstamp.hold{background:var(--blue)} .vstamp.hum{background:#6d727c}
+  .vbrain{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px 22px; min-height:238px}
+  .vbrain-k{display:flex; align-items:center; gap:8px; font:800 10.5px/1 var(--font-body); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:14px}
+  .vbrain-k .d{width:8px; height:8px; border-radius:50%; background:var(--green); animation:hscpulse 2s var(--ease) infinite}
+  .vbrainstack{display:grid}
+  .vth{grid-area:1/1}
+  .vth p{margin:0; font-size:15px; line-height:1.6; color:var(--ink)}
+  .vth p em{font-style:normal; color:var(--muted)}
+  .vchips{display:flex; flex-wrap:wrap; gap:7px; margin-top:12px}
+  .vchip{display:inline-flex; align-items:center; gap:6px; font:700 10.5px/1 var(--font-body); letter-spacing:.03em; text-transform:uppercase; padding:6px 10px; border-radius:999px; background:var(--blue-soft); color:#243f52}
+  .vchip.mem{background:var(--gold-soft); color:#7a5424}
+  .vchip.guard{background:var(--rose-soft); color:#7a3a38}
+  .vverd{margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); font:700 13.5px/1.5 var(--font-body); color:var(--ink)}
+  .vverd .conf{font:800 12px/1 var(--mono); color:var(--green); margin-left:8px}
+  .vverd .conf.low{color:var(--amber)}
 
-  .queue{background:var(--panel-strong); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); overflow:hidden}
-  .queue-h{display:flex; align-items:center; justify-content:space-between; background:var(--dark); color:var(--on-dark); padding:12px 15px; font:800 12.5px/1 var(--font-body)}
-  .queue-h small{font-weight:600; opacity:.6; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase}
-  .queue-list{display:flex; flex-direction:column; gap:8px; padding:12px; min-height:120px; max-height:330px; overflow-y:auto}
-  .queue-list .idleq{margin:auto; color:var(--muted); font-size:12.5px; text-align:center; padding:24px 12px}
-  .qa{display:flex; gap:10px; align-items:flex-start; border:1px solid var(--line); border-radius:10px; background:#fff; padding:10px 12px; animation:slrise .4s both}
-  .qa .qb{flex:none; font:800 9.5px/1 var(--font-body); letter-spacing:.05em; text-transform:uppercase; padding:5px 8px; border-radius:3px; margin-top:1px; white-space:nowrap}
-  .qa .qb.esc{background:var(--rose-soft); color:#7a3a38}
-  .qa .qb.rem{background:var(--green-soft); color:#294323}
-  .qa .qb.dis{background:var(--gold-soft); color:#7a5424}
-  .qa .qb.hold{background:var(--blue-soft); color:#243f52}
-  .qa .qb.call{background:var(--rose-soft); color:#7a3a38}
-  .qa .qb.hum{background:var(--panel); color:var(--muted); border:1px dashed var(--line)}
-  .qa .qm{display:block; min-width:0; flex:1}
-  .qa .q1{display:block; font:700 12.5px/1.35 var(--font-body); color:var(--ink); padding-right:34px}
-  .qa .q1 span{font:600 11px/1 var(--mono); color:var(--muted); white-space:nowrap}
-  .qa .q2{display:block; font-size:11px; color:var(--muted); line-height:1.45; margin-top:3px}
-  .qa{position:relative}
-  .qa .qc{position:absolute; top:11px; right:12px; font:800 10.5px/1 var(--mono); color:var(--green)}
-  .qa .qc.low{color:var(--amber)}
+  /* scene 3 · record */
+  .vtable{max-width:680px; margin:26px auto 0; border:1px solid var(--line); border-radius:14px; overflow:hidden; background:#fff; box-shadow:var(--shadow)}
+  .vt-h{display:flex; align-items:center; justify-content:space-between; background:var(--dark); color:var(--on-dark); padding:12px 16px; font:800 12.5px/1 var(--font-body)}
+  .vt-h .lock{font:800 9.5px/1 var(--font-body); letter-spacing:.08em; text-transform:uppercase; padding:5px 9px; border-radius:999px; background:rgba(206,159,84,.2); color:#dcb679}
+  .vt-r{display:grid; grid-template-columns:1.1fr auto auto 1.6fr; gap:12px; align-items:center; padding:11px 16px; border-top:1px solid var(--line); font-size:12.5px}
+  .vt-r:first-of-type{border-top:0}
+  .vt-r b{color:var(--ink)}
+  .vt-r .call{font:800 9.5px/1 var(--font-body); letter-spacing:.04em; text-transform:uppercase; padding:4px 8px; border-radius:999px; color:#fff; white-space:nowrap; justify-self:start}
+  .vt-r .call.esc{background:var(--rose)} .vt-r .call.rem{background:var(--green)} .vt-r .call.hold{background:var(--blue)} .vt-r .call.hum{background:#6d727c}
+  .vt-r .cf{font:800 11.5px/1 var(--mono); color:var(--green)}
+  .vt-r .cf.low{color:var(--amber)}
+  .vt-r .why{color:var(--muted); font-size:11.5px; line-height:1.4}
+  @media(max-width:640px){ .vt-r{grid-template-columns:1fr auto; row-gap:4px} .vt-r .why{display:none} }
 
-  .memdiff{background:var(--panel-strong); border:1px dashed rgba(46,107,63,.5); border-radius:16px; padding:16px 18px; box-shadow:var(--shadow); display:none}
-  .memdiff.show{display:block; animation:slrise .45s both}
-  .memdiff .mh{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
-  .memdiff .mh b{font:800 12.5px/1 var(--font-body); color:var(--ink)}
-  .memdiff .ver{font:800 10.5px/1 var(--mono); color:#7a5424; background:var(--gold-soft); border-radius:999px; padding:5px 10px}
-  .memdiff .rule{font:500 12px/1.55 var(--mono); border-radius:8px; padding:9px 11px; margin-top:6px}
-  .memdiff .rule.kept{background:var(--panel); color:var(--muted)}
-  .memdiff .rule.add{background:var(--green-soft); color:#22391f; border:1px solid rgba(46,107,63,.3)}
-  .memdiff .rule .rn{font-weight:800; margin-right:6px}
+  /* scene 4 · approve */
+  .vq{max-width:640px; margin:26px auto 0; display:flex; flex-direction:column; gap:9px}
+  .vq-r{display:flex; align-items:center; justify-content:space-between; gap:12px; background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 15px}
+  .vq-r .l b{display:block; font:700 13px/1.25 var(--font-body); color:var(--ink)}
+  .vq-r .l span{font-size:11.5px; color:var(--muted)}
+  .vdec{font:800 10px/1 var(--font-body); letter-spacing:.05em; text-transform:uppercase; padding:6px 11px; border-radius:999px; white-space:nowrap}
+  .vdec.ok{background:var(--green-soft); color:#294323; border:1px solid rgba(46,107,63,.35)}
+  .vdec.edit{background:var(--gold-soft); color:#7a5424; border:1px solid rgba(158,113,50,.35)}
+  .vdec.rej{background:var(--rose-soft); color:#7a3a38; border:1px solid rgba(155,79,77,.35)}
+  .vzero{display:flex; align-items:center; justify-content:center; gap:16px; max-width:640px; margin:20px auto 0; background:var(--dark); color:var(--on-dark); border-radius:14px; padding:16px 22px}
+  .vzero .z{font-family:var(--font-display); font-weight:700; font-size:36px; color:var(--green-bright); line-height:1}
+  .vzero p{margin:0; font-size:13px; color:var(--on-dark-muted); max-width:340px; line-height:1.5}
+  .vzero p b{color:var(--on-dark)}
+
+  /* scene 5 · learn */
+  .vs5{display:grid; gap:16px; margin-top:26px; align-items:center}
+  @media(min-width:880px){ .vs5{grid-template-columns:minmax(0,1fr) auto minmax(0,1.05fr)} }
+  .vwk{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px 20px}
+  .vwk h4{font:800 11px/1 var(--font-body); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+  .vwk ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:10px}
+  .vwk li{display:flex; gap:9px; font-size:13px; color:var(--muted); line-height:1.5}
+  .vwk li b{color:var(--ink)}
+  .vwk li::before{content:''; flex:none; width:7px; height:7px; border-radius:50%; background:var(--green); margin-top:6px}
+  .vpass{display:flex; flex-direction:column; align-items:center; gap:6px; padding:0 8px}
+  .vpass .vchip{background:var(--green-soft); color:#294323}
+  .vpass svg{width:26px; height:26px; fill:none; stroke:var(--green); stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+  @media(max-width:879px){ .vpass{flex-direction:row; justify-content:center} .vpass svg{transform:rotate(90deg)} }
+  .vmem{background:#fff; border:1px dashed rgba(46,107,63,.5); border-radius:14px; padding:18px 20px}
+  .vmem .mh{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
+  .vmem .mh b{font:800 12.5px/1 var(--font-body); color:var(--ink)}
+  .vmem .ver{font:800 10.5px/1 var(--mono); color:#7a5424; background:var(--gold-soft); border-radius:999px; padding:5px 10px}
+  .vmem .rule{font:500 12px/1.55 var(--mono); border-radius:8px; padding:9px 11px; margin-top:6px}
+  .vmem .rule.kept{background:var(--panel); color:var(--muted)}
+  .vmem .rule.add{background:var(--green-soft); color:#22391f; border:1px solid rgba(46,107,63,.3)}
+  .vmem .rule .rn{font-weight:800; margin-right:6px}
 
   /* ============ ARCHITECTURE ============ */
   .grid{display:grid; gap:16px}
@@ -555,69 +590,143 @@
     </div>
   </section>
 
-  <!-- ================= DAILY RUN SIMULATOR ================= -->
+  <!-- ================= DAILY RUN — VISUAL EXPLAINER ================= -->
   <section id="run" style="scroll-margin-top:120px">
     <div class="wrap">
       <div class="simhead">
         <div>
           <div class="eyebrow">A day in the life</div>
-          <h2 class="sech">The daily run, <em>simulated</em></h2>
-          <p class="lead" style="margin-top:14px">Press start to watch one autonomous morning turn an aging report into
-          recorded, reviewed collection decisions — then watch the agent get smarter for next week.</p>
+          <h2 class="sech">One morning, <em>five moments</em></h2>
+          <p class="lead" style="margin-top:14px">This is everything the agent does, shown as a story. It plays on its
+          own &mdash; or click any step to jump there.</p>
         </div>
         <div class="simctl">
-          <button class="sim-btn" id="simStart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><span>Start the run</span></button>
-          <div class="sim-speed" role="group" aria-label="Playback speed">
-            <button class="on" data-speed="1">1&times;</button>
-            <button data-speed="2">2&times;</button>
-            <button data-speed="4">4&times;</button>
-          </div>
+          <button class="sim-btn" id="vxPlay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><span>Play</span></button>
         </div>
       </div>
 
-      <div class="simphases" id="simPhases" aria-hidden="true">
-        <div class="sp"><span class="sp-dot">1</span><span class="sp-cap">Trigger</span></div>
-        <div class="sp"><span class="sp-dot">2</span><span class="sp-cap">Gather</span></div>
-        <div class="sp"><span class="sp-dot">3</span><span class="sp-cap">Reason</span></div>
-        <div class="sp"><span class="sp-dot">4</span><span class="sp-cap">Record</span></div>
-        <div class="sp"><span class="sp-dot">5</span><span class="sp-cap">Deliver</span></div>
-        <div class="sp"><span class="sp-dot">6</span><span class="sp-cap">Review</span></div>
-        <div class="sp"><span class="sp-dot">7</span><span class="sp-cap">Learn</span></div>
+      <div class="simphases" id="vxSteps">
+        <button class="sp" data-i="0"><span class="sp-dot">1</span><span class="sp-cap">Wakes itself</span></button>
+        <button class="sp" data-i="1"><span class="sp-dot">2</span><span class="sp-cap">Judges invoices</span></button>
+        <button class="sp" data-i="2"><span class="sp-dot">3</span><span class="sp-cap">Records first</span></button>
+        <button class="sp" data-i="3"><span class="sp-dot">4</span><span class="sp-cap">Human approves</span></button>
+        <button class="sp" data-i="4"><span class="sp-dot">5</span><span class="sp-cap">Learns weekly</span></button>
       </div>
 
-      <div class="simgrid">
-        <div class="simterm">
-          <div class="simterm-bar">
-            <span class="hsc-dots"><i></i><i></i><i></i></span>
-            <span class="simterm-title">remit &middot; run log</span>
-            <span class="simterm-state" id="simState">Idle</span>
+      <div class="vstage" id="vxStage">
+
+        <!-- scene 1 -->
+        <div class="vscene" data-scene="0">
+          <div class="vhead"><span class="vk">6:00 AM &middot; no one pressed start</span><h3>The agent wakes itself and gathers the morning</h3></div>
+          <div class="vs1">
+            <div class="vclock" data-s><span class="vtime">6:00<small>AM</small></span><span class="vsub">weekday &middot; run #142</span></div>
+            <div class="vdown" data-s data-d="500"></div>
+            <div class="vsources">
+              <div class="vsrc" data-s><b>The invoice ledger</b><span>42 open &middot; $213,900 outstanding</span></div>
+              <div class="vsrc" data-s data-d="450"><b>Overnight payments</b><span>3 arrived &middot; $22,150 applied</span></div>
+              <div class="vsrc mem" data-s data-d="450"><b>Everything it has learned</b><span>14 collection rules &middot; memory v7</span></div>
+            </div>
+            <div class="vdown" data-s data-d="600"></div>
+            <div class="vwm" data-s data-d="500"><span class="vk2">Working memory</span><span class="vk3">Rebuilt fresh every morning &mdash; nothing stale carries over</span></div>
           </div>
-          <div class="simlog" id="simLog">
-            <div class="idle">The run hasn't started yet.<br>Press <b>Start the run</b> to watch the agent work a morning.</div>
-          </div>
+          <p class="vfoot" data-s data-d="900"><b>Why it matters:</b> no analyst has to remember to run anything. The agent starts with today’s
+          numbers and every lesson it has ever earned.</p>
         </div>
 
-        <div class="simside">
-          <div class="statrow">
-            <div class="stat"><div class="sv" id="stInv">0</div><div class="sk">Invoices scanned</div></div>
-            <div class="stat"><div class="sv" id="stAmt">$0</div><div class="sk">Past-due tracked</div></div>
-            <div class="stat"><div class="sv" id="stAct">0</div><div class="sk">Actions drafted</div></div>
-            <div class="stat good"><div class="sv" id="stSent">0</div><div class="sk">Sent without approval</div></div>
-          </div>
-
-          <div class="queue">
-            <div class="queue-h"><span>Drafted actions</span><small>waiting for the AR team</small></div>
-            <div class="queue-list" id="simQueue">
-              <div class="idleq">Decisions appear here as the agent makes them.</div>
+        <!-- scene 2 -->
+        <div class="vscene" data-scene="1">
+          <div class="vhead"><span class="vk">6:01 AM &middot; the judgment call</span><h3>It reads every past-due invoice and decides what each one needs</h3></div>
+          <div class="vs2">
+            <div class="vinvs">
+              <div class="vinv" id="vi1" data-s data-d="400"><span class="n"><b>Beacon Health</b><span>INV-2093</span></span><span class="m">$31,900<small>41 days late</small></span><span class="vstamp esc" data-s="skip">Escalate</span></div>
+              <div class="vinv" id="vi2" data-s data-d="350"><span class="n"><b>Northwind Retail</b><span>INV-2107</span></span><span class="m">$6,250<small>12 days late</small></span><span class="vstamp rem" data-s="skip">Remind</span></div>
+              <div class="vinv" id="vi3" data-s data-d="350"><span class="n"><b>Juniper &amp; Co</b><span>INV-2088</span></span><span class="m">$12,750<small>22 days late</small></span><span class="vstamp hold" data-s="skip">Wait</span></div>
+              <div class="vinv" id="vi4" data-s data-d="350"><span class="n"><b>Ravenna Foods</b><span>INV-2120</span></span><span class="m">$4,980<small>15 days late</small></span><span class="vstamp hum" data-s="skip">Ask a human</span></div>
+            </div>
+            <div class="vbrain" data-s data-d="200">
+              <div class="vbrain-k"><span class="d"></span>What the agent is thinking &middot; in plain language</div>
+              <div class="vbrainstack">
+                <div class="vth" data-s data-d="900" data-swap="brain" data-hl="vi1">
+                  <p>“Beacon promised to pay last week &mdash; nothing arrived. And they’ve paid late on 4 of their last 6 invoices. This is past reminders.”</p>
+                  <div class="vchips"><span class="vchip">Checked payment history</span><span class="vchip">Checked the promise log</span></div>
+                  <div class="vverd">&rarr; Escalate to the AR manager, call script drafted<span class="conf">confidence 0.88</span></div>
+                </div>
+                <div class="vth" data-s data-swap="brain" data-hl="vi2" data-d="2900">
+                  <p>“Northwind is only 12 days out and has always paid after one friendly nudge. Keep it warm.”</p>
+                  <div class="vchips"><span class="vchip">Drafted a 92-word reminder</span></div>
+                  <div class="vverd">&rarr; Send reminder with the statement attached<span class="conf">confidence 0.84</span></div>
+                </div>
+                <div class="vth" data-s data-swap="brain" data-hl="vi3" data-d="2900">
+                  <p>“Juniper always pays by day 30 &mdash; a reminder now would only annoy a good customer. Rule #12 says leave them alone.”</p>
+                  <div class="vchips"><span class="vchip mem">Used learned rule #12</span></div>
+                  <div class="vverd">&rarr; Wait, on purpose. Check again at day 30<span class="conf">confidence 0.90</span></div>
+                </div>
+                <div class="vth" data-s data-swap="brain" data-hl="vi4" data-d="2900">
+                  <p>“Ravenna is brand new &mdash; there’s not enough history to judge them. I’m not confident enough to act.”</p>
+                  <div class="vchips"><span class="vchip guard">Guardrail: below the 0.70 bar</span></div>
+                  <div class="vverd">&rarr; Hand this one to a person<span class="conf low">confidence 0.58</span></div>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div class="memdiff" id="memDiff">
-            <div class="mh"><b>The Memory Table</b><span class="ver">v7 &rarr; v8</span></div>
-            <div class="rule kept"><span class="rn">#12 &middot; kept</span>"Juniper &amp; Co reliably pays by day 30 — reminders before then create friction."</div>
-            <div class="rule add"><span class="rn">#15 &middot; new</span>"Customers with fewer than 3 invoices of history: hold outreach until day 21. Analysts rejected early contact 3 times this week."</div>
-          </div>
+          <p class="vfoot" data-s data-d="1800"><b>Why it matters:</b> the right move isn’t always “send another email.” Escalate, remind,
+          deliberately wait, or admit uncertainty &mdash; and every call comes with its reasoning written out.</p>
         </div>
+
+        <!-- scene 3 -->
+        <div class="vscene" data-scene="2">
+          <div class="vhead"><span class="vk">6:02 AM &middot; before anyone sees a thing</span><h3>Every decision is written down first</h3></div>
+          <div class="vtable" data-s>
+            <div class="vt-h"><span>The decision record</span><span class="lock">Append-only &middot; audit trail</span></div>
+            <div class="vt-r" data-s data-d="700"><b>Beacon Health</b><span class="call esc">Escalate</span><span class="cf">0.88</span><span class="why">Broken promise + late on 4 of 6</span></div>
+            <div class="vt-r" data-s data-d="600"><b>Northwind Retail</b><span class="call rem">Remind</span><span class="cf">0.84</span><span class="why">One nudge has always worked</span></div>
+            <div class="vt-r" data-s data-d="600"><b>Juniper &amp; Co</b><span class="call hold">Wait</span><span class="cf">0.90</span><span class="why">Rule #12: pays by day 30</span></div>
+            <div class="vt-r" data-s data-d="600"><b>Ravenna Foods</b><span class="call hum">Ask a human</span><span class="cf low">0.58</span><span class="why">Too new to judge</span></div>
+          </div>
+          <p class="vfoot" data-s data-d="1100"><b>Why it matters:</b> the call, the confidence, and the written reasoning land in a database
+          that can never be edited &mdash; so any decision can be audited months later, including the rejected ones.</p>
+        </div>
+
+        <!-- scene 4 -->
+        <div class="vscene" data-scene="3">
+          <div class="vhead"><span class="vk">8:00 AM &middot; the human gate</span><h3>An analyst reviews the queue in minutes &mdash; nothing sends itself</h3></div>
+          <div class="vq">
+            <div class="vq-r" data-s><span class="l"><b>Beacon Health &middot; escalation + call script</b><span>$31,900 &middot; highest dollar risk, ranked first</span></span><span class="vdec ok" data-s data-d="900">&#10003; Approved</span></div>
+            <div class="vq-r" data-s data-d="500"><span class="l"><b>Northwind Retail &middot; friendly reminder</b><span>$6,250 &middot; statement attached</span></span><span class="vdec edit" data-s data-d="900">&#9998; Approved, softened</span></div>
+            <div class="vq-r" data-s data-d="500"><span class="l"><b>Juniper &amp; Co &middot; wait until day 30</b><span>$12,750 &middot; per learned rule #12</span></span><span class="vdec ok" data-s data-d="900">&#10003; Approved</span></div>
+            <div class="vq-r" data-s data-d="500"><span class="l"><b>Ravenna Foods &middot; flagged for judgment</b><span>$4,980 &middot; the agent asked for help</span></span><span class="vdec rej" data-s data-d="900">&#10007; Hold a week</span></div>
+          </div>
+          <div class="vzero" data-s data-d="1000"><span class="z">0</span><p><b>Emails sent by the agent itself.</b> It drafts, ranks, and explains &mdash; a person approves every send. Every edit becomes feedback.</p></div>
+          <p class="vfoot" data-s data-d="900"><b>Why it matters:</b> the agent does the reading, checking, and drafting; the human keeps the
+          judgment and the send button.</p>
+        </div>
+
+        <!-- scene 5 -->
+        <div class="vscene" data-scene="4">
+          <div class="vhead"><span class="vk">Friday 5:00 PM &middot; the loop closes</span><h3>It compares its calls to what actually happened &mdash; and gets smarter</h3></div>
+          <div class="vs5">
+            <div class="vwk" data-s>
+              <h4>What this week showed</h4>
+              <ul>
+                <li data-s data-d="700"><span><b>Analysts rejected early outreach to new customers 3 times</b> &mdash; the agent was too eager.</span></li>
+                <li data-s data-d="800"><span><b>Every “wait” on Juniper resolved by day 30</b> &mdash; rule #12 keeps being right.</span></li>
+                <li data-s data-d="800"><span><b>Beacon paid 2 days after the manager’s call</b> &mdash; the escalation was the right read.</span></li>
+              </ul>
+            </div>
+            <div class="vpass" data-s data-d="800">
+              <span class="vchip">Refinement pass</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </div>
+            <div class="vmem" data-s data-d="600">
+              <div class="mh"><b>The memory table</b><span class="ver" data-s data-d="1400">v7 &rarr; v8</span></div>
+              <div class="rule kept">#12 &middot; kept &middot; “Juniper &amp; Co reliably pays by day 30 &mdash; don’t remind before then.”</div>
+              <div class="rule add" data-s data-d="1000"><span class="rn">#15 &middot; new</span>“Customers with fewer than 3 invoices of history: hold outreach until day 21.”</div>
+            </div>
+          </div>
+          <p class="vfoot" data-s data-d="1200"><b>Why it matters:</b> the lessons are written as plain-language rules a human can read, veto,
+          or roll back &mdash; and Monday’s run starts one rule smarter. No retraining, ever.</p>
+        </div>
+
       </div>
     </div>
   </section>
@@ -788,162 +897,99 @@
     });
   });
 
-  /* ── daily run simulator ── */
-  var EVENTS = [
-    { t:'06:00:00', k:'sys',  ph:0, x:'Scheduler fired — weekday run <b>#142</b> started. No human involved.' },
-    { t:'06:00:02', k:'tool', ph:1, x:'<b>fetch_aging_report()</b> → 42 open invoices · $213,900 outstanding · 11 past due', st:{inv:42, amt:213900} },
-    { t:'06:00:03', k:'tool', ph:1, x:'<b>fetch_overnight_payments()</b> → 3 remittances landed · $22,150 applied' },
-    { t:'06:00:03', k:'db',   ph:1, x:'<b>memory.load()</b> → 14 learned rules · version <b>v7</b>' },
-    { t:'06:00:04', k:'sys',  ph:1, x:'Working memory assembled: system prompt + today’s ledger + 14 rules. Rebuilt fresh — nothing carried over from yesterday.' },
-    { t:'06:00:06', k:'llm',  ph:2, x:'Reasoning over 11 past-due invoices, highest dollar risk first…' },
-    { t:'06:00:09', k:'llm',  ph:2, x:'<b>INV-2093 · Beacon Health · $31,900 · 41 days past due.</b> A promise-to-pay was logged June 30 — no remittance since.' },
-    { t:'06:00:11', k:'tool', ph:2, x:'<b>get_payment_history("Beacon Health")</b> → paid late on 4 of last 6 invoices · one prior broken promise' },
-    { t:'06:00:14', k:'llm',  ph:2, x:'Judgment: broken promise plus a rising balance → <b>escalate to the AR manager</b> with a call script. Confidence 0.88.',
-      qa:{b:'esc', bl:'Escalate', c:'0.88', t:'Beacon Health <span>INV-2093 · $31,900 · 41d</span>', d:'Broken promise-to-pay + late on 4 of 6. Call script drafted for AR manager.'} },
-    { t:'06:00:17', k:'llm',  ph:2, x:'<b>INV-2041 · Acme Industrial · $18,400 · 34 days.</b> Second reminder sent 10 days ago — opened twice, no reply.' },
-    { t:'06:00:19', k:'llm',  ph:2, x:'Judgment: email is exhausted → <b>draft a phone-call brief</b> for the analyst. Confidence 0.81.',
-      qa:{b:'call', bl:'Call brief', c:'0.81', t:'Acme Industrial <span>INV-2041 · $18,400 · 34d</span>', d:'Two reminders opened, none answered. Time for a voice, not a template.'} },
-    { t:'06:00:22', k:'tool', ph:2, x:'<b>read_email_thread("Cobalt Freight")</b> → customer disputes the freight surcharge on line 3' },
-    { t:'06:00:25', k:'llm',  ph:2, x:'<b>INV-2115 · Cobalt Freight · $2,300 · 8 days.</b> Judgment: this is a dispute, not delinquency → <b>pause dunning, route to sales</b>. Confidence 0.92.',
-      qa:{b:'dis', bl:'Dispute', c:'0.92', t:'Cobalt Freight <span>INV-2115 · $2,300 · 8d</span>', d:'Disputed surcharge on line 3. Dunning paused; routed to the account owner.'} },
-    { t:'06:00:27', k:'db',   ph:2, x:'memory rule <b>#12 (v3)</b>: "Juniper &amp; Co reliably pays by day 30 — reminders before then create friction."' },
-    { t:'06:00:29', k:'llm',  ph:2, x:'<b>INV-2088 · Juniper &amp; Co · $12,750 · 22 days.</b> Judgment: <b>deliberate silence</b> — hold until day 30 per rule #12. Confidence 0.90.',
-      qa:{b:'hold', bl:'Hold', c:'0.90', t:'Juniper &amp; Co <span>INV-2088 · $12,750 · 22d</span>', d:'Learned rule #12: always pays by day 30. A reminder now would only annoy.'} },
-    { t:'06:00:32', k:'tool', ph:2, x:'<b>draft_reminder("Northwind Retail")</b> → 92-word friendly reminder drafted · statement attached' },
-    { t:'06:00:33', k:'llm',  ph:2, x:'<b>INV-2107 · Northwind Retail · $6,250 · 12 days.</b> Judgment: first reminder, warm tone — they’ve always paid after one nudge. Confidence 0.84.',
-      qa:{b:'rem', bl:'Reminder', c:'0.84', t:'Northwind Retail <span>INV-2107 · $6,250 · 12d</span>', d:'First friendly reminder with the statement attached. History says one nudge is enough.'} },
-    { t:'06:00:36', k:'llm',  ph:2, x:'<b>INV-2120 · Ravenna Foods · $4,980 · 15 days.</b> New customer, thin history. Confidence <b>0.58</b> — below the 0.70 bar.' },
-    { t:'06:00:36', k:'guard',ph:2, x:'Guardrail: low confidence → routed to the <b>needs-human-judgment</b> queue instead of a drafted action.',
-      qa:{b:'hum', bl:'Human', c:'0.58', cl:'low', t:'Ravenna Foods <span>INV-2120 · $4,980 · 15d</span>', d:'Too little history to judge. Flagged for an analyst instead of guessing.'} },
-    { t:'06:00:38', k:'db',   ph:3, x:'<b>decision_record.insert(6 rows)</b> → the call, the confidence, the draft, and the rationale for each. Append-only.', st:{act:6} },
-    { t:'06:00:38', k:'guard',ph:3, x:'Guardrail: the agent drafts, it <b>never sends</b>. Emails sent without approval: 0 — today and every day.' },
-    { t:'07:58:00', k:'sys',  ph:4, x:'Morning digest assembled: 6 actions ranked by dollar risk, waiting for the AR team.' },
-    { t:'08:12:00', k:'gate', ph:5, x:'Analyst review: <b>4 approved</b> as-is · <b>1 edited</b> (softened the Acme call script) · <b>1 rejected</b> (Ravenna — too new, wait a week).' },
-    { t:'08:13:00', k:'db',   ph:5, x:'Outcomes written back to the decision record. Those edits are Friday’s training material.' },
-    { t:'FRI 17:00', k:'learn',ph:6, x:'Refinement pass replays the week: 31 calls vs. analyst outcomes and payments received.' },
-    { t:'FRI 17:02', k:'learn',ph:6, x:'Found: analysts rejected early outreach to <b>new customers</b> 3 times. Every Juniper hold resolved by day 30 — rule #12 confirmed.' },
-    { t:'FRI 17:03', k:'db',  ph:6, x:'<b>memory.write(v8)</b> → rule #15 added: "Customers with &lt;3 invoices of history: hold outreach until day 21."', mem:true },
-    { t:'FRI 17:03', k:'sys', ph:6, x:'Run complete. Next run: Monday 6:00 AM — one rule smarter than this week.' }
-  ];
+  /* ── daily run: scene-based visual explainer ── */
+  var stage = document.getElementById('vxStage');
+  var vscenes = [].slice.call(document.querySelectorAll('.vscene'));
+  var vdots = [].slice.call(document.querySelectorAll('#vxSteps .sp'));
+  var playBtn = document.getElementById('vxPlay');
+  var vTimers = [], vCur = 0, vPlaying = false, vPass = 0;
+  var vStatic = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (vStatic && stage) stage.classList.add('vx-static');
 
-  var log = document.getElementById('simLog'),
-      queue = document.getElementById('simQueue'),
-      phases = document.querySelectorAll('#simPhases .sp'),
-      startBtn = document.getElementById('simStart'),
-      stateEl = document.getElementById('simState'),
-      memDiff = document.getElementById('memDiff'),
-      stInv = document.getElementById('stInv'),
-      stAmt = document.getElementById('stAmt'),
-      stAct = document.getElementById('stAct');
-  var speed = 1, timer = null, idx = 0, running = false;
+  function vClear(){ vTimers.forEach(clearTimeout); vTimers = []; }
+  function vLater(fn, ms){ vTimers.push(setTimeout(fn, ms)); }
+  function vBtn(label){ if (playBtn) playBtn.querySelector('span').textContent = label; }
 
-  document.querySelectorAll('.sim-speed button').forEach(function(b){
-    b.addEventListener('click', function(){
-      document.querySelectorAll('.sim-speed button').forEach(function(o){ o.classList.remove('on'); });
-      b.classList.add('on');
-      speed = parseFloat(b.dataset.speed);
+  function vShow(i, auto){
+    vClear();
+    var pass = ++vPass;
+    function guard(fn){ return function(){ if (pass === vPass) fn(); }; }
+    vCur = i;
+    vPlaying = !!auto;
+    vscenes.forEach(function(s, j){ s.classList.toggle('active', j === i); });
+    vdots.forEach(function(d, j){
+      d.classList.toggle('done', j < i);
+      d.classList.toggle('active', j === i);
     });
-  });
-
-  function setPhase(p){
-    phases.forEach(function(el, i){
-      el.classList.toggle('done', i < p);
-      el.classList.toggle('active', i === p);
-    });
-  }
-
-  function countTo(el, target, fmt, ms){
-    var start = performance.now();
-    function tick(now){
-      var k = Math.min((now - start) / ms, 1);
-      var v = Math.round(target * (1 - Math.pow(1 - k, 3)));
-      el.textContent = fmt ? fmt(v) : v;
-      if (k < 1) requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-  }
-  function fmtMoney(v){ return '$' + v.toLocaleString('en-US'); }
-
-  function emit(ev){
-    var line = document.createElement('div');
-    line.className = 'sl ' + ev.k;
-    var kl = {sys:'SYS', tool:'TOOL', llm:'CLAUDE', db:'DB', guard:'GUARD', gate:'HUMAN', learn:'LEARN'}[ev.k];
-    line.innerHTML = '<span class="t">' + ev.t + '</span><span class="k">' + kl + '</span><span class="x">' + ev.x + '</span>';
-    log.appendChild(line);
-    log.scrollTop = log.scrollHeight;
-
-    setPhase(ev.ph);
-    if (ev.st){
-      if (ev.st.inv) countTo(stInv, ev.st.inv, null, 900);
-      if (ev.st.amt) countTo(stAmt, ev.st.amt, fmtMoney, 1100);
-      if (ev.st.act) countTo(stAct, ev.st.act, null, 700);
-    }
-    if (ev.qa){
-      var idleq = queue.querySelector('.idleq');
-      if (idleq) idleq.remove();
-      var card = document.createElement('div');
-      card.className = 'qa';
-      card.innerHTML = '<span class="qb ' + ev.qa.b + '">' + ev.qa.bl + '</span>' +
-        '<span class="qm"><span class="q1">' + ev.qa.t + '</span><span class="q2">' + ev.qa.d + '</span></span>' +
-        '<span class="qc' + (ev.qa.cl ? ' ' + ev.qa.cl : '') + '">' + ev.qa.c + '</span>';
-      queue.appendChild(card);
-      queue.scrollTop = queue.scrollHeight;
-    }
-    if (ev.mem) memDiff.classList.add('show');
-  }
-
-  function step(){
-    if (idx >= EVENTS.length){
-      running = false;
-      stateEl.textContent = 'Complete';
-      stateEl.classList.remove('run');
-      startBtn.querySelector('span').textContent = 'Run it again';
-      startBtn.removeAttribute('disabled');
-      phases.forEach(function(el){ el.classList.add('done'); el.classList.remove('active'); });
+    var scene = vscenes[i];
+    var els = [].slice.call(scene.querySelectorAll('[data-s]')).filter(function(e){ return e.getAttribute('data-s') !== 'skip'; });
+    scene.querySelectorAll('[data-s]').forEach(function(e){ e.classList.remove('on'); });
+    scene.querySelectorAll('.vinv.hl').forEach(function(e){ e.classList.remove('hl'); });
+    if (vStatic){
+      scene.querySelectorAll('[data-s]').forEach(function(e){ e.classList.add('on'); });
       return;
     }
-    emit(EVENTS[idx]);
-    idx++;
-    var delay = (EVENTS[idx - 1].k === 'llm' ? 1350 : 950) / speed;
-    timer = setTimeout(step, delay);
+    var t = 250;
+    els.forEach(function(e){
+      t += parseInt(e.getAttribute('data-d') || '650', 10);
+      vLater(guard(function(){
+        var g = e.getAttribute('data-swap');
+        if (g){
+          scene.querySelectorAll('[data-swap="' + g + '"]').forEach(function(o){ if (o !== e) o.classList.remove('on'); });
+        }
+        e.classList.add('on');
+        var hl = e.getAttribute('data-hl');
+        if (hl){
+          scene.querySelectorAll('.vinv').forEach(function(o){ o.classList.remove('hl'); });
+          var tgt = document.getElementById(hl);
+          if (tgt){ tgt.classList.add('hl'); tgt.classList.add('on'); }
+          /* reveal the previous invoice's stamp when moving on */
+        }
+        if (g === 'brain'){
+          /* stamp the invoice this thought decides, just after the thought lands */
+          var stamp = hl && document.getElementById(hl) ? document.getElementById(hl).querySelector('.vstamp') : null;
+          if (stamp){ vTimers.push(setTimeout(guard(function(){ stamp.classList.add('on'); }), 1500)); }
+        }
+      }), t);
+    });
+    if (vPlaying){
+      vLater(guard(function(){
+        if (vCur < vscenes.length - 1){ vShow(vCur + 1, true); }
+        else { vPlaying = false; vBtn('Replay'); }
+      }), t + 3400);
+    }
   }
 
-  function reset(){
-    clearTimeout(timer);
-    idx = 0;
-    log.innerHTML = '';
-    queue.innerHTML = '<div class="idleq">Decisions appear here as the agent makes them.</div>';
-    memDiff.classList.remove('show');
-    stInv.textContent = '0';
-    stAmt.textContent = '$0';
-    stAct.textContent = '0';
-    phases.forEach(function(el){ el.classList.remove('done','active'); });
+  if (playBtn){
+    playBtn.addEventListener('click', function(){
+      vBtn('Playing\u2026');
+      vShow(0, true);
+    });
   }
-
-  startBtn.addEventListener('click', function(){
-    if (running) return;
-    reset();
-    running = true;
-    stateEl.textContent = 'Running';
-    stateEl.classList.add('run');
-    startBtn.setAttribute('disabled','');
-    startBtn.querySelector('span').textContent = 'Running…';
-    step();
+  vdots.forEach(function(d){
+    d.addEventListener('click', function(){
+      vBtn('Play');
+      vShow(parseInt(d.getAttribute('data-i'), 10), false);
+    });
   });
 
-  /* auto-start once when the simulator scrolls into view */
-  if ('IntersectionObserver' in window){
-    var fired = false;
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){
-        if (e.isIntersecting && !fired && !running){
-          fired = true;
-          io.disconnect();
-          startBtn.click();
-        }
-      });
-    }, { threshold: .35 });
-    io.observe(document.getElementById('run'));
+  /* auto-start once when scrolled into view */
+  if (stage){
+    vShow(0, false);
+    if ('IntersectionObserver' in window && !vStatic){
+      var vFired = false;
+      var vIo = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if (e.isIntersecting && !vFired){
+            vFired = true;
+            vIo.disconnect();
+            vBtn('Playing\u2026');
+            vShow(0, true);
+          }
+        });
+      }, { threshold: .3 });
+      vIo.observe(stage);
+    }
   }
 })();
 
