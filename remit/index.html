@@ -135,8 +135,8 @@
 
   .mapframe{margin-top:22px; background:var(--panel-strong); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow); padding:18px; overflow:hidden}
   .mapviewport{position:relative; width:100%; overflow:hidden}
-  .mapcanvas{position:relative; width:1000px; height:800px; transform-origin:top left}
-  .mapsvg{position:absolute; inset:0; width:1000px; height:800px; overflow:visible; pointer-events:none}
+  .mapcanvas{position:relative; width:1000px; height:540px; transform-origin:top left}
+  .mapsvg{position:absolute; inset:0; width:1000px; height:540px; overflow:visible; pointer-events:none}
   .mapsvg .c-in{fill:none; stroke:var(--blue); stroke-width:2.4}
   .mapsvg .c-out{fill:none; stroke:var(--amber); stroke-width:2.4}
   .mapsvg .c-lrn{fill:none; stroke:var(--green); stroke-width:2.4}
@@ -144,32 +144,32 @@
   .mapsvg .c-tool{fill:none; stroke:#8b909b; stroke-width:1.8; stroke-dasharray:1 6; stroke-linecap:round}
 
   .mnode{position:absolute; appearance:none; border:0; background:transparent; padding:0; text-align:left; cursor:pointer; font-family:inherit}
-  .mnode-card{display:block; background:#fff; border:1px solid var(--line); border-top:3px solid var(--blue); border-radius:14px; box-shadow:var(--shadow); padding:16px 18px 15px; transition:transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease)}
+  .mnode-card{display:block; background:#fff; border:1px solid var(--line); border-top:3px solid var(--blue); border-radius:12px; box-shadow:var(--shadow); padding:12px 14px 11px; transition:transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease)}
   .mnode:hover .mnode-card, .mnode.active .mnode-card{transform:translateY(-3px); box-shadow:var(--shadow-md)}
   .mnode.active .mnode-card{border-color:rgba(46,107,63,.45); border-top-color:inherit}
-  .mnode-k{display:block; font:800 10px/1 var(--font-body); letter-spacing:.13em; text-transform:uppercase; color:var(--blue); margin-bottom:7px}
-  .mnode-t{display:block; font:700 15.5px/1.25 var(--font-body); letter-spacing:-.01em; color:var(--ink); margin-bottom:6px}
-  .mnode-d{display:block; font-size:12px; color:var(--muted); line-height:1.5}
+  .mnode-k{display:block; font:800 9px/1.2 var(--font-body); letter-spacing:.11em; text-transform:uppercase; color:var(--blue); margin-bottom:5px}
+  .mnode-t{display:block; font:700 14px/1.2 var(--font-body); letter-spacing:-.01em; color:var(--ink); margin-bottom:4px}
+  .mnode-d{display:block; font-size:11px; color:var(--muted); line-height:1.45}
   .mnode.f-out .mnode-card{border-top-color:var(--amber)} .mnode.f-out .mnode-k{color:var(--amber)}
   .mnode.f-lrn .mnode-card{border-top-color:var(--green)} .mnode.f-lrn .mnode-k{color:var(--green)}
   .mnode.f-tool .mnode-card{border-top-color:#8b909b; background:var(--panel)} .mnode.f-tool .mnode-k{color:#6d727c}
-  .dbchip{display:inline-block; margin-top:10px; font:800 9.5px/1 var(--font-body); letter-spacing:.08em; text-transform:uppercase; padding:6px 9px; border-radius:4px; background:var(--gold-soft); color:#7a5424}
+  .dbchip{display:inline-block; margin-top:7px; font:800 8.5px/1 var(--font-body); letter-spacing:.07em; text-transform:uppercase; padding:4px 7px; border-radius:4px; background:var(--gold-soft); color:#7a5424}
   .mnode.core .mnode-card{background:#1d4a2b; border-color:#1d4a2b; border-top-color:var(--green-bright)}
   .mnode.core .mnode-k{color:var(--green-bright)}
-  .mnode.core .mnode-t{color:#fff; font-size:16.5px}
+  .mnode.core .mnode-t{color:#fff; font-size:14.5px}
   .mnode.core .mnode-d{color:rgba(245,245,247,.72)}
-  .toollist{display:flex; flex-direction:column; gap:4px; margin-top:8px}
-  .toollist code{font:600 10.5px/1.5 var(--mono); color:#3d4148; background:rgba(18,22,29,.05); border-radius:3px; padding:1px 6px; align-self:flex-start}
+  .toollist{display:flex; flex-wrap:wrap; gap:4px; margin-top:6px}
+  .toollist code{font:600 9.5px/1.6 var(--mono); color:#3d4148; background:rgba(18,22,29,.05); border-radius:3px; padding:1px 6px}
 
-  /* node placement on the 1000×800 canvas */
-  #n-schedule{left:375px; top:14px; width:250px}
-  #n-gather{left:400px; top:146px; width:255px}
-  #n-reason{left:352px; top:300px; width:296px}
-  #n-tools{left:730px; top:236px; width:238px}
-  #n-record{left:28px; top:356px; width:258px}
-  #n-digest{left:378px; top:474px; width:252px}
-  #n-learn{left:326px; top:648px; width:316px}
-  #n-memory{left:728px; top:474px; width:252px}
+  /* node placement on the 1000×540 canvas */
+  #n-schedule{left:12px; top:150px; width:184px}
+  #n-gather{left:240px; top:150px; width:204px}
+  #n-reason{left:486px; top:150px; width:226px}
+  #n-tools{left:562px; top:12px; width:318px}
+  #n-record{left:244px; top:348px; width:210px}
+  #n-digest{left:770px; top:150px; width:218px}
+  #n-learn{left:518px; top:348px; width:230px}
+  #n-memory{left:800px; top:348px; width:188px}
 
   /* mobile stacked fallback */
   .mapstack{display:none; flex-direction:column; gap:0}
@@ -417,30 +417,29 @@
       <div class="mapframe">
         <div class="mapviewport" id="mapViewport">
           <div class="mapcanvas" id="mapCanvas">
-            <svg class="mapsvg" viewBox="0 0 1000 800" aria-hidden="true" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <svg class="mapsvg" viewBox="0 0 1000 540" aria-hidden="true" xmlns:xlink="http://www.w3.org/1999/xlink">
               <defs>
                 <marker id="mIn" markerWidth="7" markerHeight="7" refX="4.4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#315c75"/></marker>
                 <marker id="mOut" markerWidth="7" markerHeight="7" refX="4.4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b06a28"/></marker>
                 <marker id="mLrn" markerWidth="7" markerHeight="7" refX="4.4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2e6b3f"/></marker>
                 <marker id="mTool" markerWidth="7" markerHeight="7" refX="4.4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b909b"/></marker>
-                <path id="lessonPath" d="M858 470 C 930 380, 968 220, 892 148 C 842 102, 742 128, 660 182" fill="none"/>
-                <path id="dataPath" d="M500 122 C 506 132, 516 138, 522 146 M0 0" fill="none"/>
+                <path id="lessonPath" d="M894 462 C 904 500, 850 508, 700 508 C 520 508, 320 508, 212 496 C 152 488, 152 382, 222 302 C 256 264, 288 254, 320 248" fill="none"/>
               </defs>
               <!-- data in -->
-              <path class="c-in" d="M500 122 C 506 132, 518 136, 524 144" marker-end="url(#mIn)"/>
-              <path class="c-in" d="M526 262 C 520 274, 512 284, 506 296" marker-end="url(#mIn)"/>
+              <path class="c-in" d="M200 196 L234 196" marker-end="url(#mIn)"/>
+              <path class="c-in" d="M448 196 L480 196" marker-end="url(#mIn)"/>
               <!-- tool loop -->
-              <path class="c-tool" d="M650 330 C 682 320, 700 316, 726 310" marker-end="url(#mTool)"/>
-              <path class="c-tool" d="M728 348 C 702 356, 684 360, 652 366" marker-end="url(#mTool)"/>
+              <path class="c-tool" d="M612 146 C 609 138, 606 130, 603 122" marker-end="url(#mTool)"/>
+              <path class="c-tool" d="M661 122 C 658 130, 655 138, 652 146" marker-end="url(#mTool)"/>
               <!-- decisions out -->
-              <path class="c-out" d="M350 382 C 322 396, 306 406, 290 420" marker-end="url(#mOut)"/>
-              <path class="c-out" d="M500 424 C 502 440, 503 454, 504 470" marker-end="url(#mOut)"/>
-              <path class="c-out" d="M158 528 C 172 596, 240 664, 322 692" marker-end="url(#mOut)"/>
+              <path class="c-out" d="M716 196 L764 196" marker-end="url(#mOut)"/>
+              <path class="c-out" d="M560 246 C 520 292, 462 322, 414 344" marker-end="url(#mOut)"/>
+              <path class="c-out" d="M458 408 L512 408" marker-end="url(#mOut)"/>
               <!-- learning -->
-              <path class="c-lrn" d="M505 596 C 500 614, 494 630, 488 644" marker-end="url(#mLrn)"/>
-              <path class="c-lrn" d="M646 700 C 724 692, 800 662, 846 622" marker-end="url(#mLrn)"/>
+              <path class="c-lrn" d="M878 246 C 852 294, 766 324, 700 344" marker-end="url(#mLrn)"/>
+              <path class="c-lrn" d="M752 408 L794 408" marker-end="url(#mLrn)"/>
               <!-- lessons feed the next run -->
-              <path class="c-dash" d="M858 470 C 930 380, 968 220, 892 148 C 842 102, 742 128, 660 182" marker-end="url(#mLrn)"/>
+              <path class="c-dash" d="M894 462 C 904 500, 850 508, 700 508 C 520 508, 320 508, 212 496 C 152 488, 152 382, 222 302 C 256 264, 288 254, 320 248" marker-end="url(#mLrn)"/>
               <circle r="5" fill="#2e6b3f" opacity=".85">
                 <animateMotion dur="6s" repeatCount="indefinite"><mpath xlink:href="#lessonPath" href="#lessonPath"/></animateMotion>
               </circle>
@@ -450,7 +449,7 @@
               <span class="mnode-card">
                 <span class="mnode-k">Runs itself</span>
                 <span class="mnode-t">Daily Schedule</span>
-                <span class="mnode-d">Starts on its own every weekday at 6:00 AM Eastern. No analyst prompt, no manual start.</span>
+                <span class="mnode-d">Weekdays, 6:00 AM. No prompt, no manual start.</span>
               </span>
             </button>
 
@@ -458,7 +457,7 @@
               <span class="mnode-card">
                 <span class="mnode-k">Step 1 &middot; Gather</span>
                 <span class="mnode-t">Context Loader</span>
-                <span class="mnode-d">Collects the overnight aging report, payments that landed, promises coming due, and every rule the agent has learned so far.</span>
+                <span class="mnode-d">Aging report, overnight payments, and every learned rule.</span>
               </span>
             </button>
 
@@ -466,14 +465,13 @@
               <span class="mnode-card">
                 <span class="mnode-k">Step 2 &middot; Reason &middot; Claude</span>
                 <span class="mnode-t">The Reasoning Engine</span>
-                <span class="mnode-d">Reads each past-due invoice, judges what it needs — remind, escalate, flag, or wait — and writes its reasoning in plain language.</span>
+                <span class="mnode-d">Judges every past-due invoice and writes its rationale.</span>
               </span>
             </button>
 
             <button class="mnode f-tool" id="n-tools" data-id="tools">
               <span class="mnode-card">
                 <span class="mnode-k">Tool belt &middot; called mid-thought</span>
-                <span class="mnode-t">Agentic Tools</span>
                 <span class="toollist">
                   <code>fetch_aging_report()</code>
                   <code>get_payment_history()</code>
@@ -489,8 +487,8 @@
               <span class="mnode-card">
                 <span class="mnode-k">Step 3 &middot; Record</span>
                 <span class="mnode-t">The Decision Record</span>
-                <span class="mnode-d">Every recommendation lands in a database before anyone sees it: the call, the confidence, the draft, and the written rationale.</span>
-                <span class="dbchip">Database &middot; permanent audit trail</span>
+                <span class="mnode-d">Every call logged before anyone sees it.</span>
+                <span class="dbchip">Database &middot; audit trail</span>
               </span>
             </button>
 
@@ -498,7 +496,7 @@
               <span class="mnode-card">
                 <span class="mnode-k">Step 4 &middot; Deliver</span>
                 <span class="mnode-t">The Morning Digest</span>
-                <span class="mnode-d">A ranked queue waiting for the AR team at 8:00 AM. They approve, edit, or reject each drafted action in minutes.</span>
+                <span class="mnode-d">Ranked queue; analysts approve, edit, or reject.</span>
               </span>
             </button>
 
@@ -506,7 +504,7 @@
               <span class="mnode-card">
                 <span class="mnode-k">Step 5 &middot; Learn &middot; weekly</span>
                 <span class="mnode-t">The Refinement Pass</span>
-                <span class="mnode-d">Once a week, a second agent compares the calls against analyst edits and payments received, distills what worked, and writes improved rules to memory.</span>
+                <span class="mnode-d">Compares calls to outcomes; writes improved rules.</span>
               </span>
             </button>
 
@@ -514,7 +512,7 @@
               <span class="mnode-card">
                 <span class="mnode-k">What it has learned</span>
                 <span class="mnode-t">The Memory Table</span>
-                <span class="mnode-d">A separate table of plain-language collection rules the agent has earned through use. Versioned, reviewable, reversible.</span>
+                <span class="mnode-d">Plain-language rules. Versioned, reversible.</span>
                 <span class="dbchip">Database &middot; versioned rules</span>
               </span>
             </button>
@@ -742,9 +740,9 @@
     if (!vp || !canvas) return;
     var w = vp.clientWidth;
     if (w <= 0) return;
-    var s = Math.min(w / 1000, 1);
+    var s = Math.min(w / 1000, 1.12);
     canvas.style.transform = 'scale(' + s + ')';
-    vp.style.height = (800 * s) + 'px';
+    vp.style.height = (540 * s) + 'px';
   }
   addEventListener('resize', fitMap);
   fitMap();
