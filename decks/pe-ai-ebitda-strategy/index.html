@@ -203,9 +203,9 @@ body.print .nav, body.print .hint{ display:none; }
 #s5.dark .subtitle2{ color:#B8CBBE; font-size:15px; }
 /* sections/01-the-gap/6-two-column.html */
 #s6 .cols2{ display:flex; gap:56px; height:412px; margin-top:20px; }
-#s6 .cols2 > div{ display:flex; flex-direction:column; }
+#s6 .cols2 > div{ display:flex; flex-direction:column; flex:1 1 0; min-width:0; }
 #s6 .cols2 ul.dash li{ font-size:15.5px; line-height:1.6; padding:0 0 20px 18px; }
-#s6 .impact-band{ margin-top:auto; padding:16px 20px; border-radius:4px; font-size:14.5px; line-height:1.5; color:var(--ink); }
+#s6 .impact-band{ margin-top:auto; padding:16px 20px; border-radius:4px; font-size:14.5px; line-height:1.5; color:var(--ink); min-height:76px; display:flex; align-items:center; }
 #s6 .impact-band b{ font-weight:700; }
 #s6 .impact-band.eff{ background:var(--cat-1s); }
 #s6 .impact-band.opp{ background:var(--cat-2s); }
@@ -240,108 +240,98 @@ body.print .nav, body.print .hint{ display:none; }
 #s9 .arrow{ display:flex; align-items:center; justify-content:center; color:var(--callout); font-size:34px; }
 #s9 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:64px; }
 #s9 .kicker b{ color:#4CC98A; }
-/* sections/02-the-proof/10-stat-callout.html */
-#s10 .stat-row{ display:flex; align-items:center; gap:48px; }
-#s10 .stat-stack{ display:flex; flex-direction:column; gap:26px; max-width:660px; }
-#s10 .ladder{ display:flex; align-items:center; gap:14px; padding-top:18px; border-top:1px solid var(--hair); }
-#s10 .rung{ display:flex; flex-direction:column; gap:6px; }
-#s10 .rung .rn{ font-family:var(--serif); font-weight:700; font-size:32px; color:var(--muted); line-height:1; }
-#s10 .rung.top .rn{ color:var(--callout); }
-#s10 .rung .rl{ font-size:11px; color:var(--muted); max-width:132px; line-height:1.3; }
-#s10 .rung.top .rl{ color:var(--ink); font-weight:600; }
-#s10 .rarrow{ color:var(--muted); font-size:16px; }
 /* sections/02-the-proof/11-ranked-bar.html */
-#s11 .rb{ margin-top:6px; }
-#s11 .rb-row{ display:grid; grid-template-columns:200px 1fr 60px; align-items:center; gap:12px; margin-bottom:16px; }
-#s11 .rb-lbl{ font-size:12.5px; color:var(--ink); text-align:right; font-weight:500; line-height:1.25; }
-#s11 .rb-track{ height:26px; background:var(--paper-2); border-radius:3px; overflow:hidden; }
-#s11 .rb-fill{ height:100%; background:var(--cyan); border-radius:3px; }
-#s11 .rb-row.top .rb-fill{ background:var(--callout); }
-#s11 .rb-row.top .rb-lbl{ font-weight:700; color:var(--callout); }
-#s11 .rb-val{ font-family:var(--serif); font-weight:700; font-size:18px; color:var(--ink); }
-#s11 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:22px; }
-#s11 .kicker b{ color:#4CC98A; }
+#s10 .rb{ margin-top:6px; }
+#s10 .rb-row{ display:grid; grid-template-columns:200px 1fr 60px; align-items:center; gap:12px; margin-bottom:16px; }
+#s10 .rb-lbl{ font-size:12.5px; color:var(--ink); text-align:right; font-weight:500; line-height:1.25; }
+#s10 .rb-track{ height:26px; background:var(--paper-2); border-radius:3px; overflow:hidden; }
+#s10 .rb-fill{ height:100%; background:var(--cyan); border-radius:3px; }
+#s10 .rb-row.top .rb-fill{ background:var(--callout); }
+#s10 .rb-row.top .rb-lbl{ font-weight:700; color:var(--callout); }
+#s10 .rb-val{ font-family:var(--serif); font-weight:700; font-size:18px; color:var(--ink); }
+#s10 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:22px; }
+#s10 .kicker b{ color:#4CC98A; }
 /* sections/02-the-proof/12-icon-stat-grid.html */
-#s12 .is-groups{ display:grid; grid-template-columns:repeat(5,1fr) 1.15fr; margin-top:16px; }
-#s12 .is-h{ font-size:14px; font-weight:600; padding-bottom:7px; }
-#s12.dark .is-h{ color:#fff; border-bottom:1px solid #2E5646; }
-#s12 .is-h.rail{ }
-#s12 .is-row{ display:grid; grid-template-columns:repeat(5,1fr) 1.15fr; }
-#s12 .is-unit{ padding:22px 16px 0 0; }
-#s12 .is-unit .ic{ width:30px; height:30px; }
-#s12.dark .is-unit .ic{ color:#EAF1EA; }
-#s12 .is-unit .stat{ font-family:var(--serif); font-weight:700; font-size:40px; line-height:1; margin:18px 0 9px; }
-#s12.dark .is-unit .stat{ color:#fff; }
-#s12 .is-unit .desc{ font-size:12px; line-height:1.42; }
-#s12.dark .is-unit .desc{ color:#B8CBBE; }
-#s12.dark .is-unit .desc b{ color:#fff; }
-#s12 .is-rail{ padding:22px 0 0 20px; }
-#s12.dark .is-rail{ border-left:1px solid #2E5646; }
-#s12.dark .is-rail li{ color:#B8CBBE; }
-#s12.dark .is-rail li::before{ color:var(--cyan); }
-#s12.dark .action-title{ color:#fff; }
-#s12.dark .subtitle2{ color:#B8CBBE; font-size:15px; }
-#s12 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:80px; }
-#s12 .kicker b{ color:#4CC98A; }
-#s12.dark .kicker{ background:#0C3327; }
+#s11 .is-groups{ display:grid; grid-template-columns:repeat(5,1fr) 1.15fr; margin-top:16px; }
+#s11 .is-h{ font-size:14px; font-weight:600; padding-bottom:7px; }
+#s11.dark .is-h{ color:#fff; border-bottom:1px solid #2E5646; }
+#s11 .is-h.rail{ }
+#s11 .is-row{ display:grid; grid-template-columns:repeat(5,1fr) 1.15fr; }
+#s11 .is-unit{ padding:22px 16px 0 0; }
+#s11 .is-unit .ic{ width:30px; height:30px; }
+#s11.dark .is-unit .ic{ color:#EAF1EA; }
+#s11 .is-unit .stat{ font-family:var(--serif); font-weight:700; font-size:40px; line-height:1; margin:18px 0 9px; }
+#s11.dark .is-unit .stat{ color:#fff; }
+#s11 .is-unit .desc{ font-size:12px; line-height:1.42; }
+#s11.dark .is-unit .desc{ color:#B8CBBE; }
+#s11.dark .is-unit .desc b{ color:#fff; }
+#s11 .is-rail{ padding:22px 0 0 20px; }
+#s11.dark .is-rail{ border-left:1px solid #2E5646; }
+#s11.dark .is-rail li{ color:#B8CBBE; }
+#s11.dark .is-rail li::before{ color:var(--cyan); }
+#s11.dark .action-title{ color:#fff; }
+#s11.dark .subtitle2{ color:#B8CBBE; font-size:15px; }
+#s11 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:80px; }
+#s11 .kicker b{ color:#4CC98A; }
+#s11.dark .kicker{ background:#0C3327; }
 /* sections/03-the-wedge/14-competitor-matrix.html */
-#s14 .cm{ width:100%; border-collapse:collapse; margin-top:22px; }
-#s14 .cm th{ font-size:13px; font-weight:600; text-align:center; padding:8px 10px; border-bottom:1px solid var(--ink); vertical-align:bottom; }
-#s14 .cm th.co{ text-align:left; width:30%; }
-#s14 .cm td{ padding:14px 10px; border-bottom:1px solid var(--hair); text-align:center; }
-#s14 .cm td.co{ text-align:left; font-size:14px; font-weight:600; color:var(--ink); }
-#s14 .cm tr.us td{ background:var(--paper-2); }
-#s14 .cm tr.us td.co{ color:var(--callout); }
-#s14 .cm th.us{ color:var(--callout); }
-#s14 .lg{ display:flex; align-items:center; gap:10px; font-size:12px; color:var(--muted); margin-top:16px; }
-#s14 .lg svg{ vertical-align:middle; }
+#s13 .cm{ width:100%; border-collapse:collapse; margin-top:22px; }
+#s13 .cm th{ font-size:13px; font-weight:600; text-align:center; padding:8px 10px; border-bottom:1px solid var(--ink); vertical-align:bottom; }
+#s13 .cm th.co{ text-align:left; width:30%; }
+#s13 .cm td{ padding:14px 10px; border-bottom:1px solid var(--hair); text-align:center; }
+#s13 .cm td.co{ text-align:left; font-size:14px; font-weight:600; color:var(--ink); }
+#s13 .cm tr.us td{ background:var(--paper-2); }
+#s13 .cm tr.us td.co{ color:var(--callout); }
+#s13 .cm th.us{ color:var(--callout); }
+#s13 .lg{ display:flex; align-items:center; gap:10px; font-size:12px; color:var(--muted); margin-top:16px; }
+#s13 .lg svg{ vertical-align:middle; }
+#s13 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:26px; }
+#s13 .kicker b{ color:#4CC98A; }
+/* sections/03-the-wedge/15-data-table.html */
+#s14 .eng{ display:inline-block; padding:5px 12px; border-radius:4px; font-size:13px; font-weight:600; margin:2px 5px 2px 0; }
+#s14 .eng.e1{ background:var(--cat-1s); color:var(--cat-1); }
+#s14 .eng.e2{ background:var(--cat-2s); color:var(--cat-2); }
+#s14 .tbl{ font-size:14.5px; }
+#s14 .tbl th{ padding:10px 14px; }
+#s14 .tbl td{ padding:14px 14px; line-height:1.45; }
 #s14 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:26px; }
 #s14 .kicker b{ color:#4CC98A; }
-/* sections/03-the-wedge/15-data-table.html */
-#s15 .eng{ display:inline-block; padding:5px 12px; border-radius:4px; font-size:13px; font-weight:600; margin:2px 5px 2px 0; }
-#s15 .eng.e1{ background:var(--cat-1s); color:var(--cat-1); }
-#s15 .eng.e2{ background:var(--cat-2s); color:var(--cat-2); }
-#s15 .tbl{ font-size:14.5px; }
-#s15 .tbl th{ padding:10px 14px; }
-#s15 .tbl td{ padding:14px 14px; line-height:1.45; }
-#s15 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:26px; }
-#s15 .kicker b{ color:#4CC98A; }
 /* sections/03-the-wedge/16-manifesto.html */
-#s16 .manifesto{ display:flex; flex-direction:column; justify-content:center; height:100%; max-width:1000px; }
-#s16 .kicker{ font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--cyan); font-weight:700; margin-bottom:22px; }
-#s16 .big-statement{ font-family:var(--serif); font-weight:700; font-size:54px; line-height:1.12; letter-spacing:-.01em; margin:0; color:#fff; }
-#s16 .big-statement .g{ color:var(--cat-1); }
-#s16 .big-statement .a{ color:var(--cat-4); }
-#s16 .standfirst{ font-size:17px; line-height:1.55; color:#C6D6C9; max-width:720px; margin:28px 0 0; }
-#s16 .byline{ margin-top:34px; font-size:13px; color:#8FA89A; }
-#s16 .byline b{ color:#EAF1EA; font-weight:600; }
+#s15 .manifesto{ display:flex; flex-direction:column; justify-content:center; height:100%; max-width:1000px; }
+#s15 .kicker{ font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--cyan); font-weight:700; margin-bottom:22px; }
+#s15 .big-statement{ font-family:var(--serif); font-weight:700; font-size:54px; line-height:1.12; letter-spacing:-.01em; margin:0; color:#fff; }
+#s15 .big-statement .g{ color:var(--cat-1); }
+#s15 .big-statement .a{ color:var(--cat-4); }
+#s15 .standfirst{ font-size:17px; line-height:1.55; color:#C6D6C9; max-width:720px; margin:28px 0 0; }
+#s15 .byline{ margin-top:34px; font-size:13px; color:#8FA89A; }
+#s15 .byline b{ color:#EAF1EA; font-weight:600; }
 /* sections/04-the-offer/18-segment-cards.html */
-#s18 .ladder{ margin-top:20px; }
-#s18 .lrow{ display:grid; grid-template-columns:52px 1fr 150px; align-items:center; gap:20px;
+#s17 .ladder{ margin-top:20px; }
+#s17 .lrow{ display:grid; grid-template-columns:52px 1fr 150px; align-items:center; gap:20px;
     padding:14px 18px; border-bottom:1px solid var(--hair); }
-#s18 .lrow:first-child{ border-top:1px solid var(--hair); }
-#s18 .lrow.hl{ background:var(--cat-1s); border-radius:6px; border-bottom-color:transparent; }
-#s18 .lrow.hl + .lrow{ border-top:1px solid var(--hair); }
-#s18 .lrow .ln{ font-family:var(--serif); font-weight:700; font-size:34px; color:var(--callout); line-height:1; }
-#s18 .lrow .lb h3{ margin:0 0 3px; font-size:16px; font-weight:700; color:var(--ink); }
-#s18 .lrow .lb p{ margin:0; font-size:13.5px; line-height:1.45; color:#3c4a42; }
-#s18 .lrow .lb b{ color:var(--ink); }
-#s18 .lrow .lrole{ text-align:right; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
-#s18 .lrow.hl .lrole{ color:var(--cyan-strong); }
+#s17 .lrow:first-child{ border-top:1px solid var(--hair); }
+#s17 .lrow.hl{ background:var(--cat-1s); border-radius:6px; border-bottom-color:transparent; }
+#s17 .lrow.hl + .lrow{ border-top:1px solid var(--hair); }
+#s17 .lrow .ln{ font-family:var(--serif); font-weight:700; font-size:34px; color:var(--callout); line-height:1; }
+#s17 .lrow .lb h3{ margin:0 0 3px; font-size:16px; font-weight:700; color:var(--ink); }
+#s17 .lrow .lb p{ margin:0; font-size:13.5px; line-height:1.45; color:#3c4a42; }
+#s17 .lrow .lb b{ color:var(--ink); }
+#s17 .lrow .lrole{ text-align:right; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+#s17 .lrow.hl .lrole{ color:var(--cyan-strong); }
 /* sections/04-the-offer/19-key-takeaways.html */
-#s19 .kt{ margin-top:14px; }
-#s19 .kt-row{ display:grid; grid-template-columns:60px 1fr; gap:20px; padding:16px 0; border-top:1px solid var(--hair); align-items:start; }
-#s19 .kt-row:first-child{ border-top:none; }
-#s19 .kt-n{ font-family:var(--serif); font-weight:700; font-size:40px; color:var(--callout); line-height:.9; }
-#s19 .kt-b h4{ margin:0 0 4px; font-size:17.5px; color:var(--ink); }
-#s19 .kt-b p{ margin:0; font-size:14.5px; line-height:1.46; color:#3c4a42; }
-#s19 .kt-b b{ color:var(--ink); }
-#s19 .cta-bar{ margin-top:auto; padding:20px 28px; background:var(--navy); border-left:8px solid var(--cyan);
+#s18 .kt{ margin-top:14px; }
+#s18 .kt-row{ display:grid; grid-template-columns:60px 1fr; gap:20px; padding:16px 0; border-top:1px solid var(--hair); align-items:start; }
+#s18 .kt-row:first-child{ border-top:none; }
+#s18 .kt-n{ font-family:var(--serif); font-weight:700; font-size:40px; color:var(--callout); line-height:.9; }
+#s18 .kt-b h4{ margin:0 0 4px; font-size:17.5px; color:var(--ink); }
+#s18 .kt-b p{ margin:0; font-size:14.5px; line-height:1.46; color:#3c4a42; }
+#s18 .kt-b b{ color:var(--ink); }
+#s18 .cta-bar{ margin-top:auto; padding:20px 28px; background:var(--navy); border-left:8px solid var(--cyan);
     border-radius:6px; display:flex; align-items:center; gap:28px;
     box-shadow:0 8px 26px rgba(16,61,46,.25); }
-#s19 .cta-bar .cta-label{ font-size:18px; color:#CFE0D4; font-weight:600; line-height:1.3; flex:none; }
-#s19 .cta-bar .cta-ask{ font-family:var(--serif); font-weight:700; font-size:21px; color:#fff; line-height:1.2; text-align:left; }
-#s19 .cta-bar .cta-ask b{ color:#4CC98A; font-weight:700; }
+#s18 .cta-bar .cta-label{ font-size:18px; color:#CFE0D4; font-weight:600; line-height:1.3; flex:none; }
+#s18 .cta-bar .cta-ask{ font-family:var(--serif); font-weight:700; font-size:21px; color:#fff; line-height:1.2; text-align:left; }
+#s18 .cta-bar .cta-ask b{ color:#4CC98A; font-weight:700; }
 </style></head>
 <body>
 <div class="hint">&larr; / &rarr; or Space &middot; F fullscreen</div>
@@ -350,8 +340,8 @@ body.print .nav, body.print .hint{ display:none; }
 <section id="s1" class="slide dark cover">
   <div class="logo">CS <span class="co">Ventures</span></div>
   <div class="spacer"></div>
-  <h1 style="font-family:var(--serif);font-weight:700;font-size:52px;line-height:1.05;margin:0 0 18px;max-width:60%">
-    Turn AI into<br>EBITDA.
+  <h1 style="font-family:var(--serif);font-weight:700;font-size:46px;line-height:1.12;margin:0 0 18px;max-width:60%">
+    AI Drives EBITDA,<br>but Requires a Strong Strategy
   </h1>
   <div class="subline" style="font-size:15px;color:#9fb2bf">AI strategy for PE-backed SMB and midmarket portfolio companies</div>
   <div class="subline" style="font-size:15px;color:#9fb2bf">Efficiency and opportunity gains. Built and adopted together.</div>
@@ -505,7 +495,7 @@ body.print .nav, body.print .hint{ display:none; }
         <li>Procurement, vendor management, and low-value contractor spend reduced.</li>
         <li>Process automation cuts cycle time and error rate across core operations.</li>
       </ul>
-      <div class="impact-band eff"><b>Impact:</b> margin expansion, cost reduction, stronger cash conversion.</div>
+      <div class="impact-band eff"><span><b>Impact:</b> margin expansion, cost reduction, stronger cash conversion.</span></div>
     </div>
     <div>
       <div class="col-h">
@@ -517,7 +507,7 @@ body.print .nav, body.print .hint{ display:none; }
         <li>Calls, tickets, contracts, and CRM notes mined for churn, pricing, and expansion signal.</li>
         <li>Lean teams ship product, board analysis, and scenario planning without added headcount.</li>
       </ul>
-      <div class="impact-band opp"><b>Impact:</b> revenue growth, pricing power, retention, and a stronger exit narrative.</div>
+      <div class="impact-band opp"><span><b>Impact:</b> revenue growth, pricing power, retention, and a stronger exit narrative.</span></div>
     </div>
   </div>
   <div class="source">Source: AI-to-EBITDA Strategy framework, Section 2 (Two Engines of AI Value).</div>
@@ -532,7 +522,7 @@ body.print .nav, body.print .hint{ display:none; }
   <h1 style="font-family:var(--serif);font-weight:700;font-size:64px;line-height:1.02;margin:0;position:relative;z-index:1">The Proof</h1>
   <div style="width:56px;height:4px;background:var(--cyan);margin:24px 0"></div>
   <p style="font-size:20px;color:#c6d3dc;max-width:620px;margin:0;position:relative;z-index:1">
-    Both engines produce real, measurable gains, but most firms stall on execution capacity, and opportunity gains carry the larger valuation upside.
+    The gains are real. The winners are the firms that can execute.
   </p>
   <div class="page" style="right:72px">#</div>
   <!-- section motif: outlined serif marker + flowline strands, echoing the cover -->
@@ -554,9 +544,10 @@ body.print .nav, body.print .hint{ display:none; }
     <div class="si-hero">
       <div class="eyebrow" style="margin-bottom:14px">Proof point</div>
       <div class="stat">1 wk &rarr; 2 hrs</div>
-      <div class="cap">to produce a board-ready deck -- one of the most recurring, highest-effort deliverables in PE -- using a single knowledge-work agent.</div>
+      <div class="cap">to produce a board-ready deck, using a single knowledge-work agent. The same pattern -- an agent doing recurring knowledge work end to end -- extends to every workflow listed here.</div>
     </div>
     <div>
+      <div class="eyebrow" style="margin-bottom:10px">Where the same agent pattern applies next</div>
       <div class="si-row"><div class="si-seg"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v16M4 12h16" /><circle cx="12" cy="12" r="9"/></svg><div class="lbl">Customer support automation</div></div><div class="si-desc">Ticket triage and <b>agent-assist</b> that resolves routine issues without adding headcount.</div></div>
       <div class="si-row"><div class="si-seg"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8h16l-1 12H5z"/><path d="M8 8a4 4 0 018 0"/></svg><div class="lbl">Finance automation (AP/AR/close)</div></div><div class="si-desc"><b>Invoice coding, collections prioritization, and close support</b> that compress the monthly cycle.</div></div>
       <div class="si-row"><div class="si-seg"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13l2-5h14l2 5v5H3z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg><div class="lbl">Sales productivity</div></div><div class="si-desc"><b>Follow-up and proposal generation</b> that keep reps in active accounts, not drafting documents.</div></div>
@@ -602,38 +593,17 @@ body.print .nav, body.print .hint{ display:none; }
   <div class="page">9</div><div class="section-tab">Opportunity, live</div>
 </section>
 
-<!-- S10: sections/02-the-proof/10-stat-callout.html -->
+<!-- S10: sections/02-the-proof/11-ranked-bar.html -->
 <section id="s10" class="slide">
-  <h2 class="action-title">AI-Enabled Business-Building Commands a 31x Median Revenue Multiple, Far Above a Pure Operating-Model Play</h2>
-  <div class="rule"></div>
-  <div class="spacer"></div>
-  <div class="stat-row">
-    <div class="stat">31x</div>
-    <div class="stat-stack">
-      <div class="stat-cap">median revenue multiple for Level 4 business-building portcos -- more than double the 14x median for Level 2 companies doing pure operating-model enhancement.</div>
-      <div class="ladder">
-        <div class="rung"><div class="rn">14x</div><div class="rl">Level 2 &middot; Operating enhancement</div></div>
-        <div class="rarrow">&rarr;</div>
-        <div class="rung"><div class="rn">20x</div><div class="rl">Level 3 &middot; Product transformation</div></div>
-        <div class="rarrow">&rarr;</div>
-        <div class="rung top"><div class="rn">31x</div><div class="rl">Level 4 &middot; Business building</div></div>
-      </div>
-    </div>
-  </div>
-  <div class="spacer"></div>
-  <div class="source">Source: McKinsey, "Beyond productivity: How AI creates value in private equity" -- analysis of 471 PE-backed companies, $1M&ndash;$250M revenue, 30 countries.</div>
-  <div class="page">10</div>
-  <div class="section-tab">The valuation gap</div>
-</section>
-
-<!-- S11: sections/02-the-proof/11-ranked-bar.html -->
-<section id="s11" class="slide">
   <h2 class="action-title">Median Revenue Multiples Climb From 14x to 31x as Portfolio Companies Move From Operating Enhancement to Business Building</h2>
   <div class="rule"></div>
-  <div class="subtitle">Median revenue multiple by AI value-creation level, <span class="unit">x revenue</span></div>
+  <div class="subtitle">Median revenue multiple by AI maturity level (McKinsey defines four), <span class="unit">x revenue</span></div>
   <div class="exhibit">
     <div class="chart-area">
       <div class="rb">
+        <div class="rb-row"><div class="rb-lbl">Level 1 &middot; Opportunistic adoption</div>
+          <div class="rb-track" style="background:none;border:1px dashed var(--hair);border-radius:3px"></div>
+          <div class="rb-val" style="font-size:12px;color:var(--muted);font-family:var(--sans);font-weight:500">not reported&sup1;</div></div>
         <div class="rb-row"><div class="rb-lbl">Level 2 &middot; Operating enhancement</div>
           <div class="rb-track"><div class="rb-fill" style="width:45.2%"></div></div>
           <div class="rb-val">14x</div></div>
@@ -645,15 +615,20 @@ body.print .nav, body.print .hint{ display:none; }
           <div class="rb-val">31x</div></div>
       </div>
     </div>
-    <div class="insights"><h5>Key insight</h5><ul><li><b>Business building (Level 4) commands more than double</b> the multiple of pure operating-model enhancement.</li><li>Each step up the maturity ladder -- deploy, reshape, invent -- compounds valuation, not just operating metrics.</li></ul></div>
+    <div class="insights"><h5>The four levels</h5><ul>
+      <li><b>1 &middot; Opportunistic adoption:</b> individuals use AI tools; useful but hard to measure.</li>
+      <li><b>2 &middot; Operating enhancement:</b> AI is embedded in core workflows; productivity improves.</li>
+      <li><b>3 &middot; Product transformation:</b> AI changes what the customer buys.</li>
+      <li><b>4 &middot; Business building:</b> AI creates new revenue streams and businesses.</li>
+    </ul></div>
   </div>
   <div class="kicker"><b>Multiples reward what AI makes the company become:</b> moving from operating enhancement to business building more than doubles the median revenue multiple.</div>
-  <div class="source">Source: McKinsey, "Beyond productivity: How AI creates value in private equity" -- analysis of 471 PE-backed companies, $1M&ndash;$250M revenue, 30 countries. Level 3's revenue multiple is 43% above Level 2's; Level 4's revenue per employee is 52% above Level 3's.</div>
-  <div class="page">11</div><div class="section-tab">Multiple by level</div>
+  <div class="source">Source: McKinsey, "Beyond productivity: How AI creates value in private equity" -- analysis of 471 PE-backed companies, $1M&ndash;$250M revenue, 30 countries. McKinsey's model has exactly four levels. &sup1;No median multiple reported for Level 1; Level 2 shows ~20% higher revenue per employee than Level 1. Level 3's multiple is 43% above Level 2's; Level 4's revenue per employee is 52% above Level 3's.</div>
+  <div class="page">10</div><div class="section-tab">Multiple by level</div>
 </section>
 
-<!-- S12: sections/02-the-proof/12-icon-stat-grid.html -->
-<section id="s12" class="slide dark">
+<!-- S11: sections/02-the-proof/12-icon-stat-grid.html -->
+<section id="s11" class="slide dark">
   <h2 class="action-title">Talent Shortage, Data Readiness, and Time-to-Value Are the Top Three Barriers Keeping AI Stuck in Pilot Mode</h2>
   <div class="subtitle2" style="margin:6px 0 0">Share of PE decision makers citing each barrier to scaling AI across the portfolio.</div>
   <div class="rule"></div>
@@ -674,17 +649,17 @@ body.print .nav, body.print .hint{ display:none; }
   </div>
   <div class="kicker"><b>These are execution gaps, not tooling gaps</b> -- exactly what a diagnosis-only or a build-only engagement leaves unsolved.</div>
   <div class="source" style="color:#B8CBBE">Source: FTI Consulting, "2026 Private Equity AI Radar" (survey of 200 PE decision makers, December 2025).</div>
-  <div class="page">12</div><div class="section-tab">Execution barriers</div>
+  <div class="page">11</div><div class="section-tab">Execution barriers</div>
 </section>
 
-<!-- S13: sections/03-the-wedge/13-divider.html -->
-<section id="s13" class="slide dark center">
+<!-- S12: sections/03-the-wedge/13-divider.html -->
+<section id="s12" class="slide dark center">
   <div class="logo" style="position:absolute;top:60px;left:72px">CS <span class="co">Ventures</span></div>
   <div class="eyebrow" style="color:var(--cyan);margin-bottom:14px;position:relative;z-index:1">Section C</div>
   <h1 style="font-family:var(--serif);font-weight:700;font-size:64px;line-height:1.02;margin:0;position:relative;z-index:1">The Wedge</h1>
   <div style="width:56px;height:4px;background:var(--cyan);margin:24px 0"></div>
   <p style="font-size:20px;color:#c6d3dc;max-width:620px;margin:0;position:relative;z-index:1">
-    Big consulting and pure tech shops each deliver half of what AI-to-EBITDA work requires. Only builder-operator fluency, already proven on four real builds, delivers both.
+    Consultants advise. Tech shops build. This work takes both, in one engagement.
   </p>
   <div class="page" style="right:72px">#</div>
   <!-- section motif: outlined serif marker + flowline strands, echoing the cover -->
@@ -698,8 +673,8 @@ body.print .nav, body.print .hint{ display:none; }
   </svg>
 </section>
 
-<!-- S14: sections/03-the-wedge/14-competitor-matrix.html -->
-<section id="s14" class="slide">
+<!-- S13: sections/03-the-wedge/14-competitor-matrix.html -->
+<section id="s13" class="slide">
   <h2 class="action-title">Big Consulting Delivers Frameworks Without Builds; Tech Shops Deliver Builds Without Adoption -- Only Builder-Operator Fluency Covers All Three Capabilities</h2>
   <div class="rule"></div>
   <table class="cm">
@@ -742,11 +717,11 @@ body.print .nav, body.print .hint{ display:none; }
   </div>
   <div class="kicker"><b>Only one column clears the bar on all three capabilities</b> -- and it isn't a firm you'd hire off a pitch deck.</div>
   <div class="source">Source: capability assessment against the three requirements in Section 6 (illustrative, not a numeric score).</div>
-  <div class="page">14</div><div class="section-tab">The Wedge</div>
+  <div class="page">13</div><div class="section-tab">The Wedge</div>
 </section>
 
-<!-- S15: sections/03-the-wedge/15-data-table.html -->
-<section id="s15" class="slide">
+<!-- S14: sections/03-the-wedge/15-data-table.html -->
+<section id="s14" class="slide">
   <h2 class="action-title">Four Live Builds Prove the Builder-Operator Model End to End, From a 2-Hour Deck Agent to an Agency-Validated Automation Layer</h2>
   <div class="rule"></div>
   <div class="subtitle">Proof points behind the positioning, <span class="unit">by build</span></div>
@@ -777,24 +752,24 @@ body.print .nav, body.print .hint{ display:none; }
   </table>
   <div class="kicker"><b>Four builds, four different clients (including myself)</b> -- same builder, same operator discipline.</div>
   <div class="source">Source: direct engagement history across four live builds (Section 7 proof points).</div>
-  <div class="page">15</div>
+  <div class="page">14</div>
   <div class="section-tab">The Wedge</div>
 </section>
 
-<!-- S16: sections/03-the-wedge/16-manifesto.html -->
-<section id="s16" class="slide dark center">
+<!-- S15: sections/03-the-wedge/16-manifesto.html -->
+<section id="s15" class="slide dark center">
   <div class="logo">CS <span class="co">Ventures</span></div>
   <div class="manifesto">
     <div class="kicker">First-client proof</div>
-    <p class="big-statement">My <span class="g">first client</span> was me. This had to <span class="a">pay for itself</span> in my own P&amp;L before I asked anyone else to buy it.</p>
-    <p class="standfirst">I built and ran these AI workflow systems inside my own business until the numbers held up, then took the same systems to an agency whose job is evaluating exactly this kind of work: external validation, not self-assessment.</p>
+    <p class="big-statement">I <span class="g">built these systems</span> for my own business first, and they <span class="a">paid for themselves</span> before I ever sold one.</p>
+    <p class="standfirst">Every workflow in this deck ran inside my own operation until the numbers held up. Then an agency, whose job is evaluating exactly this kind of work, paid for it.</p>
     <div class="byline">From <b>CS Ventures</b> -- built and run before it was ever sold</div>
   </div>
-  <div class="page">16</div>
+  <div class="page">15</div>
 </section>
 
-<!-- S17: sections/04-the-offer/17-divider.html -->
-<section id="s17" class="slide dark center">
+<!-- S16: sections/04-the-offer/17-divider.html -->
+<section id="s16" class="slide dark center">
   <div class="logo" style="position:absolute;top:60px;left:72px">CS Ventures</div>
   <div class="eyebrow" style="color:var(--cyan);margin-bottom:14px;position:relative;z-index:1">Section D</div>
   <h1 style="font-family:var(--serif);font-weight:700;font-size:64px;line-height:1.02;margin:0;position:relative;z-index:1">The Offer</h1>
@@ -814,8 +789,8 @@ body.print .nav, body.print .hint{ display:none; }
   </svg>
 </section>
 
-<!-- S18: sections/04-the-offer/18-segment-cards.html -->
-<section id="s18" class="slide">
+<!-- S17: sections/04-the-offer/18-segment-cards.html -->
+<section id="s17" class="slide">
   <h2 class="action-title">Five Engagement Models Span a 30-60-Day Diagnostic to a Fund-Wide AI Operating System</h2>
   <div class="rule"></div>
   <div class="subtitle">Scope grows top to bottom -- from a single-portco diagnostic to a portfolio-wide operating system</div>
@@ -849,11 +824,11 @@ body.print .nav, body.print .hint{ display:none; }
   </div>
 
   <div class="source">Source: CS Ventures service packaging model; diagnostic entry point scoped at 30&ndash;60 days.</div>
-  <div class="page">18</div><div class="section-tab">The Offer</div>
+  <div class="page">17</div><div class="section-tab">The Offer</div>
 </section>
 
-<!-- S19: sections/04-the-offer/19-key-takeaways.html -->
-<section id="s19" class="slide">
+<!-- S18: sections/04-the-offer/19-key-takeaways.html -->
+<section id="s18" class="slide">
   <h2 class="action-title">Turn AI From a Belief Into a Measured EBITDA Lever, Starting With a Single-Portco Diagnostic</h2>
   <div class="rule"></div>
   <div class="kt">
@@ -863,7 +838,7 @@ body.print .nav, body.print .hint{ display:none; }
   </div>
   <div class="cta-bar"><span class="cta-label">Next step</span><span class="cta-ask">Propose a <b>single-portco AI-to-EBITDA diagnostic</b> (30&ndash;60 days) as the entry point -- scoped to identify and prioritize the highest-value efficiency and opportunity gains.</span></div>
   <div class="source">Source: EY, "How AI is sustainably transforming value creation in private equity," 2026; FTI Consulting, "2026 Private Equity AI Radar" (200 PE decision makers surveyed, Dec 2025).</div>
-  <div class="page">19</div><div class="section-tab">The Offer</div>
+  <div class="page">18</div><div class="section-tab">The Offer</div>
 </section>
 </div>
 <div class="nav"><button id="prev">&larr; Prev</button><span id="pos"></span><button id="next">Next &rarr;</button></div>
