@@ -212,6 +212,9 @@
   .hsc-badge{flex:none; font:700 10px/1 var(--font-body); letter-spacing:.04em; text-transform:uppercase; padding:5px 9px; border-radius:999px; background:rgba(86,187,110,.14); color:var(--green-bright); white-space:nowrap}
   .hsc-badge.p1{background:rgba(200,90,70,.18); color:#e59a8c}
   @media(max-width:680px){ .hsc-k{width:70px} .hsc-prompt .ptxt{font-size:13px} .hsc-v{font-size:12.5px} .hsc-step{gap:10px} }
+  /* hero showcase animation: steps hidden until typed prompt completes, then reveal in order */
+  .hero-showcase.anim .hsc-step{opacity:0; transform:translateY(7px); transition:opacity .45s cubic-bezier(.32,.72,0,1), transform .45s cubic-bezier(.32,.72,0,1)}
+  .hero-showcase.anim .hsc-step.in{opacity:1; transform:none}
 
   /* alternating section rhythm */
   .band{background:var(--panel-strong)}
@@ -516,7 +519,7 @@
         </div>
         <div class="hsc-body">
           <div class="hsc-prompt">
-            <span class="ptxt">Run the product team on the rankings screen.<span class="pcur"></span></span>
+            <span class="ptxt"><span class="ptype">Run the product team on the rankings screen.</span><span class="pcur"></span></span>
             <span class="psend"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
           </div>
           <div class="hsc-steps">
@@ -1260,6 +1263,42 @@
   }));
 
   dShow(0);
+</script>
+<script>
+/* hero showcase: type the prompt, then reveal the pipeline steps, loop forever */
+(function(){
+  var card = document.querySelector('.hero-showcase');
+  if(!card) return;
+  var typeEl = card.querySelector('.ptype');
+  var steps = [].slice.call(card.querySelectorAll('.hsc-step'));
+  if(!typeEl || !steps.length) return;
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var FULL = typeEl.textContent;
+  var timers = [];
+  function later(fn, ms){ timers.push(setTimeout(fn, ms)); }
+  function cycle(){
+    timers.forEach(clearTimeout); timers = [];
+    typeEl.textContent = '';
+    steps.forEach(function(s){ s.classList.remove('in'); });
+    var i = 0;
+    later(function type(){
+      typeEl.textContent = FULL.slice(0, ++i);
+      if(i < FULL.length){ later(type, 32); }
+      else {
+        steps.forEach(function(s, j){ later(function(){ s.classList.add('in'); }, 480 + j*540); });
+        later(cycle, 480 + steps.length*540 + 5200);
+      }
+    }, 420);
+  }
+  card.classList.add('anim');
+  var started = false;
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting && !started){ started = true; cycle(); io.disconnect(); }
+    });
+  }, {threshold:.3});
+  io.observe(card);
+})();
 </script>
 </body>
 </html>
