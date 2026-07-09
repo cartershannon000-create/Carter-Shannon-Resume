@@ -221,6 +221,12 @@
     background: rgba(255,255,255,.92); color: var(--ink); padding: 7px 12px; border-radius: 999px;
     box-shadow: var(--shadow);
   }
+  .deck-more {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-top: 40px; padding-top: 26px; border-top: 1px solid var(--line);
+    font-size: 14px; color: var(--muted);
+  }
+  .deck-more a { font-weight: 600; }
 
   /* how we work */
   .step-grid { display: grid; gap: 16px; margin-top: 52px; }
@@ -444,22 +450,26 @@
     <div class="deck-grid">
       <div class="deck-copy">
         <div class="section-label"><span>Featured deck</span></div>
-        <h2 class="section-h2">The pitch, in ten slides</h2>
-        <p class="deck-lead">Our current point of view on process automation for small and mid-size businesses, presented the way we would in the room.</p>
+        <h2 class="section-h2">Turning AI into EBITDA, for private equity</h2>
+        <p class="deck-lead">Our point of view on AI value creation for PE-backed portfolio companies, presented the way we would in the room: the argument, the evidence, and the ask.</p>
         <ul class="deck-points">
-          <li><b>Where the hours go:</b> the five back-office processes that quietly absorb them</li>
-          <li><b>The method:</b> automate the routine first, add AI only where judgment lives</li>
-          <li><b>The economics:</b> what the cost reduction and payback look like, slide by slide</li>
+          <li><b>Two engines of value:</b> efficiency gains protect margin; opportunity gains change the growth story and the exit multiple</li>
+          <li><b>The wedge:</b> big consulting delivers frameworks without builds; tech shops deliver builds without adoption</li>
+          <li><b>The ask:</b> a 30-60 day single-portco diagnostic as the low-risk entry point</li>
         </ul>
         <div class="deck-cta">
-          <a class="btn-primary" href="/decks/process-automation-smb/" target="_blank" rel="noopener">Open the deck</a>
-          <span class="deck-meta">10 slides. Move with the arrow keys.</span>
+          <a class="btn-primary" href="/decks/pe-ai-ebitda-strategy/" target="_blank" rel="noopener">Open the deck</a>
+          <span class="deck-meta">19 slides. Move with the arrow keys.</span>
         </div>
       </div>
-      <a class="deck-card" href="/decks/process-automation-smb/" target="_blank" rel="noopener" aria-label="Open the process automation deck">
-        <span class="deck-badge">10 slides</span>
-        <span class="deck-frame"><iframe src="/decks/process-automation-smb/?shot=1" loading="lazy" tabindex="-1" title="Cover slide: Give your team back its week" aria-hidden="true"></iframe></span>
+      <a class="deck-card" href="/decks/pe-ai-ebitda-strategy/" target="_blank" rel="noopener" aria-label="Open the AI-to-EBITDA strategy deck">
+        <span class="deck-badge">19 slides</span>
+        <span class="deck-frame"><iframe src="/decks/pe-ai-ebitda-strategy/?shot=1" loading="lazy" tabindex="-1" title="Cover slide: Turn AI into EBITDA" aria-hidden="true"></iframe></span>
       </a>
+    </div>
+    <div class="deck-more">
+      Also featured: <a href="/decks/process-automation-smb/" target="_blank" rel="noopener">Process Automation for SMBs</a> (10 slides)
+      &middot; <a href="/decks/">Browse all decks &rarr;</a>
     </div>
   </div>
 </div>
