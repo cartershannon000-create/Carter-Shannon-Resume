@@ -259,6 +259,18 @@
     margin-top: 8px;
   }
   .port-entry-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* portrait app screenshots: phone mockup on a tinted panel, cropped at the card edge */
+  .port-entry-preview.app {
+    height: 320px; overflow: hidden;
+    background: linear-gradient(140deg, #dde9cd 0%, #f4f6ef 70%);
+    align-items: flex-start; padding-top: 36px;
+  }
+  .phone-frame {
+    width: 190px; flex: none; border-radius: 30px; overflow: hidden;
+    border: 7px solid #101510; background: #101510;
+    box-shadow: 0 28px 56px -20px rgba(16,26,18,.45);
+  }
+  .phone-frame img { width: 100%; height: auto; object-fit: unset; }
   .preview-empty {
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; gap: 10px; padding: 40px; text-align: center;
@@ -487,8 +499,8 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
         </a>
       </div>
-      <div class="port-entry-preview">
-        <img src="/tulipss.png" alt="Altro rankings screen">
+      <div class="port-entry-preview app">
+        <div class="phone-frame"><img src="/tulipss.png" alt="Altro rankings screen"></div>
       </div>
     </div>
 
@@ -508,8 +520,8 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
         </a>
       </div>
-      <div class="port-entry-preview">
-        <img src="/Library copy.png" alt="Nos library screen">
+      <div class="port-entry-preview app">
+        <div class="phone-frame"><img src="/Library copy.png" alt="Nos library screen"></div>
       </div>
     </div>
 
@@ -626,6 +638,7 @@
       <div class="footer-links">
         <a href="/">Home</a>
         <a href="/about/">About</a>
+        <a href="/decks/">Decks</a>
         <a href="mailto:info@cs-ventures.us">info@cs-ventures.us</a>
       </div>
     </div>
