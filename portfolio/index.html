@@ -21,7 +21,7 @@
   "name": "CS Ventures Portfolio",
   "description": "Products and tools built by CS Ventures",
   "url": "https://cs-ventures.us/portfolio/",
-  "numberOfItems": 5,
+  "numberOfItems": 6,
   "itemListElement": [
     {
       "@type": "ListItem",
@@ -52,6 +52,18 @@
       "position": 3,
       "item": {
         "@type": "SoftwareApplication",
+        "name": "Remit",
+        "url": "https://cs-ventures.us/remit/",
+        "applicationCategory": "FinanceApplication",
+        "description": "A working mock of an autonomous accounts-receivable agent: it runs itself every weekday morning, judges every past-due invoice, records each decision to an append-only audit trail, delivers a human-gated morning digest, and gets better every week through a versioned rules memory.",
+        "author": { "@type": "Organization", "name": "CS Ventures", "url": "https://cs-ventures.us" }
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "item": {
+        "@type": "SoftwareApplication",
         "name": "Altro",
         "url": "https://cs-ventures.us/Altro/",
         "applicationCategory": "TravelApplication",
@@ -61,7 +73,7 @@
     },
     {
       "@type": "ListItem",
-      "position": 4,
+      "position": 5,
       "item": {
         "@type": "SoftwareApplication",
         "name": "Nos",
@@ -73,7 +85,7 @@
     },
     {
       "@type": "ListItem",
-      "position": 5,
+      "position": 6,
       "item": {
         "@type": "WebSite",
         "name": "Altro Travel Site",
@@ -428,9 +440,9 @@
     <div class="cat-section" id="agents-ai" style="scroll-margin-top:80px">
       <div class="cat-head">
         <h2>Agents &amp; AI</h2>
-        <span class="cat-count">02 builds</span>
+        <span class="cat-count">03 builds</span>
       </div>
-      <p class="cat-lead">Autonomous systems that take a one-line instruction and carry real work to a finished, quality-checked result. Both are live builds, not demos.</p>
+      <p class="cat-lead">Autonomous systems that take a one-line instruction and carry real work to a finished, quality-checked result — plus a fully working mock that opens up the anatomy of an agent so you can watch one think.</p>
     </div>
 
     <div class="port-entry">
@@ -454,7 +466,7 @@
       </div>
     </div>
 
-    <div class="port-entry" style="border-bottom:none">
+    <div class="port-entry">
       <div class="port-entry-n">02</div>
       <div class="port-entry-meta">
         <h2>Product Team Loop</h2>
@@ -475,6 +487,27 @@
       </div>
     </div>
 
+    <div class="port-entry" style="border-bottom:none">
+      <div class="port-entry-n">03</div>
+      <div class="port-entry-meta">
+        <h2>Remit</h2>
+        <p>A working mock of an accounts-receivable agent, built to open up the anatomy of an autonomous system. It wakes itself every weekday, judges every past-due invoice, records each call to an append-only audit trail, and delivers a human-gated morning digest &mdash; then a weekly refinement pass writes better rules to a versioned memory. Click through the system map and watch a simulated daily run.</p>
+        <div class="port-tags">
+          <span class="port-tag">AI Agent</span>
+          <span class="port-tag">Receivables &amp; Invoicing</span>
+          <span class="port-tag">Agent Memory</span>
+          <span class="port-tag">Interactive Demo</span>
+        </div>
+        <a class="entry-link" href="/remit/">
+          View Remit
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="port-entry-preview">
+        <span class="live-frame"><iframe src="/remit/" loading="lazy" tabindex="-1" title="Remit page preview" aria-hidden="true"></iframe></span>
+      </div>
+    </div>
+
     <div class="cat-section" id="apps-websites" style="scroll-margin-top:80px">
       <div class="cat-head">
         <h2>Apps &amp; Websites</h2>
@@ -484,7 +517,7 @@
     </div>
 
     <div class="port-entry">
-      <div class="port-entry-n">03</div>
+      <div class="port-entry-n">04</div>
       <div class="port-entry-meta">
         <h2>Altro</h2>
         <p>A travel ranking app for logging cities, comparing past trips, and building a personal map of the places that still pull you forward. Altro turns travel memories into a clear, ranked view of taste and return energy.</p>
@@ -505,7 +538,7 @@
     </div>
 
     <div class="port-entry">
-      <div class="port-entry-n">04</div>
+      <div class="port-entry-n">05</div>
       <div class="port-entry-meta">
         <h2>Nos</h2>
         <p>A quiet home for novenas, daily reflection, honest journaling, and the grace to keep praying whether the answer is yes, no, or not yet. Nos gives structure without pressure and beauty without clutter.</p>
@@ -526,7 +559,7 @@
     </div>
 
     <div class="port-entry" style="border-bottom:none; padding-bottom:96px">
-      <div class="port-entry-n">05</div>
+      <div class="port-entry-n">06</div>
       <div class="port-entry-meta">
         <h2>Altro Travel Site</h2>
         <p>The marketing website for the Altro travel app, designed and built end to end: positioning, copy, visual design, and a responsive single-page build that presents the app's ranked-city concept to new users.</p>
@@ -564,6 +597,10 @@
         <p class="faq-answer">DeckForge is an autonomous AI agent that writes equity research decks, critiques its own output, and rewrites until the composite quality score clears a defined bar. It is designed for analysts, investors, and advisors who need board-ready research output without the manual iteration cycles that typically consume hours of analyst time.</p>
       </details>
       <details>
+        <summary>What is Remit and is it a real product?<span class="faq-toggle"></span></summary>
+        <p class="faq-answer">Remit is a fully working mock of an accounts-receivable agent, built to show the anatomy of an autonomous AI system rather than to sell one. It demonstrates the full loop: a scheduled run with no human prompt, a tool-calling reasoning engine, an append-only decision record for audit, a human-gated morning digest, and a weekly refinement pass that writes versioned rules to memory. The ledger data is simulated, but every component and interaction on the page mirrors how the production pattern works.</p>
+      </details>
+      <details>
         <summary>What is Altro and what problem does it solve?<span class="faq-toggle"></span></summary>
         <p class="faq-answer">Altro is a travel ranking and mapping app that solves the problem of travel memory being scattered and unstructured. Most people cannot tell you which cities they have visited in ranked order, or which ones they actually want to return to. Altro gives you a single ranked list of every city you have visited, a personal map colored by return energy, and the ability to compare trips side by side.</p>
       </details>
@@ -594,6 +631,14 @@
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "DeckForge is an autonomous AI agent that writes equity research decks, critiques its own output, and rewrites until the composite quality score clears a defined bar. It is designed for analysts, investors, and advisors who need board-ready research output without manual iteration."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is Remit and is it a real product?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Remit is a fully working mock of an accounts-receivable agent, built to show the anatomy of an autonomous AI system: a scheduled run, a tool-calling reasoning engine, an append-only decision record, a human-gated morning digest, and a weekly refinement pass that writes versioned rules to memory. The ledger data is simulated."
       }
     },
     {

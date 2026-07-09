@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Remit is a working mock of an accounts-receivable agent: one agent, two databases, and a loop that collects cash faster every week. Every decision is recorded for audit, every analyst review becomes a lesson, and a weekly refinement pass turns lessons into better judgment with no retraining.">
+<meta property="og:title" content="Remit: a receivables agent that gets better at collecting every week">
+<meta property="og:description" content="One agent, two databases, and a loop that improves it every week. Watch a simulated daily run turn an aging report into recorded, reviewed collection decisions.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cs-ventures.us/remit/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Remit: a receivables agent that gets better at collecting every week">
+<meta name="twitter:description" content="One agent, two databases, and a loop that improves it every week. Watch a simulated daily run turn an aging report into recorded, reviewed collection decisions.">
+<link rel="canonical" href="https://cs-ventures.us/remit/">
+<title>Remit: a receivables agent that gets better every week</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Remit",
+  "url": "https://cs-ventures.us/remit/",
+  "applicationCategory": "FinanceApplication",
+  "description": "Remit is a working mock of an autonomous accounts-receivable agent. A scheduler wakes it every weekday morning; it loads the open-invoice ledger and every collection rule it has learned, reasons over each past-due invoice with tool calls, records every decision to an append-only audit database before anyone sees it, and delivers a ranked morning digest for the AR team to approve. A weekly refinement pass compares its calls against analyst outcomes and payments received, then writes improved plain-language rules to a versioned memory table — so the agent gets better with zero retraining.",
+  "featureList": [
+    "Autonomous daily runs on a schedule, no manual start",
+    "Fresh working memory assembled each run: ledger, overnight payments, learned rules",
+    "Tool-calling reasoning loop over every past-due invoice",
+    "Append-only decision record: the call, the confidence, the draft, the rationale",
+    "Human-gated morning digest — the agent drafts, it never sends",
+    "Weekly refinement pass that writes versioned, reviewable rules to memory"
+  ],
+  "keywords": "AI agent, accounts receivable, invoicing, dunning, collections, agent memory, LLM ops, audit trail, agentic workflow",
+  "author": { "@type": "Organization", "name": "CS Ventures", "url": "https://cs-ventures.us" }
+}
+</script>
+<style>
+  :root{
+    --blue:#315c75; --blue-soft:#dce7ed;
+    --rose:#9b4f4d; --rose-soft:#efd9d6;
+    --amber:#b06a28; --amber-soft:#f0e2cd;
+    --gold-soft:#efe3c9;
+    --maxw:1160px;
+    --radius:12px;
+    --r-lg:22px;
+    --ease:cubic-bezier(.32,.72,0,1);
+    /* cool, modern neutral canvas — matches the rest of the portfolio */
+    --bg:#eff0f2;
+    --panel:#f7f8fa;
+    --panel-strong:#ffffff;
+    --ink:#161719;
+    --muted:#565961;
+    --line:rgba(18,22,29,.10);
+    --dark:#0a0b0d;
+    --dark-sub:#15161a;
+    --on-dark:#f5f5f7;
+    --on-dark-muted:rgba(245,245,247,.58);
+    --on-dark-line:rgba(255,255,255,.10);
+    --shadow:0 1px 2px rgba(18,22,29,.04), 0 8px 22px -10px rgba(18,22,29,.12);
+    --shadow-md:0 18px 50px -16px rgba(18,22,29,.24), 0 4px 12px -6px rgba(18,22,29,.10);
+    --font-display:-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Inter, system-ui, "Helvetica Neue", Arial, sans-serif;
+    --mono:ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  body{margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 var(--font-body); -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility}
+  :focus-visible{outline:2px solid var(--green); outline-offset:3px; border-radius:6px}
+  a{color:var(--green); text-decoration:none}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 32px}
+  h1,h2,h3{margin:0; line-height:1.12; letter-spacing:-.01em}
+  .eyebrow{font:800 11px/1 var(--font-body); letter-spacing:.18em; text-transform:uppercase; color:var(--green)}
+  .display{font-family:var(--font-display); font-weight:700}
+  section{padding:88px 0; border-bottom:1px solid var(--line)}
+  .lead{color:var(--muted); font-size:17.5px; max-width:760px; line-height:1.72}
+  h2.sech{font-family:var(--font-display); font-weight:700; font-size:clamp(29px,3.9vw,44px); letter-spacing:-.033em; line-height:1.06; color:var(--ink); margin:10px 0 0; max-width:780px}
+  h2.sech em{font-style:normal; color:var(--green)}
+  .band{background:var(--panel-strong)}
+
+  /* ── product sub-bar ── */
+  .prodbar{position:sticky; top:56px; z-index:120; background:rgba(247,248,250,.72); backdrop-filter:blur(20px) saturate(180%); -webkit-backdrop-filter:blur(20px) saturate(180%); border-bottom:1px solid var(--line)}
+  .prodbar-in{display:flex; align-items:center; gap:16px; height:52px}
+  .prod-name{font:800 14px/1 var(--font-body); letter-spacing:-.01em; color:var(--ink)}
+  .prod-name .pn-dot{display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--green); margin-right:9px; vertical-align:middle}
+  .tabs{margin-left:auto; display:flex; gap:3px; background:var(--panel); padding:3px; border-radius:999px; border:1px solid var(--line)}
+  .tab{display:inline-block; padding:8px 16px; border-radius:999px; font:600 13px/1 var(--font-body); color:var(--muted); cursor:pointer; border:0; background:transparent; transition:color .2s var(--ease), background .2s var(--ease)}
+  .tab:hover{color:var(--ink)}
+
+  /* ── hero (dark) ── */
+  .hero{background:var(--dark); border-bottom:1px solid var(--on-dark-line); padding:112px 0 96px}
+  .hero .eyebrow{color:var(--green-bright)}
+  .hero h1{font-family:var(--font-display); font-weight:700; font-size:clamp(42px,6.4vw,78px); letter-spacing:-.042em; line-height:1.02; color:var(--on-dark); max-width:940px; margin:24px 0 28px}
+  .hero h1 em{font-style:normal; color:var(--green-bright)}
+  .hero .lead{color:var(--on-dark-muted); max-width:640px; font-size:18px}
+  .pills{display:flex; flex-wrap:wrap; gap:9px; margin-top:34px}
+  .pill{font:600 12.5px/1 var(--font-body); padding:10px 15px; border-radius:999px; border:1px solid var(--on-dark-line); background:rgba(255,255,255,.03); color:var(--on-dark-muted)}
+  .pill b{color:var(--on-dark); font-weight:700}
+  .hero-cta{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:38px}
+  .btn{appearance:none; display:inline-flex; align-items:center; gap:9px; border:1px solid var(--green); cursor:pointer; font:600 14px/1 var(--font-body); letter-spacing:.01em; padding:14px 24px; border-radius:999px; background:var(--green); color:#fff; text-decoration:none; box-shadow:0 1px 2px rgba(16,26,18,.16); transition:transform .25s var(--ease), box-shadow .25s var(--ease), background .2s var(--ease)}
+  .btn:hover{background:#286038; color:#fff; transform:translateY(-1px); box-shadow:0 6px 18px -6px rgba(46,107,63,.5)}
+  .btn-ghost{display:inline-flex; align-items:center; gap:8px; font:600 14px/1 var(--font-body); color:var(--on-dark); background:transparent; border:0; cursor:pointer; padding:14px 16px; border-radius:999px; text-decoration:none; transition:color .2s var(--ease)}
+  .btn-ghost svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:transform .25s var(--ease)}
+  .btn-ghost:hover{color:var(--green-bright)}
+  .btn-ghost:hover svg{transform:translateX(3px)}
+  .mocknote{display:inline-flex; align-items:center; gap:8px; margin-top:30px; font:700 11px/1 var(--font-body); letter-spacing:.1em; text-transform:uppercase; color:var(--on-dark-muted); border:1px dashed var(--on-dark-line); border-radius:999px; padding:9px 14px}
+  .mocknote .d{width:7px; height:7px; border-radius:50%; background:var(--gold)}
+
+  /* hero console */
+  .hero-showcase{margin-top:64px; max-width:960px; background:linear-gradient(180deg,#16181c,#101215); border:1px solid rgba(255,255,255,.09); border-radius:18px; box-shadow:0 44px 90px -34px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.05); overflow:hidden}
+  .hsc-bar{display:flex; align-items:center; gap:9px; padding:13px 16px; border-bottom:1px solid rgba(255,255,255,.07)}
+  .hsc-dots{display:flex; gap:6px}
+  .hsc-dots i{width:11px; height:11px; border-radius:50%; background:rgba(255,255,255,.15)}
+  .hsc-title{margin-left:6px; font:600 12px/1 var(--font-body); color:rgba(245,245,247,.5)}
+  .hsc-live{margin-left:auto; display:inline-flex; align-items:center; gap:7px; font:700 10.5px/1 var(--font-body); letter-spacing:.08em; text-transform:uppercase; color:var(--green-bright)}
+  .hsc-live .d{width:7px; height:7px; border-radius:50%; background:var(--green-bright); animation:hscpulse 2s var(--ease) infinite}
+  @keyframes hscpulse{0%{box-shadow:0 0 0 0 rgba(86,187,110,.45)}70%{box-shadow:0 0 0 7px rgba(86,187,110,0)}100%{box-shadow:0 0 0 0 rgba(86,187,110,0)}}
+  .hsc-body{padding:20px}
+  .hsc-steps{display:flex; flex-direction:column}
+  .hsc-step{display:flex; align-items:center; gap:14px; padding:12px 6px; border-top:1px solid rgba(255,255,255,.06)}
+  .hsc-step:first-child{border-top:0}
+  .hsc-k{flex:none; width:92px; font:700 11px/1 var(--font-body); letter-spacing:.08em; text-transform:uppercase; color:rgba(245,245,247,.52)}
+  .hsc-v{flex:1; min-width:0; font:500 13.5px/1.5 var(--font-body); color:var(--on-dark-muted)}
+  .hsc-v b{color:var(--on-dark); font-weight:600}
+  .hsc-badge{flex:none; font:700 10px/1 var(--font-body); letter-spacing:.04em; text-transform:uppercase; padding:5px 9px; border-radius:999px; background:rgba(86,187,110,.14); color:var(--green-bright); white-space:nowrap}
+  .hsc-badge.p1{background:rgba(200,90,70,.18); color:#e59a8c}
+  @media(max-width:680px){ .hsc-k{width:70px} .hsc-v{font-size:12.5px} .hsc-step{gap:10px} }
+
+  /* ============ SYSTEM MAP ============ */
+  .maplegend{display:flex; gap:18px; flex-wrap:wrap; margin-top:26px; font:600 12px/1 var(--font-body); color:var(--muted); align-items:center}
+  .maplegend span{display:inline-flex; align-items:center; gap:7px}
+  .maplegend .sw{width:18px; height:0; border-top:2.6px solid var(--blue)}
+  .maplegend .sw.out{border-top-color:var(--amber)}
+  .maplegend .sw.lrn{border-top-color:var(--green)}
+  .maplegend .sw.dash{border-top:2.6px dashed var(--green)}
+  .maplegend .hint{font-style:italic; font-weight:500; color:var(--muted); margin-left:auto}
+
+  .mapframe{margin-top:22px; background:var(--panel-strong); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow); padding:18px; overflow:hidden}
+  .mapviewport{position:relative; width:100%; overflow:hidden}
+  .mapcanvas{position:relative; width:1000px; height:800px; transform-origin:top left}
+  .mapsvg{position:absolute; inset:0; width:1000px; height:800px; overflow:visible; pointer-events:none}
+  .mapsvg .c-in{fill:none; stroke:var(--blue); stroke-width:2.4}
+  .mapsvg .c-out{fill:none; stroke:var(--amber); stroke-width:2.4}
+  .mapsvg .c-lrn{fill:none; stroke:var(--green); stroke-width:2.4}
+  .mapsvg .c-dash{fill:none; stroke:var(--green); stroke-width:2.4; stroke-dasharray:3 8; stroke-linecap:round}
+  .mapsvg .c-tool{fill:none; stroke:#8b909b; stroke-width:1.8; stroke-dasharray:1 6; stroke-linecap:round}
+
+  .mnode{position:absolute; appearance:none; border:0; background:transparent; padding:0; text-align:left; cursor:pointer; font-family:inherit}
+  .mnode-card{display:block; background:#fff; border:1px solid var(--line); border-top:3px solid var(--blue); border-radius:14px; box-shadow:var(--shadow); padding:16px 18px 15px; transition:transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease)}
+  .mnode:hover .mnode-card, .mnode.active .mnode-card{transform:translateY(-3px); box-shadow:var(--shadow-md)}
+  .mnode.active .mnode-card{border-color:rgba(46,107,63,.45); border-top-color:inherit}
+  .mnode-k{display:block; font:800 10px/1 var(--font-body); letter-spacing:.13em; text-transform:uppercase; color:var(--blue); margin-bottom:7px}
+  .mnode-t{display:block; font:700 15.5px/1.25 var(--font-body); letter-spacing:-.01em; color:var(--ink); margin-bottom:6px}
+  .mnode-d{display:block; font-size:12px; color:var(--muted); line-height:1.5}
+  .mnode.f-out .mnode-card{border-top-color:var(--amber)} .mnode.f-out .mnode-k{color:var(--amber)}
+  .mnode.f-lrn .mnode-card{border-top-color:var(--green)} .mnode.f-lrn .mnode-k{color:var(--green)}
+  .mnode.f-tool .mnode-card{border-top-color:#8b909b; background:var(--panel)} .mnode.f-tool .mnode-k{color:#6d727c}
+  .dbchip{display:inline-block; margin-top:10px; font:800 9.5px/1 var(--font-body); letter-spacing:.08em; text-transform:uppercase; padding:6px 9px; border-radius:4px; background:var(--gold-soft); color:#7a5424}
+  .mnode.core .mnode-card{background:#1d4a2b; border-color:#1d4a2b; border-top-color:var(--green-bright)}
+  .mnode.core .mnode-k{color:var(--green-bright)}
+  .mnode.core .mnode-t{color:#fff; font-size:16.5px}
+  .mnode.core .mnode-d{color:rgba(245,245,247,.72)}
+  .toollist{display:flex; flex-direction:column; gap:4px; margin-top:8px}
+  .toollist code{font:600 10.5px/1.5 var(--mono); color:#3d4148; background:rgba(18,22,29,.05); border-radius:3px; padding:1px 6px; align-self:flex-start}
+
+  /* node placement on the 1000×800 canvas */
+  #n-schedule{left:375px; top:14px; width:250px}
+  #n-gather{left:400px; top:146px; width:255px}
+  #n-reason{left:352px; top:300px; width:296px}
+  #n-tools{left:730px; top:236px; width:238px}
+  #n-record{left:28px; top:356px; width:258px}
+  #n-digest{left:378px; top:474px; width:252px}
+  #n-learn{left:326px; top:648px; width:316px}
+  #n-memory{left:728px; top:474px; width:252px}
+
+  /* mobile stacked fallback */
+  .mapstack{display:none; flex-direction:column; gap:0}
+  .mapstack .mnode{position:static; width:100%}
+  .mapstack .mnode-card{border-top:1px solid var(--line); border-left:3px solid var(--blue); border-radius:12px}
+  .mapstack .mnode.f-out .mnode-card{border-left-color:var(--amber)}
+  .mapstack .mnode.f-lrn .mnode-card{border-left-color:var(--green)}
+  .mapstack .mnode.f-tool .mnode-card{border-left-color:#8b909b}
+  .mapstack .mnode.core .mnode-card{border-left-color:var(--green-bright); border-top-color:#1d4a2b}
+  .stackarrow{display:flex; justify-content:center; padding:7px 0; color:var(--muted)}
+  .stackarrow svg{width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+  @media(max-width:719px){ .mapviewport{display:none} .mapstack{display:flex} .maplegend .hint{margin-left:0; width:100%} }
+
+  /* map detail panel */
+  .flowinfo{display:flex; gap:14px; align-items:flex-start; margin-top:16px; padding:18px 20px; border:1px solid var(--line); border-radius:var(--radius); background:#fff; min-height:96px}
+  .fi-tag{flex:none; font:800 10px/1 var(--font-body); letter-spacing:.06em; text-transform:uppercase; padding:6px 10px; border-radius:3px; background:var(--panel); color:var(--muted); border:1px solid var(--line); margin-top:2px; white-space:nowrap}
+  .fi-tag.det{background:var(--green-soft); color:#294323; border-color:rgba(46,107,63,.3)}
+  .fi-tag.llm{background:var(--blue-soft); color:#243f52; border-color:transparent}
+  .fi-tag.db{background:var(--gold-soft); color:#7a5424; border-color:transparent}
+  .fi-tag.gate{background:var(--rose-soft); color:#7a3a38; border-color:transparent}
+  .fi-body h4{font-family:var(--font-display); font-weight:700; margin:0 0 5px; font-size:16px; color:var(--ink)}
+  .fi-body p{margin:0; color:var(--muted); font-size:14px; line-height:1.6}
+
+  /* ============ DAILY RUN SIMULATOR ============ */
+  .simhead{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap}
+  .simctl{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  .sim-btn{appearance:none; cursor:pointer; display:inline-flex; align-items:center; gap:9px; font:600 14px/1 var(--font-body); padding:13px 22px; border-radius:999px; border:1px solid var(--green); background:var(--green); color:#fff; transition:background .2s var(--ease), transform .25s var(--ease)}
+  .sim-btn:hover{background:#286038; transform:translateY(-1px)}
+  .sim-btn svg{width:14px; height:14px; fill:currentColor}
+  .sim-btn[disabled]{opacity:.5; pointer-events:none}
+  .sim-speed{display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:var(--panel)}
+  .sim-speed button{appearance:none; cursor:pointer; border:0; background:transparent; padding:11px 13px; font:800 12px/1 var(--font-body); color:var(--muted)}
+  .sim-speed button.on{background:var(--green-soft); color:#294323}
+
+  .simphases{display:flex; margin:30px 0 22px; overflow-x:auto; padding-bottom:4px}
+  .sp{flex:1 0 76px; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative}
+  .sp::before{content:''; position:absolute; top:13px; left:-50%; width:100%; height:2px; background:var(--line); z-index:0}
+  .sp:first-child::before{display:none}
+  .sp.done::before{background:var(--green)}
+  .sp-dot{position:relative; z-index:1; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; font:800 12px/1 var(--font-body); background:var(--panel); border:2px solid var(--line); color:var(--muted); transition:.25s}
+  .sp.done .sp-dot{background:var(--green); border-color:var(--green); color:#fff}
+  .sp.active .sp-dot{border-color:var(--green); color:var(--green); box-shadow:0 0 0 4px var(--green-soft)}
+  .sp-cap{font:700 10.5px/1.2 var(--font-body); color:var(--muted); margin-top:7px}
+  .sp.active .sp-cap{color:var(--ink)}
+
+  .simgrid{display:grid; gap:18px; align-items:start}
+  @media(min-width:920px){ .simgrid{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)} }
+
+  .simterm{background:linear-gradient(180deg,#141619,#0f1114); border:1px solid rgba(255,255,255,.09); border-radius:16px; box-shadow:var(--shadow-md); overflow:hidden}
+  .simterm-bar{display:flex; align-items:center; gap:9px; padding:12px 15px; border-bottom:1px solid rgba(255,255,255,.07)}
+  .simterm-bar .hsc-dots i{width:10px; height:10px}
+  .simterm-title{font:600 12px/1 var(--font-body); color:rgba(245,245,247,.5)}
+  .simterm-state{margin-left:auto; font:700 10.5px/1 var(--font-body); letter-spacing:.08em; text-transform:uppercase; color:rgba(245,245,247,.4)}
+  .simterm-state.run{color:var(--green-bright)}
+  .simlog{height:460px; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:7px; scroll-behavior:smooth}
+  .sl{display:flex; gap:10px; align-items:flex-start; font:500 12.5px/1.55 var(--mono); color:rgba(245,245,247,.78); animation:slrise .35s both}
+  @keyframes slrise{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+  .sl .t{flex:none; color:rgba(245,245,247,.34); font-size:11px; padding-top:2px; width:52px}
+  .sl .k{flex:none; font:800 9px/1 var(--font-body); letter-spacing:.06em; text-transform:uppercase; padding:4px 7px; border-radius:3px; margin-top:1px; width:52px; text-align:center}
+  .sl.sys .k{background:rgba(255,255,255,.08); color:rgba(245,245,247,.6)}
+  .sl.tool .k{background:rgba(93,150,184,.18); color:#8fc0dd}
+  .sl.llm .k{background:rgba(86,187,110,.16); color:var(--green-bright)}
+  .sl.db .k{background:rgba(206,159,84,.16); color:#dcb679}
+  .sl.guard .k{background:rgba(200,90,70,.18); color:#e59a8c}
+  .sl.gate .k{background:rgba(178,140,220,.16); color:#c7aee6}
+  .sl.learn .k{background:rgba(86,187,110,.16); color:var(--green-bright); border:1px dashed rgba(86,187,110,.5)}
+  .sl .x{min-width:0}
+  .sl .x b{color:#fff; font-weight:600}
+  .sl.llm .x{color:rgba(220,240,225,.85)}
+  .simlog .idle{margin:auto; text-align:center; color:rgba(245,245,247,.4); font:500 13.5px/1.6 var(--font-body); padding:40px 20px}
+
+  .simside{display:flex; flex-direction:column; gap:14px}
+  .statrow{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+  @media(min-width:520px){ .statrow{grid-template-columns:repeat(4,1fr)} }
+  @media(min-width:920px){ .statrow{grid-template-columns:repeat(2,1fr)} }
+  .stat{background:var(--panel-strong); border:1px solid var(--line); border-radius:14px; padding:14px 16px; box-shadow:var(--shadow)}
+  .stat .sv{font-family:var(--font-display); font-weight:700; font-size:26px; line-height:1.1; color:var(--ink); letter-spacing:-.02em}
+  .stat .sk{font:700 10px/1.35 var(--font-body); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-top:5px}
+  .stat.good .sv{color:var(--green)}
+
+  .queue{background:var(--panel-strong); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); overflow:hidden}
+  .queue-h{display:flex; align-items:center; justify-content:space-between; background:var(--dark); color:var(--on-dark); padding:12px 15px; font:800 12.5px/1 var(--font-body)}
+  .queue-h small{font-weight:600; opacity:.6; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase}
+  .queue-list{display:flex; flex-direction:column; gap:8px; padding:12px; min-height:120px; max-height:330px; overflow-y:auto}
+  .queue-list .idleq{margin:auto; color:var(--muted); font-size:12.5px; text-align:center; padding:24px 12px}
+  .qa{display:flex; gap:10px; align-items:flex-start; border:1px solid var(--line); border-radius:10px; background:#fff; padding:10px 12px; animation:slrise .4s both}
+  .qa .qb{flex:none; font:800 9.5px/1 var(--font-body); letter-spacing:.05em; text-transform:uppercase; padding:5px 8px; border-radius:3px; margin-top:1px; white-space:nowrap}
+  .qa .qb.esc{background:var(--rose-soft); color:#7a3a38}
+  .qa .qb.rem{background:var(--green-soft); color:#294323}
+  .qa .qb.dis{background:var(--gold-soft); color:#7a5424}
+  .qa .qb.hold{background:var(--blue-soft); color:#243f52}
+  .qa .qb.call{background:var(--rose-soft); color:#7a3a38}
+  .qa .qb.hum{background:var(--panel); color:var(--muted); border:1px dashed var(--line)}
+  .qa .qm{display:block; min-width:0; flex:1}
+  .qa .q1{display:block; font:700 12.5px/1.35 var(--font-body); color:var(--ink); padding-right:34px}
+  .qa .q1 span{font:600 11px/1 var(--mono); color:var(--muted); white-space:nowrap}
+  .qa .q2{display:block; font-size:11px; color:var(--muted); line-height:1.45; margin-top:3px}
+  .qa{position:relative}
+  .qa .qc{position:absolute; top:11px; right:12px; font:800 10.5px/1 var(--mono); color:var(--green)}
+  .qa .qc.low{color:var(--amber)}
+
+  .memdiff{background:var(--panel-strong); border:1px dashed rgba(46,107,63,.5); border-radius:16px; padding:16px 18px; box-shadow:var(--shadow); display:none}
+  .memdiff.show{display:block; animation:slrise .45s both}
+  .memdiff .mh{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
+  .memdiff .mh b{font:800 12.5px/1 var(--font-body); color:var(--ink)}
+  .memdiff .ver{font:800 10.5px/1 var(--mono); color:#7a5424; background:var(--gold-soft); border-radius:999px; padding:5px 10px}
+  .memdiff .rule{font:500 12px/1.55 var(--mono); border-radius:8px; padding:9px 11px; margin-top:6px}
+  .memdiff .rule.kept{background:var(--panel); color:var(--muted)}
+  .memdiff .rule.add{background:var(--green-soft); color:#22391f; border:1px solid rgba(46,107,63,.3)}
+  .memdiff .rule .rn{font-weight:800; margin-right:6px}
+
+  /* ============ ARCHITECTURE ============ */
+  .grid{display:grid; gap:16px}
+  @media(min-width:760px){ .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:1fr 1fr} .g4{grid-template-columns:repeat(4,1fr)} }
+  .card{background:var(--panel-strong); border:1px solid var(--line); border-radius:var(--r-lg); padding:26px; box-shadow:var(--shadow)}
+  .band .card{background:#fff}
+  .card h3{font-family:var(--font-display); font-weight:700; font-size:19px; margin:0 0 8px; color:var(--ink)}
+  .card p{margin:0; color:var(--muted); font-size:14.5px; line-height:1.66}
+  .card p + p{margin-top:10px}
+  .card code{background:var(--green-soft); padding:1px 6px; border-radius:3px; font-size:12.5px; color:#294323; font-family:var(--mono)}
+  .tag{display:inline-flex; align-items:center; gap:7px; font:800 11px/1 var(--font-body); letter-spacing:.05em; text-transform:uppercase; padding:5px 9px; border-radius:3px; margin-bottom:12px}
+  .tag.det{color:#294323; background:var(--green-soft); border:1px solid rgba(46,107,63,.25)}
+  .tag.llm{color:#243f52; background:var(--blue-soft); border:1px solid rgba(49,92,117,.25)}
+  .tag.db{color:#7a5424; background:var(--gold-soft); border:1px solid rgba(158,113,50,.25)}
+  .tag.gate{color:#7a3a38; background:var(--rose-soft); border:1px solid rgba(155,79,77,.25)}
+
+  .opsflow{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:26px}
+  .opstep{font:800 12px/1 var(--font-body); padding:10px 16px; border-radius:999px; border:1px solid var(--line); background:var(--panel-strong); color:var(--ink)}
+  .opstep small{display:block; font:600 10px/1.3 var(--font-body); letter-spacing:.02em; text-transform:none; color:var(--muted); margin-top:4px}
+  .oparr{color:var(--muted); font-weight:800}
+  .reprow{margin-top:22px; padding:18px 22px; background:#fff; border:1px dashed rgba(46,107,63,.45); border-radius:var(--radius); display:flex; gap:14px; align-items:flex-start}
+  .reprow svg{flex:none; width:17px; height:17px; fill:none; stroke:var(--green); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; margin-top:3px}
+  .reprow p{margin:0; font-size:13.5px; color:var(--muted); line-height:1.65}
+  .reprow strong{color:var(--ink)}
+
+  .teaser{display:flex; flex-wrap:wrap; align-items:center; gap:18px; justify-content:space-between; background:var(--panel-strong); border:1px solid var(--line); border-left:3px solid var(--green); border-radius:var(--r-lg); padding:30px; margin-top:44px; box-shadow:var(--shadow)}
+  .teaser .t-txt{max-width:560px}
+  .teaser h3{font-family:var(--font-display); font-weight:700; margin:0 0 5px; font-size:20px; color:var(--ink)}
+  .teaser p{margin:0; color:var(--muted); font-size:14.5px}
+
+  /* ── footer ── */
+  footer.site{background:var(--dark); padding:60px 0 48px; border-top:1px solid var(--on-dark-line)}
+  .footer-inner{display:flex; justify-content:space-between; align-items:flex-start; gap:40px; flex-wrap:wrap}
+  .footer-brand{font-family:var(--font-display); font-weight:700; font-size:22px; color:var(--on-dark); margin-bottom:8px}
+  .footer-tagline{font-size:13px; color:var(--on-dark-muted)}
+  .footer-links{display:flex; gap:12px; flex-wrap:wrap; padding-top:4px}
+  .footer-links a{font:500 12.5px/1 var(--font-body); color:var(--on-dark-muted); padding:4px 0; transition:color .13s}
+  .footer-links a:hover{color:var(--on-dark)}
+  .footer-links a + a::before{content:'·'; margin-right:12px; color:var(--on-dark-line)}
+  .footer-bottom{margin-top:48px; padding-top:22px; border-top:1px solid var(--on-dark-line); font:400 12px/1 var(--font-body); color:var(--on-dark-muted)}
+
+  @media (max-width:680px){
+    .wrap{padding:0 18px}
+    section{padding:52px 0}
+    .hero{padding:60px 0 52px}
+    .prodbar-in{height:48px}
+    .prod-name{font-size:13px}
+    .tab{padding:7px 12px; font-size:12.5px}
+    .pills{gap:7px} .pill{font-size:11.5px; padding:7px 11px}
+    .card{padding:18px}
+    .flowinfo{flex-direction:column; gap:10px}
+    .simlog{height:360px}
+    .teaser{padding:18px} .teaser .btn{width:100%; justify-content:center}
+  }
+</style>
+</head>
+<body>
+
+<div class="csv-bar">
+  <a class="csv-brand" href="/"><svg class="csv-mark" viewBox="0 0 205 155" aria-hidden="true" fill="currentColor"><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="150" font-weight="400" x="4" y="108">C</text><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="125" font-weight="400" x="78" y="129">S</text></svg>CS Ventures</a>
+  <nav class="csv-nav"><a href="/">Home</a><a href="/about/">About</a><a href="/portfolio/" class="active">Portfolio</a></nav>
+</div>
+
+<div class="prodbar">
+  <div class="wrap prodbar-in">
+    <div class="prod-name"><span class="pn-dot"></span>Remit &middot; The Receivables Agent</div>
+    <nav class="tabs">
+      <a class="tab" href="#system">System map</a>
+      <a class="tab" href="#run">Daily run</a>
+      <a class="tab" href="#hood">Under the hood</a>
+    </nav>
+  </div>
+</div>
+
+<main>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">Monitoring agent &middot; Accounts receivable &amp; invoicing</div>
+      <h1 class="display">One agent, two databases, and a loop that <em>collects cash faster every week.</em></h1>
+      <p class="lead">Remit wakes up every weekday morning, reads the aging report, and decides what every past-due
+      invoice needs: a reminder, an escalation, a dispute flag, or deliberate silence. Every decision is recorded for
+      audit before anyone sees it. Every analyst review becomes a lesson. A weekly refinement pass turns those lessons
+      into better judgment — with no retraining project.</p>
+      <div class="pills">
+        <span class="pill"><b>Runs itself</b> &middot; weekdays, 6:00 AM, no prompt</span>
+        <span class="pill"><b>Drafts, never sends</b> &middot; a human approves every action</span>
+        <span class="pill"><b>Append-only</b> audit trail of every call</span>
+        <span class="pill"><b>Learns weekly</b> &middot; rules are data, not weights</span>
+      </div>
+      <div class="hero-cta">
+        <a class="btn" href="#run">Simulate a daily run</a>
+        <a class="btn-ghost" href="#system">See inside the system
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div><span class="mocknote"><span class="d"></span>Working mock &middot; simulated ledger, no real customer data</span></div>
+
+      <div class="hero-showcase" aria-hidden="true">
+        <div class="hsc-bar">
+          <span class="hsc-dots"><i></i><i></i><i></i></span>
+          <span class="hsc-title">remit &middot; run #142 &middot; weekday 6:00 AM</span>
+          <span class="hsc-live"><span class="d"></span>Autonomous</span>
+        </div>
+        <div class="hsc-body">
+          <div class="hsc-steps">
+            <div class="hsc-step"><span class="hsc-k">Gather</span><span class="hsc-v">Aging report + overnight payments + <b>14 learned rules (v7)</b> loaded into working memory</span></div>
+            <div class="hsc-step"><span class="hsc-k">Reason</span><span class="hsc-v"><b>11 past-due invoices</b> judged one by one, tool calls mid-thought, rationale in plain language</span></div>
+            <div class="hsc-step"><span class="hsc-k">Record</span><span class="hsc-v">Every call written to the decision record <b>before anyone sees it</b></span><span class="hsc-badge">audit trail</span></div>
+            <div class="hsc-step"><span class="hsc-k">Deliver</span><span class="hsc-v">Ranked digest at 8:00 AM &middot; analysts approve, edit, or reject in minutes</span><span class="hsc-badge p1">human gate</span></div>
+            <div class="hsc-step"><span class="hsc-k">Learn</span><span class="hsc-v">Friday: calls vs. outcomes &rarr; memory <b>v7 &rarr; v8</b>, one new rule earned</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SYSTEM MAP ================= -->
+  <section class="band" id="system" style="scroll-margin-top:120px">
+    <div class="wrap">
+      <div class="eyebrow">Inside the system</div>
+      <h2 class="sech">Every box is a real component. <em>Click any one</em> to see what it does.</h2>
+      <p class="lead" style="margin-top:14px">Data flows in from the ledger, decisions flow out to the AR team, and
+      lessons flow back into memory — so tomorrow's run starts smarter than today's.</p>
+
+      <div class="maplegend" aria-hidden="true">
+        <span><span class="sw"></span> Data in</span>
+        <span><span class="sw out"></span> Decisions out</span>
+        <span><span class="sw lrn"></span> Learning</span>
+        <span><span class="sw dash"></span> Lessons feed the next run</span>
+        <span class="hint">Click any box to see what it does</span>
+      </div>
+
+      <div class="mapframe">
+        <div class="mapviewport" id="mapViewport">
+          <div class="mapcanvas" id="mapCanvas">
+            <svg class="mapsvg" viewBox="0 0 1000 800" aria-hidden="true" xmlns:xlink="http://www.w3.org/1999/xlink">
+              <defs>
+                <marker id="mIn" markerWidth="7" markerHeight="7" refX="4.4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#315c75"/></marker>
+                <marker id="mOut" markerWidth="7" markerHeight="7" refX="4.4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b06a28"/></marker>
+                <marker id="mLrn" markerWidth="7" markerHeight="7" refX="4.4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2e6b3f"/></marker>
+                <marker id="mTool" markerWidth="7" markerHeight="7" refX="4.4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b909b"/></marker>
+                <path id="lessonPath" d="M858 470 C 930 380, 968 220, 892 148 C 842 102, 742 128, 660 182" fill="none"/>
+                <path id="dataPath" d="M500 122 C 506 132, 516 138, 522 146 M0 0" fill="none"/>
+              </defs>
+              <!-- data in -->
+              <path class="c-in" d="M500 122 C 506 132, 518 136, 524 144" marker-end="url(#mIn)"/>
+              <path class="c-in" d="M526 262 C 520 274, 512 284, 506 296" marker-end="url(#mIn)"/>
+              <!-- tool loop -->
+              <path class="c-tool" d="M650 330 C 682 320, 700 316, 726 310" marker-end="url(#mTool)"/>
+              <path class="c-tool" d="M728 348 C 702 356, 684 360, 652 366" marker-end="url(#mTool)"/>
+              <!-- decisions out -->
+              <path class="c-out" d="M350 382 C 322 396, 306 406, 290 420" marker-end="url(#mOut)"/>
+              <path class="c-out" d="M500 424 C 502 440, 503 454, 504 470" marker-end="url(#mOut)"/>
+              <path class="c-out" d="M158 528 C 172 596, 240 664, 322 692" marker-end="url(#mOut)"/>
+              <!-- learning -->
+              <path class="c-lrn" d="M505 596 C 500 614, 494 630, 488 644" marker-end="url(#mLrn)"/>
+              <path class="c-lrn" d="M646 700 C 724 692, 800 662, 846 622" marker-end="url(#mLrn)"/>
+              <!-- lessons feed the next run -->
+              <path class="c-dash" d="M858 470 C 930 380, 968 220, 892 148 C 842 102, 742 128, 660 182" marker-end="url(#mLrn)"/>
+              <circle r="5" fill="#2e6b3f" opacity=".85">
+                <animateMotion dur="6s" repeatCount="indefinite"><mpath xlink:href="#lessonPath" href="#lessonPath"/></animateMotion>
+              </circle>
+            </svg>
+
+            <button class="mnode" id="n-schedule" data-id="schedule">
+              <span class="mnode-card">
+                <span class="mnode-k">Runs itself</span>
+                <span class="mnode-t">Daily Schedule</span>
+                <span class="mnode-d">Starts on its own every weekday at 6:00 AM Eastern. No analyst prompt, no manual start.</span>
+              </span>
+            </button>
+
+            <button class="mnode" id="n-gather" data-id="gather">
+              <span class="mnode-card">
+                <span class="mnode-k">Step 1 &middot; Gather</span>
+                <span class="mnode-t">Context Loader</span>
+                <span class="mnode-d">Collects the overnight aging report, payments that landed, promises coming due, and every rule the agent has learned so far.</span>
+              </span>
+            </button>
+
+            <button class="mnode core" id="n-reason" data-id="reason">
+              <span class="mnode-card">
+                <span class="mnode-k">Step 2 &middot; Reason &middot; Claude</span>
+                <span class="mnode-t">The Reasoning Engine</span>
+                <span class="mnode-d">Reads each past-due invoice, judges what it needs — remind, escalate, flag, or wait — and writes its reasoning in plain language.</span>
+              </span>
+            </button>
+
+            <button class="mnode f-tool" id="n-tools" data-id="tools">
+              <span class="mnode-card">
+                <span class="mnode-k">Tool belt &middot; called mid-thought</span>
+                <span class="mnode-t">Agentic Tools</span>
+                <span class="toollist">
+                  <code>fetch_aging_report()</code>
+                  <code>get_payment_history()</code>
+                  <code>read_email_thread()</code>
+                  <code>draft_reminder()</code>
+                  <code>log_promise_to_pay()</code>
+                  <code>flag_dispute()</code>
+                </span>
+              </span>
+            </button>
+
+            <button class="mnode f-out" id="n-record" data-id="record">
+              <span class="mnode-card">
+                <span class="mnode-k">Step 3 &middot; Record</span>
+                <span class="mnode-t">The Decision Record</span>
+                <span class="mnode-d">Every recommendation lands in a database before anyone sees it: the call, the confidence, the draft, and the written rationale.</span>
+                <span class="dbchip">Database &middot; permanent audit trail</span>
+              </span>
+            </button>
+
+            <button class="mnode f-out" id="n-digest" data-id="digest">
+              <span class="mnode-card">
+                <span class="mnode-k">Step 4 &middot; Deliver</span>
+                <span class="mnode-t">The Morning Digest</span>
+                <span class="mnode-d">A ranked queue waiting for the AR team at 8:00 AM. They approve, edit, or reject each drafted action in minutes.</span>
+              </span>
+            </button>
+
+            <button class="mnode f-lrn" id="n-learn" data-id="learn">
+              <span class="mnode-card">
+                <span class="mnode-k">Step 5 &middot; Learn &middot; weekly</span>
+                <span class="mnode-t">The Refinement Pass</span>
+                <span class="mnode-d">Once a week, a second agent compares the calls against analyst edits and payments received, distills what worked, and writes improved rules to memory.</span>
+              </span>
+            </button>
+
+            <button class="mnode f-lrn" id="n-memory" data-id="memory">
+              <span class="mnode-card">
+                <span class="mnode-k">What it has learned</span>
+                <span class="mnode-t">The Memory Table</span>
+                <span class="mnode-d">A separate table of plain-language collection rules the agent has earned through use. Versioned, reviewable, reversible.</span>
+                <span class="dbchip">Database &middot; versioned rules</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- mobile stacked fallback -->
+        <div class="mapstack" aria-hidden="false">
+          <button class="mnode" data-id="schedule"><span class="mnode-card"><span class="mnode-k">Runs itself</span><span class="mnode-t">Daily Schedule</span><span class="mnode-d">Every weekday, 6:00 AM. No manual start.</span></span></button>
+          <div class="stackarrow"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+          <button class="mnode" data-id="gather"><span class="mnode-card"><span class="mnode-k">Step 1 &middot; Gather</span><span class="mnode-t">Context Loader</span><span class="mnode-d">Aging report, overnight payments, promises due, learned rules.</span></span></button>
+          <div class="stackarrow"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+          <button class="mnode core" data-id="reason"><span class="mnode-card"><span class="mnode-k">Step 2 &middot; Reason &middot; Claude</span><span class="mnode-t">The Reasoning Engine</span><span class="mnode-d">Judges every past-due invoice, calling tools mid-thought.</span></span></button>
+          <div class="stackarrow"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+          <button class="mnode f-tool" data-id="tools"><span class="mnode-card"><span class="mnode-k">Tool belt</span><span class="mnode-t">Agentic Tools</span><span class="mnode-d">fetch_aging_report, get_payment_history, read_email_thread, draft_reminder, log_promise_to_pay, flag_dispute.</span></span></button>
+          <div class="stackarrow"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+          <button class="mnode f-out" data-id="record"><span class="mnode-card"><span class="mnode-k">Step 3 &middot; Record</span><span class="mnode-t">The Decision Record</span><span class="mnode-d">Every call lands in an append-only audit database first.</span><span class="dbchip">Database &middot; audit trail</span></span></button>
+          <div class="stackarrow"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+          <button class="mnode f-out" data-id="digest"><span class="mnode-card"><span class="mnode-k">Step 4 &middot; Deliver</span><span class="mnode-t">The Morning Digest</span><span class="mnode-d">Ranked queue for the AR team. Approve, edit, or reject.</span></span></button>
+          <div class="stackarrow"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+          <button class="mnode f-lrn" data-id="learn"><span class="mnode-card"><span class="mnode-k">Step 5 &middot; Learn &middot; weekly</span><span class="mnode-t">The Refinement Pass</span><span class="mnode-d">Compares calls vs. outcomes, distills lessons, updates rules.</span></span></button>
+          <div class="stackarrow"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+          <button class="mnode f-lrn" data-id="memory"><span class="mnode-card"><span class="mnode-k">What it has learned</span><span class="mnode-t">The Memory Table</span><span class="mnode-d">Plain-language rules, versioned and reversible. Feeds the next run.</span><span class="dbchip">Database &middot; versioned rules</span></span></button>
+        </div>
+
+        <div class="flowinfo" id="flowInfo">
+          <span class="fi-tag" id="fiTag">Component</span>
+          <div class="fi-body">
+            <h4 id="fiTitle">The whole system at a glance</h4>
+            <p id="fiText">Blue lines carry data in, orange lines carry decisions out, and green lines carry learning. The dashed loop is the point: what the memory table holds today shapes what the context loader assembles tomorrow. Click any box for the detail.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DAILY RUN SIMULATOR ================= -->
+  <section id="run" style="scroll-margin-top:120px">
+    <div class="wrap">
+      <div class="simhead">
+        <div>
+          <div class="eyebrow">A day in the life</div>
+          <h2 class="sech">The daily run, <em>simulated</em></h2>
+          <p class="lead" style="margin-top:14px">Press start to watch one autonomous morning turn an aging report into
+          recorded, reviewed collection decisions — then watch the agent get smarter for next week.</p>
+        </div>
+        <div class="simctl">
+          <button class="sim-btn" id="simStart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><span>Start the run</span></button>
+          <div class="sim-speed" role="group" aria-label="Playback speed">
+            <button class="on" data-speed="1">1&times;</button>
+            <button data-speed="2">2&times;</button>
+            <button data-speed="4">4&times;</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="simphases" id="simPhases" aria-hidden="true">
+        <div class="sp"><span class="sp-dot">1</span><span class="sp-cap">Trigger</span></div>
+        <div class="sp"><span class="sp-dot">2</span><span class="sp-cap">Gather</span></div>
+        <div class="sp"><span class="sp-dot">3</span><span class="sp-cap">Reason</span></div>
+        <div class="sp"><span class="sp-dot">4</span><span class="sp-cap">Record</span></div>
+        <div class="sp"><span class="sp-dot">5</span><span class="sp-cap">Deliver</span></div>
+        <div class="sp"><span class="sp-dot">6</span><span class="sp-cap">Review</span></div>
+        <div class="sp"><span class="sp-dot">7</span><span class="sp-cap">Learn</span></div>
+      </div>
+
+      <div class="simgrid">
+        <div class="simterm">
+          <div class="simterm-bar">
+            <span class="hsc-dots"><i></i><i></i><i></i></span>
+            <span class="simterm-title">remit &middot; run log</span>
+            <span class="simterm-state" id="simState">Idle</span>
+          </div>
+          <div class="simlog" id="simLog">
+            <div class="idle">The run hasn't started yet.<br>Press <b>Start the run</b> to watch the agent work a morning.</div>
+          </div>
+        </div>
+
+        <div class="simside">
+          <div class="statrow">
+            <div class="stat"><div class="sv" id="stInv">0</div><div class="sk">Invoices scanned</div></div>
+            <div class="stat"><div class="sv" id="stAmt">$0</div><div class="sk">Past-due tracked</div></div>
+            <div class="stat"><div class="sv" id="stAct">0</div><div class="sk">Actions drafted</div></div>
+            <div class="stat good"><div class="sv" id="stSent">0</div><div class="sk">Sent without approval</div></div>
+          </div>
+
+          <div class="queue">
+            <div class="queue-h"><span>Drafted actions</span><small>waiting for the AR team</small></div>
+            <div class="queue-list" id="simQueue">
+              <div class="idleq">Decisions appear here as the agent makes them.</div>
+            </div>
+          </div>
+
+          <div class="memdiff" id="memDiff">
+            <div class="mh"><b>The Memory Table</b><span class="ver">v7 &rarr; v8</span></div>
+            <div class="rule kept"><span class="rn">#12 &middot; kept</span>"Juniper &amp; Co reliably pays by day 30 — reminders before then create friction."</div>
+            <div class="rule add"><span class="rn">#15 &middot; new</span>"Customers with fewer than 3 invoices of history: hold outreach until day 21. Analysts rejected early contact 3 times this week."</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= UNDER THE HOOD ================= -->
+  <section class="band" id="hood" style="scroll-margin-top:120px">
+    <div class="wrap">
+      <div class="eyebrow">Under the hood</div>
+      <h2 class="sech">The architecture: a harness, three memories, and an <em>ops loop</em></h2>
+      <p class="lead" style="margin-top:14px">Everything inside a single run is ephemeral — the context is rebuilt fresh
+      every morning. What persists lives in databases, and what improves the agent ships like software.</p>
+
+      <div style="margin-top:40px">
+        <div class="eyebrow" style="font-size:10px; letter-spacing:.15em">The harness &middot; one run</div>
+        <div class="grid g4" style="margin-top:16px">
+          <div class="card">
+            <span class="tag det">Deterministic</span>
+            <h3>Working memory</h3>
+            <p>Assembled fresh each run: the system prompt, today's ledger snapshot, overnight payments, and the learned
+            rules pulled from memory. Nothing stale accumulates between runs.</p>
+          </div>
+          <div class="card">
+            <span class="tag llm">LLM &middot; loop</span>
+            <h3>Reason &plus; tools</h3>
+            <p>Claude judges each invoice, calling tools mid-thought — <code>get_payment_history</code>,
+            <code>read_email_thread</code>, <code>draft_reminder</code> — and folding results back into its reasoning.</p>
+          </div>
+          <div class="card">
+            <span class="tag gate">Guardrails</span>
+            <h3>End-of-loop checks</h3>
+            <p>Confidence below 0.70 routes to a human-judgment queue instead of a drafted action. And the hard rule:
+            the agent drafts, it never sends.</p>
+          </div>
+          <div class="card">
+            <span class="tag db">Databases</span>
+            <h3>Record &plus; deliver</h3>
+            <p>Every decision is appended to the audit record before the digest is assembled. The digest is the only
+            surface a human ever needs to touch.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:44px">
+        <div class="eyebrow" style="font-size:10px; letter-spacing:.15em">Three kinds of memory</div>
+        <div class="grid g3" style="margin-top:16px">
+          <div class="card">
+            <span class="tag db">Episodic &middot; SQL</span>
+            <h3>What happened</h3>
+            <p>Every dated invoice event: reminders sent, promises made, payments received, disputes raised. The raw
+            material the weekly refinement pass replays.</p>
+          </div>
+          <div class="card">
+            <span class="tag db">Semantic &middot; distilled facts</span>
+            <h3>What's durably true</h3>
+            <p>Customer payment behavior, distilled: "Beacon Health pays late 4 of 6 invoices." Retrieved by relevance
+            when an invoice for that customer comes up.</p>
+          </div>
+          <div class="card">
+            <span class="tag det">Procedural &middot; files</span>
+            <h3>How to act</h3>
+            <p>The dunning playbooks: how to write a first reminder vs. a final notice, when a call beats an email,
+            what tone fits a 30-year account vs. a new one.</p>
+          </div>
+        </div>
+        <div class="reprow">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+          <p><strong>Consolidation runs on a cheaper model.</strong> After enough new episodes accumulate, a summarizer
+          agent distills episodic history into semantic facts — so the expensive reasoning model reads three crisp
+          sentences about a customer instead of ninety raw ledger events.</p>
+        </div>
+      </div>
+
+      <div style="margin-top:44px">
+        <div class="eyebrow" style="font-size:10px; letter-spacing:.15em">LLM Ops &middot; how the agent itself improves</div>
+        <div class="opsflow" aria-label="Operations loop: trace, evaluate and observe, diagnose, gate, release">
+          <span class="opstep">Trace<small>one trace per run</small></span>
+          <span class="oparr">&rarr;</span>
+          <span class="opstep">Eval + Observe<small>judge scores tone &amp; accuracy; track tokens, latency, errors</small></span>
+          <span class="oparr">&rarr;</span>
+          <span class="opstep">Diagnose<small>where and why it broke</small></span>
+          <span class="oparr">&rarr;</span>
+          <span class="opstep">Gate<small>eval must pass</small></span>
+          <span class="oparr">&rarr;</span>
+          <span class="opstep">Release<small>new prompt version, config, or tool change</small></span>
+        </div>
+        <p class="lead" style="margin-top:20px; font-size:15px">Two loops improve two different things. The weekly
+        refinement pass improves the agent's <b>judgment</b> by writing better rules to memory. The ops loop improves
+        the agent's <b>machinery</b> — prompts, tools, retrieval settings — and every change ships behind an eval gate,
+        the same way software ships behind tests.</p>
+      </div>
+
+      <div class="teaser">
+        <div class="t-txt">
+          <h3>The pattern is bigger than receivables.</h3>
+          <p>Schedule &rarr; gather &rarr; reason &rarr; record &rarr; deliver &rarr; learn is a template for any recurring
+          back-office judgment task. Invoicing is just the demo.</p>
+        </div>
+        <a class="btn" href="/portfolio/">Back to the portfolio</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">CS Ventures</div>
+        <div class="footer-tagline">Remit &middot; a working mock of a receivables agent that improves every week.</div>
+      </div>
+      <div class="footer-links"><a href="/">Home</a><a href="/portfolio/">Portfolio</a><a href="/DeckForge/">DeckForge</a><a href="/product-team-loop/">Product Team Loop</a><a href="mailto:info@cs-ventures.us">info@cs-ventures.us</a></div>
+    </div>
+    <div class="footer-bottom">CS Ventures &copy; 2026 &middot; Simulated data only — no real ledger is attached.</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ── scale the system-map canvas to its container ── */
+  var vp = document.getElementById('mapViewport');
+  var canvas = document.getElementById('mapCanvas');
+  function fitMap(){
+    if (!vp || !canvas) return;
+    var w = vp.clientWidth;
+    if (w <= 0) return;
+    var s = Math.min(w / 1000, 1);
+    canvas.style.transform = 'scale(' + s + ')';
+    vp.style.height = (800 * s) + 'px';
+  }
+  addEventListener('resize', fitMap);
+  fitMap();
+
+  /* ── system map: click a node, get the detail ── */
+  var NODE_INFO = {
+    schedule: { tag:'Deterministic · cron', cls:'det', title:'Daily Schedule',
+      text:'A scheduler wakes the harness every weekday at 6:00 AM Eastern. No analyst prompt, no manual start — the run begins whether or not anyone is watching. If the run fails, the failure itself is logged and surfaced in the morning digest.' },
+    gather: { tag:'Deterministic · gather', cls:'det', title:'Context Loader',
+      text:'Builds the working memory for the run: the overnight aging report, payments and remittances that landed, promise-to-pay dates coming due today, the system prompt, and every collection rule in the memory table. Everything inside the run is ephemeral — the context is rebuilt fresh each morning, so nothing stale accumulates.' },
+    reason: { tag:'LLM · Claude', cls:'llm', title:'The Reasoning Engine',
+      text:'Reads each past-due invoice and judges what it needs: a reminder, an escalation, a dispute flag, or deliberate silence. It calls tools mid-thought — payment history, the email thread, a drafted reminder — and writes its reasoning in plain language, one paragraph per call, so an analyst can always see why.' },
+    tools: { tag:'Tools · harness-executed', cls:'det', title:'The Tool Belt',
+      text:'Six tools the model can call whenever its reasoning needs them. The model decides which and when; the harness executes them and feeds the results back into the loop. Read tools hit the ledger and CRM; write tools only ever produce drafts and log entries — never an outbound email.' },
+    record: { tag:'Database · append-only', cls:'db', title:'The Decision Record',
+      text:'Every recommendation lands here before anyone sees it: the call, the confidence score, the drafted email or call script, and the written rationale. The table is append-only — nothing is edited in place — so any decision can be audited months later, including the ones analysts rejected.' },
+    digest: { tag:'Human gate · deliver', cls:'gate', title:'The Morning Digest',
+      text:'A ranked queue waiting for the AR team at 8:00 AM, highest dollar-risk first. Analysts approve, edit, or reject each drafted action in minutes. The agent never sends an email itself — approval is the gate, and every analyst edit is captured as feedback for the weekly refinement pass.' },
+    learn: { tag:'LLM · weekly', cls:'llm', title:'The Refinement Pass',
+      text:'Every Friday a second agent replays the week: which reminders got invoices paid, which drafts analysts rewrote, which escalations turned out to be noise. It distills what worked into improved plain-language rules and writes them to the memory table as a new version. Better judgment, zero retraining.' },
+    memory: { tag:'Database · versioned rules', cls:'db', title:'The Memory Table',
+      text:'A separate table of collection rules the agent has earned through use — "Juniper & Co reliably pays by day 30; don’t remind before then." Every version is kept, every rule is readable by a human, and any rule can be reverted. The rules are data, not model weights — which is exactly why the loop is safe.' }
+  };
+  var fiTag = document.getElementById('fiTag'),
+      fiTitle = document.getElementById('fiTitle'),
+      fiText = document.getElementById('fiText');
+  var nodes = document.querySelectorAll('.mnode[data-id]');
+  nodes.forEach(function(n){
+    n.addEventListener('click', function(){
+      var info = NODE_INFO[n.dataset.id];
+      if (!info) return;
+      nodes.forEach(function(m){ m.classList.toggle('active', m.dataset.id === n.dataset.id); });
+      fiTag.textContent = info.tag;
+      fiTag.className = 'fi-tag ' + info.cls;
+      fiTitle.textContent = info.title;
+      fiText.textContent = info.text;
+    });
+  });
+
+  /* ── daily run simulator ── */
+  var EVENTS = [
+    { t:'06:00:00', k:'sys',  ph:0, x:'Scheduler fired — weekday run <b>#142</b> started. No human involved.' },
+    { t:'06:00:02', k:'tool', ph:1, x:'<b>fetch_aging_report()</b> → 42 open invoices · $213,900 outstanding · 11 past due', st:{inv:42, amt:213900} },
+    { t:'06:00:03', k:'tool', ph:1, x:'<b>fetch_overnight_payments()</b> → 3 remittances landed · $22,150 applied' },
+    { t:'06:00:03', k:'db',   ph:1, x:'<b>memory.load()</b> → 14 learned rules · version <b>v7</b>' },
+    { t:'06:00:04', k:'sys',  ph:1, x:'Working memory assembled: system prompt + today’s ledger + 14 rules. Rebuilt fresh — nothing carried over from yesterday.' },
+    { t:'06:00:06', k:'llm',  ph:2, x:'Reasoning over 11 past-due invoices, highest dollar risk first…' },
+    { t:'06:00:09', k:'llm',  ph:2, x:'<b>INV-2093 · Beacon Health · $31,900 · 41 days past due.</b> A promise-to-pay was logged June 30 — no remittance since.' },
+    { t:'06:00:11', k:'tool', ph:2, x:'<b>get_payment_history("Beacon Health")</b> → paid late on 4 of last 6 invoices · one prior broken promise' },
+    { t:'06:00:14', k:'llm',  ph:2, x:'Judgment: broken promise plus a rising balance → <b>escalate to the AR manager</b> with a call script. Confidence 0.88.',
+      qa:{b:'esc', bl:'Escalate', c:'0.88', t:'Beacon Health <span>INV-2093 · $31,900 · 41d</span>', d:'Broken promise-to-pay + late on 4 of 6. Call script drafted for AR manager.'} },
+    { t:'06:00:17', k:'llm',  ph:2, x:'<b>INV-2041 · Acme Industrial · $18,400 · 34 days.</b> Second reminder sent 10 days ago — opened twice, no reply.' },
+    { t:'06:00:19', k:'llm',  ph:2, x:'Judgment: email is exhausted → <b>draft a phone-call brief</b> for the analyst. Confidence 0.81.',
+      qa:{b:'call', bl:'Call brief', c:'0.81', t:'Acme Industrial <span>INV-2041 · $18,400 · 34d</span>', d:'Two reminders opened, none answered. Time for a voice, not a template.'} },
+    { t:'06:00:22', k:'tool', ph:2, x:'<b>read_email_thread("Cobalt Freight")</b> → customer disputes the freight surcharge on line 3' },
+    { t:'06:00:25', k:'llm',  ph:2, x:'<b>INV-2115 · Cobalt Freight · $2,300 · 8 days.</b> Judgment: this is a dispute, not delinquency → <b>pause dunning, route to sales</b>. Confidence 0.92.',
+      qa:{b:'dis', bl:'Dispute', c:'0.92', t:'Cobalt Freight <span>INV-2115 · $2,300 · 8d</span>', d:'Disputed surcharge on line 3. Dunning paused; routed to the account owner.'} },
+    { t:'06:00:27', k:'db',   ph:2, x:'memory rule <b>#12 (v3)</b>: "Juniper &amp; Co reliably pays by day 30 — reminders before then create friction."' },
+    { t:'06:00:29', k:'llm',  ph:2, x:'<b>INV-2088 · Juniper &amp; Co · $12,750 · 22 days.</b> Judgment: <b>deliberate silence</b> — hold until day 30 per rule #12. Confidence 0.90.',
+      qa:{b:'hold', bl:'Hold', c:'0.90', t:'Juniper &amp; Co <span>INV-2088 · $12,750 · 22d</span>', d:'Learned rule #12: always pays by day 30. A reminder now would only annoy.'} },
+    { t:'06:00:32', k:'tool', ph:2, x:'<b>draft_reminder("Northwind Retail")</b> → 92-word friendly reminder drafted · statement attached' },
+    { t:'06:00:33', k:'llm',  ph:2, x:'<b>INV-2107 · Northwind Retail · $6,250 · 12 days.</b> Judgment: first reminder, warm tone — they’ve always paid after one nudge. Confidence 0.84.',
+      qa:{b:'rem', bl:'Reminder', c:'0.84', t:'Northwind Retail <span>INV-2107 · $6,250 · 12d</span>', d:'First friendly reminder with the statement attached. History says one nudge is enough.'} },
+    { t:'06:00:36', k:'llm',  ph:2, x:'<b>INV-2120 · Ravenna Foods · $4,980 · 15 days.</b> New customer, thin history. Confidence <b>0.58</b> — below the 0.70 bar.' },
+    { t:'06:00:36', k:'guard',ph:2, x:'Guardrail: low confidence → routed to the <b>needs-human-judgment</b> queue instead of a drafted action.',
+      qa:{b:'hum', bl:'Human', c:'0.58', cl:'low', t:'Ravenna Foods <span>INV-2120 · $4,980 · 15d</span>', d:'Too little history to judge. Flagged for an analyst instead of guessing.'} },
+    { t:'06:00:38', k:'db',   ph:3, x:'<b>decision_record.insert(6 rows)</b> → the call, the confidence, the draft, and the rationale for each. Append-only.', st:{act:6} },
+    { t:'06:00:38', k:'guard',ph:3, x:'Guardrail: the agent drafts, it <b>never sends</b>. Emails sent without approval: 0 — today and every day.' },
+    { t:'07:58:00', k:'sys',  ph:4, x:'Morning digest assembled: 6 actions ranked by dollar risk, waiting for the AR team.' },
+    { t:'08:12:00', k:'gate', ph:5, x:'Analyst review: <b>4 approved</b> as-is · <b>1 edited</b> (softened the Acme call script) · <b>1 rejected</b> (Ravenna — too new, wait a week).' },
+    { t:'08:13:00', k:'db',   ph:5, x:'Outcomes written back to the decision record. Those edits are Friday’s training material.' },
+    { t:'FRI 17:00', k:'learn',ph:6, x:'Refinement pass replays the week: 31 calls vs. analyst outcomes and payments received.' },
+    { t:'FRI 17:02', k:'learn',ph:6, x:'Found: analysts rejected early outreach to <b>new customers</b> 3 times. Every Juniper hold resolved by day 30 — rule #12 confirmed.' },
+    { t:'FRI 17:03', k:'db',  ph:6, x:'<b>memory.write(v8)</b> → rule #15 added: "Customers with &lt;3 invoices of history: hold outreach until day 21."', mem:true },
+    { t:'FRI 17:03', k:'sys', ph:6, x:'Run complete. Next run: Monday 6:00 AM — one rule smarter than this week.' }
+  ];
+
+  var log = document.getElementById('simLog'),
+      queue = document.getElementById('simQueue'),
+      phases = document.querySelectorAll('#simPhases .sp'),
+      startBtn = document.getElementById('simStart'),
+      stateEl = document.getElementById('simState'),
+      memDiff = document.getElementById('memDiff'),
+      stInv = document.getElementById('stInv'),
+      stAmt = document.getElementById('stAmt'),
+      stAct = document.getElementById('stAct');
+  var speed = 1, timer = null, idx = 0, running = false;
+
+  document.querySelectorAll('.sim-speed button').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.sim-speed button').forEach(function(o){ o.classList.remove('on'); });
+      b.classList.add('on');
+      speed = parseFloat(b.dataset.speed);
+    });
+  });
+
+  function setPhase(p){
+    phases.forEach(function(el, i){
+      el.classList.toggle('done', i < p);
+      el.classList.toggle('active', i === p);
+    });
+  }
+
+  function countTo(el, target, fmt, ms){
+    var start = performance.now();
+    function tick(now){
+      var k = Math.min((now - start) / ms, 1);
+      var v = Math.round(target * (1 - Math.pow(1 - k, 3)));
+      el.textContent = fmt ? fmt(v) : v;
+      if (k < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  function fmtMoney(v){ return '$' + v.toLocaleString('en-US'); }
+
+  function emit(ev){
+    var line = document.createElement('div');
+    line.className = 'sl ' + ev.k;
+    var kl = {sys:'SYS', tool:'TOOL', llm:'CLAUDE', db:'DB', guard:'GUARD', gate:'HUMAN', learn:'LEARN'}[ev.k];
+    line.innerHTML = '<span class="t">' + ev.t + '</span><span class="k">' + kl + '</span><span class="x">' + ev.x + '</span>';
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+
+    setPhase(ev.ph);
+    if (ev.st){
+      if (ev.st.inv) countTo(stInv, ev.st.inv, null, 900);
+      if (ev.st.amt) countTo(stAmt, ev.st.amt, fmtMoney, 1100);
+      if (ev.st.act) countTo(stAct, ev.st.act, null, 700);
+    }
+    if (ev.qa){
+      var idleq = queue.querySelector('.idleq');
+      if (idleq) idleq.remove();
+      var card = document.createElement('div');
+      card.className = 'qa';
+      card.innerHTML = '<span class="qb ' + ev.qa.b + '">' + ev.qa.bl + '</span>' +
+        '<span class="qm"><span class="q1">' + ev.qa.t + '</span><span class="q2">' + ev.qa.d + '</span></span>' +
+        '<span class="qc' + (ev.qa.cl ? ' ' + ev.qa.cl : '') + '">' + ev.qa.c + '</span>';
+      queue.appendChild(card);
+      queue.scrollTop = queue.scrollHeight;
+    }
+    if (ev.mem) memDiff.classList.add('show');
+  }
+
+  function step(){
+    if (idx >= EVENTS.length){
+      running = false;
+      stateEl.textContent = 'Complete';
+      stateEl.classList.remove('run');
+      startBtn.querySelector('span').textContent = 'Run it again';
+      startBtn.removeAttribute('disabled');
+      phases.forEach(function(el){ el.classList.add('done'); el.classList.remove('active'); });
+      return;
+    }
+    emit(EVENTS[idx]);
+    idx++;
+    var delay = (EVENTS[idx - 1].k === 'llm' ? 1350 : 950) / speed;
+    timer = setTimeout(step, delay);
+  }
+
+  function reset(){
+    clearTimeout(timer);
+    idx = 0;
+    log.innerHTML = '';
+    queue.innerHTML = '<div class="idleq">Decisions appear here as the agent makes them.</div>';
+    memDiff.classList.remove('show');
+    stInv.textContent = '0';
+    stAmt.textContent = '$0';
+    stAct.textContent = '0';
+    phases.forEach(function(el){ el.classList.remove('done','active'); });
+  }
+
+  startBtn.addEventListener('click', function(){
+    if (running) return;
+    reset();
+    running = true;
+    stateEl.textContent = 'Running';
+    stateEl.classList.add('run');
+    startBtn.setAttribute('disabled','');
+    startBtn.querySelector('span').textContent = 'Running…';
+    step();
+  });
+
+  /* auto-start once when the simulator scrolls into view */
+  if ('IntersectionObserver' in window){
+    var fired = false;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting && !fired && !running){
+          fired = true;
+          io.disconnect();
+          startBtn.click();
+        }
+      });
+    }, { threshold: .35 });
+    io.observe(document.getElementById('run'));
+  }
+})();
+</script>
+
+</body>
+</html>
