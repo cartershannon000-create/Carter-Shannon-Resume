@@ -23,13 +23,13 @@
   "name": "Remit",
   "url": "https://cs-ventures.us/remit/",
   "applicationCategory": "FinanceApplication",
-  "description": "Remit is a working mock of an autonomous accounts-receivable agent. A scheduler wakes it every weekday morning; it loads the open-invoice ledger and every collection rule it has learned, reasons over each past-due invoice with tool calls, records every decision to an append-only audit database before anyone sees it, and delivers a ranked morning digest for the AR team to approve. A weekly refinement pass compares its calls against analyst outcomes and payments received, then writes improved plain-language rules to a versioned memory table — so the agent gets better with zero retraining.",
+  "description": "Remit is a working mock of an autonomous accounts-receivable agent. A scheduler wakes it every weekday morning; it loads the open-invoice ledger and every collection rule it has learned, reasons over each past-due invoice with tool calls, records every decision to an append-only audit database before anyone sees it, and delivers a ranked morning digest for the AR team to approve. A weekly refinement pass compares its calls against analyst outcomes and payments received, then writes improved plain-language rules to a versioned memory table, so the agent gets better with zero retraining.",
   "featureList": [
     "Autonomous daily runs on a schedule, no manual start",
     "Fresh working memory assembled each run: ledger, overnight payments, learned rules",
     "Tool-calling reasoning loop over every past-due invoice",
     "Append-only decision record: the call, the confidence, the draft, the rationale",
-    "Human-gated morning digest — the agent drafts, it never sends",
+    "Human-gated morning digest: the agent drafts and never sends",
     "Weekly refinement pass that writes versioned, reviewable rules to memory"
   ],
   "keywords": "AI agent, accounts receivable, invoicing, dunning, collections, agent memory, LLM ops, audit trail, agentic workflow",
@@ -46,7 +46,7 @@
     --radius:12px;
     --r-lg:22px;
     --ease:cubic-bezier(.32,.72,0,1);
-    /* cool, modern neutral canvas — matches the rest of the portfolio */
+    /* cool, modern neutral canvas, matches the rest of the portfolio */
     --bg:#eff0f2;
     --panel:#f7f8fa;
     --panel-strong:#ffffff;
@@ -124,7 +124,7 @@
   .hsc-badge.p1{background:rgba(200,90,70,.18); color:#e59a8c}
   @media(max-width:680px){ .hsc-k{width:70px} .hsc-v{font-size:12.5px} .hsc-step{gap:10px} }
   .hsc-title b{color:rgba(245,245,247,.78); font-weight:700}
-  /* hero console animation: the run replays itself — steps land in order, latest one glows */
+  /* hero console animation: the run replays itself; steps land in order, latest one glows */
   .hero-showcase.anim .hsc-step{opacity:0; transform:translateY(7px); transition:opacity .45s var(--ease), transform .45s var(--ease), background .4s var(--ease)}
   .hero-showcase.anim .hsc-step.in{opacity:1; transform:none}
   .hero-showcase.anim .hsc-step.now{background:rgba(86,187,110,.06)}
@@ -199,12 +199,17 @@
   .fi-body h4{font-family:var(--font-display); font-weight:700; margin:0 0 5px; font-size:16px; color:var(--ink)}
   .fi-body p{margin:0; color:var(--muted); font-size:14px; line-height:1.6}
 
-  /* ============ DAILY RUN — VISUAL EXPLAINER ============ */
+  /* ============ DAILY RUN, VISUAL EXPLAINER ============ */
   .simhead{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap}
   .simctl{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
   .sim-btn{appearance:none; cursor:pointer; display:inline-flex; align-items:center; gap:9px; font:600 14px/1 var(--font-body); padding:13px 22px; border-radius:999px; border:1px solid var(--green); background:var(--green); color:#fff; transition:background .2s var(--ease), transform .25s var(--ease)}
   .sim-btn:hover{background:#286038; transform:translateY(-1px)}
   .sim-btn svg{width:14px; height:14px; fill:currentColor}
+  .sim-speed{display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:var(--panel)}
+  .sim-speed button{appearance:none; cursor:pointer; border:0; background:transparent; padding:12px 15px; font:800 12px/1 var(--font-body); color:var(--muted); transition:background .2s var(--ease), color .2s var(--ease)}
+  .sim-speed button:hover{color:var(--ink)}
+  .sim-speed button.on{background:var(--green); color:#fff}
+  .sim-speed button + button{border-left:1px solid var(--line)}
 
   .simphases{display:flex; margin:30px 0 22px; overflow-x:auto; padding-bottom:4px}
   .sp{appearance:none; border:0; background:transparent; font-family:inherit; padding:0; cursor:pointer; flex:1 0 88px; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative}
@@ -405,7 +410,7 @@
       <p class="lead">Remit wakes up every weekday morning, reads the aging report, and decides what every past-due
       invoice needs: a reminder, an escalation, a dispute flag, or deliberate silence. Every decision is recorded for
       audit before anyone sees it. Every analyst review becomes a lesson. A weekly refinement pass turns those lessons
-      into better judgment — with no retraining project.</p>
+      into better judgment, with no retraining project.</p>
       <div class="pills">
         <span class="pill"><b>Runs itself</b> &middot; weekdays, 6:00 AM, no prompt</span>
         <span class="pill"><b>Drafts, never sends</b> &middot; a human approves every action</span>
@@ -445,7 +450,7 @@
       <div class="eyebrow">Inside the system</div>
       <h2 class="sech">Every box is a real component. <em>Click any one</em> to see what it does.</h2>
       <p class="lead" style="margin-top:14px">Data flows in from the ledger, decisions flow out to the AR team, and
-      lessons flow back into memory — so tomorrow's run starts smarter than today's.</p>
+      lessons flow back into memory, so tomorrow's run starts smarter than today's.</p>
 
       <div class="maplegend" aria-hidden="true">
         <span><span class="sw"></span> Data in</span>
@@ -590,7 +595,7 @@
     </div>
   </section>
 
-  <!-- ================= DAILY RUN — VISUAL EXPLAINER ================= -->
+  <!-- ================= DAILY RUN, VISUAL EXPLAINER ================= -->
   <section id="run" style="scroll-margin-top:120px">
     <div class="wrap">
       <div class="simhead">
@@ -598,11 +603,15 @@
           <div class="eyebrow">A day in the life</div>
           <h2 class="sech">One morning, <em>five moments</em></h2>
           <p class="lead" style="margin-top:14px">This is everything the agent does, shown as a story. It plays on its
-          own &mdash; or click any step to jump there.</p>
+          own. Use the controls to pause, change speed, or jump to any step.</p>
         </div>
         <div class="simctl">
-          <button class="sim-btn" id="vxPlay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><span>Play</span></button>
-        </div>
+          <button class="sim-btn" id="vxPlay" aria-label="Play or pause the walkthrough"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><span>Play</span></button>
+          <div class="sim-speed" id="vxSpeed" role="group" aria-label="Playback speed">
+            <button data-speed="0.5">0.5&times;</button>
+            <button data-speed="1" class="on">1&times;</button>
+            <button data-speed="2">2&times;</button>
+          </div>
       </div>
 
       <div class="simphases" id="vxSteps">
@@ -627,9 +636,9 @@
               <div class="vsrc mem" data-s data-d="450"><b>Everything it has learned</b><span>14 collection rules &middot; memory v7</span></div>
             </div>
             <div class="vdown" data-s data-d="600"></div>
-            <div class="vwm" data-s data-d="500"><span class="vk2">Working memory</span><span class="vk3">Rebuilt fresh every morning &mdash; nothing stale carries over</span></div>
+            <div class="vwm" data-s data-d="500"><span class="vk2">Working memory</span><span class="vk3">Rebuilt fresh every morning, and nothing stale carries over</span></div>
           </div>
-          <p class="vfoot" data-s data-d="900"><b>Why it matters:</b> no analyst has to remember to run anything. The agent starts with today’s
+          <p class="vfoot" data-s data-d="900"><b>Why it matters:</b> no analyst has to remember to run anything. The agent starts with today's
           numbers and every lesson it has ever earned.</p>
         </div>
 
@@ -647,30 +656,30 @@
               <div class="vbrain-k"><span class="d"></span>What the agent is thinking &middot; in plain language</div>
               <div class="vbrainstack">
                 <div class="vth" data-s data-d="900" data-swap="brain" data-hl="vi1">
-                  <p>“Beacon promised to pay last week &mdash; nothing arrived. And they’ve paid late on 4 of their last 6 invoices. This is past reminders.”</p>
+                  <p>"Beacon promised to pay last week and nothing arrived. They have paid late on 4 of their last 6 invoices. This is past reminders."</p>
                   <div class="vchips"><span class="vchip">Checked payment history</span><span class="vchip">Checked the promise log</span></div>
                   <div class="vverd">&rarr; Escalate to the AR manager, call script drafted<span class="conf">confidence 0.88</span></div>
                 </div>
                 <div class="vth" data-s data-swap="brain" data-hl="vi2" data-d="2900">
-                  <p>“Northwind is only 12 days out and has always paid after one friendly nudge. Keep it warm.”</p>
+                  <p>"Northwind is only 12 days out and has always paid after one friendly nudge. Keep it warm."</p>
                   <div class="vchips"><span class="vchip">Drafted a 92-word reminder</span></div>
                   <div class="vverd">&rarr; Send reminder with the statement attached<span class="conf">confidence 0.84</span></div>
                 </div>
                 <div class="vth" data-s data-swap="brain" data-hl="vi3" data-d="2900">
-                  <p>“Juniper always pays by day 30 &mdash; a reminder now would only annoy a good customer. Rule #12 says leave them alone.”</p>
+                  <p>"Juniper always pays by day 30, so a reminder now would only annoy a good customer. Rule #12 says leave them alone."</p>
                   <div class="vchips"><span class="vchip mem">Used learned rule #12</span></div>
                   <div class="vverd">&rarr; Wait, on purpose. Check again at day 30<span class="conf">confidence 0.90</span></div>
                 </div>
                 <div class="vth" data-s data-swap="brain" data-hl="vi4" data-d="2900">
-                  <p>“Ravenna is brand new &mdash; there’s not enough history to judge them. I’m not confident enough to act.”</p>
+                  <p>"Ravenna is brand new, with too little history to judge them. I am not confident enough to act."</p>
                   <div class="vchips"><span class="vchip guard">Guardrail: below the 0.70 bar</span></div>
                   <div class="vverd">&rarr; Hand this one to a person<span class="conf low">confidence 0.58</span></div>
                 </div>
               </div>
             </div>
           </div>
-          <p class="vfoot" data-s data-d="1800"><b>Why it matters:</b> the right move isn’t always “send another email.” Escalate, remind,
-          deliberately wait, or admit uncertainty &mdash; and every call comes with its reasoning written out.</p>
+          <p class="vfoot" data-s data-d="1800"><b>Why it matters:</b> the right move is not always to send another email. Escalate, remind,
+          deliberately wait, or admit uncertainty, and every call comes with its reasoning written out.</p>
         </div>
 
         <!-- scene 3 -->
@@ -684,33 +693,33 @@
             <div class="vt-r" data-s data-d="600"><b>Ravenna Foods</b><span class="call hum">Ask a human</span><span class="cf low">0.58</span><span class="why">Too new to judge</span></div>
           </div>
           <p class="vfoot" data-s data-d="1100"><b>Why it matters:</b> the call, the confidence, and the written reasoning land in a database
-          that can never be edited &mdash; so any decision can be audited months later, including the rejected ones.</p>
+          that can never be edited, so any decision can be audited months later, including the rejected ones.</p>
         </div>
 
         <!-- scene 4 -->
         <div class="vscene" data-scene="3">
-          <div class="vhead"><span class="vk">8:00 AM &middot; the human gate</span><h3>An analyst reviews the queue in minutes &mdash; nothing sends itself</h3></div>
+          <div class="vhead"><span class="vk">8:00 AM &middot; the human gate</span><h3>An analyst reviews the queue in minutes, and nothing sends itself</h3></div>
           <div class="vq">
             <div class="vq-r" data-s><span class="l"><b>Beacon Health &middot; escalation + call script</b><span>$31,900 &middot; highest dollar risk, ranked first</span></span><span class="vdec ok" data-s data-d="900">&#10003; Approved</span></div>
             <div class="vq-r" data-s data-d="500"><span class="l"><b>Northwind Retail &middot; friendly reminder</b><span>$6,250 &middot; statement attached</span></span><span class="vdec edit" data-s data-d="900">&#9998; Approved, softened</span></div>
             <div class="vq-r" data-s data-d="500"><span class="l"><b>Juniper &amp; Co &middot; wait until day 30</b><span>$12,750 &middot; per learned rule #12</span></span><span class="vdec ok" data-s data-d="900">&#10003; Approved</span></div>
             <div class="vq-r" data-s data-d="500"><span class="l"><b>Ravenna Foods &middot; flagged for judgment</b><span>$4,980 &middot; the agent asked for help</span></span><span class="vdec rej" data-s data-d="900">&#10007; Hold a week</span></div>
           </div>
-          <div class="vzero" data-s data-d="1000"><span class="z">0</span><p><b>Emails sent by the agent itself.</b> It drafts, ranks, and explains &mdash; a person approves every send. Every edit becomes feedback.</p></div>
+          <div class="vzero" data-s data-d="1000"><span class="z">0</span><p><b>Emails sent by the agent itself.</b> It drafts, ranks, and explains. A person approves every send, and every edit becomes feedback.</p></div>
           <p class="vfoot" data-s data-d="900"><b>Why it matters:</b> the agent does the reading, checking, and drafting; the human keeps the
           judgment and the send button.</p>
         </div>
 
         <!-- scene 5 -->
         <div class="vscene" data-scene="4">
-          <div class="vhead"><span class="vk">Friday 5:00 PM &middot; the loop closes</span><h3>It compares its calls to what actually happened &mdash; and gets smarter</h3></div>
+          <div class="vhead"><span class="vk">Friday 5:00 PM &middot; the loop closes</span><h3>It compares its calls to what actually happened, and gets smarter</h3></div>
           <div class="vs5">
             <div class="vwk" data-s>
               <h4>What this week showed</h4>
               <ul>
-                <li data-s data-d="700"><span><b>Analysts rejected early outreach to new customers 3 times</b> &mdash; the agent was too eager.</span></li>
-                <li data-s data-d="800"><span><b>Every “wait” on Juniper resolved by day 30</b> &mdash; rule #12 keeps being right.</span></li>
-                <li data-s data-d="800"><span><b>Beacon paid 2 days after the manager’s call</b> &mdash; the escalation was the right read.</span></li>
+                <li data-s data-d="700"><span><b>Analysts rejected early outreach to new customers 3 times</b>: the agent was too eager.</span></li>
+                <li data-s data-d="800"><span><b>Every "wait" on Juniper resolved by day 30</b>: rule #12 keeps being right.</span></li>
+                <li data-s data-d="800"><span><b>Beacon paid 2 days after the manager's call</b>: the escalation was the right read.</span></li>
               </ul>
             </div>
             <div class="vpass" data-s data-d="800">
@@ -719,12 +728,12 @@
             </div>
             <div class="vmem" data-s data-d="600">
               <div class="mh"><b>The memory table</b><span class="ver" data-s data-d="1400">v7 &rarr; v8</span></div>
-              <div class="rule kept">#12 &middot; kept &middot; “Juniper &amp; Co reliably pays by day 30 &mdash; don’t remind before then.”</div>
-              <div class="rule add" data-s data-d="1000"><span class="rn">#15 &middot; new</span>“Customers with fewer than 3 invoices of history: hold outreach until day 21.”</div>
+              <div class="rule kept">#12 &middot; kept &middot; "Juniper &amp; Co reliably pays by day 30; do not remind before then."</div>
+              <div class="rule add" data-s data-d="1000"><span class="rn">#15 &middot; new</span>"Customers with fewer than 3 invoices of history: hold outreach until day 21."</div>
             </div>
           </div>
           <p class="vfoot" data-s data-d="1200"><b>Why it matters:</b> the lessons are written as plain-language rules a human can read, veto,
-          or roll back &mdash; and Monday’s run starts one rule smarter. No retraining, ever.</p>
+          or roll back, and Monday's run starts one rule smarter. No retraining, ever.</p>
         </div>
 
       </div>
@@ -736,7 +745,7 @@
     <div class="wrap">
       <div class="eyebrow">Under the hood</div>
       <h2 class="sech">The architecture: a harness, three memories, and an <em>ops loop</em></h2>
-      <p class="lead" style="margin-top:14px">Everything inside a single run is ephemeral — the context is rebuilt fresh
+      <p class="lead" style="margin-top:14px">Everything inside a single run is ephemeral: the context is rebuilt fresh
       every morning. What persists lives in databases, and what improves the agent ships like software.</p>
 
       <div style="margin-top:40px">
@@ -751,8 +760,8 @@
           <div class="card">
             <span class="tag llm">LLM &middot; loop</span>
             <h3>Reason &plus; tools</h3>
-            <p>Claude judges each invoice, calling tools mid-thought — <code>get_payment_history</code>,
-            <code>read_email_thread</code>, <code>draft_reminder</code> — and folding results back into its reasoning.</p>
+            <p>Claude judges each invoice, calling tools mid-thought like <code>get_payment_history</code>,
+            <code>read_email_thread</code>, and <code>draft_reminder</code>, folding results back into its reasoning.</p>
           </div>
           <div class="card">
             <span class="tag gate">Guardrails</span>
@@ -780,7 +789,7 @@
           </div>
           <div class="card">
             <span class="tag db">Semantic &middot; distilled facts</span>
-            <h3>What's durably true</h3>
+            <h3>What is durably true</h3>
             <p>Customer payment behavior, distilled: "Beacon Health pays late 4 of 6 invoices." Retrieved by relevance
             when an invoice for that customer comes up.</p>
           </div>
@@ -794,7 +803,7 @@
         <div class="reprow">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
           <p><strong>Consolidation runs on a cheaper model.</strong> After enough new episodes accumulate, a summarizer
-          agent distills episodic history into semantic facts — so the expensive reasoning model reads three crisp
+          agent distills episodic history into semantic facts, so the expensive reasoning model reads three crisp
           sentences about a customer instead of ninety raw ledger events.</p>
         </div>
       </div>
@@ -814,7 +823,7 @@
         </div>
         <p class="lead" style="margin-top:20px; font-size:15px">Two loops improve two different things. The weekly
         refinement pass improves the agent's <b>judgment</b> by writing better rules to memory. The ops loop improves
-        the agent's <b>machinery</b> — prompts, tools, retrieval settings — and every change ships behind an eval gate,
+        the agent's <b>machinery</b> (prompts, tools, retrieval settings), and every change ships behind an eval gate,
         the same way software ships behind tests.</p>
       </div>
 
@@ -840,7 +849,7 @@
       </div>
       <div class="footer-links"><a href="/">Home</a><a href="/portfolio/">Portfolio</a><a href="/DeckForge/">DeckForge</a><a href="/product-team-loop/">Product Team Loop</a><a href="mailto:info@cs-ventures.us">info@cs-ventures.us</a></div>
     </div>
-    <div class="footer-bottom">CS Ventures &copy; 2026 &middot; Simulated data only — no real ledger is attached.</div>
+    <div class="footer-bottom">CS Ventures &copy; 2026 &middot; Simulated data only. No real ledger is attached.</div>
   </div>
 </footer>
 
@@ -865,21 +874,21 @@
   /* ── system map: click a node, get the detail ── */
   var NODE_INFO = {
     schedule: { tag:'Deterministic · cron', cls:'det', title:'Daily Schedule',
-      text:'A scheduler wakes the harness every weekday at 6:00 AM Eastern. No analyst prompt, no manual start — the run begins whether or not anyone is watching. If the run fails, the failure itself is logged and surfaced in the morning digest.' },
+      text:'A scheduler wakes the harness every weekday at 6:00 AM Eastern. No analyst prompt, no manual start. The run begins whether or not anyone is watching. If the run fails, the failure itself is logged and surfaced in the morning digest.' },
     gather: { tag:'Deterministic · gather', cls:'det', title:'Context Loader',
-      text:'Builds the working memory for the run: the overnight aging report, payments and remittances that landed, promise-to-pay dates coming due today, the system prompt, and every collection rule in the memory table. Everything inside the run is ephemeral — the context is rebuilt fresh each morning, so nothing stale accumulates.' },
+      text:'Builds the working memory for the run: the overnight aging report, payments and remittances that landed, promise-to-pay dates coming due today, the system prompt, and every collection rule in the memory table. Everything inside the run is ephemeral: the context is rebuilt fresh each morning, so nothing stale accumulates.' },
     reason: { tag:'LLM · Claude', cls:'llm', title:'The Reasoning Engine',
-      text:'Reads each past-due invoice and judges what it needs: a reminder, an escalation, a dispute flag, or deliberate silence. It calls tools mid-thought — payment history, the email thread, a drafted reminder — and writes its reasoning in plain language, one paragraph per call, so an analyst can always see why.' },
+      text:'Reads each past-due invoice and judges what it needs: a reminder, an escalation, a dispute flag, or deliberate silence. It calls tools mid-thought (payment history, the email thread, a drafted reminder) and writes its reasoning in plain language, one paragraph per call, so an analyst can always see why.' },
     tools: { tag:'Tools · harness-executed', cls:'det', title:'The Tool Belt',
-      text:'Six tools the model can call whenever its reasoning needs them. The model decides which and when; the harness executes them and feeds the results back into the loop. Read tools hit the ledger and CRM; write tools only ever produce drafts and log entries — never an outbound email.' },
+      text:'Six tools the model can call whenever its reasoning needs them. The model decides which and when; the harness executes them and feeds the results back into the loop. Read tools hit the ledger and CRM; write tools only ever produce drafts and log entries, never an outbound email.' },
     record: { tag:'Database · append-only', cls:'db', title:'The Decision Record',
-      text:'Every recommendation lands here before anyone sees it: the call, the confidence score, the drafted email or call script, and the written rationale. The table is append-only — nothing is edited in place — so any decision can be audited months later, including the ones analysts rejected.' },
+      text:'Every recommendation lands here before anyone sees it: the call, the confidence score, the drafted email or call script, and the written rationale. The table is append-only and nothing is edited in place, so any decision can be audited months later, including the ones analysts rejected.' },
     digest: { tag:'Human gate · deliver', cls:'gate', title:'The Morning Digest',
-      text:'A ranked queue waiting for the AR team at 8:00 AM, highest dollar-risk first. Analysts approve, edit, or reject each drafted action in minutes. The agent never sends an email itself — approval is the gate, and every analyst edit is captured as feedback for the weekly refinement pass.' },
+      text:'A ranked queue waiting for the AR team at 8:00 AM, highest dollar-risk first. Analysts approve, edit, or reject each drafted action in minutes. The agent never sends an email itself. Approval is the gate, and every analyst edit is captured as feedback for the weekly refinement pass.' },
     learn: { tag:'LLM · weekly', cls:'llm', title:'The Refinement Pass',
       text:'Every Friday a second agent replays the week: which reminders got invoices paid, which drafts analysts rewrote, which escalations turned out to be noise. It distills what worked into improved plain-language rules and writes them to the memory table as a new version. Better judgment, zero retraining.' },
     memory: { tag:'Database · versioned rules', cls:'db', title:'The Memory Table',
-      text:'A separate table of collection rules the agent has earned through use — "Juniper & Co reliably pays by day 30; don’t remind before then." Every version is kept, every rule is readable by a human, and any rule can be reverted. The rules are data, not model weights — which is exactly why the loop is safe.' }
+      text:'A separate table of collection rules the agent has earned through use, like "Juniper & Co reliably pays by day 30; do not remind before then." Every version is kept, every rule is readable by a human, and any rule can be reverted. The rules are data, not model weights, which is exactly why the loop is safe.' }
   };
   var fiTag = document.getElementById('fiTag'),
       fiTitle = document.getElementById('fiTitle'),
@@ -897,95 +906,140 @@
     });
   });
 
-  /* ── daily run: scene-based visual explainer ── */
+  /* ── daily run: scene-based visual explainer with transport controls ── */
   var stage = document.getElementById('vxStage');
   var vscenes = [].slice.call(document.querySelectorAll('.vscene'));
   var vdots = [].slice.call(document.querySelectorAll('#vxSteps .sp'));
   var playBtn = document.getElementById('vxPlay');
-  var vTimers = [], vCur = 0, vPlaying = false, vPass = 0;
+  var speedBtns = [].slice.call(document.querySelectorAll('#vxSpeed [data-speed]'));
   var vStatic = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (vStatic && stage) stage.classList.add('vx-static');
 
-  function vClear(){ vTimers.forEach(clearTimeout); vTimers = []; }
-  function vLater(fn, ms){ vTimers.push(setTimeout(fn, ms)); }
-  function vBtn(label){ if (playBtn) playBtn.querySelector('span').textContent = label; }
+  var V_HOLD = 3400;
+  var vSpeed = 1, vCur = 0, vPlaying = false;
+  var vTimeline = [], vIdx = 0, vElapsed = 0, vTimer = null, vLast = 0;
 
-  function vShow(i, auto){
-    vClear();
-    var pass = ++vPass;
-    function guard(fn){ return function(){ if (pass === vPass) fn(); }; }
-    vCur = i;
-    vPlaying = !!auto;
-    vscenes.forEach(function(s, j){ s.classList.toggle('active', j === i); });
-    vdots.forEach(function(d, j){
-      d.classList.toggle('done', j < i);
-      d.classList.toggle('active', j === i);
-    });
+  function vFinished(){ return vCur === vscenes.length - 1 && vIdx >= vTimeline.length; }
+  function vSetIcon(playing){
+    if (!playBtn) return;
+    var svg = playBtn.querySelector('.pi');
+    if (svg) svg.innerHTML = playing
+      ? '<rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect>'
+      : '<path d="M8 5.5v13l11-6.5z"></path>';
+    var label = playBtn.querySelector('span');
+    if (label) label.textContent = playing ? 'Pause' : (vFinished() ? 'Replay' : 'Play');
+  }
+
+  function vReveal(scene, el){
+    var g = el.getAttribute('data-swap');
+    if (g){ scene.querySelectorAll('[data-swap="' + g + '"]').forEach(function(o){ if (o !== el) o.classList.remove('on'); }); }
+    el.classList.add('on');
+    var hl = el.getAttribute('data-hl');
+    if (hl){
+      scene.querySelectorAll('.vinv').forEach(function(o){ o.classList.remove('hl'); });
+      var tgt = document.getElementById(hl);
+      if (tgt){ tgt.classList.add('hl'); tgt.classList.add('on'); }
+    }
+  }
+
+  function vBuild(i){
     var scene = vscenes[i];
     var els = [].slice.call(scene.querySelectorAll('[data-s]')).filter(function(e){ return e.getAttribute('data-s') !== 'skip'; });
+    var events = [], t = 250;
+    els.forEach(function(el){
+      t += parseInt(el.getAttribute('data-d') || '650', 10);
+      (function(node, at){ events.push({ at: at, fn: function(){ vReveal(scene, node); } }); })(el, t);
+      if (el.getAttribute('data-swap') === 'brain'){
+        var hl = el.getAttribute('data-hl');
+        var host = hl && document.getElementById(hl);
+        var stamp = host && host.querySelector('.vstamp');
+        if (stamp){ (function(st, at){ events.push({ at: at, fn: function(){ st.classList.add('on'); } }); })(stamp, t + 1500); }
+      }
+    });
+    events.push({ at: t + V_HOLD, advance: true });
+    events.sort(function(a, b){ return a.at - b.at; });
+    return events;
+  }
+
+  function vFinal(i){
+    var scene = vscenes[i];
+    scene.querySelectorAll('[data-s]').forEach(function(e){ if (e.getAttribute('data-s') !== 'skip') e.classList.add('on'); });
+    scene.querySelectorAll('.vstamp').forEach(function(e){ e.classList.add('on'); });
+    var groups = {};
+    scene.querySelectorAll('[data-swap]').forEach(function(e){ groups[e.getAttribute('data-swap')] = e; });
+    Object.keys(groups).forEach(function(k){
+      scene.querySelectorAll('[data-swap="' + k + '"]').forEach(function(e){ if (e !== groups[k]) e.classList.remove('on'); });
+    });
+    scene.querySelectorAll('.vinv').forEach(function(o){ o.classList.remove('hl'); });
+    var last = groups['brain'];
+    if (last){ var hl = last.getAttribute('data-hl'); var tgt = hl && document.getElementById(hl); if (tgt) tgt.classList.add('hl'); }
+  }
+
+  function vLoad(i){
+    vCur = i;
+    vscenes.forEach(function(s, j){ s.classList.toggle('active', j === i); });
+    vdots.forEach(function(d, j){ d.classList.toggle('done', j < i); d.classList.toggle('active', j === i); });
+    var scene = vscenes[i];
     scene.querySelectorAll('[data-s]').forEach(function(e){ e.classList.remove('on'); });
     scene.querySelectorAll('.vinv.hl').forEach(function(e){ e.classList.remove('hl'); });
-    if (vStatic){
-      scene.querySelectorAll('[data-s]').forEach(function(e){ e.classList.add('on'); });
-      return;
+    if (vStatic){ vFinal(i); vTimeline = []; vIdx = 0; vElapsed = 0; return; }
+    vTimeline = vBuild(i); vIdx = 0; vElapsed = 0;
+  }
+
+  function vTick(){
+    if (!vPlaying) return;
+    var now = performance.now();
+    vElapsed += Math.min(now - vLast, 250) * vSpeed; vLast = now;
+    while (vIdx < vTimeline.length && vTimeline[vIdx].at <= vElapsed){
+      var ev = vTimeline[vIdx++];
+      if (ev.advance){
+        if (vCur < vscenes.length - 1){ vLoad(vCur + 1); }
+        else { vPause(); return; }
+      } else if (ev.fn){ ev.fn(); }
     }
-    var t = 250;
-    els.forEach(function(e){
-      t += parseInt(e.getAttribute('data-d') || '650', 10);
-      vLater(guard(function(){
-        var g = e.getAttribute('data-swap');
-        if (g){
-          scene.querySelectorAll('[data-swap="' + g + '"]').forEach(function(o){ if (o !== e) o.classList.remove('on'); });
-        }
-        e.classList.add('on');
-        var hl = e.getAttribute('data-hl');
-        if (hl){
-          scene.querySelectorAll('.vinv').forEach(function(o){ o.classList.remove('hl'); });
-          var tgt = document.getElementById(hl);
-          if (tgt){ tgt.classList.add('hl'); tgt.classList.add('on'); }
-          /* reveal the previous invoice's stamp when moving on */
-        }
-        if (g === 'brain'){
-          /* stamp the invoice this thought decides, just after the thought lands */
-          var stamp = hl && document.getElementById(hl) ? document.getElementById(hl).querySelector('.vstamp') : null;
-          if (stamp){ vTimers.push(setTimeout(guard(function(){ stamp.classList.add('on'); }), 1500)); }
-        }
-      }), t);
-    });
-    if (vPlaying){
-      vLater(guard(function(){
-        if (vCur < vscenes.length - 1){ vShow(vCur + 1, true); }
-        else { vPlaying = false; vBtn('Replay'); }
-      }), t + 3400);
-    }
+  }
+
+  function vPlay(){
+    if (vStatic) return;
+    if (vFinished()) vLoad(0);
+    else if (vElapsed === 0) vLoad(vCur);
+    vPlaying = true; vSetIcon(true);
+    vLast = performance.now();
+    if (vTimer) clearInterval(vTimer);
+    vTimer = setInterval(vTick, 60);
+  }
+
+  function vPause(){
+    vPlaying = false; vSetIcon(false);
+    if (vTimer){ clearInterval(vTimer); vTimer = null; }
   }
 
   if (playBtn){
-    playBtn.addEventListener('click', function(){
-      vBtn('Playing\u2026');
-      vShow(0, true);
-    });
+    playBtn.addEventListener('click', function(){ if (vPlaying) vPause(); else vPlay(); });
   }
+  speedBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      vSpeed = parseFloat(b.getAttribute('data-speed')) || 1;
+      speedBtns.forEach(function(o){ o.classList.toggle('on', o === b); });
+    });
+  });
   vdots.forEach(function(d){
     d.addEventListener('click', function(){
-      vBtn('Play');
-      vShow(parseInt(d.getAttribute('data-i'), 10), false);
+      var i = parseInt(d.getAttribute('data-i'), 10);
+      vLoad(i);
+      if (vPlaying){ vLast = performance.now(); }
+      else vFinal(i);
+      vSetIcon(vPlaying);
     });
   });
 
-  /* auto-start once when scrolled into view */
   if (stage){
-    vShow(0, false);
+    vLoad(0); vFinal(0);
     if ('IntersectionObserver' in window && !vStatic){
       var vFired = false;
       var vIo = new IntersectionObserver(function(entries){
         entries.forEach(function(e){
-          if (e.isIntersecting && !vFired){
-            vFired = true;
-            vIo.disconnect();
-            vBtn('Playing\u2026');
-            vShow(0, true);
-          }
+          if (e.isIntersecting && !vFired){ vFired = true; vIo.disconnect(); vLoad(0); vPlay(); }
         });
       }, { threshold: .3 });
       vIo.observe(stage);
@@ -993,7 +1047,7 @@
   }
 })();
 
-/* hero console: replay the autonomous run — reveal the five steps in order, hold, loop */
+/* hero console: replay the autonomous run; reveal the five steps in order, hold, loop */
 (function(){
   var card = document.querySelector('.hero-showcase');
   if (!card) return;
