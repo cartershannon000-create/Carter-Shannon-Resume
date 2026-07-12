@@ -4,114 +4,166 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>CS Ventures — Control plane</title>
+<title>CS Ventures — Control</title>
 <style>
-:root{--bg:#0f1c17;--panel:#16261f;--line:#24382e;--ink:#eaf2ec;--muted:#9fb5a8;
---green:#3ecf8e;--amber:#e3b341;--red:#e5675b}
+:root{--ink:#141715;--muted:#6b7772;--line:#e3e6e2;--bg:#eef0ec;--card:#fff;--hero:#0f1512;
+--green:#1f9d6b;--greenbg:#e7f5ee;--amber:#b7791f;--amberbg:#fbf1dd;--red:#c0392b;--redbg:#fbe9e7}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
-font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-.wrap{max-width:1040px;margin:0 auto;padding:24px}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-h1{font-size:20px;margin:0}h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:26px 0 10px}
-a{color:var(--green)}.muted{color:var(--muted)}.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
-table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line)}
-td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}tr:last-child td{border-bottom:none}
-.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;background:#20342b;color:var(--muted)}
-.pill.run{background:#123a2a;color:var(--green)}.pill.gate{background:#3a3113;color:var(--amber)}.pill.fail{background:#3a1a17;color:var(--red)}
-.btn{border:0;border-radius:8px;padding:7px 14px;font-weight:600;cursor:pointer;font-size:13px;margin-right:6px}
-.btn.go{background:var(--green);color:#062015}.btn.no{background:#2a1d1b;color:var(--red)}.btn.rel{background:var(--amber);color:#241d05}
-.empty{color:var(--muted);padding:10px}.ev{font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--line)}.ev:last-child{border:none}
-.login{max-width:380px;margin:12vh auto}.login input{width:100%;padding:11px 12px;margin:6px 0;border-radius:8px;border:1px solid var(--line);background:#0c1712;color:var(--ink);font-size:15px}
+font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,sans-serif}
+.hero{background:var(--hero);color:#fff;padding:34px 0 0}
+.hz{max-width:1080px;margin:0 auto;padding:0 24px}
+.tag{color:#8fa89b;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.hero h1{font-size:30px;margin:6px 0 2px;letter-spacing:-.4px}
+.hero p{color:#b7c6bd;margin:2px 0 20px;max-width:640px}
+.rowtop{display:flex;justify-content:space-between;align-items:flex-end}
+.who{color:#9fb2a8;font-size:13px;padding-bottom:14px}.who a{color:#6fd7a6}
+.tabs{display:flex;gap:2px}
+.tabs button{background:transparent;border:0;color:#9fb2a8;font-weight:600;font-size:14px;
+padding:12px 16px;cursor:pointer;border-bottom:2px solid transparent}
+.tabs button.active{color:#fff;border-bottom-color:var(--green)}
+main{max-width:1080px;margin:0 auto;padding:26px 24px 60px}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:26px 0 12px;font-weight:700}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:720px){.tiles{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.tile .n{font-size:30px;font-weight:700;letter-spacing:-.5px}.tile .l{color:var(--muted);font-size:13px;margin-top:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 4px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--line)}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}tr:last-child td{border-bottom:none}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700}
+.p-critical{background:var(--redbg);color:var(--red)}.p-high{background:var(--amberbg);color:var(--amber)}
+.p-medium{background:#eef3f7;color:#2c6b8f}.p-low,.p-backlog{background:#eef0ec;color:var(--muted)}
+.st{background:#eef0ec;color:var(--muted);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:600}
+.st.run{background:var(--greenbg);color:var(--green)}.st.gate{background:var(--amberbg);color:var(--amber)}.st.fail{background:var(--redbg);color:var(--red)}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted)}
+.empty{color:var(--muted);padding:14px}
+.btn{border:0;border-radius:8px;padding:7px 13px;font-weight:700;cursor:pointer;font-size:13px;margin-right:6px}
+.btn.go{background:var(--green);color:#fff}.btn.no{background:#f4dedb;color:var(--red)}.btn.rel{background:var(--amber);color:#fff}
+.rec{padding:14px}.rec+.rec{border-top:1px solid var(--line)}.rec .t{font-weight:600}.rec .d{color:var(--muted);font-size:13.5px;margin-top:3px}
+.ev{font-size:13px;padding:8px 14px;border-bottom:1px solid var(--line);color:#3a453f}.ev:last-child{border:none}
+.hidden{display:none}
+.login{max-width:380px;margin:16vh auto}.login h1{font-size:22px}.login p{color:var(--muted)}
+.login input{width:100%;padding:11px 12px;margin:6px 0;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:15px}
 .login .btn{width:100%;margin-top:8px}.err{color:var(--red);min-height:20px;font-size:13px}
-#dash{display:none}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <!-- Login -->
-  <div id="login" class="login">
-    <h1>CS Ventures — Chief of Staff</h1>
-    <p class="muted">Control plane sign-in.</p>
-    <form id="loginForm">
-      <input id="email" type="email" placeholder="email" autocomplete="username">
-      <input id="password" type="password" placeholder="password" autocomplete="current-password">
-      <div class="err" id="loginErr"></div>
-      <button class="btn go" type="submit">Sign in</button>
-    </form>
-  </div>
 
-  <!-- Dashboard -->
-  <div id="dash">
-    <div class="top"><h1>Chief of Staff — Control plane</h1>
-      <div class="muted"><span id="who"></span> · <a href="#" id="signout">sign out</a></div></div>
-    <h2>Pending approvals</h2><div class="card" id="approvals"><div class="empty">loading…</div></div>
-    <h2>Ready for release</h2><div class="card" id="release"><div class="empty">loading…</div></div>
-    <h2>Work items</h2><div class="card" id="work"><div class="empty">loading…</div></div>
-    <h2>Recent events</h2><div class="card" id="events"><div class="empty">loading…</div></div>
-  </div>
+<div id="login" class="login">
+  <h1>CS Ventures — Control</h1>
+  <p>Sign in.</p>
+  <form id="loginForm">
+    <input id="email" type="email" placeholder="email" autocomplete="username">
+    <input id="password" type="password" placeholder="password" autocomplete="current-password">
+    <div class="err" id="loginErr"></div>
+    <button class="btn go" type="submit">Sign in</button>
+  </form>
+</div>
+
+<div id="app" class="hidden">
+  <div class="hero"><div class="hz">
+    <div class="rowtop">
+      <div><div class="tag">CS Ventures · Control</div><h1 id="heroTitle">AI Work Audit</h1></div>
+      <div class="who"><span id="who"></span> · <a href="#" id="signout">sign out</a></div>
+    </div>
+    <p id="heroSub">Conversation activity becomes evidence; evidence becomes reviewable recommendations.</p>
+    <div class="tabs">
+      <button data-tab="audit" class="active">Audit</button>
+      <button data-tab="cp">Control plane</button>
+    </div>
+  </div></div>
+
+  <main>
+    <section id="tab-audit">
+      <div class="tiles" id="auTiles"><div class="empty">loading…</div></div>
+      <h2>Explicit task outcomes</h2><div class="tiles" id="auOutcomes"></div>
+      <h2>Recommendations</h2><div class="card" id="auRecs"><div class="empty">loading…</div></div>
+      <h2>Top sessions</h2><div class="card" id="auSessions"><div class="empty">loading…</div></div>
+      <h2>Recent audit runs</h2><div class="card" id="auRuns"><div class="empty">loading…</div></div>
+    </section>
+
+    <section id="tab-cp" class="hidden">
+      <h2>Pending approvals</h2><div class="card" id="approvals"><div class="empty">loading…</div></div>
+      <h2>Ready for release</h2><div class="card" id="release"><div class="empty">loading…</div></div>
+      <h2>Work items</h2><div class="card" id="work"><div class="empty">loading…</div></div>
+      <h2>Recent events</h2><div class="card" id="events"><div class="empty">loading…</div></div>
+    </section>
+  </main>
 </div>
 
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const SUPABASE_URL='https://dlturcdfemudmwylbpqe.supabase.co';
+const SUPABASE_KEY='sb_publishable_oQF52rpJyHG0AC4iJm9Vvg_hUqOgUWS';
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { db:{ schema:'cos' } });
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const num=n=>Number(n||0).toLocaleString();
+async function rpc(fn,args){const{data,error}=await sb.rpc(fn,args||{});if(error)throw error;return data;}
+let tab='audit', timer=null;
 
-// Publishable key + project URL are safe to ship to the browser — access is protected
-// server-side by RLS + the is_owner() checks inside the cos.* RPC functions.
-const SUPABASE_URL = 'https://dlturcdfemudmwylbpqe.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_oQF52rpJyHG0AC4iJm9Vvg_hUqOgUWS';
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { db: { schema: 'cos' } });
+const HERO={audit:['AI Work Audit','Conversation activity becomes evidence; evidence becomes reviewable recommendations.'],
+            cp:['Chief of Staff','Approve plans, gate releases, and watch the agent system operate.']};
 
-const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s == null ? '' : s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-function pill(state){let c='';if(['RUNNING','LEASED','COMPLETED','DONE'].includes(state))c='run';
-  if(state==='READY_FOR_RELEASE_APPROVAL'||state==='PENDING_PLAN_APPROVAL')c='gate';
-  if(['FAILED','BLOCKED','CANCELED'].includes(state))c='fail';return `<span class="pill ${c}">${esc(state)}</span>`;}
-
-let timer=null;
-async function showDash(session){
-  $('login').style.display='none'; $('dash').style.display='block';
-  $('who').textContent=session.user.email;
-  await load(); if(timer) clearInterval(timer); timer=setInterval(load,5000);
+function setTab(t){tab=t;
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  $('tab-audit').classList.toggle('hidden',t!=='audit');
+  $('tab-cp').classList.toggle('hidden',t!=='cp');
+  $('heroTitle').textContent=HERO[t][0]; $('heroSub').textContent=HERO[t][1];
+  load();
 }
-function showLogin(){ if(timer) clearInterval(timer); $('dash').style.display='none'; $('login').style.display='block'; }
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
 
-async function rpc(fn,args){const {data,error}=await sb.rpc(fn,args||{}); if(error) throw error; return data;}
+function tile(n,l){return `<div class="tile"><div class="n">${esc(n)}</div><div class="l">${esc(l)}</div></div>`;}
+function pPill(p){return `<span class="pill p-${esc(p)}">${esc(p)}</span>`;}
+function stPill(s){let c='';if(['RUNNING','LEASED','COMPLETED','DONE'].includes(s))c='run';
+  if(s==='READY_FOR_RELEASE_APPROVAL'||s==='PENDING_PLAN_APPROVAL')c='gate';
+  if(['FAILED','BLOCKED','CANCELED'].includes(s))c='fail';return `<span class="st ${c}">${esc(s)}</span>`;}
 
-window.act = async (fn,args)=>{ try{ await rpc(fn,args); }catch(e){ alert('action failed: '+(e.message||e)); } load(); };
+async function loadAudit(){
+  let d; try{ d=await rpc('api_audit_state'); }catch(e){ return; }
+  $('auTiles').innerHTML=tile(num(d.interaction_records),'interaction records')+tile(num(d.sessions),'sessions')
+    +tile(num(d.recommendations_count),'recommendations')+tile(num(d.active_memory),'active memory rules');
+  const o=d.outcomes||{};
+  $('auOutcomes').innerHTML=tile(num(o.tasks),'tasks recorded')+tile(num(o.completed),'completed')
+    +tile(num(o.verified),'verified states')+tile(num(o.blocked),'blocked states');
+  $('auRecs').innerHTML=(d.recommendations||[]).length?d.recommendations.map(r=>`<div class="rec">
+    <div class="t">${esc(r.title)} ${pPill(r.priority)} <span class="st">${esc(r.status)}</span></div>
+    <div class="d">${esc(r.description)}</div></div>`).join(''):'<div class=empty>none</div>';
+  $('auSessions').innerHTML=(d.top_sessions||[]).length?('<table><tr><th>session</th><th>events</th><th>project</th><th>provider</th></tr>'+
+    d.top_sessions.map(s=>`<tr><td class=mono>${esc((s.session_id||'').slice(0,12))}…</td><td>${num(s.events)}</td><td>${esc(s.project||'')}</td><td>${esc(s.provider||'')}</td></tr>`).join('')+'</table>'):'<div class=empty>none</div>';
+  $('auRuns').innerHTML=(d.runs||[]).length?('<table><tr><th>run</th><th>status</th><th>events</th><th>created</th></tr>'+
+    d.runs.map(r=>`<tr><td class=mono>${esc(r.run_id)}</td><td>${esc(r.status)}</td><td>${num(r.total_events)}</td><td class=mono>${esc((r.created_at||'').slice(0,19))}</td></tr>`).join('')+'</table>'):'<div class=empty>none</div>';
+}
 
-async function load(){
-  let d; try{ d=await rpc('api_state'); }catch(e){ if(String(e.message||e).includes('forbidden')){ alert('This account is not authorized.'); } return; }
-  const ap=$('approvals');
-  ap.innerHTML=d.approvals.length?('<table><tr><th>work</th><th>gate</th><th>plan hash</th><th></th></tr>'+
-    d.approvals.map(a=>`<tr><td class=mono>${esc(a.title||a.work_id)}</td><td>${esc(a.gate_type)}</td>
-    <td class=mono>${esc((a.payload_hash||'').slice(0,12))}…</td>
+window.act=async(fn,args)=>{try{await rpc(fn,args);}catch(e){alert('action failed: '+(e.message||e));}loadCP();};
+async function loadCP(){
+  let d; try{ d=await rpc('api_state'); }catch(e){ return; }
+  $('approvals').innerHTML=d.approvals.length?('<table><tr><th>work</th><th>gate</th><th>plan hash</th><th></th></tr>'+
+    d.approvals.map(a=>`<tr><td>${esc(a.title||a.work_id)}</td><td>${esc(a.gate_type)}</td><td class=mono>${esc((a.payload_hash||'').slice(0,12))}…</td>
     <td><button class="btn go" onclick="act('api_decide_approval',{p_approval_id:'${a.approval_id}',p_approved:true})">Approve</button>
-    <button class="btn no" onclick="act('api_decide_approval',{p_approval_id:'${a.approval_id}',p_approved:false})">Reject</button></td></tr>`).join('')+'</table>')
-    :'<div class=empty>none</div>';
+    <button class="btn no" onclick="act('api_decide_approval',{p_approval_id:'${a.approval_id}',p_approved:false})">Reject</button></td></tr>`).join('')+'</table>'):'<div class=empty>none</div>';
   const rr=d.work.filter(w=>w.state==='READY_FOR_RELEASE_APPROVAL');
   $('release').innerHTML=rr.length?('<table><tr><th>work</th><th>state</th><th></th></tr>'+
-    rr.map(w=>`<tr><td>${esc(w.title)}</td><td>${pill(w.state)}</td>
-    <td><button class="btn rel" onclick="act('api_release',{p_work_id:'${w.work_id}'})">Release → Completed</button></td></tr>`).join('')+'</table>')
-    :'<div class=empty>nothing awaiting release</div>';
+    rr.map(w=>`<tr><td>${esc(w.title)}</td><td>${stPill(w.state)}</td><td><button class="btn rel" onclick="act('api_release',{p_work_id:'${w.work_id}'})">Release → Completed</button></td></tr>`).join('')+'</table>'):'<div class=empty>nothing awaiting release</div>';
   $('work').innerHTML=d.work.length?('<table><tr><th>title</th><th>state</th><th>priority</th><th>id</th></tr>'+
-    d.work.map(w=>`<tr><td>${esc(w.title)}</td><td>${pill(w.state)}</td><td>${esc(w.priority)}</td><td class=mono>${esc(w.work_id)}</td></tr>`).join('')+'</table>')
-    :'<div class=empty>no work items</div>';
-  $('events').innerHTML=d.events.length?d.events.map(e=>`<div class=ev><span class=muted>${esc(e.created_at)}</span>
-    · ${esc(e.actor)} · <b>${esc(e.event_type)}</b> ${e.prior_state?('· '+esc(e.prior_state)+'→'+esc(e.new_state)):''}
-    ${e.reason?('· '+esc(e.reason)):''}</div>`).join(''):'<div class=empty>no events</div>';
+    d.work.map(w=>`<tr><td>${esc(w.title)}</td><td>${stPill(w.state)}</td><td>${esc(w.priority)}</td><td class=mono>${esc(w.work_id)}</td></tr>`).join('')+'</table>'):'<div class=empty>no work items</div>';
+  $('events').innerHTML=d.events.length?d.events.map(e=>`<div class=ev><span class=mono>${esc((e.created_at||'').slice(0,19))}</span> · ${esc(e.actor)} · <b>${esc(e.event_type)}</b> ${e.prior_state?('· '+esc(e.prior_state)+'→'+esc(e.new_state)):''} ${e.reason?('· '+esc(e.reason)):''}</div>`).join(''):'<div class=empty>no events</div>';
 }
+async function load(){ if(tab==='audit') await loadAudit(); else await loadCP(); }
 
-$('loginForm').addEventListener('submit', async (ev)=>{
-  ev.preventDefault(); $('loginErr').textContent='';
-  const {data,error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});
-  if(error){ $('loginErr').textContent='Invalid email or password.'; return; }
-  showDash(data.session);
-});
-$('signout').addEventListener('click', async (ev)=>{ ev.preventDefault(); await sb.auth.signOut(); showLogin(); });
+function showApp(session){$('login').classList.add('hidden');$('app').classList.remove('hidden');
+  $('who').textContent=session.user.email; setTab('audit');
+  if(timer)clearInterval(timer); timer=setInterval(load,5000);}
+function showLogin(){if(timer)clearInterval(timer);$('app').classList.add('hidden');$('login').classList.remove('hidden');}
 
-// Resume an existing session on load.
-const { data:{ session } } = await sb.auth.getSession();
-if(session) showDash(session); else showLogin();
+$('loginForm').addEventListener('submit',async ev=>{ev.preventDefault();$('loginErr').textContent='';
+  const{data,error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});
+  if(error){$('loginErr').textContent='Invalid email or password.';return;} showApp(data.session);});
+$('signout').addEventListener('click',async ev=>{ev.preventDefault();await sb.auth.signOut();showLogin();});
+
+const {data:{session}}=await sb.auth.getSession();
+if(session) showApp(session); else showLogin();
 </script>
 </body>
 </html>
