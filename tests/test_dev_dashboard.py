@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 LOGIN = ROOT / "dev" / "login"
 MIGRATION = ROOT / "supabase" / "migrations" / "20260712164133_add_control_dashboard_metrics.sql"
 RECOVERY_MIGRATION = ROOT / "supabase" / "migrations" / "20260713143054_agent_failure_recovery_protocol.sql"
+PROGRESS_MIGRATION = ROOT / "supabase" / "migrations" / "20260713150000_job_progress_live.sql"
 
 
 class DevDashboardTests(unittest.TestCase):
@@ -16,6 +17,7 @@ class DevDashboardTests(unittest.TestCase):
         cls.js = (LOGIN / "app.js").read_text(encoding="utf-8")
         cls.sql = MIGRATION.read_text(encoding="utf-8")
         cls.recovery_sql = RECOVERY_MIGRATION.read_text(encoding="utf-8")
+        cls.progress_sql = PROGRESS_MIGRATION.read_text(encoding="utf-8")
 
     def test_seven_operating_tabs_are_present(self):
         tabs = re.findall(r'data-tab="([^"]+)"', self.html)
@@ -87,6 +89,22 @@ class DevDashboardTests(unittest.TestCase):
         self.assertIn("alter table cos.notification_outbox enable row level security", self.recovery_sql)
         self.assertIn("revoke all on table cos.notification_outbox from public, anon, authenticated", self.recovery_sql)
         self.assertIn("if not cos.is_owner() then raise exception 'forbidden'", self.recovery_sql)
+
+    def test_work_queue_offers_a_live_run_view(self):
+        self.assertIn("openRunView", self.js)
+        self.assertIn("sb.rpc('api_job_progress'", self.js)
+        self.assertIn('data-run="${esc(w.work_id)}"', self.js)
+        self.assertIn("Watch live", self.js)
+        # Poller stops on terminal states and closes with the panel.
+        self.assertIn("RUN_ACTIVE", self.js)
+        self.assertIn("stopRunPoll();$('#drill').classList.remove('open')", self.js)
+
+    def test_job_progress_is_private_and_owner_gated(self):
+        self.assertIn("alter table cos.job_progress enable row level security", self.progress_sql)
+        self.assertIn("revoke all on table cos.job_progress from public, anon, authenticated", self.progress_sql)
+        self.assertIn("if not cos.is_owner() then raise exception 'forbidden'", self.progress_sql)
+        self.assertIn("revoke all on function cos.api_job_progress(text,integer) from public, anon", self.progress_sql)
+        self.assertIn("grant execute on function cos.api_job_progress(text,integer) to authenticated", self.progress_sql)
 
 
 if __name__ == "__main__":

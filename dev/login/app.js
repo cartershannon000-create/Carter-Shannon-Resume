@@ -55,8 +55,59 @@ function openDrill({title,subtitle='',stats=[],rows=[],rowsTitle='',note='',char
   $('#drill').classList.add('open');$('#drill-backdrop').classList.add('open');
   $('#drill-close').onclick=closeDrill;
 }
-function closeDrill(){$('#drill').classList.remove('open');$('#drill-backdrop').classList.remove('open')}
+function closeDrill(){stopRunPoll();$('#drill').classList.remove('open');$('#drill-backdrop').classList.remove('open')}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrill()});
+
+/* ── Live run view (GitHub Actions-style step log) ────────────────── */
+let runPoll={timer:null,workId:null,seq:0};
+const RUN_ACTIVE=new Set(['QUEUED','LEASED','RUNNING']);
+const STEP_ICON={phase:'◆',tool:'▸',text:'✎',result:'✓',error:'✕'};
+function stopRunPoll(){if(runPoll.timer)clearTimeout(runPoll.timer);runPoll={timer:null,workId:null,seq:0}}
+function clock(x){if(!x)return '';const d=new Date(x);return isNaN(d)?'':d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function runChip(state,active){return `<span class="run-chip ${active?'live':state==='FAILED'?'bad':'good'}">${active?'<i class="pulse"></i>':''}${esc(state||'—')}</span>`}
+function stepRow(p){const tag=p.kind==='tool'?'code':'p';return `<div class="run-step ${esc(p.kind)}"><span class="step-icon">${STEP_ICON[p.kind]||'·'}</span><div class="step-body"><div class="step-top"><strong>${esc(p.label)}</strong><time>${clock(p.at)}</time></div>${p.detail?`<${tag} class="step-detail">${esc(p.detail)}</${tag}>`:''}</div></div>`}
+function openRunView(workId,title){
+  stopRunPoll();
+  $('#drill-body').innerHTML=`
+    <header class="drill-head"><div><h3>${esc(title||'Run')}</h3><p class="run-meta" id="run-meta">Loading run…</p></div><button id="drill-close" aria-label="Close">✕</button></header>
+    <div class="run-log" id="run-log"><div class="empty-state"><strong>Fetching step log…</strong></div></div>`;
+  $('#drill').classList.add('open');$('#drill-backdrop').classList.add('open');
+  $('#drill-close').onclick=closeDrill;
+  runPoll={timer:null,workId,seq:0};
+  pollRun(workId);
+}
+async function pollRun(workId){
+  if(runPoll.workId!==workId)return;
+  let payload=null;
+  try{
+    const{data,error}=await sb.rpc('api_job_progress',{p_work_id:workId,p_after_seq:runPoll.seq});
+    if(error)throw error;payload=data;
+  }catch(err){
+    const meta=$('#run-meta');if(meta)meta.textContent='Progress unavailable — retrying…';
+    if(runPoll.workId===workId)runPoll.timer=setTimeout(()=>pollRun(workId),6000);
+    return;
+  }
+  if(runPoll.workId!==workId)return;
+  const job=payload.job,steps=payload.progress||[],active=!!job&&RUN_ACTIVE.has(job.state);
+  const meta=$('#run-meta');
+  if(meta)meta.innerHTML=job
+    ?`${runChip(job.state,active)} ${esc(job.job_type)} · ${esc(job.mode||'—')} mode · started ${clock(job.created_at)}${payload.work_state?` · work ${esc(payload.work_state)}`:''}`
+    :'No job has been enqueued for this work item yet.';
+  const log=$('#run-log');
+  if(log){
+    if(runPoll.seq===0&&!steps.length)log.innerHTML=job
+      ?'<div class="empty-state"><strong>No step log for this run</strong><p>Runs started before live progress shipped recorded no steps; the state above still updates.</p></div>'
+      :'<div class="empty-state"><strong>Waiting for an approved plan to enqueue a job</strong></div>';
+    if(steps.length){
+      if(runPoll.seq===0)log.innerHTML='';
+      const stick=log.scrollHeight-log.scrollTop-log.clientHeight<60;
+      log.insertAdjacentHTML('beforeend',steps.map(stepRow).join(''));
+      if(stick)log.scrollTop=log.scrollHeight;
+      runPoll.seq=steps[steps.length-1].seq;
+    }
+  }
+  if(active)runPoll.timer=setTimeout(()=>pollRun(workId),3500);
+}
 
 function stackedBar(parts){
   const total=parts.reduce((a,p)=>a+p.v,0)||1;
@@ -229,7 +280,7 @@ function providerLine(name,value,max,label){return `<div class="provider-line ${
 function workRow(task){return `<div class="work-row"><div><strong>${esc(task.objective)}</strong><p>${esc(task.next_action||'No next action recorded')}</p></div><time>v${task.checkpoint_version||0}<br>${date(task.updated_at)}</time></div>`}
 
 /* ── Work / Agents (largely unchanged) ────────────────────────────── */
-function renderWork(){const tasks=state.continuity.tasks,live=state.operations.work||[];$('[data-panel="work"]').innerHTML=pageHead('Work queue','Durable continuity tasks and executable control-plane work in one view.',`${tasks.filter(t=>t.status==='active').length} active · ${live.length} control-plane`)+`<article class="card"><div class="card-head"><div><h3>Durable work</h3><p>Latest immutable checkpoint and evidence for every continuity task.</p></div></div><table class="queue-table"><thead><tr><th>Work item</th><th>Owner</th><th>Status</th><th>Checkpoint</th><th>Evidence</th></tr></thead><tbody>${tasks.map(task=>`<tr><td><strong>${esc(task.objective)}</strong><small>Next: ${esc(task.next_action||'Not recorded')}</small></td><td>${esc(task.owner_agent)}</td><td><span class="chip">${esc(task.status)}</span></td><td>v${task.checkpoint_version||0}<small>${date(task.checkpoint_at)}</small></td><td>${task.artifacts?.length||0} artifacts<small>${task.tests?.length||0} checks · ${task.blockers?.length||0} blockers</small></td></tr>`).join('')}</tbody></table></article><article class="card" style="margin-top:14px"><div class="card-head"><div><h3>Execution ledger</h3><p>Typed work items that can move through plan, lease, run, review, and release gates.</p></div></div>${live.length?`<table class="queue-table"><thead><tr><th>Work item</th><th>Project</th><th>Priority</th><th>State</th><th>Updated</th></tr></thead><tbody>${live.map(w=>`<tr><td><strong>${esc(w.title)}</strong><small>${esc(w.description||w.work_id)}</small></td><td>${esc(w.project||'—')}</td><td>${esc(w.priority)}</td><td><span class="chip">${esc(w.state)}</span></td><td>${date(w.updated_at)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty-state"><strong>No executable work yet</strong><p>Continuity tracking remains available above.</p></div>'}</article>`}
+function renderWork(){const tasks=state.continuity.tasks,live=state.operations.work||[];$('[data-panel="work"]').innerHTML=pageHead('Work queue','Durable continuity tasks and executable control-plane work in one view.',`${tasks.filter(t=>t.status==='active').length} active · ${live.length} control-plane`)+`<article class="card"><div class="card-head"><div><h3>Durable work</h3><p>Latest immutable checkpoint and evidence for every continuity task.</p></div></div><table class="queue-table"><thead><tr><th>Work item</th><th>Owner</th><th>Status</th><th>Checkpoint</th><th>Evidence</th></tr></thead><tbody>${tasks.map(task=>`<tr><td><strong>${esc(task.objective)}</strong><small>Next: ${esc(task.next_action||'Not recorded')}</small></td><td>${esc(task.owner_agent)}</td><td><span class="chip">${esc(task.status)}</span></td><td>v${task.checkpoint_version||0}<small>${date(task.checkpoint_at)}</small></td><td>${task.artifacts?.length||0} artifacts<small>${task.tests?.length||0} checks · ${task.blockers?.length||0} blockers</small></td></tr>`).join('')}</tbody></table></article><article class="card" style="margin-top:14px"><div class="card-head"><div><h3>Execution ledger</h3><p>Typed work items that can move through plan, lease, run, review, and release gates.</p></div></div>${live.length?`<table class="queue-table"><thead><tr><th>Work item</th><th>Project</th><th>Priority</th><th>State</th><th>Updated</th><th>Run</th></tr></thead><tbody>${live.map(w=>{const running=RUN_ACTIVE.has(w.state);return `<tr class="clickable" data-run="${esc(w.work_id)}" data-run-title="${esc(w.title)}"><td><strong>${esc(w.title)}</strong><small>${esc(w.description||w.work_id)}</small></td><td>${esc(w.project||'—')}</td><td>${esc(w.priority)}</td><td>${runChip(w.state,running)}</td><td>${date(w.updated_at)}</td><td><span class="run-open">${running?'Watch live':'View log'} →</span></td></tr>`}).join('')}</tbody></table>`:'<div class="empty-state"><strong>No executable work yet</strong><p>Continuity tracking remains available above.</p></div>'}</article>`}
 
 function renderAgents(){const c=provider('claude'),x=provider('codex');$('[data-panel="agents"]').innerHTML=pageHead('Agents','Model roles, observed activity, and the planned orchestration hierarchy.','Runtime status is distinct from historical usage')+`<div class="agent-grid">
   ${agentCard('O','CoS Orchestrator','Claude Opus 4.8','Architecture, decomposition, arbitration, acceptance, and escalation.','primary','Configured','Not running')}
@@ -317,6 +368,7 @@ function bindNavigation(){
   $$('[data-project]').forEach(el=>el.onclick=()=>drillProject(el.dataset.project));
   $$('[data-week]').forEach(el=>el.onclick=()=>drillWeek(el.dataset.week));
   $$('[data-metric]').forEach(el=>el.onclick=()=>drillMetric(el.dataset.metric));
+  $$('[data-run]').forEach(el=>el.onclick=()=>openRunView(el.dataset.run,el.dataset.runTitle));
   $$('[data-mode]').forEach(el=>el.onclick=()=>{usageMode=el.dataset.mode;renderUsage();bindNavigation()});
   $$('[data-drill]').forEach(el=>el.onclick=()=>{const d=el.dataset.drill;if(d==='cost')drillCost();else if(d==='tokens')drillTokens();else if(d==='work-tab')activate('work');else if(d==='approvals-tab')activate('approvals')});
   $('#drill-backdrop').onclick=closeDrill;
