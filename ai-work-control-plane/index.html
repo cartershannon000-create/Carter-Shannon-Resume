@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Work Control Plane | CS Ventures</title>
+<meta name="description" content="A public case study of the CS Ventures AI work control plane: how work is governed, measured, reviewed, and connected to verified outcomes.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cs-ventures.us/ai-work-control-plane/">
+<meta property="og:title" content="AI Work Control Plane | CS Ventures">
+<meta property="og:description" content="A management system for turning AI activity into governed, measurable, evidence-backed work.">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="https://cs-ventures.us/ai-work-control-plane/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "AI Work Control Plane",
+  "url": "https://cs-ventures.us/ai-work-control-plane/",
+  "applicationCategory": "BusinessApplication",
+  "description": "A management system for governing AI-assisted work from intent and approval through execution, evidence, measurement, and learning.",
+  "featureList": [
+    "Durable work tracking across a defined lifecycle",
+    "Human approval gates for consequential actions",
+    "Evidence-backed delivery and review",
+    "Quality, reliability, usage, and cost measurement",
+    "Controlled recovery when work does not complete",
+    "Portfolio-level operating visibility"
+  ],
+  "author": { "@type": "Organization", "name": "CS Ventures", "url": "https://cs-ventures.us" }
+}
+</script>
+<style>
+  :root{
+    --cp-blue:#477c9b; --cp-blue-soft:#deebf1;
+    --cp-gold:#b17838; --cp-gold-soft:#f2e7d6;
+    --cp-rose:#a45d58; --cp-rose-soft:#f1dfdc;
+    --cp-purple:#6f668f; --cp-purple-soft:#e9e5f0;
+    --cp-max:1160px; --cp-radius:14px; --cp-large:24px;
+    --cp-ease:cubic-bezier(.32,.72,0,1);
+    --bg:#eff0f2; --panel:#f7f8fa; --panel-strong:#fff;
+    --ink:#161719; --muted:#565961; --line:rgba(18,22,29,.10);
+    --dark:#0a0b0d; --on-dark:#f5f5f7; --on-dark-muted:rgba(245,245,247,.58);
+    --on-dark-line:rgba(255,255,255,.10);
+    --shadow:0 1px 2px rgba(18,22,29,.04),0 8px 22px -10px rgba(18,22,29,.12);
+    --shadow-md:0 24px 70px -24px rgba(0,0,0,.38),0 8px 24px -14px rgba(0,0,0,.22);
+    --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Inter,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--font-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+  a{color:var(--green);text-decoration:none}
+  .wrap{max-width:var(--cp-max);margin:0 auto;padding:0 32px}
+  h1,h2,h3,h4,p{margin-top:0}
+  :focus-visible{outline:2px solid var(--green);outline-offset:3px;border-radius:6px}
+
+  .casebar{position:sticky;top:56px;z-index:120;background:rgba(247,248,250,.82);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);border-bottom:1px solid var(--line)}
+  .casebar-in{height:50px;display:flex;align-items:center;gap:16px}
+  .case-name{font:750 13px/1 var(--font-body);color:var(--ink);white-space:nowrap}
+  .case-name i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:8px}
+  .case-links{margin-left:auto;display:flex;gap:18px}
+  .case-links a{font:600 11px/1 var(--font-body);color:var(--muted)}
+  .case-links a:hover{color:var(--ink)}
+
+  .hero{background:var(--dark);padding:94px 0 84px;border-bottom:1px solid var(--on-dark-line);overflow:hidden}
+  .hero-grid{display:grid;grid-template-columns:minmax(0,.78fr) minmax(540px,1.22fr);gap:56px;align-items:center}
+  .eyebrow{font:800 10.5px/1 var(--font-body);letter-spacing:.18em;text-transform:uppercase;color:var(--green-bright)}
+  .hero h1{font-family:var(--font-display);font-weight:700;font-size:clamp(44px,5.7vw,72px);letter-spacing:-.047em;line-height:.99;color:var(--on-dark);margin:22px 0 24px}
+  .hero h1 em{font-style:normal;color:var(--green-bright)}
+  .hero .lead{max-width:560px;color:var(--on-dark-muted);font-size:17px;line-height:1.72;margin-bottom:0}
+  .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:30px}
+  .hero-meta span{padding:9px 13px;border:1px solid var(--on-dark-line);border-radius:999px;color:rgba(245,245,247,.72);font:650 11px/1 var(--font-body)}
+
+  .console{position:relative;background:#f6f8f7;border:1px solid rgba(255,255,255,.14);border-radius:19px;overflow:hidden;box-shadow:0 45px 100px -35px rgba(0,0,0,.9);transform:perspective(1200px) rotateY(-2deg)}
+  .console:after{content:"ILLUSTRATIVE VIEW";position:absolute;right:16px;bottom:11px;font:800 7px/1 var(--font-body);letter-spacing:.13em;color:#919894}
+  .con-top{height:45px;padding:0 14px;display:flex;align-items:center;gap:8px;background:#173d2b;color:#fff}
+  .con-mark{display:grid;place-items:center;width:25px;height:25px;border-radius:7px;background:rgba(255,255,255,.1);font:800 10px/1 Georgia}
+  .con-top strong{font:700 10px/1 var(--font-body)}
+  .con-top small{margin-left:auto;color:#a9bdb4;font:650 8px/1 var(--font-body);letter-spacing:.06em;text-transform:uppercase}
+  .con-tabs{display:flex;gap:3px;padding:0 13px;background:#173d2b}
+  .con-tabs span{padding:9px 10px 11px;color:#86a397;font:650 7px/1 var(--font-body)}
+  .con-tabs .active{color:#fff;border-bottom:2px solid #75cc89}
+  .con-body{padding:14px 14px 24px}
+  .con-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:10px}
+  .con-head strong{font:750 13px/1.1 Georgia;color:#1c2420}
+  .con-head span{font:600 7px/1 var(--font-body);color:#818985}
+  .con-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .con-kpi{background:#fff;border:1px solid #e2e7e4;border-radius:8px;padding:10px}
+  .con-kpi small,.con-kpi strong{display:block}
+  .con-kpi small{font:750 6px/1 var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:#7b837f}
+  .con-kpi strong{font:750 19px/1 Georgia;margin:8px 0 3px;color:#1b2520}
+  .con-kpi span{font:600 6px/1 var(--font-body);color:#7a847f}
+  .con-main{display:grid;grid-template-columns:1.25fr .75fr;gap:8px;margin-top:8px}
+  .con-card{background:#fff;border:1px solid #e2e7e4;border-radius:9px;padding:10px;min-width:0}
+  .con-card>strong{display:block;font:750 8px/1 var(--font-body);color:#28322d;margin-bottom:8px}
+  .workline{display:grid;grid-template-columns:7px 1fr auto;gap:7px;align-items:center;padding:7px 0;border-top:1px solid #edf0ee}
+  .workline i{width:6px;height:6px;border-radius:50%;background:var(--green)}
+  .workline:nth-child(3) i{background:var(--cp-gold)}.workline:nth-child(4) i{background:var(--cp-blue)}
+  .workline span{font:650 7px/1.3 var(--font-body);color:#47514c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .workline b{font:750 6px/1 var(--font-body);color:#718079;background:#edf4ef;border-radius:999px;padding:4px 5px;text-transform:uppercase}
+  .mini-flow{display:flex;align-items:end;gap:4px;height:72px;padding-top:8px}
+  .mini-flow i{flex:1;min-height:8px;border-radius:3px 3px 0 0;background:#88b596}
+  .mini-flow i:nth-child(2){height:42%}.mini-flow i:nth-child(3){height:70%}.mini-flow i:nth-child(4){height:53%;background:#6e9bb4}.mini-flow i:nth-child(5){height:86%;background:#477c9b}.mini-flow i:nth-child(6){height:64%;background:#b17838}.mini-flow i:nth-child(7){height:96%}
+  .flow-key{display:flex;justify-content:space-between;margin-top:7px;color:#818a85;font:600 6px/1 var(--font-body)}
+
+  section{padding:92px 0;border-bottom:1px solid var(--line)}
+  .band{background:var(--panel-strong)}
+  .section-head{display:grid;grid-template-columns:.72fr 1.28fr;gap:60px;align-items:start;margin-bottom:48px}
+  .section-head h2{font-family:var(--font-display);font-size:clamp(31px,4.2vw,48px);font-weight:700;letter-spacing:-.038em;line-height:1.04;margin:12px 0 0}
+  .section-head .intro{color:var(--muted);font-size:16px;line-height:1.76;margin:22px 0 0;max-width:650px}
+  .pullquote{border-left:2px solid var(--green);padding-left:24px;font:600 clamp(19px,2.4vw,25px)/1.5 var(--font-display);letter-spacing:-.02em;color:#2b352f;margin:18px 0 0}
+
+  .principles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .principle{background:#fff;border:1px solid var(--line);border-radius:var(--cp-radius);padding:24px;box-shadow:var(--shadow)}
+  .p-num{font:800 10px/1 var(--font-body);letter-spacing:.12em;color:var(--green)}
+  .principle h3{font:750 18px/1.18 var(--font-display);letter-spacing:-.02em;margin:20px 0 9px}
+  .principle p{font-size:13.5px;line-height:1.65;color:var(--muted);margin:0}
+
+  .architecture{border:1px solid var(--line);border-radius:var(--cp-large);background:linear-gradient(180deg,#fff 0 68%,#f1f6f2 68%);padding:34px;overflow:hidden;box-shadow:var(--shadow)}
+  .arch-label{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:28px}
+  .arch-label strong{font:750 12px/1 var(--font-body)}
+  .arch-label span{font:700 8px/1 var(--font-body);letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+  .arch-flow{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:70px;align-items:stretch}
+  .arch-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .arch-node{position:relative;z-index:2;min-height:178px;background:#fff;border:1px solid var(--line);border-top:3px solid var(--green);border-radius:14px;padding:21px;box-shadow:var(--shadow)}
+  .arch-node:nth-of-type(3){border-top-color:var(--cp-gold)}.arch-node:nth-of-type(4){border-top-color:var(--cp-blue)}
+  .arch-node small{font:800 8px/1 var(--font-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .arch-node h3{font:750 20px/1.12 var(--font-display);letter-spacing:-.025em;margin:14px 0 9px}
+  .arch-node p{font-size:12.5px;line-height:1.6;color:var(--muted);margin:0}
+  .arch-rail{position:relative;z-index:2;margin-top:42px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:center;background:#173d2b;color:#fff;border-radius:13px;padding:19px 22px}
+  .arch-rail b{font:750 11px/1 var(--font-body)}
+  .rail-line{height:1px;background:rgba(255,255,255,.2)}
+  .arch-rail span{font:600 9px/1.4 var(--font-body);color:#b6c9c0;text-align:right}
+  .public-note{margin:18px 4px 0;color:#727a76;font-size:11.5px;line-height:1.55}
+
+  .metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .metric{background:#fff;border:1px solid var(--line);border-radius:16px;padding:25px;box-shadow:var(--shadow)}
+  .metric-top{display:flex;align-items:start;justify-content:space-between;gap:20px}
+  .metric h3{font:750 19px/1.15 var(--font-display);letter-spacing:-.025em;margin:0}
+  .metric-type{font:800 8px/1 var(--font-body);letter-spacing:.08em;text-transform:uppercase;padding:6px 8px;border-radius:999px;background:var(--green-soft);color:#315238;white-space:nowrap}
+  .metric-definition{color:var(--muted);font-size:13px;line-height:1.62;margin:11px 0 16px}
+  .fraction{display:grid;grid-template-columns:94px 1fr;gap:9px;padding:12px 0;border-top:1px solid var(--line)}
+  .fraction:last-of-type{border-bottom:1px solid var(--line)}
+  .fraction b{font:800 8px/1.4 var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:#737b77}
+  .fraction span{font-size:12.5px;line-height:1.45;color:#303a35}
+  .insight{margin-top:16px;padding:12px 14px;border-radius:9px;background:#f2f6f3;color:#3b5141;font-size:12px;line-height:1.55}
+  .insight strong{font-weight:800}
+  .metric.timing .metric-type{background:var(--cp-blue-soft);color:#315a70}
+  .metric.timing .insight{background:#f0f5f8;color:#36566a}
+  .metric.cost .metric-type{background:var(--cp-gold-soft);color:#72502b}
+  .metric.cost .insight{background:#faf5ed;color:#6c5236}
+  .metric.control .metric-type{background:var(--cp-purple-soft);color:#5c5478}
+  .metric.control .insight{background:#f6f4f9;color:#554d70}
+
+  .enable-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+  .enable{padding:27px;border-top:3px solid var(--green);background:#fff;border-radius:0 0 15px 15px;box-shadow:var(--shadow)}
+  .enable:nth-child(2){border-color:var(--cp-blue)}.enable:nth-child(3){border-color:var(--cp-gold)}.enable:nth-child(4){border-color:var(--cp-purple)}.enable:nth-child(5){border-color:var(--cp-rose)}
+  .enable h3{font:750 18px/1.2 var(--font-display);letter-spacing:-.02em;margin-bottom:10px}
+  .enable p{color:var(--muted);font-size:13.5px;line-height:1.65;margin:0}
+  .enable-wide{grid-column:span 2;background:#173d2b;color:#fff;border-top-color:#75cc89}
+  .enable-wide p{color:#b7c9c1;max-width:640px}
+
+  .boundary{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:center}
+  .boundary h2{font:750 clamp(31px,4.2vw,48px)/1.04 var(--font-display);letter-spacing:-.038em;margin:12px 0 18px}
+  .boundary p{color:var(--muted);font-size:15px;line-height:1.72}
+  .boundary-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:var(--shadow)}
+  .boundary-row{display:grid;grid-template-columns:32px 1fr;gap:13px;padding:16px 0;border-top:1px solid var(--line)}
+  .boundary-row:first-child{border-top:0;padding-top:0}.boundary-row:last-child{padding-bottom:0}
+  .boundary-row i{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--green-soft);color:var(--green);font:800 12px/1 var(--font-body);font-style:normal}
+  .boundary-row strong{display:block;font-size:13px;margin-bottom:3px}
+  .boundary-row span{display:block;color:var(--muted);font-size:12px;line-height:1.5}
+
+  .cta{padding:76px 0;background:#173d2b;color:#fff}
+  .cta-in{display:flex;align-items:center;justify-content:space-between;gap:36px}
+  .cta h2{font:750 clamp(28px,3.7vw,42px)/1.08 var(--font-display);letter-spacing:-.03em;margin:0;max-width:680px}
+  .cta p{color:#b4c7be;font-size:14px;margin:12px 0 0;max-width:650px}
+  .cta a{flex:none;display:inline-flex;align-items:center;padding:14px 22px;border-radius:999px;background:#fff;color:#173d2b;font:750 13px/1 var(--font-body)}
+
+  footer{background:var(--dark);padding:54px 0 42px}
+  .footer-inner{display:flex;justify-content:space-between;align-items:flex-start;gap:32px;flex-wrap:wrap}
+  .footer-brand{font:750 20px/1 var(--font-display);color:var(--on-dark)}
+  .footer-links{display:flex;gap:0;flex-wrap:wrap}.footer-links a{font:500 12px/1 var(--font-body);color:var(--on-dark-muted);padding:4px 0}.footer-links a+a:before{content:"·";margin:0 12px;color:var(--on-dark-line)}
+  .footer-copy{margin-top:38px;padding-top:20px;border-top:1px solid var(--on-dark-line);font-size:11px;color:var(--on-dark-muted)}
+
+  @media(max-width:980px){
+    .hero-grid{grid-template-columns:1fr;gap:48px}.hero-copy{max-width:720px;min-width:0}.console{width:100%;max-width:760px;min-width:0;transform:none}
+    .section-head{grid-template-columns:1fr;gap:8px}.principles{grid-template-columns:1fr 1fr}
+    .arch-flow{gap:18px}.enable-grid{grid-template-columns:1fr 1fr}.boundary{grid-template-columns:1fr}
+  }
+  @media(max-width:720px){
+    .wrap{padding:0 20px}.case-links{display:none}.hero{padding:72px 0 62px}.hero h1{font-size:44px}
+    .console{overflow:hidden}.con-tabs{overflow-x:auto}.con-kpis{grid-template-columns:1fr 1fr}.con-main{grid-template-columns:1fr}
+    section{padding:72px 0}.principles,.metric-grid,.enable-grid{grid-template-columns:1fr}.enable-wide{grid-column:auto}
+    .arch-flow{grid-template-columns:1fr}.arch-svg{display:none}.architecture{padding:20px}.arch-node{min-height:0}.arch-rail{grid-template-columns:1fr}.rail-line{display:none}.arch-rail span{text-align:left}
+    .cta-in{align-items:flex-start;flex-direction:column}.cta a{width:100%;justify-content:center}
+  }
+  @media(max-width:600px){.csv-nav a:nth-child(2),.csv-nav a:nth-child(4){display:none}}
+  @media(max-width:480px){.hero h1{font-size:38px}.principles{grid-template-columns:1fr}.fraction{grid-template-columns:1fr;gap:3px}}
+</style>
+</head>
+<body>
+
+<div class="csv-bar">
+  <a class="csv-brand" href="/"><svg class="csv-mark" viewBox="0 0 205 155" aria-hidden="true" fill="currentColor"><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="150" font-weight="400" x="4" y="108">C</text><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="125" font-weight="400" x="78" y="129">S</text></svg>CS Ventures</a>
+  <nav class="csv-nav" aria-label="Main navigation">
+    <a href="/">Home</a><a href="/about/">About</a><a href="/portfolio/" class="active">Portfolio</a><a href="/decks/">Decks</a>
+  </nav>
+</div>
+
+<div class="casebar">
+  <div class="wrap casebar-in">
+    <div class="case-name"><i></i>AI Work Control Plane</div>
+    <nav class="case-links" aria-label="Page sections">
+      <a href="#idea">The idea</a><a href="#operating-model">Operating model</a><a href="#metrics">Metrics</a><a href="#outcomes">What it enables</a>
+    </nav>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <div class="eyebrow">CS Ventures &middot; Operating system</div>
+      <h1>AI work needs a <em>control plane.</em></h1>
+      <p class="lead">The dashboard turns a stream of agent activity into a managed operating system: work has an owner and state, consequential actions stay human-controlled, every delivery carries evidence, and usage is connected to outcomes.</p>
+      <div class="hero-meta"><span>Durable work</span><span>Human gates</span><span>Evidence-backed delivery</span><span>Measured outcomes</span></div>
+    </div>
+
+    <div class="console" aria-label="Illustrative AI work dashboard">
+      <div class="con-top"><div class="con-mark">CS</div><strong>AI Work Control Plane</strong><small>Operating view</small></div>
+      <div class="con-tabs"><span class="active">Overview</span><span>Work</span><span>Quality</span><span>Usage</span><span>Approvals</span></div>
+      <div class="con-body">
+        <div class="con-head"><strong>Portfolio overview</strong><span>Sample data for illustration</span></div>
+        <div class="con-kpis">
+          <div class="con-kpi"><small>Work in motion</small><strong>7</strong><span>Across defined stages</span></div>
+          <div class="con-kpi"><small>Human gates</small><strong>2</strong><span>Awaiting a decision</span></div>
+          <div class="con-kpi"><small>Verified delivery</small><strong>86%</strong><span>Evidence attached</span></div>
+          <div class="con-kpi"><small>Usage coverage</small><strong>94%</strong><span>Sessions measured</span></div>
+        </div>
+        <div class="con-main">
+          <div class="con-card"><strong>Active work</strong>
+            <div class="workline"><i></i><span>Reconcile operating metrics</span><b>Review</b></div>
+            <div class="workline"><i></i><span>Prepare product evidence</span><b>Active</b></div>
+            <div class="workline"><i></i><span>Draft portfolio analysis</span><b>Verify</b></div>
+          </div>
+          <div class="con-card"><strong>Verified outcomes</strong><div class="mini-flow"><i style="height:30%"></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="flow-key"><span>Earlier</span><span>Current</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="band" id="idea">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow" style="color:var(--green)">The idea</div><h2>Manage the work, not the chat.</h2></div>
+        <div>
+          <p class="intro">Most AI tools optimize a single interaction. Real operating work spans days, decisions, revisions, tools, and people. The control plane creates continuity above those interactions, so the business can see what was requested, what was approved, what happened, and what result was produced.</p>
+          <p class="pullquote">The unit of management is a durable work item with a measurable outcome—not a prompt, message, or model response.</p>
+        </div>
+      </div>
+      <div class="principles">
+        <article class="principle"><div class="p-num">01</div><h3>Intent becomes work</h3><p>A request is translated into a defined objective, scope, priority, and completion standard.</p></article>
+        <article class="principle"><div class="p-num">02</div><h3>Authority stays visible</h3><p>High-impact decisions stop at explicit human gates instead of disappearing inside automation.</p></article>
+        <article class="principle"><div class="p-num">03</div><h3>Delivery carries proof</h3><p>Completion is backed by review, tests, artifacts, or another relevant form of evidence.</p></article>
+        <article class="principle"><div class="p-num">04</div><h3>Learning compounds</h3><p>Usage, friction, recoveries, and outcomes reveal how the operating system should improve.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="operating-model">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow" style="color:var(--green)">Operating model</div><h2>One visible path from intent to evidence.</h2></div>
+        <p class="intro">The public architecture is intentionally simple. People set intent and retain authority. A control layer holds state and policy. Specialized workers execute within the approved boundary. Evidence flows back into the operating record.</p>
+      </div>
+
+      <div class="architecture">
+        <div class="arch-label"><strong>AI work operating model</strong><span>Conceptual architecture</span></div>
+        <div class="arch-flow">
+          <svg class="arch-svg" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
+            <defs><marker id="arrowGreen" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7Z" fill="#6f9f7d"/></marker></defs>
+            <path d="M285 88 C335 45 360 45 410 88" fill="none" stroke="#8eae98" stroke-width="2" marker-end="url(#arrowGreen)"/>
+            <path d="M620 88 C670 45 700 45 750 88" fill="none" stroke="#8eae98" stroke-width="2" marker-end="url(#arrowGreen)"/>
+            <path d="M750 145 C690 205 345 205 270 145" fill="none" stroke="#b17838" stroke-width="1.6" stroke-dasharray="5 6" marker-end="url(#arrowGreen)"/>
+          </svg>
+          <article class="arch-node"><small>Human direction</small><h3>Intent &amp; decisions</h3><p>Objectives, priorities, approvals, review, and release authority remain legible and attributable.</p></article>
+          <article class="arch-node"><small>Management layer</small><h3>State &amp; policy</h3><p>Work definitions, lifecycle state, boundaries, decisions, and recovery are coordinated in one durable record.</p></article>
+          <article class="arch-node"><small>Execution layer</small><h3>Specialized workers</h3><p>Different capabilities research, build, analyze, and review within the authority already granted.</p></article>
+        </div>
+        <div class="arch-rail"><b>Evidence &amp; measurement</b><div class="rail-line"></div><span>Artifacts · review · quality · usage · outcomes</span></div>
+        <p class="public-note">This diagram communicates the operating pattern—not the deployment topology. Operational vendors, infrastructure, credentials, data paths, routing rules, and control thresholds are intentionally omitted.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="metrics">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow" style="color:var(--green)">Metrics that matter</div><h2>Activity becomes useful only when tied to outcomes.</h2></div>
+        <p class="intro">The dashboard separates counts, rates, timing, and modeled economics. Every ratio names its numerator and denominator, while every non-ratio metric states the population and clock being measured.</p>
+      </div>
+
+      <div class="metric-grid">
+        <article class="metric">
+          <div class="metric-top"><h3>Verified completion rate</h3><span class="metric-type">Outcome rate</span></div>
+          <p class="metric-definition">The share of approved work that reaches its defined completion standard with supporting evidence.</p>
+          <div class="fraction"><b>Numerator</b><span>Approved work items completed and verified in the period</span></div>
+          <div class="fraction"><b>Denominator</b><span>Approved work items due or closed in the same period</span></div>
+          <div class="insight"><strong>Why it matters:</strong> shows whether approved intent is reliably converted into evidence-backed delivery.</div>
+        </article>
+
+        <article class="metric">
+          <div class="metric-top"><h3>First-pass acceptance</h3><span class="metric-type">Quality rate</span></div>
+          <p class="metric-definition">How often delivered work clears review without entering a revision cycle.</p>
+          <div class="fraction"><b>Numerator</b><span>Verified outcomes accepted without revision</span></div>
+          <div class="fraction"><b>Denominator</b><span>All verified outcomes reviewed in the period</span></div>
+          <div class="insight"><strong>Why it matters:</strong> distinguishes fast output from work that is actually ready to use.</div>
+        </article>
+
+        <article class="metric timing">
+          <div class="metric-top"><h3>Approval turnaround</h3><span class="metric-type">Cycle time</span></div>
+          <p class="metric-definition">The typical time a decision waits between a requested human gate and its recorded decision.</p>
+          <div class="fraction"><b>Calculation</b><span>Median elapsed time from approval request to approve or reject</span></div>
+          <div class="fraction"><b>Population</b><span>All approval requests decided in the selected period; no numerator or denominator</span></div>
+          <div class="insight"><strong>Why it matters:</strong> reveals when the constraint is decision latency rather than execution capacity.</div>
+        </article>
+
+        <article class="metric timing">
+          <div class="metric-top"><h3>Active-work age</h3><span class="metric-type">Flow health</span></div>
+          <p class="metric-definition">How long current work has remained active without reaching its next terminal or decision state.</p>
+          <div class="fraction"><b>Calculation</b><span>Median elapsed time since each active item entered its current working state</span></div>
+          <div class="fraction"><b>Population</b><span>All active work items at the time of measurement; no numerator or denominator</span></div>
+          <div class="insight"><strong>Why it matters:</strong> surfaces stuck work before it quietly becomes forgotten work.</div>
+        </article>
+
+        <article class="metric">
+          <div class="metric-top"><h3>Controlled recovery rate</h3><span class="metric-type">Reliability rate</span></div>
+          <p class="metric-definition">The share of work attempts that stop and enter a governed recovery path instead of completing normally.</p>
+          <div class="fraction"><b>Numerator</b><span>Work attempts that entered controlled recovery</span></div>
+          <div class="fraction"><b>Denominator</b><span>All work attempts completed or stopped in the period</span></div>
+          <div class="insight"><strong>Why it matters:</strong> quantifies friction while preserving the distinction between safe recovery and silent retry.</div>
+        </article>
+
+        <article class="metric control">
+          <div class="metric-top"><h3>Human-control coverage</h3><span class="metric-type">Governance rate</span></div>
+          <p class="metric-definition">Whether consequential actions observed by the system passed through their required human decision gate.</p>
+          <div class="fraction"><b>Numerator</b><span>Observed high-impact actions with the required recorded approval</span></div>
+          <div class="fraction"><b>Denominator</b><span>All observed high-impact actions requiring approval</span></div>
+          <div class="insight"><strong>Why it matters:</strong> turns “human in the loop” from a promise into an auditable operating measure.</div>
+        </article>
+
+        <article class="metric cost">
+          <div class="metric-top"><h3>Usage coverage</h3><span class="metric-type">Data quality rate</span></div>
+          <p class="metric-definition">The share of captured AI sessions with sufficiently complete telemetry for usage analysis.</p>
+          <div class="fraction"><b>Numerator</b><span>Captured sessions with complete usage fields</span></div>
+          <div class="fraction"><b>Denominator</b><span>All captured sessions in the selected period</span></div>
+          <div class="insight"><strong>Why it matters:</strong> prevents incomplete telemetry from being mistaken for low usage or low cost.</div>
+        </article>
+
+        <article class="metric cost">
+          <div class="metric-top"><h3>Modeled cost per verified outcome</h3><span class="metric-type">Unit economics</span></div>
+          <p class="metric-definition">Estimated AI operating spend divided by work that reached a verified outcome.</p>
+          <div class="fraction"><b>Numerator</b><span>Modeled AI usage cost in the selected period</span></div>
+          <div class="fraction"><b>Denominator</b><span>Verified outcomes completed in the same period</span></div>
+          <div class="insight"><strong>Why it matters:</strong> connects consumption to useful delivery instead of celebrating token volume.</div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="outcomes">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow" style="color:var(--green)">What it enables</div><h2>A management view of AI as an operating capability.</h2></div>
+        <p class="intro">The dashboard is not a prettier activity log. It gives leaders a way to direct work, preserve authority, understand performance, and improve the system without reading every conversation.</p>
+      </div>
+      <div class="enable-grid">
+        <article class="enable"><h3>One operating picture</h3><p>See proposed, approved, active, blocked, recovering, and delivered work without reconstructing status from messages.</p></article>
+        <article class="enable"><h3>Faster, better decisions</h3><p>Approval requests arrive with scope, context, and a clear consequence—not an ambiguous “yes or no.”</p></article>
+        <article class="enable"><h3>Evidence over confidence</h3><p>Review artifacts, checks, and outcome evidence rather than relying on an agent’s claim that work is complete.</p></article>
+        <article class="enable"><h3>Visible bottlenecks</h3><p>Separate execution delays, decision delays, quality revisions, and telemetry gaps so the right constraint gets fixed.</p></article>
+        <article class="enable"><h3>Spend tied to delivery</h3><p>Understand usage and modeled cost in the context of verified outcomes, projects, and operating priorities.</p></article>
+        <article class="enable enable-wide"><h3>Controlled autonomy</h3><p>Give capable systems room to execute while keeping consequential authority, recovery, and release visible to the human accountable for the outcome.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap boundary">
+      <div><div class="eyebrow" style="color:var(--green)">Public by design</div><h2>Enough to understand the system. Not enough to operate it.</h2><p>This case study describes the management model and measurement philosophy. It deliberately excludes the implementation details that would expose security posture or create an operational map.</p></div>
+      <div class="boundary-card">
+        <div class="boundary-row"><i>✓</i><div><strong>Shown publicly</strong><span>Purpose, lifecycle concepts, metric definitions, human-control principles, and illustrative visuals.</span></div></div>
+        <div class="boundary-row"><i>—</i><div><strong>Kept operational</strong><span>Infrastructure, vendors, identities, credentials, schemas, routes, control thresholds, and environment details.</span></div></div>
+        <div class="boundary-row"><i>↗</i><div><strong>Discussed selectively</strong><span>Implementation patterns and operating design can be reviewed in a scoped client conversation.</span></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="cta">
+  <div class="wrap cta-in"><div><h2>Want AI work to behave more like an operating system?</h2><p>CS Ventures designs the workflows, controls, evidence, and measurement layer around real business work.</p></div><a href="mailto:info@cs-ventures.us">Start a conversation</a></div>
+</div>
+
+<footer>
+  <div class="wrap"><div class="footer-inner"><div class="footer-brand">CS Ventures</div><div class="footer-links"><a href="/">Home</a><a href="/about/">About</a><a href="/portfolio/">Portfolio</a><a href="/decks/">Decks</a><a href="mailto:info@cs-ventures.us">info@cs-ventures.us</a></div></div><div class="footer-copy">CS Ventures &copy; 2026</div></div>
+</footer>
+
+</body>
+</html>
