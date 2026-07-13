@@ -49,6 +49,17 @@ server-side, not in the client. The v3 payload has these top-level sections:
 Approvals are decided via a second RPC, `api_decide_approval(p_approval_id,
 p_approved, p_note)`, then the dashboard reloads.
 
+## Agent failure recovery
+
+Dashboard-approved shipping work uses a bounded provider chain: Claude first,
+then Codex only when Claude reports provider quota or usage-window exhaustion.
+Process timeouts, build/test failures, configuration errors, and runner errors do
+not trigger provider fallback. They stop the job, write a durable notification,
+clone the approved plan to a new version with recovery context, and create a
+`recovery` approval. If Codex also reports provider exhaustion, the work records
+a paused transition before returning to `PENDING_PLAN_APPROVAL`. Approving the
+recovery gate creates exactly one new job, which starts with Claude again.
+
 ## Drill-down UI pattern (`app.js`)
 
 Tabs are static panels (`[data-panel]`); `activate()` toggles the active one.

@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 LOGIN = ROOT / "dev" / "login"
 MIGRATION = ROOT / "supabase" / "migrations" / "20260712164133_add_control_dashboard_metrics.sql"
+RECOVERY_MIGRATION = ROOT / "supabase" / "migrations" / "20260713143054_agent_failure_recovery_protocol.sql"
 
 
 class DevDashboardTests(unittest.TestCase):
@@ -14,6 +15,7 @@ class DevDashboardTests(unittest.TestCase):
         cls.html = (LOGIN / "index.html").read_text(encoding="utf-8")
         cls.js = (LOGIN / "app.js").read_text(encoding="utf-8")
         cls.sql = MIGRATION.read_text(encoding="utf-8")
+        cls.recovery_sql = RECOVERY_MIGRATION.read_text(encoding="utf-8")
 
     def test_seven_operating_tabs_are_present(self):
         tabs = re.findall(r'data-tab="([^"]+)"', self.html)
@@ -70,6 +72,21 @@ class DevDashboardTests(unittest.TestCase):
         self.assertIn("How to interpret usage", self.js)
         self.assertIn("None — this is a total, not a ratio", self.js)
         self.assertIn("tokenized ÷", self.js)
+
+    def test_approval_page_documents_bounded_agent_recovery(self):
+        self.assertIn("Agent recovery protocol", self.js)
+        self.assertIn("Claude runs first", self.js)
+        self.assertIn("Codex on quota exhaustion", self.js)
+        self.assertIn("Pause and re-approve", self.js)
+        self.assertIn("Approve retry", self.js)
+
+    def test_recovery_migration_is_owner_gated_and_private(self):
+        self.assertIn("gate_type in ('plan','recovery','action','release')", self.recovery_sql)
+        self.assertIn("provider_order", self.recovery_sql)
+        self.assertIn("notification_outbox", self.recovery_sql)
+        self.assertIn("alter table cos.notification_outbox enable row level security", self.recovery_sql)
+        self.assertIn("revoke all on table cos.notification_outbox from public, anon, authenticated", self.recovery_sql)
+        self.assertIn("if not cos.is_owner() then raise exception 'forbidden'", self.recovery_sql)
 
 
 if __name__ == "__main__":

@@ -48,3 +48,4 @@ tr.clickable:hover{background:#f4f7f5;transform:none;box-shadow:none}
 .model-table th,.model-table td{font-size:10.5px}.model-table td strong{font-size:11px}
 .week small,.mini-week small{font-size:8px}
 @media(max-width:600px){#drill{width:100vw}}
+.recovery-card{margin-bottom:14px;border-top:3px solid var(--green)}.recovery-protocol .gate:nth-child(2){border-color:#cadce6}.recovery-protocol .gate:nth-child(3){border-color:#ead7c1}
