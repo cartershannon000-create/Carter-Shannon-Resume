@@ -39,6 +39,38 @@ class DevDashboardTests(unittest.TestCase):
         self.assertIn("revoke all on function cos.api_dashboard_state() from public, anon", self.sql)
         self.assertIn("grant execute on function cos.api_dashboard_state() to authenticated", self.sql)
 
+    def test_every_performance_metric_has_a_plain_language_guide(self):
+        expected = {
+            "task_completion",
+            "active_freshness",
+            "blocker_rate",
+            "verified_outcomes",
+            "outcome_coverage",
+            "retry_rate",
+            "evidence_density",
+            "claude_token_coverage",
+            "codex_token_coverage",
+            "cost_per_outcome",
+            "runner_availability",
+            "approval_latency",
+        }
+        guide_block = self.js.split("const METRIC_GUIDE={", 1)[1].split("};", 1)[0]
+        documented = set(re.findall(r"^\s{2}([a-z_]+):\{definition:", guide_block, re.MULTILINE))
+        self.assertEqual(documented, expected)
+
+    def test_metric_cards_explain_formula_and_relevance(self):
+        self.assertIn('class="metric-definition"', self.js)
+        self.assertIn("<small>Numerator</small>", self.js)
+        self.assertIn("<small>Denominator</small>", self.js)
+        self.assertIn("Why it matters", self.js)
+        self.assertIn("metric.key==='approval_latency'", self.js)
+
+    def test_overview_and_usage_explain_totals_and_coverage(self):
+        self.assertIn("How to read the overview", self.js)
+        self.assertIn("How to interpret usage", self.js)
+        self.assertIn("None — this is a total, not a ratio", self.js)
+        self.assertIn("tokenized ÷", self.js)
+
 
 if __name__ == "__main__":
     unittest.main()
