@@ -90,6 +90,16 @@ Give it a prompt. It pulls real numbers from public filings, builds the deck, th
 Tags: AI Agent, Finance, Research Decks, Agentic Workflow
 URL: https://cs-ventures.us/DeckForge/
 
+### Product Film Agent
+
+The Product Film Agent turns a product recording, brand system, runtime, and creative reference into a launch-ready motion film. It rebuilds the interface as animatable graphics, choreographs every interaction to a beat sheet, adds sound design, and rejects renders that fail still-frame, motion, or freeze-detection gates.
+
+The Altro Trips launch film is the working example.
+
+Tags: AI Agent, Motion Design, Remotion, Product Marketing, Quality Gates
+URL: https://cs-ventures.us/portfolio/#product-film-agent
+Example: https://cs-ventures.us/media/altro-trips-proof-v2.mp4
+
 ### Altro
 
 Altro is a travel ranking app for logging cities, comparing past trips, and building a personal map of the places that still pull you forward.
