@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>CS Ventures · Control Plane</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="metrics.css">
+</head>
+<body>
+  <section id="login" class="auth-shell">
+    <form id="loginForm" class="auth-card">
+      <a class="brand" href="/"><span class="brand-mark">CS</span><span><strong>CS Ventures</strong><small>Control Plane</small></span></a>
+      <p class="eyebrow">PRIVATE OPERATING CONSOLE</p>
+      <h1>Welcome back, Carter.</h1>
+      <p>Sign in to review live work, metrics, usage, approvals, and system readiness.</p>
+      <label>Email<input id="email" type="email" autocomplete="username" required></label>
+      <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+      <div id="loginErr" class="auth-error" role="alert"></div>
+      <button class="auth-submit" type="submit">Sign in</button>
+    </form>
+  </section>
+
+  <div id="app" class="hidden">
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="header-top">
+          <a class="brand" href="/"><span class="brand-mark">CS</span><span><strong>CS Ventures</strong><small>Control Plane</small></span></a>
+          <div class="header-actions">
+            <span id="runner-pill" class="runner-pill"><i></i> Checking local runner</span>
+            <button id="refresh" type="button">Refresh data</button>
+            <span id="who" class="account"></span>
+            <button id="signout" type="button">Sign out</button>
+          </div>
+        </div>
+        <div class="welcome">
+          <div><p>OPERATING SYSTEM · SUPABASE LIVE</p><h1>Good morning, Carter.</h1><span>Review durable work, track quality and usage, and keep consequential actions behind a visible gate.</span></div>
+          <div class="date-block"><small>Last refreshed</small><strong id="updated-at">Loading…</strong></div>
+        </div>
+        <nav class="tabs" aria-label="Dashboard sections">
+          <button class="active" data-tab="overview">Overview</button>
+          <button data-tab="metrics">Metrics <b id="metric-count">—</b></button>
+          <button data-tab="work">Work Queue <b id="work-count">—</b></button>
+          <button data-tab="agents">Agents</button>
+          <button data-tab="usage">Usage</button>
+          <button data-tab="approvals">Approvals <b id="approval-count">—</b></button>
+          <button data-tab="system">System</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <div id="loading" class="loading">Loading the operating view from Supabase…</div>
+      <section class="tab-panel active" data-panel="overview"></section>
+      <section class="tab-panel" data-panel="metrics"></section>
+      <section class="tab-panel" data-panel="work"></section>
+      <section class="tab-panel" data-panel="agents"></section>
+      <section class="tab-panel" data-panel="usage"></section>
+      <section class="tab-panel" data-panel="approvals"></section>
+      <section class="tab-panel" data-panel="system"></section>
+    </main>
+    <div id="drill-backdrop"></div>
+    <aside id="drill" aria-label="Metric drill-down"><div id="drill-body"></div></aside>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
