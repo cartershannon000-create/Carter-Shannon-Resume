@@ -9,6 +9,7 @@ MIGRATION = ROOT / "supabase" / "migrations" / "20260712164133_add_control_dashb
 RECOVERY_MIGRATION = ROOT / "supabase" / "migrations" / "20260713143054_agent_failure_recovery_protocol.sql"
 PROGRESS_MIGRATION = ROOT / "supabase" / "migrations" / "20260713150000_job_progress_live.sql"
 START_PROVIDER_MIGRATION = ROOT / "supabase" / "migrations" / "20260714011441_selectable_start_provider.sql"
+QUALITY_MIGRATION = ROOT / "supabase" / "migrations" / "20260714191119_delivery_quality_gate.sql"
 
 
 class DevDashboardTests(unittest.TestCase):
@@ -20,6 +21,7 @@ class DevDashboardTests(unittest.TestCase):
         cls.recovery_sql = RECOVERY_MIGRATION.read_text(encoding="utf-8")
         cls.progress_sql = PROGRESS_MIGRATION.read_text(encoding="utf-8")
         cls.start_provider_sql = START_PROVIDER_MIGRATION.read_text(encoding="utf-8")
+        cls.quality_sql = QUALITY_MIGRATION.read_text(encoding="utf-8")
 
     def test_seven_operating_tabs_are_present(self):
         tabs = re.findall(r'data-tab="([^"]+)"', self.html)
@@ -27,6 +29,7 @@ class DevDashboardTests(unittest.TestCase):
 
     def test_dashboard_reads_the_owner_gated_supabase_contract(self):
         self.assertIn("sb.rpc('api_dashboard_state')", self.js)
+        self.assertIn("sb.rpc('api_quality_state')", self.js)
         self.assertNotIn("data/dashboard.json", self.js)
         self.assertIn("@supabase/supabase-js@2.110.2", self.js)
 
@@ -105,6 +108,25 @@ class DevDashboardTests(unittest.TestCase):
         self.assertIn("if not cos.is_owner() then raise exception 'forbidden'", self.sql)
         self.assertIn("revoke all on function cos.api_release(text,text) from public, anon", self.sql)
         self.assertIn("grant execute on function cos.api_release(text,text) to authenticated", self.sql)
+
+    def test_delivery_quality_is_visible_and_enforced_server_side(self):
+        self.assertIn("expected_benefits", self.quality_sql)
+        self.assertIn("delivery_quality_reviews", self.quality_sql)
+        self.assertIn("builder_provider <> reviewer_provider", self.quality_sql)
+        self.assertIn("score >= 17", self.quality_sql)
+        self.assertIn("release blocked: delivery quality evidence has not passed", self.quality_sql)
+        self.assertIn("alter table cos.delivery_quality_reviews enable row level security", self.quality_sql)
+        self.assertIn("revoke all on table cos.delivery_quality_reviews from public,anon,authenticated", self.quality_sql)
+        self.assertIn("if not cos.is_owner() then raise exception 'forbidden'", self.quality_sql)
+        self.assertIn("qualityReview(workId)", self.js)
+        self.assertIn("benefitList(contract,review=null)", self.js)
+        self.assertIn("For quality-gated jobs, the database refuses release", self.js)
+
+    def test_skill_effectiveness_shows_real_or_honest_empty_state(self):
+        self.assertIn("Skill effectiveness vs no-skill baseline", self.js)
+        self.assertIn("No comparable skill data yet", self.js)
+        self.assertIn("no-skill observations automatically", self.js)
+        self.assertIn("skill_weekly", self.quality_sql)
 
     def test_recovery_migration_is_owner_gated_and_private(self):
         self.assertIn("gate_type in ('plan','recovery','action','release')", self.recovery_sql)

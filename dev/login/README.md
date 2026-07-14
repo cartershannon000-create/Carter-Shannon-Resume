@@ -17,12 +17,12 @@ keep it in sync when those change.
   shows a generic "Invalid email or password." message.
 - `#signout` calls `sb.auth.signOut()` and returns to the login card.
 
-## Data contract: `cos.api_dashboard_state()`
+## Data contracts: dashboard state and delivery quality
 
-Everything on screen comes from one owner-gated RPC. `load()` calls
-`sb.rpc('api_dashboard_state')` (no args) and assigns the result to the module
-`state`. The RPC is gated to the owner account, so RLS/ownership is enforced
-server-side, not in the client. The v3 payload has these top-level sections:
+Everything on screen comes from two owner-gated RPCs. `load()` calls
+`api_dashboard_state()` and `api_quality_state()` together, then merges their
+results into module `state`. Ownership is enforced server-side, not in the
+client. The dashboard payload has these top-level sections:
 
 - **`overview`** — headline KPIs: `active_work`, `pending_review`,
   `pending_approvals`, `est_cost_7d`, `est_cost_total`, `captured_tokens`,
@@ -46,13 +46,46 @@ server-side, not in the client. The v3 payload has these top-level sections:
   (with `payload_hash`), `runners[]`, `events[]`. Plus `control_plane.local_runner`
   and `continuity.{tasks, evidence, checkpoint_weekly}`.
 
+`api_quality_state()` adds:
+
+- **`contracts[]`** — the hash-bound expected-benefit contract for each plan or
+  job, including pending approvals.
+- **`reviews[]`** — immutable opposite-provider review records: score, benefit
+  and check counts, findings, manifest, reviewer evidence, and limitations.
+- **`skill_summary` / `skill_weekly[]`** — automatically recorded skill and
+  explicit no-skill observations. Comparisons are limited to the same provider
+  and task type, and stay empty until a real pre-skill baseline exists.
+
 Execution approvals are decided through
 `api_decide_approval(p_approval_id, p_approved, p_note, p_start_provider)`, then
 the dashboard reloads. Work in `READY_FOR_RELEASE_APPROVAL` is surfaced as a
 separate release gate. After reviewing the run log and confirming any required
 merge or delivery happened, **Approve release** calls
 `api_release(p_work_id, p_note)` and marks the ledger item `COMPLETED`. The RPC
-does not rerun an agent, merge a pull request, or deploy code.
+does not rerun an agent, merge a pull request, or deploy code. For new jobs, the
+database refuses release unless the latest immutable review scored at least
+17/20, every expected benefit and required check passed, and there are no
+critical or major findings.
+
+## Delivery-quality protocol
+
+Approving a plan binds both the model order and an explicit acceptance contract
+into the plan hash. A worker exit of zero is only a candidate delivery. The
+worker must return a structured `COS_DELIVERY_MANIFEST` covering every benefit,
+mechanical checks, activation evidence, invoked skills, and honest limitations.
+The opposite provider then reviews the repository read-only and returns a
+`COS_REVIEW_JSON` score and benefit-by-benefit evidence.
+
+Quality-gated work is staged on a `cos/<work_id>` review branch even when an
+older recommendation requested direct mode. Nothing is pushed to the default
+branch by the builder before independent review and the human release step.
+
+Any missing benefit, failed check, inactive integration, score below 17/20,
+critical or major finding, malformed evidence, or reviewer outage fails the
+gate. The work never appears release-ready; it uses the same durable notification
+and fresh-approval recovery flow as an execution failure. This prevents a
+commit, scaffold, duplicate inactive install, or documentation-only change from
+being mistaken for an operational outcome.
 
 ## Agent failure recovery
 
