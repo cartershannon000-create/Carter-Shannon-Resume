@@ -21,7 +21,7 @@
   "name": "CS Ventures Portfolio",
   "description": "Products and tools built by CS Ventures",
   "url": "https://cs-ventures.us/portfolio/",
-  "numberOfItems": 6,
+  "numberOfItems": 7,
   "itemListElement": [
     {
       "@type": "ListItem",
@@ -64,6 +64,18 @@
       "position": 4,
       "item": {
         "@type": "SoftwareApplication",
+        "name": "Product Film Agent",
+        "url": "https://cs-ventures.us/portfolio/#product-film-agent",
+        "applicationCategory": "MultimediaApplication",
+        "description": "An AI production agent that turns product recordings and interface assets into launch-ready motion films, rebuilding the product as choreographed graphics and enforcing visual quality gates before delivery.",
+        "author": { "@type": "Organization", "name": "CS Ventures", "url": "https://cs-ventures.us" }
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 5,
+      "item": {
+        "@type": "SoftwareApplication",
         "name": "Altro",
         "url": "https://cs-ventures.us/Altro/",
         "applicationCategory": "TravelApplication",
@@ -73,7 +85,7 @@
     },
     {
       "@type": "ListItem",
-      "position": 5,
+      "position": 6,
       "item": {
         "@type": "SoftwareApplication",
         "name": "Nos",
@@ -85,7 +97,7 @@
     },
     {
       "@type": "ListItem",
-      "position": 6,
+      "position": 7,
       "item": {
         "@type": "WebSite",
         "name": "Altro Travel Site",
@@ -271,6 +283,18 @@
     margin-top: 8px;
   }
   .port-entry-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .port-entry-preview.video-agent {
+    height: 320px; background: var(--dark); position: relative;
+    padding: 20px; box-sizing: border-box;
+  }
+  .port-entry-preview.video-agent::after {
+    content: 'PRODUCT FILM AGENT'; position: absolute; left: 18px; bottom: 14px;
+    font: 700 9px/1 var(--font-body); letter-spacing: .16em; color: rgba(255,255,255,.48);
+  }
+  .port-entry-preview.video-agent video {
+    height: 100%; width: auto; max-width: 100%; display: block; border-radius: 16px;
+    box-shadow: 0 20px 48px rgba(0,0,0,.42); background: #111;
+  }
   /* portrait app screenshots: phone mockup on a tinted panel, cropped at the card edge */
   .port-entry-preview.app {
     height: 320px; overflow: hidden;
@@ -440,9 +464,9 @@
     <div class="cat-section" id="agents-ai" style="scroll-margin-top:80px">
       <div class="cat-head">
         <h2>Agents &amp; AI</h2>
-        <span class="cat-count">03 builds</span>
+        <span class="cat-count">04 builds</span>
       </div>
-      <p class="cat-lead">Autonomous systems that take a one-line instruction and carry real work to a finished, quality-checked result — plus a fully working mock that opens up the anatomy of an agent so you can watch one think.</p>
+      <p class="cat-lead">Autonomous systems that take a one-line instruction and carry real work to a finished, quality-checked result — from analytical work and operating workflows to launch-ready product films.</p>
     </div>
 
     <div class="port-entry">
@@ -487,7 +511,7 @@
       </div>
     </div>
 
-    <div class="port-entry" style="border-bottom:none">
+    <div class="port-entry">
       <div class="port-entry-n">03</div>
       <div class="port-entry-meta">
         <h2>Remit</h2>
@@ -508,6 +532,27 @@
       </div>
     </div>
 
+    <div class="port-entry" id="product-film-agent" style="border-bottom:none; scroll-margin-top:80px">
+      <div class="port-entry-n">04</div>
+      <div class="port-entry-meta">
+        <h2>Product Film Agent</h2>
+        <p>An AI production agent for launch films that feel designed, not screen-recorded. Give it a product recording, brand system, target runtime, and creative reference. It rebuilds the interface as animatable graphics, choreographs every interaction to a beat sheet, adds sound design, and rejects its own render if still-frame, motion, or freeze-detection gates fail.</p>
+        <div class="port-tags">
+          <span class="port-tag">AI Agent</span>
+          <span class="port-tag">Motion Design</span>
+          <span class="port-tag">Remotion</span>
+          <span class="port-tag">Quality Gates</span>
+        </div>
+        <a class="entry-link" href="/media/altro-trips-proof-v2.mp4">
+          Watch the Altro example
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14l11-7z"/></svg>
+        </a>
+      </div>
+      <div class="port-entry-preview video-agent">
+        <video src="/media/altro-trips-proof-v2.mp4" poster="/media/altro-trips-proof-v2-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Altro Trips product film created by the Product Film Agent"></video>
+      </div>
+    </div>
+
     <div class="cat-section" id="apps-websites" style="scroll-margin-top:80px">
       <div class="cat-head">
         <h2>Apps &amp; Websites</h2>
@@ -517,7 +562,7 @@
     </div>
 
     <div class="port-entry">
-      <div class="port-entry-n">04</div>
+      <div class="port-entry-n">05</div>
       <div class="port-entry-meta">
         <h2>Altro</h2>
         <p>A travel ranking app for logging cities, comparing past trips, and building a personal map of the places that still pull you forward. Altro turns travel memories into a clear, ranked view of taste and return energy.</p>
@@ -538,7 +583,7 @@
     </div>
 
     <div class="port-entry">
-      <div class="port-entry-n">05</div>
+      <div class="port-entry-n">06</div>
       <div class="port-entry-meta">
         <h2>Nos</h2>
         <p>A quiet home for novenas, daily reflection, honest journaling, and the grace to keep praying whether the answer is yes, no, or not yet. Nos gives structure without pressure and beauty without clutter.</p>
@@ -559,7 +604,7 @@
     </div>
 
     <div class="port-entry" style="border-bottom:none; padding-bottom:96px">
-      <div class="port-entry-n">06</div>
+      <div class="port-entry-n">07</div>
       <div class="port-entry-meta">
         <h2>Altro Travel Site</h2>
         <p>The marketing website for the Altro travel app, designed and built end to end: positioning, copy, visual design, and a responsive single-page build that presents the app's ranked-city concept to new users.</p>
