@@ -51,14 +51,16 @@ p_approved, p_note)`, then the dashboard reloads.
 
 ## Agent failure recovery
 
-Dashboard-approved shipping work uses a bounded provider chain: Claude first,
-then Codex only when Claude reports provider quota or usage-window exhaustion.
+Dashboard-approved shipping work uses a bounded, human-selected provider chain.
+The approval row lets Carter start with Claude (the default) or Codex. Only a
+provider quota or usage-window exhaustion hands the same approved attempt to
+the other model.
 Process timeouts, build/test failures, configuration errors, and runner errors do
 not trigger provider fallback. They stop the job, write a durable notification,
 clone the approved plan to a new version with recovery context, and create a
-`recovery` approval. If Codex also reports provider exhaustion, the work records
+`recovery` approval. If the second model also reports provider exhaustion, the work records
 a paused transition before returning to `PENDING_PLAN_APPROVAL`. Approving the
-recovery gate creates exactly one new job, which starts with Claude again.
+recovery gate creates exactly one new job using the newly selected start model.
 
 ## Drill-down UI pattern (`app.js`)
 

@@ -8,6 +8,7 @@ LOGIN = ROOT / "dev" / "login"
 MIGRATION = ROOT / "supabase" / "migrations" / "20260712164133_add_control_dashboard_metrics.sql"
 RECOVERY_MIGRATION = ROOT / "supabase" / "migrations" / "20260713143054_agent_failure_recovery_protocol.sql"
 PROGRESS_MIGRATION = ROOT / "supabase" / "migrations" / "20260713150000_job_progress_live.sql"
+START_PROVIDER_MIGRATION = ROOT / "supabase" / "migrations" / "20260714011441_selectable_start_provider.sql"
 
 
 class DevDashboardTests(unittest.TestCase):
@@ -18,6 +19,7 @@ class DevDashboardTests(unittest.TestCase):
         cls.sql = MIGRATION.read_text(encoding="utf-8")
         cls.recovery_sql = RECOVERY_MIGRATION.read_text(encoding="utf-8")
         cls.progress_sql = PROGRESS_MIGRATION.read_text(encoding="utf-8")
+        cls.start_provider_sql = START_PROVIDER_MIGRATION.read_text(encoding="utf-8")
 
     def test_seven_operating_tabs_are_present(self):
         tabs = re.findall(r'data-tab="([^"]+)"', self.html)
@@ -77,10 +79,21 @@ class DevDashboardTests(unittest.TestCase):
 
     def test_approval_page_documents_bounded_agent_recovery(self):
         self.assertIn("Agent recovery protocol", self.js)
-        self.assertIn("Claude runs first", self.js)
-        self.assertIn("Codex on quota exhaustion", self.js)
+        self.assertIn("Choose the start model", self.js)
+        self.assertIn("One quota-only handoff", self.js)
         self.assertIn("Pause and re-approve", self.js)
         self.assertIn("Approve retry", self.js)
+
+    def test_execution_approval_selects_and_records_start_provider(self):
+        self.assertIn("data-start-provider", self.js)
+        self.assertIn('<option value="claude" selected>Claude</option>', self.js)
+        self.assertIn('<option value="codex">Codex</option>', self.js)
+        self.assertIn("p_start_provider:startProvider", self.js)
+        self.assertIn("p_start_provider not in ('claude','codex')", self.start_provider_sql)
+        self.assertIn("jsonb_build_array('codex','claude')", self.start_provider_sql)
+        self.assertIn("payload_hash=chosen_hash", self.start_provider_sql)
+        self.assertIn("if not cos.is_owner() then raise exception 'forbidden'", self.start_provider_sql)
+        self.assertIn("revoke all on function cos.api_decide_approval(text,boolean,text,text) from public,anon", self.start_provider_sql)
 
     def test_recovery_migration_is_owner_gated_and_private(self):
         self.assertIn("gate_type in ('plan','recovery','action','release')", self.recovery_sql)
