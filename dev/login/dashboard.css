@@ -49,6 +49,7 @@ tr.clickable:hover{background:#f4f7f5;transform:none;box-shadow:none}
 .week small,.mini-week small{font-size:8px}
 @media(max-width:600px){#drill{width:100vw}}
 .recovery-card{margin-bottom:14px;border-top:3px solid var(--green)}.recovery-protocol .gate:nth-child(2){border-color:#cadce6}.recovery-protocol .gate:nth-child(3){border-color:#ead7c1}
+.release-card{margin-bottom:14px;border-top:3px solid var(--amber)}.release-card .approval-row{background:#fbfcfb}.release-notice{margin-top:14px}.work-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}.action-button:disabled{cursor:wait;opacity:.65}
 .approval-controls{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;justify-content:flex-end}.model-choice{display:grid;gap:5px;color:var(--muted);font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}.model-choice select{appearance:none;min-width:94px;padding:8px 28px 8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='m1 1 4 4 4-4' fill='none' stroke='%235a6660' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 9px center;color:var(--ink);font:700 10px var(--font-body);text-transform:none;letter-spacing:0;cursor:pointer}.model-choice select:focus{outline:2px solid rgba(46,107,63,.2);border-color:var(--green)}
 @media(max-width:600px){.approval-row{grid-template-columns:8px 1fr}.approval-controls{grid-column:2;justify-content:flex-start}.model-choice select{min-width:120px}}
 

@@ -95,6 +95,17 @@ class DevDashboardTests(unittest.TestCase):
         self.assertIn("if not cos.is_owner() then raise exception 'forbidden'", self.start_provider_sql)
         self.assertIn("revoke all on function cos.api_decide_approval(text,boolean,text,text) from public,anon", self.start_provider_sql)
 
+    def test_release_ready_work_can_be_approved_from_the_website(self):
+        self.assertIn("const RELEASE_READY='READY_FOR_RELEASE_APPROVAL'", self.js)
+        self.assertIn("Release approvals", self.js)
+        self.assertIn("data-release-work", self.js)
+        self.assertIn("Approve release", self.js)
+        self.assertIn("sb.rpc('api_release',{p_work_id:workId", self.js)
+        self.assertIn("It will not rerun an agent, merge a pull request, or deploy code", self.js)
+        self.assertIn("if not cos.is_owner() then raise exception 'forbidden'", self.sql)
+        self.assertIn("revoke all on function cos.api_release(text,text) from public, anon", self.sql)
+        self.assertIn("grant execute on function cos.api_release(text,text) to authenticated", self.sql)
+
     def test_recovery_migration_is_owner_gated_and_private(self):
         self.assertIn("gate_type in ('plan','recovery','action','release')", self.recovery_sql)
         self.assertIn("provider_order", self.recovery_sql)

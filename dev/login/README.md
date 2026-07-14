@@ -46,8 +46,13 @@ server-side, not in the client. The v3 payload has these top-level sections:
   (with `payload_hash`), `runners[]`, `events[]`. Plus `control_plane.local_runner`
   and `continuity.{tasks, evidence, checkpoint_weekly}`.
 
-Approvals are decided via a second RPC, `api_decide_approval(p_approval_id,
-p_approved, p_note)`, then the dashboard reloads.
+Execution approvals are decided through
+`api_decide_approval(p_approval_id, p_approved, p_note, p_start_provider)`, then
+the dashboard reloads. Work in `READY_FOR_RELEASE_APPROVAL` is surfaced as a
+separate release gate. After reviewing the run log and confirming any required
+merge or delivery happened, **Approve release** calls
+`api_release(p_work_id, p_note)` and marks the ledger item `COMPLETED`. The RPC
+does not rerun an agent, merge a pull request, or deploy code.
 
 ## Agent failure recovery
 
