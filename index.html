@@ -227,6 +227,8 @@
   .deck-card:hover { transform: translateY(-3px); box-shadow: 0 26px 60px -18px rgba(18,22,29,.34), 0 6px 16px -8px rgba(18,22,29,.14); }
   .deck-frame { display: block; position: relative; width: 100%; aspect-ratio: 16/9; }
   .deck-frame iframe { position: absolute; top: 0; left: 0; width: 1280px; height: 720px; border: 0; transform-origin: top left; pointer-events: none; }
+  /* film slides fill the same 16/9 frame; the source is 16/9 so cover cannot crop */
+  .deck-frame video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; object-fit: cover; border: 0; pointer-events: none; background: #08261e; }
   .deck-badge {
     position: absolute; top: 14px; right: 14px; z-index: 2;
     font: 700 10.5px/1 var(--font-body); letter-spacing: .08em; text-transform: uppercase;
@@ -430,7 +432,7 @@
       </a>
     </div>
     <div class="hero-jump" aria-label="Jump to a section">
-      <a href="#decks">Featured decks</a>
+      <a href="#decks">Featured media</a>
       <a href="#services">Services</a>
       <a href="#process">How we work</a>
       <a href="#portfolio">Portfolio</a>
@@ -443,18 +445,41 @@
 <div class="section" id="decks">
   <div class="wrap">
     <div class="deck-head">
-      <div class="section-label"><span>Featured decks</span></div>
+      <div class="section-label"><span>Featured Media</span></div>
       <div class="deck-nav">
         <div class="deck-dots">
-          <button class="deck-dot on" type="button" aria-label="Show the PE strategy deck"></button>
+          <button class="deck-dot on" type="button" aria-label="Show the control plane film"></button>
+          <button class="deck-dot" type="button" aria-label="Show the PE strategy deck"></button>
           <button class="deck-dot" type="button" aria-label="Show the SMB automation deck"></button>
         </div>
-        <button class="deck-arrow" id="deckPrev" type="button" aria-label="Previous deck"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg></button>
-        <button class="deck-arrow" id="deckNext" type="button" aria-label="Next deck"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
+        <button class="deck-arrow" id="deckPrev" type="button" aria-label="Previous item"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg></button>
+        <button class="deck-arrow" id="deckNext" type="button" aria-label="Next item"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
       </div>
     </div>
     <div class="deck-slider">
       <div class="deck-track" id="deckTrack">
+
+        <div class="deck-slide">
+          <div class="deck-grid">
+            <div class="deck-copy">
+              <h2 class="section-h2">The AI work control plane, running</h2>
+              <p class="deck-lead">A fifty-second film of the system we use to govern our own AI work: what the agents did, what it cost, and what is still waiting on a human.</p>
+              <ul class="deck-points">
+                <li><b>Three planes, one ledger:</b> the website holds authority, the database coordinates, the local computer executes — nothing commands the laptop directly</li>
+                <li><b>Every number shows its work:</b> each tracker carries its definition and the numerator and denominator behind it</li>
+                <li><b>Nothing ships without a human:</b> release stays behind an explicit, visible gate</li>
+              </ul>
+              <div class="deck-cta">
+                <a class="btn-primary" href="/ai-work-control-plane/">Read the case study</a>
+                <span class="deck-meta">50 seconds. Sound on.</span>
+              </div>
+            </div>
+            <a class="deck-card" href="/ai-work-control-plane/" aria-label="Read the AI work control plane case study">
+              <span class="deck-badge">50 seconds</span>
+              <span class="deck-frame"><video src="/media/cs-control-plane-film.mp4" poster="/media/cs-control-plane-film-poster.jpg" autoplay muted loop playsinline preload="metadata" tabindex="-1" aria-hidden="true"></video></span>
+            </a>
+          </div>
+        </div>
 
         <div class="deck-slide">
           <div class="deck-grid">
