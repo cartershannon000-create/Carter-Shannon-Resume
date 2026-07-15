@@ -135,6 +135,16 @@
   .arch-rail span{font:600 9px/1.4 var(--font-body);color:#b6c9c0;text-align:right}
   .public-note{margin:18px 4px 0;color:#727a76;font-size:11.5px;line-height:1.55}
 
+  .cp-film{margin-top:26px;border:1px solid var(--line);border-radius:var(--cp-large);background:var(--panel-strong);padding:34px;box-shadow:var(--shadow)}
+  .cp-film-head{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:22px}
+  .cp-film-head strong{font:750 12px/1 var(--font-body)}
+  .cp-film-head span{font:700 8px/1 var(--font-body);letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+  .cp-film video{display:block;width:100%;aspect-ratio:16/9;border-radius:13px;background:#08261e;border:1px solid var(--line)}
+  .cp-film-points{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:24px}
+  .cp-film-points div{font-size:12.5px;line-height:1.6;color:var(--muted)}
+  .cp-film-points b{display:block;color:var(--ink);font:750 11px/1 var(--font-body);margin-bottom:7px}
+  @media(max-width:760px){.cp-film{padding:22px}.cp-film-points{grid-template-columns:1fr;gap:14px}}
+
   .metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
   .metric{background:#fff;border:1px solid var(--line);border-radius:16px;padding:25px;box-shadow:var(--shadow)}
   .metric-top{display:flex;align-items:start;justify-content:space-between;gap:20px}
@@ -291,7 +301,17 @@
           <article class="arch-node"><small>Execution layer</small><h3>Specialized workers</h3><p>Different capabilities research, build, analyze, and review within the authority already granted.</p></article>
         </div>
         <div class="arch-rail"><b>Evidence &amp; measurement</b><div class="rail-line"></div><span>Artifacts · review · quality · usage · outcomes</span></div>
-        <p class="public-note">This diagram communicates the operating pattern—not the deployment topology. Operational vendors, infrastructure, credentials, data paths, routing rules, and control thresholds are intentionally omitted.</p>
+        <p class="public-note">The diagram above communicates the operating pattern. The film below shows the real implementation of it. Credentials, routing rules, schemas, and control thresholds remain omitted.</p>
+      </div>
+
+      <div class="cp-film">
+        <div class="cp-film-head"><strong>The control plane, running</strong><span>50 seconds · sound on</span></div>
+        <video src="/media/cs-control-plane-film.mp4" poster="/media/cs-control-plane-film-poster.jpg" controls muted playsinline preload="none" aria-label="A fifty-second film of the CS Ventures control plane: the operating overview, the website-to-database-to-runner architecture, the metric trackers, and the human release gate."></video>
+        <div class="cp-film-points">
+          <div><b>Three planes, one ledger</b>The website holds authority. The database coordinates. The local computer executes. Nothing commands the laptop directly.</div>
+          <div><b>Every number shows its work</b>Each tracker carries its definition and the numerator and denominator it was calculated from.</div>
+          <div><b>Nothing ships without a human</b>Release stays behind an explicit gate, and every transition lands in an append-only ledger.</div>
+        </div>
       </div>
     </div>
   </section>
@@ -392,8 +412,8 @@
     <div class="wrap boundary">
       <div><div class="eyebrow" style="color:var(--green)">Public by design</div><h2>Enough to understand the system. Not enough to operate it.</h2><p>This case study describes the management model and measurement philosophy. It deliberately excludes the implementation details that would expose security posture or create an operational map.</p></div>
       <div class="boundary-card">
-        <div class="boundary-row"><i>✓</i><div><strong>Shown publicly</strong><span>Purpose, lifecycle concepts, metric definitions, human-control principles, and illustrative visuals.</span></div></div>
-        <div class="boundary-row"><i>—</i><div><strong>Kept operational</strong><span>Infrastructure, vendors, identities, credentials, schemas, routes, control thresholds, and environment details.</span></div></div>
+        <div class="boundary-row"><i>✓</i><div><strong>Shown publicly</strong><span>Purpose, lifecycle concepts, metric definitions, human-control principles, illustrative visuals, and a recorded walkthrough of the working system.</span></div></div>
+        <div class="boundary-row"><i>—</i><div><strong>Kept operational</strong><span>Infrastructure, identities, credentials, schemas, routes, control thresholds, and environment details.</span></div></div>
         <div class="boundary-row"><i>↗</i><div><strong>Discussed selectively</strong><span>Implementation patterns and operating design can be reviewed in a scoped client conversation.</span></div></div>
       </div>
     </div>
