@@ -10,6 +10,7 @@ RECOVERY_MIGRATION = ROOT / "supabase" / "migrations" / "20260713143054_agent_fa
 PROGRESS_MIGRATION = ROOT / "supabase" / "migrations" / "20260713150000_job_progress_live.sql"
 START_PROVIDER_MIGRATION = ROOT / "supabase" / "migrations" / "20260714011441_selectable_start_provider.sql"
 QUALITY_MIGRATION = ROOT / "supabase" / "migrations" / "20260714191119_delivery_quality_gate.sql"
+QUALITY_SECURITY_MIGRATION = ROOT / "supabase" / "migrations" / "20260714233532_secure_quality_telemetry.sql"
 
 
 class DevDashboardTests(unittest.TestCase):
@@ -22,6 +23,7 @@ class DevDashboardTests(unittest.TestCase):
         cls.progress_sql = PROGRESS_MIGRATION.read_text(encoding="utf-8")
         cls.start_provider_sql = START_PROVIDER_MIGRATION.read_text(encoding="utf-8")
         cls.quality_sql = QUALITY_MIGRATION.read_text(encoding="utf-8")
+        cls.quality_security_sql = QUALITY_SECURITY_MIGRATION.read_text(encoding="utf-8")
 
     def test_seven_operating_tabs_are_present(self):
         tabs = re.findall(r'data-tab="([^"]+)"', self.html)
@@ -127,6 +129,9 @@ class DevDashboardTests(unittest.TestCase):
         self.assertIn("No comparable skill data yet", self.js)
         self.assertIn("no-skill observations automatically", self.js)
         self.assertIn("skill_weekly", self.quality_sql)
+        self.assertIn("alter table cos.skill_invocation_events enable row level security", self.quality_security_sql)
+        self.assertIn("revoke all on table cos.skill_invocation_events", self.quality_security_sql)
+        self.assertIn("revoke all on table cos.weekly_skill_effectiveness", self.quality_security_sql)
 
     def test_recovery_migration_is_owner_gated_and_private(self):
         self.assertIn("gate_type in ('plan','recovery','action','release')", self.recovery_sql)
