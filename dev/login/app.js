@@ -420,7 +420,11 @@ async function startEnroll(existing){
   if(error){$('#loginErr').textContent=`Could not start two-factor setup: ${error.message}`;showLogin();return}
   enrollFactorId=data.id;
   const qr=data.totp?.qr_code||'';
-  $('#enrollQr').innerHTML=qr.startsWith('data:')?`<img src="${qr}" alt="Authenticator QR code">`:qr;
+  const box=$('#enrollQr');box.textContent='';
+  let svg=qr;
+  if(qr.startsWith('data:')){svg=qr.slice(qr.indexOf(',')+1);try{svg=decodeURIComponent(svg)}catch{}}
+  if(svg.includes('<svg')){box.innerHTML=svg}
+  else{const img=document.createElement('img');img.src=qr;img.alt='Authenticator QR code';box.appendChild(img)}
   $('#enrollSecret').textContent=data.totp?.secret||'';
   $('#enrollCode').value='';$('#enrollErr').textContent='';
   authCard('enrollForm');$('#enrollCode').focus();
