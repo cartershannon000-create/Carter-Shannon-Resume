@@ -423,7 +423,17 @@ async function startEnroll(existing){
   const box=$('#enrollQr');box.textContent='';
   let svg=qr;
   if(qr.startsWith('data:')){svg=qr.slice(qr.indexOf(',')+1);try{svg=decodeURIComponent(svg)}catch{}}
-  if(svg.includes('<svg')){box.innerHTML=svg}
+  if(svg.includes('<svg')){
+    box.innerHTML=svg;
+    const el=box.querySelector('svg');
+    if(el){
+      if(!el.getAttribute('viewBox')){
+        const w=parseFloat(el.getAttribute('width'))||219,h=parseFloat(el.getAttribute('height'))||w;
+        el.setAttribute('viewBox',`0 0 ${w} ${h}`);
+      }
+      el.removeAttribute('width');el.removeAttribute('height');
+    }
+  }
   else{const img=document.createElement('img');img.src=qr;img.alt='Authenticator QR code';box.appendChild(img)}
   $('#enrollSecret').textContent=data.totp?.secret||'';
   $('#enrollCode').value='';$('#enrollErr').textContent='';
