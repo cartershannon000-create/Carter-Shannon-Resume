@@ -208,6 +208,11 @@
   .pillar-proof { margin-top: 12px; font-size: 13px; }
   .pillar-proof a { font-weight: 600; color: var(--green); }
   .pillar-proof a + a::before { content: '·'; margin: 0 8px; color: var(--line); }
+  .section-end-cta {
+    display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;
+    margin-top:36px; padding-top:30px; border-top:1px solid var(--line);
+  }
+  .section-end-cta p { margin:0; color:var(--muted); font-size:14px; }
 
   /* featured deck */
   .deck-grid { display: grid; gap: 44px; margin-top: 8px; align-items: center; }
@@ -428,12 +433,68 @@
       </a>
     </div>
     <div class="hero-jump" aria-label="Jump to a section">
+      <a href="#decks">Featured media</a>
       <a href="#services">Services</a>
       <a href="#process">How we work</a>
       <a href="#portfolio">Portfolio</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
     </div>
+  </div>
+</div>
+
+<div class="section" id="decks">
+  <div class="wrap">
+    <div class="deck-head">
+      <div class="section-label"><span>Featured Media</span></div>
+      <div class="deck-nav">
+        <div class="deck-dots">
+          <button class="deck-dot on" type="button" aria-label="Show the control plane film"></button>
+          <button class="deck-dot" type="button" aria-label="Show the PE strategy deck"></button>
+          <button class="deck-dot" type="button" aria-label="Show the SMB automation deck"></button>
+        </div>
+        <button class="deck-arrow" id="deckPrev" type="button" aria-label="Previous item"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg></button>
+        <button class="deck-arrow" id="deckNext" type="button" aria-label="Next item"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
+      </div>
+    </div>
+    <div class="deck-slider">
+      <div class="deck-track" id="deckTrack">
+        <div class="deck-slide">
+          <div class="deck-grid">
+            <div class="deck-copy">
+              <h2 class="section-h2">The AI work control plane, running</h2>
+              <p class="deck-lead">A fifty-second film of the system we use to govern our own AI work: what the agents did, what it cost, and what is still waiting on a human.</p>
+              <ul class="deck-points"><li><b>Three planes, one ledger:</b> the website holds authority, the database coordinates, and the local computer executes.</li><li><b>Every number shows its work:</b> each tracker carries its definition and the evidence behind it.</li><li><b>Nothing ships without a human:</b> release stays behind an explicit, visible gate.</li></ul>
+              <div class="deck-cta"><a class="btn-primary" href="/ai-work-control-plane/">Read the case study</a><span class="deck-meta">50 seconds. Sound on.</span></div>
+            </div>
+            <a class="deck-card" href="/ai-work-control-plane/" aria-label="Read the AI Work Control Plane case study"><span class="deck-badge">50 seconds</span><span class="deck-frame"><video src="/media/cs-control-plane-film.mp4" poster="/media/cs-control-plane-film-poster.jpg" autoplay muted loop playsinline preload="metadata" tabindex="-1" aria-hidden="true"></video></span></a>
+          </div>
+        </div>
+        <div class="deck-slide">
+          <div class="deck-grid">
+            <div class="deck-copy">
+              <h2 class="section-h2">Turning AI into EBITDA, for private equity</h2>
+              <p class="deck-lead">Our point of view on AI value creation for PE-backed portfolio companies, presented the way we would in the room: the argument, the evidence, and the ask.</p>
+              <ul class="deck-points"><li><b>Two engines of value:</b> efficiency protects margin; opportunity changes the growth story.</li><li><b>The wedge:</b> frameworks without builds and builds without adoption both leave value behind.</li><li><b>The ask:</b> a 30–60 day single-company diagnostic as the low-risk entry point.</li></ul>
+              <div class="deck-cta"><a class="btn-primary" href="/decks/pe-ai-ebitda-strategy/">Open the deck</a><span class="deck-meta">18 slides. Use the arrow keys.</span></div>
+            </div>
+            <a class="deck-card" href="/decks/pe-ai-ebitda-strategy/" aria-label="Open the AI-to-EBITDA strategy deck"><span class="deck-badge">18 slides</span><span class="deck-frame"><iframe src="/decks/pe-ai-ebitda-strategy/?shot=1" loading="lazy" tabindex="-1" title="AI-to-EBITDA strategy deck cover" aria-hidden="true"></iframe></span></a>
+          </div>
+        </div>
+        <div class="deck-slide">
+          <div class="deck-grid">
+            <div class="deck-copy">
+              <h2 class="section-h2">The pitch, in ten slides</h2>
+              <p class="deck-lead">Our current point of view on process automation for small and mid-size businesses, presented the way we would in the room.</p>
+              <ul class="deck-points"><li><b>Where the hours go:</b> five back-office processes that quietly absorb them.</li><li><b>The method:</b> automate the routine first, then add AI where judgment lives.</li><li><b>The economics:</b> the cost reduction and payback, slide by slide.</li></ul>
+              <div class="deck-cta"><a class="btn-primary" href="/decks/process-automation-smb/">Open the deck</a><span class="deck-meta">10 slides. Use the arrow keys.</span></div>
+            </div>
+            <a class="deck-card" href="/decks/process-automation-smb/" aria-label="Open the process automation deck"><span class="deck-badge">10 slides</span><span class="deck-frame"><iframe src="/decks/process-automation-smb/?shot=1" loading="lazy" tabindex="-1" title="Process automation deck cover" aria-hidden="true"></iframe></span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deck-more"><a href="/portfolio/#trainings-papers">See media and papers in the portfolio &rarr;</a></div>
   </div>
 </div>
 
@@ -476,6 +537,10 @@
           <div class="pillar-deliv"><b>Typical engagements</b>Market entry analysis · demand and pricing models · a go-to-market plan you can execute quarter by quarter</div>
         </div>
       </div>
+    </div>
+    <div class="section-end-cta">
+      <p>See every offering, deliverable, and way to work together.</p>
+      <a class="btn-primary" href="/services/">Explore all services</a>
     </div>
   </div>
 </div>
@@ -637,6 +702,42 @@
     }
   ]
 }
+</script>
+
+<script>
+(function(){
+  function fitDecks(){
+    document.querySelectorAll('.deck-frame').forEach(function(frame){
+      var iframe = frame.querySelector('iframe');
+      if (iframe) iframe.style.transform = 'scale(' + (frame.clientWidth / 1280) + ')';
+    });
+  }
+  addEventListener('resize', fitDecks);
+  fitDecks();
+
+  var track = document.getElementById('deckTrack');
+  if (!track) return;
+  var dots = Array.prototype.slice.call(document.querySelectorAll('.deck-dot'));
+  var current = 0;
+  var total = track.children.length;
+  function go(index){
+    current = (index + total) % total;
+    track.style.transform = 'translateX(-' + (current * 100) + '%)';
+    dots.forEach(function(dot, i){ dot.classList.toggle('on', i === current); });
+    fitDecks();
+  }
+  document.getElementById('deckPrev').addEventListener('click', function(){ go(current - 1); });
+  document.getElementById('deckNext').addEventListener('click', function(){ go(current + 1); });
+  dots.forEach(function(dot, i){ dot.addEventListener('click', function(){ go(i); }); });
+  var startX = null;
+  track.addEventListener('touchstart', function(event){ startX = event.touches[0].clientX; }, {passive:true});
+  track.addEventListener('touchend', function(event){
+    if (startX === null) return;
+    var delta = event.changedTouches[0].clientX - startX;
+    if (Math.abs(delta) > 40) go(current + (delta < 0 ? 1 : -1));
+    startX = null;
+  }, {passive:true});
+})();
 </script>
 
 

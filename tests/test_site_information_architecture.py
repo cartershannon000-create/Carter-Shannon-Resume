@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+HOME = ROOT / "index.html"
 PORTFOLIO = ROOT / "portfolio" / "index.html"
 SERVICES = ROOT / "services" / "index.html"
 GUIDE = ROOT / "how-to-build-your-first-app" / "index.html"
@@ -28,7 +29,25 @@ class SiteInformationArchitectureTests(unittest.TestCase):
             "Strategy &amp; Go-to-Market",
         ):
             self.assertIn(phrase, page)
-        self.assertNotIn('class="port-entries"', page)
+        self.assertEqual(page.count('class="service-card"'), 4)
+        for path in (
+            "/services/ai-automation/",
+            "/services/product-design-build/",
+            "/services/analytics-financial-modeling/",
+            "/services/strategy-go-to-market/",
+        ):
+            self.assertIn(f'href="{path}"', page)
+
+    def test_home_restores_featured_media_before_services_and_links_to_services(self):
+        page = HOME.read_text(encoding="utf-8")
+        media = page.index('id="decks"')
+        services = page.index('id="services"')
+        self.assertLess(media, services)
+        self.assertIn('id="deckTrack"', page)
+        self.assertEqual(page.count('class="deck-slide"'), 3)
+        services_block = page[services:page.index('id="process"')]
+        self.assertIn('href="/services/"', services_block)
+        self.assertIn("Explore all services", services_block)
 
     def test_portfolio_has_three_tabs_and_eleven_slides(self):
         page = PORTFOLIO.read_text(encoding="utf-8")
@@ -37,6 +56,7 @@ class SiteInformationArchitectureTests(unittest.TestCase):
         parser.close()
         self.assertEqual(page.count('role="tab"'), 3)
         self.assertEqual(page.count('role="tabpanel"'), 3)
+        self.assertEqual(page.count('class="offer-card"'), 11)
         self.assertEqual(page.count('class="work-card"'), 11)
         for label in ("Agents &amp; AI", "Apps &amp; Websites", "Trainings &amp; Papers"):
             self.assertIn(label, page)
@@ -46,6 +66,19 @@ class SiteInformationArchitectureTests(unittest.TestCase):
         self.assertIn("How to Build Your First App", block)
         self.assertIn("AI-to-EBITDA Strategy", block)
         self.assertIn("Process Automation for SMBs", block)
+        agents = re.search(
+            r'id="panel-agents".*?id="panel-apps"', page, re.DOTALL
+        ).group(0)
+        order = (
+            "AI Work Control Plane",
+            "Product Team Loop",
+            "Product Film Agent",
+            "DeckForge",
+            "Remit",
+        )
+        positions = [agents.index(name) for name in order]
+        self.assertEqual(positions, sorted(positions))
+        self.assertIn("setInterval", page)
 
     def test_services_and_portfolio_structured_data_parse(self):
         for path in (SERVICES, PORTFOLIO):
