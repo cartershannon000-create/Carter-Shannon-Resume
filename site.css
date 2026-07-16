@@ -33,7 +33,7 @@ html { scroll-behavior: smooth; }
   position: sticky;
   top: 0;
   z-index: 200;
-  background: var(--dark);
+  background: #06140d;
   border-bottom: 1px solid var(--on-dark-line);
   display: flex;
   align-items: center;
