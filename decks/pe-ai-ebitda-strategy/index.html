@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>AI-to-EBITDA Strategy for PE-Backed Portfolio Companies</title>
+<title>AI-to-EBITDA Strategy for PE-Backed Portfolio Companies</title><link rel="stylesheet" href="/site.css">
 <style>
 /* McKinsey house-style slide system — shared tokens + reusable frame.
    16:9 slide = 1280x720. Import into each template; the template only fills the visual zone.
@@ -139,7 +139,7 @@ ul.dash li::before{ content:"—"; position:absolute; left:0; color:var(--muted)
 <style>
 /* presenter shell */
 html,body{ height:100%; background:#12171c; overflow:hidden; }
-.stage{ position:absolute; top:50%; left:50%; width:1280px; height:720px;
+.stage{ position:absolute; top:calc(50% + 28px); left:50%; width:1280px; height:720px;
         transform:translate(-50%,-50%) scale(var(--k,1)); transform-origin:center center; }
 .stage .slide{ position:absolute; inset:0; display:none; box-shadow:0 12px 60px rgba(0,0,0,.5); }
 .stage .slide.active{ display:flex; }
@@ -148,18 +148,18 @@ html,body{ height:100%; background:#12171c; overflow:hidden; }
       font-family:Inter,Arial,sans-serif; font-size:13px; }
 .nav button{ background:#20272e; color:#cdd8df; border:1px solid #2f3942; border-radius:5px;
       padding:6px 12px; cursor:pointer; font:inherit; }
-.hint{ position:fixed; top:14px; right:18px; color:#5c6b76;
+.hint{ position:fixed; top:70px; right:18px; color:#5c6b76;
       font-family:Inter,Arial,sans-serif; font-size:12px; z-index:10; }
 /* shot mode: exactly one slide, 1:1 at origin, no chrome */
 body.shot{ overflow:visible; background:#fff; }
 body.shot .stage{ position:absolute; top:0; left:0; transform:none; }
-body.shot .nav, body.shot .hint{ display:none; }
+body.shot .nav, body.shot .hint, body.shot .csv-bar{ display:none; }
 /* print mode: all slides stacked, one per page */
 body.print{ overflow:visible; background:#fff; }
 body.print .stage{ position:static; transform:none; width:1280px; height:auto; margin:0; }
 body.print .slide{ display:flex; position:relative; inset:auto; box-shadow:none;
       page-break-after:always; break-after:page; }
-body.print .nav, body.print .hint{ display:none; }
+body.print .nav, body.print .hint, body.print .csv-bar{ display:none; }
 @page{ size:1280px 720px; margin:0; }
 /* per-slide scoped styles */
 /* sections/00-front-matter/1-cover.html */
@@ -333,7 +333,7 @@ body.print .nav, body.print .hint{ display:none; }
 #s18 .cta-bar .cta-ask{ font-family:var(--serif); font-weight:700; font-size:21px; color:#fff; line-height:1.2; text-align:left; }
 #s18 .cta-bar .cta-ask b{ color:#4CC98A; font-weight:700; }
 </style></head>
-<body>
+<body><div class="csv-bar"><a class="csv-brand" href="/"><svg class="csv-mark" viewBox="0 0 205 155" aria-hidden="true" fill="currentColor"><text font-family="Georgia,serif" font-size="150" x="4" y="108">C</text><text font-family="Georgia,serif" font-size="125" x="78" y="129">S</text></svg>CS Ventures</a><nav class="csv-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/about/">About</a><a href="/services/">Services</a><a href="/portfolio/" class="active">Portfolio</a></nav></div>
 <div class="hint">&larr; / &rarr; or Space &middot; F fullscreen</div>
 <div class="stage" id="stage">
 <!-- S1: sections/00-front-matter/1-cover.html -->
@@ -855,7 +855,7 @@ body.print .nav, body.print .hint{ display:none; }
     slides.forEach(function(s,i){ s.classList.toggle('active', i===cur); });
     document.getElementById('pos').textContent = (cur+1) + ' / ' + slides.length; }
   function fit(){ document.documentElement.style.setProperty('--k',
-    Math.min(innerWidth/1300, innerHeight/760)); }
+    Math.min(innerWidth/1300, (innerHeight-76)/760)); }
   document.getElementById('prev').onclick = function(){ show(cur-1); };
   document.getElementById('next').onclick = function(){ show(cur+1); };
   document.addEventListener('keydown', function(e){

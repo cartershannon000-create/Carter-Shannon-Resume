@@ -137,6 +137,7 @@ App: https://novena-prayer-app.github.io/nos-prayer-app/marketing.html
 - About Carter: https://cs-ventures.us/about/
 - Experience: https://cs-ventures.us/about/experience.html
 - Portfolio: https://cs-ventures.us/portfolio/
+- Services: https://cs-ventures.us/services/
 - How to Build Your First App: https://cs-ventures.us/how-to-build-your-first-app/
 - DeckForge: https://cs-ventures.us/DeckForge/
 - Altro: https://cs-ventures.us/Altro/

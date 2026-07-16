@@ -73,13 +73,14 @@ class AiWorkControlPlanePageTests(unittest.TestCase):
             self.assertNotIn(forbidden, self.page)
         self.assertIn("Operational vendors, infrastructure, credentials", self.page)
 
-    def test_portfolio_lists_and_links_all_nine_entries(self):
-        self.assertIn('"numberOfItems": 9', self.portfolio)
-        self.assertEqual(self.portfolio.count('class="port-entry-n"'), 9)
+    def test_portfolio_lists_and_links_all_eleven_entries(self):
+        self.assertIn('"numberOfItems": 11', self.portfolio)
+        self.assertEqual(self.portfolio.count('class="work-card"'), 11)
         self.assertIn("AI Work Control Plane", self.portfolio)
         self.assertIn('href="/ai-work-control-plane/"', self.portfolio)
         self.assertIn('href="/how-to-build-your-first-app/"', self.portfolio)
-        self.assertIn("05 builds", self.portfolio)
+        self.assertIn('href="/decks/pe-ai-ebitda-strategy/"', self.portfolio)
+        self.assertIn('href="/decks/process-automation-smb/"', self.portfolio)
 
 
 if __name__ == "__main__":

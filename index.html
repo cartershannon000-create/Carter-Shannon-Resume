@@ -412,12 +412,7 @@
 
 <div class="csv-bar">
   <a class="csv-brand" href="/"><svg class="csv-mark" viewBox="0 0 205 155" aria-hidden="true" fill="currentColor"><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="150" font-weight="400" x="4" y="108">C</text><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="125" font-weight="400" x="78" y="129">S</text></svg>CS Ventures</a>
-  <nav class="csv-nav">
-    <a href="/" class="active">Home</a>
-    <a href="/about/">About</a>
-    <a href="/portfolio/">Portfolio</a>
-    <a href="/decks/">Decks</a>
-  </nav>
+  <nav class="csv-nav" aria-label="Main navigation"><a href="/" class="active">Home</a><a href="/about/">About</a><a href="/services/">Services</a><a href="/portfolio/">Portfolio</a></nav>
 </div>
 
 <div class="hero">
@@ -426,110 +421,18 @@
     <h1>Growth <em>through strategy.</em></h1>
     <p class="lead">CS Ventures enables individuals and small businesses to create new products, optimize business processes, gain more traction in their markets, and identify new opportunities.</p>
     <div class="hero-ctas">
-      <a class="btn-primary" href="/portfolio/">View Portfolio</a>
-      <a class="txt-link" href="/about/">
-        About Us
+      <a class="btn-primary" href="/services/">Explore Services</a>
+      <a class="txt-link" href="/portfolio/">
+        View Portfolio
         <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
       </a>
     </div>
     <div class="hero-jump" aria-label="Jump to a section">
-      <a href="#decks">Featured media</a>
       <a href="#services">Services</a>
       <a href="#process">How we work</a>
       <a href="#portfolio">Portfolio</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
-    </div>
-  </div>
-</div>
-
-<div class="section" id="decks">
-  <div class="wrap">
-    <div class="deck-head">
-      <div class="section-label"><span>Featured Media</span></div>
-      <div class="deck-nav">
-        <div class="deck-dots">
-          <button class="deck-dot on" type="button" aria-label="Show the control plane film"></button>
-          <button class="deck-dot" type="button" aria-label="Show the PE strategy deck"></button>
-          <button class="deck-dot" type="button" aria-label="Show the SMB automation deck"></button>
-        </div>
-        <button class="deck-arrow" id="deckPrev" type="button" aria-label="Previous item"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg></button>
-        <button class="deck-arrow" id="deckNext" type="button" aria-label="Next item"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
-      </div>
-    </div>
-    <div class="deck-slider">
-      <div class="deck-track" id="deckTrack">
-
-        <div class="deck-slide">
-          <div class="deck-grid">
-            <div class="deck-copy">
-              <h2 class="section-h2">The AI work control plane, running</h2>
-              <p class="deck-lead">A fifty-second film of the system we use to govern our own AI work: what the agents did, what it cost, and what is still waiting on a human.</p>
-              <ul class="deck-points">
-                <li><b>Three planes, one ledger:</b> the website holds authority, the database coordinates, the local computer executes — nothing commands the laptop directly</li>
-                <li><b>Every number shows its work:</b> each tracker carries its definition and the numerator and denominator behind it</li>
-                <li><b>Nothing ships without a human:</b> release stays behind an explicit, visible gate</li>
-              </ul>
-              <div class="deck-cta">
-                <a class="btn-primary" href="/ai-work-control-plane/">Read the case study</a>
-                <span class="deck-meta">50 seconds. Sound on.</span>
-              </div>
-            </div>
-            <a class="deck-card" href="/ai-work-control-plane/" aria-label="Read the AI work control plane case study">
-              <span class="deck-badge">50 seconds</span>
-              <span class="deck-frame"><video src="/media/cs-control-plane-film.mp4" poster="/media/cs-control-plane-film-poster.jpg" autoplay muted loop playsinline preload="metadata" tabindex="-1" aria-hidden="true"></video></span>
-            </a>
-          </div>
-        </div>
-
-        <div class="deck-slide">
-          <div class="deck-grid">
-            <div class="deck-copy">
-              <h2 class="section-h2">Turning AI into EBITDA, for private equity</h2>
-              <p class="deck-lead">Our point of view on AI value creation for PE-backed portfolio companies, presented the way we would in the room: the argument, the evidence, and the ask.</p>
-              <ul class="deck-points">
-                <li><b>Two engines of value:</b> efficiency gains protect margin; opportunity gains change the growth story and the exit multiple</li>
-                <li><b>The wedge:</b> big consulting delivers frameworks without builds; tech shops deliver builds without adoption</li>
-                <li><b>The ask:</b> a 30-60 day single-portco diagnostic as the low-risk entry point</li>
-              </ul>
-              <div class="deck-cta">
-                <a class="btn-primary" href="/decks/pe-ai-ebitda-strategy/" target="_blank" rel="noopener">Open the deck</a>
-                <span class="deck-meta">18 slides. Move with the arrow keys.</span>
-              </div>
-            </div>
-            <a class="deck-card" href="/decks/pe-ai-ebitda-strategy/" target="_blank" rel="noopener" aria-label="Open the AI-to-EBITDA strategy deck">
-              <span class="deck-badge">18 slides</span>
-              <span class="deck-frame"><iframe src="/decks/pe-ai-ebitda-strategy/?shot=1" loading="lazy" tabindex="-1" title="Cover slide: AI Drives EBITDA, but Requires a Strong Strategy" aria-hidden="true"></iframe></span>
-            </a>
-          </div>
-        </div>
-
-        <div class="deck-slide">
-          <div class="deck-grid">
-            <div class="deck-copy">
-              <h2 class="section-h2">The pitch, in ten slides</h2>
-              <p class="deck-lead">Our current point of view on process automation for small and mid-size businesses, presented the way we would in the room.</p>
-              <ul class="deck-points">
-                <li><b>Where the hours go:</b> the five back-office processes that quietly absorb them</li>
-                <li><b>The method:</b> automate the routine first, add AI only where judgment lives</li>
-                <li><b>The economics:</b> what the cost reduction and payback look like, slide by slide</li>
-              </ul>
-              <div class="deck-cta">
-                <a class="btn-primary" href="/decks/process-automation-smb/" target="_blank" rel="noopener">Open the deck</a>
-                <span class="deck-meta">10 slides. Move with the arrow keys.</span>
-              </div>
-            </div>
-            <a class="deck-card" href="/decks/process-automation-smb/" target="_blank" rel="noopener" aria-label="Open the process automation deck">
-              <span class="deck-badge">10 slides</span>
-              <span class="deck-frame"><iframe src="/decks/process-automation-smb/?shot=1" loading="lazy" tabindex="-1" title="Cover slide: Give your team back its week" aria-hidden="true"></iframe></span>
-            </a>
-          </div>
-        </div>
-
-      </div>
-    </div>
-    <div class="deck-more">
-      <a href="/decks/">Browse all decks &rarr;</a>
     </div>
   </div>
 </div>
@@ -605,100 +508,20 @@
 <div class="section band" id="portfolio">
   <div class="wrap">
     <div class="section-label"><span>Portfolio</span></div>
-    <h2 class="section-h2">Built and shipped by CS Ventures</h2>
+    <h2 class="section-h2">Shipped work, organized by what it does</h2>
+    <p style="color:var(--muted);max-width:620px;margin:18px 0 38px;line-height:1.72">Choose a category on the portfolio page, then click or swipe through the work inside it.</p>
     <div class="port-list">
-      <div class="port-group-label">Agents &amp; AI</div>
-      <a class="port-row" href="/DeckForge/">
-        <div class="port-row-left">
-          <h3>DeckForge</h3>
-          <p>Autonomous equity research agent that writes, critiques, and rewrites until board-ready</p>
-        </div>
-        <div class="port-row-right">
-          <div class="port-tags">
-            <span class="port-tag">AI Agent</span>
-            <span class="port-tag">Finance</span>
-          </div>
-          <span class="port-arr">→</span>
-        </div>
+      <a class="port-row" href="/portfolio/#agents-ai">
+        <div class="port-row-left"><h3>Agents &amp; AI</h3><p>Autonomous systems, governed AI work, and product-film automation</p></div>
+        <div class="port-row-right"><div class="port-tags"><span class="port-tag">5 projects</span></div><span class="port-arr">&rarr;</span></div>
       </a>
-      <a class="port-row" href="/product-team-loop/">
-        <div class="port-row-left">
-          <h3>Product Team Loop</h3>
-          <p>Autonomous product team of agents that finds, ranks, and ships its own backlog in sprints</p>
-        </div>
-        <div class="port-row-right">
-          <div class="port-tags">
-            <span class="port-tag">AI Agents</span>
-            <span class="port-tag">Orchestration</span>
-          </div>
-          <span class="port-arr">&rarr;</span>
-        </div>
+      <a class="port-row" href="/portfolio/#apps-websites">
+        <div class="port-row-left"><h3>Apps &amp; Websites</h3><p>Consumer products and marketing experiences built end to end</p></div>
+        <div class="port-row-right"><div class="port-tags"><span class="port-tag">3 projects</span></div><span class="port-arr">&rarr;</span></div>
       </a>
-      <a class="port-row" href="/portfolio/#product-film-agent">
-        <div class="port-row-left">
-          <h3>Product Film Agent</h3>
-          <p>AI production agent that turns product recordings into launch-ready motion films and quality-checks every render</p>
-        </div>
-        <div class="port-row-right">
-          <div class="port-tags">
-            <span class="port-tag">AI Agent</span>
-            <span class="port-tag">Motion Design</span>
-          </div>
-          <span class="port-arr">&rarr;</span>
-        </div>
-      </a>
-      <div class="port-group-label">Apps &amp; Websites</div>
-      <a class="port-row" href="/how-to-build-your-first-app/">
-        <div class="port-row-left">
-          <h3>How to Build Your First App</h3>
-          <p>A practical guide to planning, building, testing, versioning, and deploying an app with AI</p>
-        </div>
-        <div class="port-row-right">
-          <div class="port-tags">
-            <span class="port-tag">Guide</span>
-            <span class="port-tag">AI Development</span>
-          </div>
-          <span class="port-arr">&rarr;</span>
-        </div>
-      </a>
-      <a class="port-row" href="/Altro/">
-        <div class="port-row-left">
-          <h3>Altro</h3>
-          <p>Travel ranking app for logging cities, comparing trips, and mapping return energy</p>
-        </div>
-        <div class="port-row-right">
-          <div class="port-tags">
-            <span class="port-tag">Travel</span>
-            <span class="port-tag">Mobile</span>
-          </div>
-          <span class="port-arr">→</span>
-        </div>
-      </a>
-      <a class="port-row" href="/Nos/">
-        <div class="port-row-left">
-          <h3>Nos</h3>
-          <p>Prayer and journaling app for novenas, daily reflection, and honest journaling</p>
-        </div>
-        <div class="port-row-right">
-          <div class="port-tags">
-            <span class="port-tag">Prayer</span>
-            <span class="port-tag">Mobile</span>
-          </div>
-          <span class="port-arr">→</span>
-        </div>
-      </a>
-      <a class="port-row" href="https://cartershannon000-create.github.io/Altro-travel/marketing.html" target="_blank" rel="noopener">
-        <div class="port-row-left">
-          <h3>Altro Travel Site</h3>
-          <p>Marketing website for the Altro app, designed and built end to end</p>
-        </div>
-        <div class="port-row-right">
-          <div class="port-tags">
-            <span class="port-tag">Website</span>
-            <span class="port-tag">Marketing</span>
-          </div>
-          <span class="port-arr">↗</span>
-        </div>
+      <a class="port-row" href="/portfolio/#trainings-papers">
+        <div class="port-row-left"><h3>Trainings &amp; Papers</h3><p>Practical build guidance and decision-ready strategy decks</p></div>
+        <div class="port-row-right"><div class="port-tags"><span class="port-tag">3 pieces</span></div><span class="port-arr">&rarr;</span></div>
       </a>
     </div>
   </div>
@@ -765,7 +588,7 @@
       </details>
       <details>
         <summary>What products has CS Ventures built?<span class="faq-toggle"></span></summary>
-        <p class="faq-answer">CS Ventures has shipped work in two categories. In agents and AI: DeckForge, an autonomous agent that writes and self-refines equity research decks until they are board-ready, and Product Team Loop, an autonomous product team of agents that finds, ranks, and ships its own backlog. In apps and websites: Altro, a travel ranking app for logging cities and mapping return energy; Nos, a prayer and journaling app for novenas and daily reflection; and the Altro travel marketing site, designed and built end to end.</p>
+        <p class="faq-answer">CS Ventures has shipped work in three categories. In agents and AI: DeckForge, an autonomous agent that writes and self-refines equity research decks until they are board-ready, and Product Team Loop, an autonomous product team of agents that finds, ranks, and ships its own backlog. In apps and websites: Altro, Nos, and the Altro travel marketing site. In trainings and papers: a first-app development guide, an AI-to-EBITDA strategy deck, and an SMB process-automation deck.</p>
       </details>
       <details>
         <summary>How can I contact CS Ventures?<span class="faq-toggle"></span></summary>
@@ -801,7 +624,7 @@
       "name": "What products has CS Ventures built?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "CS Ventures has shipped work in two categories. In agents and AI: DeckForge, an autonomous agent that writes and self-refines equity research decks, and Product Team Loop, an autonomous product team of agents. In apps and websites: Altro, a travel ranking app; Nos, a prayer and journaling app; and the Altro travel marketing site, designed and built end to end."
+        "text": "CS Ventures has shipped work in two categories. In agents and AI: DeckForge, an autonomous agent that writes and self-refines equity research decks, and Product Team Loop, an autonomous product team of agents. In apps and websites: Altro, Nos, and the Altro travel marketing site. In trainings and papers: a first-app development guide and two strategy decks."
       }
     },
     {
@@ -816,41 +639,6 @@
 }
 </script>
 
-<script>
-(function(){
-  function fitDecks(){
-    document.querySelectorAll('.deck-frame').forEach(function(f){
-      var ifr = f.querySelector('iframe');
-      if (ifr) ifr.style.transform = 'scale(' + (f.clientWidth / 1280) + ')';
-    });
-  }
-  addEventListener('resize', fitDecks);
-  fitDecks();
-
-  /* featured-deck slider */
-  var track = document.getElementById('deckTrack');
-  if (track) {
-    var dots = [].slice.call(document.querySelectorAll('.deck-dot'));
-    var cur = 0, n = track.children.length;
-    function go(k) {
-      cur = (k + n) % n;
-      track.style.transform = 'translateX(-' + (cur * 100) + '%)';
-      dots.forEach(function(d, j) { d.classList.toggle('on', j === cur); });
-    }
-    document.getElementById('deckPrev').addEventListener('click', function() { go(cur - 1); });
-    document.getElementById('deckNext').addEventListener('click', function() { go(cur + 1); });
-    dots.forEach(function(d, j) { d.addEventListener('click', function() { go(j); }); });
-    var x0 = null;
-    track.addEventListener('touchstart', function(e) { x0 = e.touches[0].clientX; }, { passive: true });
-    track.addEventListener('touchend', function(e) {
-      if (x0 === null) return;
-      var dx = e.changedTouches[0].clientX - x0;
-      if (Math.abs(dx) > 40) go(cur + (dx < 0 ? 1 : -1));
-      x0 = null;
-    }, { passive: true });
-  }
-})();
-</script>
 
 <footer>
   <div class="wrap">
@@ -862,8 +650,8 @@
       <div class="footer-links">
         <a href="/">Home</a>
         <a href="/about/">About</a>
+        <a href="/services/">Services</a>
         <a href="/portfolio/">Portfolio</a>
-        <a href="/decks/">Decks</a>
         <a href="/DeckForge/">DeckForge</a>
         <a href="/product-team-loop/">Product Team Loop</a>
         <a href="/Altro/">Altro</a>

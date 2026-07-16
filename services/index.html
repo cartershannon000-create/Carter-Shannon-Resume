@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Services | CS Ventures</title>
+<meta name="description" content="CS Ventures services across AI and automation, product design and build, analytics and financial modeling, and strategy and go-to-market.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cs-ventures.us/services/">
+<meta property="og:title" content="Services | CS Ventures">
+<meta property="og:description" content="Four focused service lines with clear deliverables, from automation and product builds to decision-grade analytics and go-to-market strategy.">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="https://cs-ventures.us/services/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "CS Ventures Services",
+  "url": "https://cs-ventures.us/services/",
+  "provider": { "@type": "Organization", "name": "CS Ventures", "url": "https://cs-ventures.us" },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "CS Ventures Service Lines",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "AI & Automation", "url": "https://cs-ventures.us/services/ai-automation/" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Product Design & Build", "url": "https://cs-ventures.us/services/product-design-build/" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Analytics & Financial Modeling", "url": "https://cs-ventures.us/services/analytics-financial-modeling/" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Strategy & Go-to-Market", "url": "https://cs-ventures.us/services/strategy-go-to-market/" } }
+    ]
+  }
+}
+</script>
+<style>
+  :root{
+    /* cool, modern neutral canvas to match the rest of the site */
+    --bg:#eff0f2;
+    --panel:#f7f8fa;
+    --panel-strong:#ffffff;
+    --ink:#161719;
+    --muted:#565961;
+    --line:rgba(18,22,29,.10);
+    --dark:#0a0b0d;
+    --dark-sub:#15161a;
+    --on-dark:#f5f5f7;
+    --on-dark-muted:rgba(245,245,247,.58);
+    --on-dark-line:rgba(255,255,255,.10);
+    --shadow:0 1px 2px rgba(18,22,29,.04), 0 8px 22px -10px rgba(18,22,29,.12);
+    --shadow-md:0 18px 50px -16px rgba(18,22,29,.24), 0 4px 12px -6px rgba(18,22,29,.10);
+    --radius:12px;
+    --r-lg:22px;
+    --ease:cubic-bezier(.32,.72,0,1);
+    --font-display:-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Inter, system-ui, "Helvetica Neue", Arial, sans-serif;
+  }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 var(--font-body); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  a { color: var(--green); text-decoration: none; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+  h1,h2,h3 { margin: 0; }
+  :focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 6px; }
+
+  /* category sections */
+  .cat-section { padding-top: 72px; }
+  .cat-head { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 18px; }
+  .cat-head h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(26px,3.4vw,38px); letter-spacing: -.033em; line-height: 1.05; color: var(--ink); }
+  .cat-head .cat-count { font: 700 12px/1 var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .cat-lead { font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 620px; margin: 18px 0 0; }
+  .cat-nav { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 32px; }
+  .cat-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    font: 600 13px/1 var(--font-body); color: var(--on-dark);
+    border: 1px solid var(--on-dark-line); background: rgba(255,255,255,.04);
+    padding: 11px 18px; border-radius: 999px; text-decoration: none;
+    transition: background .2s var(--ease), border-color .2s var(--ease);
+  }
+  .cat-pill:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); color: var(--on-dark); }
+  .band { background: var(--panel-strong); }
+
+  /* service architecture */
+  .svc-wrap { padding: 88px 0 96px; border-bottom: 1px solid var(--line); }
+  .svc-intro { max-width: 640px; }
+  .svc-intro .eyebrow-line { display: flex; align-items: center; gap: 16px; margin-bottom: 40px; }
+  .svc-intro .eyebrow-line::before { content: ''; display: block; flex: 0 0 32px; height: 1px; background: var(--ink); }
+  .svc-intro .eyebrow-line span { font: 700 10.5px/1 var(--font-body); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .svc-intro h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px,3.8vw,44px); letter-spacing: -.033em; line-height: 1.06; color: var(--ink); }
+  .svc-intro p { font-size: 15.5px; color: var(--muted); line-height: 1.72; margin: 18px 0 0; }
+  .svc-row { display: grid; gap: 30px; padding: 56px 0; border-top: 1px solid var(--line); align-items: start; }
+  .svc-row:first-of-type { margin-top: 56px; }
+  @media(min-width:900px){ .svc-row { grid-template-columns: minmax(0,.85fr) minmax(0,1.5fr); gap: 64px; } }
+  .svc-num { font: 700 12px/1 var(--font-body); letter-spacing: .14em; color: var(--green); margin-bottom: 14px; }
+  .svc-left h3 { font-family: var(--font-display); font-size: clamp(22px,2.6vw,30px); font-weight: 700; letter-spacing: -.028em; line-height: 1.1; color: var(--ink); margin-bottom: 10px; }
+  .svc-pos { font-size: 14.5px; color: var(--muted); line-height: 1.68; margin: 0; max-width: 380px; }
+  .svc-proof { margin-top: 16px; font-size: 13px; color: var(--muted); }
+  .svc-proof a { font-weight: 600; color: var(--green); }
+  .svc-proof a + a::before { content: '·'; margin: 0 8px; color: var(--line); }
+  .offer-grid { display: grid; gap: 14px; }
+  @media(min-width:640px){ .offer-grid { grid-template-columns: 1fr 1fr; } }
+  .offer-card {
+    display: block; position: relative; color: inherit;
+    background: var(--panel-strong); border: 1px solid var(--line); border-radius: 16px;
+    padding: 22px 44px 22px 24px; box-shadow: var(--shadow);
+    transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease);
+  }
+  .offer-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: rgba(46,107,63,.4); color: inherit; }
+  .offer-card h4 { font: 700 15.5px/1.3 var(--font-body); letter-spacing: -.01em; color: var(--ink); margin: 0 0 7px; }
+  .offer-card p { font-size: 13.5px; color: var(--muted); line-height: 1.62; margin: 0; }
+  .offer-card .go {
+    position: absolute; top: 20px; right: 18px; color: var(--muted);
+    transition: color .25s var(--ease), transform .25s var(--ease);
+  }
+  .offer-card .go svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .offer-card:hover .go { color: var(--green); transform: translateX(3px); }
+  .svc-more {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 18px;
+    font: 600 13.5px/1 var(--font-body); color: var(--ink);
+    border-bottom: 1.5px solid var(--ink); padding-bottom: 3px;
+    transition: color .2s var(--ease), border-color .2s var(--ease);
+  }
+  .svc-more:hover { color: var(--green); border-color: var(--green); }
+  .svc-more svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .live-frame { display: block; position: relative; width: 100%; aspect-ratio: 16/10; overflow: hidden; background: var(--dark); }
+  .live-frame iframe { position: absolute; top: 0; left: 0; width: 1280px; height: 800px; border: 0; transform-origin: top left; pointer-events: none; }
+  .svc-ctabar {
+    margin-top: 64px; background: var(--dark); border-radius: var(--r-lg);
+    padding: 34px 38px; display: flex; align-items: center; justify-content: space-between;
+    gap: 24px; flex-wrap: wrap; box-shadow: var(--shadow-md);
+  }
+  .svc-ctabar .t { color: var(--on-dark); font: 600 17px/1.4 var(--font-body); max-width: 480px; }
+  .svc-ctabar .t small { display: block; font: 400 13.5px/1.5 var(--font-body); color: var(--on-dark-muted); margin-top: 6px; }
+  .svc-cta-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .btn-solid {
+    display: inline-flex; align-items: center; gap: 9px;
+    font: 600 14px/1 var(--font-body); letter-spacing: .01em;
+    padding: 14px 24px; border-radius: 999px; background: var(--green); color: #fff;
+    text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    transition: transform .25s var(--ease), box-shadow .25s var(--ease), background .2s var(--ease);
+  }
+  .btn-solid:hover { background: #286038; color: #fff; transform: translateY(-1px); }
+  .btn-quiet { font: 600 13.5px/1 var(--font-body); color: var(--on-dark-muted); text-decoration: none; transition: color .2s var(--ease); }
+  .btn-quiet:hover { color: var(--on-dark); }
+
+  .page-hero {
+    background: var(--dark);
+    padding: 80px 0 72px;
+    border-bottom: 1px solid var(--on-dark-line);
+  }
+  .page-hero-eyebrow {
+    font: 700 10.5px/1 var(--font-body);
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--green-bright); margin-bottom: 20px;
+  }
+  .page-hero h1 {
+    font-family: var(--font-display);
+    font-weight: 700; font-size: clamp(38px,5.2vw,62px);
+    color: var(--on-dark); line-height: 1.03; letter-spacing: -.04em;
+    margin-bottom: 16px;
+  }
+  .page-hero .lead { font-size: 16px; color: var(--on-dark-muted); max-width: 580px; line-height: 1.72; margin: 0; }
+
+  .port-entries { padding: 0; }
+  .port-entry {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0 40px;
+    padding: 72px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: start;
+  }
+  @media(min-width:760px){
+    .port-entry { grid-template-columns: 80px 1fr 340px; }
+  }
+
+  .port-entry-n {
+    font-family: var(--font-display);
+    font-size: 48px; font-weight: 700;
+    color: rgba(18,22,29,.10);
+    line-height: 1; padding-top: 6px;
+  }
+  .port-entry-meta { min-width: 0; }
+  .port-entry-meta h2 {
+    font-family: var(--font-display);
+    font-size: clamp(28px,3.5vw,40px); font-weight: 700;
+    color: var(--ink); letter-spacing: -.033em; line-height: 1.06;
+    margin-bottom: 14px;
+  }
+  .port-entry-meta p { font-size: 15px; color: var(--muted); line-height: 1.72; margin: 0 0 22px; max-width: 540px; }
+  .port-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 28px; }
+  .port-tag {
+    font: 700 10.5px/1 var(--font-body); letter-spacing: .09em; text-transform: uppercase;
+    padding: 6px 12px; background: var(--green-soft); color: #294323; border-radius: 999px;
+  }
+  .entry-link {
+    display: inline-flex; align-items: center; gap: 9px;
+    font: 600 13.5px/1 var(--font-body); letter-spacing: .01em;
+    color: var(--ink); text-decoration: none;
+    border-bottom: 1.5px solid var(--ink); padding-bottom: 3px;
+    transition: color .13s, gap .15s;
+  }
+  .entry-link:hover { color: var(--green); border-color: var(--green); gap: 14px; }
+
+  .port-entry-preview {
+    border-radius: var(--r-lg); overflow: hidden;
+    background: var(--panel-strong); border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    min-height: 200px; display: flex; align-items: center; justify-content: center;
+    margin-top: 8px;
+  }
+  .port-entry-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .port-entry-preview.video-agent {
+    height: 320px; background: var(--dark); position: relative;
+    padding: 20px; box-sizing: border-box;
+  }
+  .port-entry-preview.video-agent::after {
+    content: 'PRODUCT FILM AGENT'; position: absolute; left: 18px; bottom: 14px;
+    font: 700 9px/1 var(--font-body); letter-spacing: .16em; color: rgba(255,255,255,.48);
+  }
+  .port-entry-preview.video-agent video {
+    height: 100%; width: auto; max-width: 100%; display: block; border-radius: 16px;
+    box-shadow: 0 20px 48px rgba(0,0,0,.42); background: #111;
+  }
+  /* portrait app screenshots: phone mockup on a tinted panel, cropped at the card edge */
+  .port-entry-preview.app {
+    height: 320px; overflow: hidden;
+    background: linear-gradient(140deg, #dde9cd 0%, #f4f6ef 70%);
+    align-items: flex-start; padding-top: 36px;
+  }
+  .phone-frame {
+    width: 190px; flex: none; border-radius: 30px; overflow: hidden;
+    border: 7px solid #101510; background: #101510;
+    box-shadow: 0 28px 56px -20px rgba(16,26,18,.45);
+  }
+  .phone-frame img { width: 100%; height: auto; object-fit: unset; }
+  .preview-empty {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 10px; padding: 40px; text-align: center;
+  }
+  .preview-icon {
+    width: 48px; height: 48px; border-radius: var(--radius);
+    background: var(--green-soft); display: grid; place-items: center;
+  }
+  .preview-icon svg { width: 22px; height: 22px; fill: none; stroke: #294323; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .preview-name { font: 800 15px/1 var(--font-body); color: var(--ink); letter-spacing: -.01em; }
+  .preview-sub { font-size: 12.5px; color: var(--muted); }
+  .blueprint-preview {
+    position: relative; height: 320px; padding: 28px;
+    align-items: stretch; justify-content: stretch;
+    background: linear-gradient(145deg, #101316, #20262b);
+  }
+  .blueprint-sheet {
+    width: 100%; background: #f7f8f5; border-radius: 10px; padding: 22px;
+    box-shadow: 0 22px 42px rgba(0,0,0,.3); transform: rotate(-1.25deg);
+    overflow: hidden;
+  }
+  .blueprint-file { font: 700 9px/1 var(--font-body); letter-spacing: .12em; color: var(--green); margin-bottom: 18px; }
+  .blueprint-title { font: 700 20px/1.1 var(--font-display); letter-spacing: -.025em; color: var(--ink); margin-bottom: 17px; }
+  .blueprint-line { height: 5px; border-radius: 3px; background: #d7dad5; margin-bottom: 9px; }
+  .blueprint-line.green { background: #7eac87; width: 32%; }
+  .blueprint-line.short { width: 58%; }
+  .blueprint-preview::after {
+    content: 'PLAN  \2192  BUILD  \2192  TEST  \2192  SHIP'; position: absolute; right: 20px; bottom: 14px;
+    color: rgba(255,255,255,.62); font: 700 8.5px/1 var(--font-body); letter-spacing: .12em;
+  }
+
+  footer {
+    background: var(--dark); padding: 56px 0 44px;
+  }
+  .footer-inner { display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; flex-wrap: wrap; }
+  .footer-brand { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--on-dark); margin-bottom: 8px; }
+  .footer-links { display: flex; gap: 0; flex-wrap: wrap; }
+  .footer-links a { font: 500 12.5px/1 var(--font-body); color: var(--on-dark-muted); text-decoration: none; padding: 4px 0; transition: color .13s; }
+  .footer-links a + a::before { content: '·'; margin: 0 12px; color: var(--on-dark-line); }
+  .footer-links a:hover { color: var(--on-dark); }
+  .footer-copy { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--on-dark-line); font: 400 11.5px/1 var(--font-body); color: var(--on-dark-muted); }
+
+  @media(max-width:760px){
+    .port-entry { grid-template-columns: 56px 1fr; padding: 52px 0; }
+    .port-entry-n { font-size: 36px; }
+    .port-entry-preview { display: none; }
+  }
+  @media(max-width:500px){
+    .port-entry { grid-template-columns: 1fr; gap: 8px; }
+    .port-entry-n { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="csv-bar">
+  <a class="csv-brand" href="/"><svg class="csv-mark" viewBox="0 0 205 155" aria-hidden="true" fill="currentColor"><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="150" font-weight="400" x="4" y="108">C</text><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="125" font-weight="400" x="78" y="129">S</text></svg>CS Ventures</a>
+  <nav class="csv-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/about/">About</a><a href="/services/" class="active">Services</a><a href="/portfolio/">Portfolio</a></nav>
+</div>
+
+<div class="page-hero">
+  <div class="wrap">
+    <p class="page-hero-eyebrow">CS Ventures &middot; Services</p>
+    <h1>Clear deliverables for problems worth solving</h1>
+    <p class="lead">Four focused service lines, each grounded in a concrete outcome: automate the work, build the product, make the numbers decision-ready, or find the path to market.</p>
+    <div class="cat-nav">
+      <a class="cat-pill" href="#ai-automation">AI &amp; Automation</a>
+      <a class="cat-pill" href="#product-build">Product Design &amp; Build</a>
+      <a class="cat-pill" href="#analytics">Analytics &amp; Modeling</a>
+      <a class="cat-pill" href="#strategy">Strategy &amp; GTM</a>
+    </div>
+  </div>
+</div>
+
+<div class="svc-wrap band" id="services" style="scroll-margin-top:80px">
+  <div class="wrap">
+    <div class="svc-intro">
+      <div class="eyebrow-line"><span>Service offerings</span></div>
+      <h2>What we do for clients</h2>
+      <p>Every engagement fits one of four service lines. Each line has defined offerings, so the conversation starts from a concrete deliverable rather than a blank page.</p>
+    </div>
+
+    <div class="svc-row" id="ai-automation" style="scroll-margin-top:80px">
+      <div class="svc-left">
+        <div class="svc-num">01</div>
+        <h3>AI &amp; Automation</h3>
+        <p class="svc-pos">Automation first, AI where judgment lives. The routine steps get deterministic automation; AI is added only where rules stop working.</p>
+        <div class="svc-proof">Proof: <a href="/DeckForge/">DeckForge</a><a href="/product-team-loop/">Product Team Loop</a><a href="/decks/process-automation-smb/" target="_blank" rel="noopener">The SMB deck</a></div>
+        <a class="svc-more" href="/services/ai-automation/">Explore this service line
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+      </div>
+      <div class="offer-grid">
+        <a class="offer-card" href="/services/ai-automation/#audit"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Process automation audit</h4><p>A two-week mapping of where the hours go, with every workflow scored for automation fit. You keep the roadmap either way.</p></a>
+        <a class="offer-card" href="/services/ai-automation/#build"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Workflow automation build</h4><p>Deterministic automation for the routine steps: fast, auditable, and cheap to run.</p></a>
+        <a class="offer-card" href="/services/ai-automation/#ai-judgment"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>AI at judgment steps</h4><p>Classification, drafting, and triage added only where judgment is required, with human checkpoints built in.</p></a>
+        <a class="offer-card" href="/services/ai-automation/#agentic"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Agentic system design</h4><p>Multi-agent systems that carry work from a one-line instruction to a finished, quality-checked result.</p></a>
+      </div>
+    </div>
+
+    <div class="svc-row" id="product-build" style="scroll-margin-top:80px">
+      <div class="svc-left">
+        <div class="svc-num">02</div>
+        <h3>Product Design &amp; Build</h3>
+        <p class="svc-pos">From a one-page idea to a shipped build. One team owns definition, design, and engineering, so nothing gets lost between strategy and delivery.</p>
+        <div class="svc-proof">Proof: <a href="/Altro/">Altro</a><a href="/Nos/">Nos</a><a href="https://cartershannon000-create.github.io/Altro-travel/marketing.html" target="_blank" rel="noopener">Altro Travel Site</a></div>
+        <a class="svc-more" href="/services/product-design-build/">Explore this service line
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+      </div>
+      <div class="offer-grid">
+        <a class="offer-card" href="/services/product-design-build/#definition"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Product definition</h4><p>Turning an idea into a scoped, buildable product with clear success criteria.</p></a>
+        <a class="offer-card" href="/services/product-design-build/#mobile"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Mobile app design &amp; build</h4><p>Concept through interface design to a working app people can use.</p></a>
+        <a class="offer-card" href="/services/product-design-build/#sites"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Marketing sites</h4><p>Positioning, copy, visual design, and a responsive build for a product that needs to sell itself.</p></a>
+        <a class="offer-card" href="/services/product-design-build/#mvp"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>MVP builds</h4><p>The smallest version a founder can put in front of real users to learn something.</p></a>
+      </div>
+    </div>
+
+    <div class="svc-row" id="analytics" style="scroll-margin-top:80px">
+      <div class="svc-left">
+        <div class="svc-num">03</div>
+        <h3>Analytics &amp; Financial Modeling</h3>
+        <p class="svc-pos">Decision-grade numbers. The kind of analysis you can take into a board meeting or a lender conversation.</p>
+        <a class="svc-more" href="/services/analytics-financial-modeling/">Explore this service line
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+      </div>
+      <div class="offer-grid">
+        <a class="offer-card" href="/services/analytics-financial-modeling/#dashboards"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Executive dashboards</h4><p>Tableau and Power BI reporting that answers the questions leadership actually asks.</p></a>
+        <a class="offer-card" href="/services/analytics-financial-modeling/#pipelines"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Data pipelines</h4><p>SQL and Snowflake work that makes the data usable in the first place.</p></a>
+        <a class="offer-card" href="/services/analytics-financial-modeling/#models"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Financial models</h4><p>P&amp;L analysis and models built to be acted on, not admired.</p></a>
+        <a class="offer-card" href="/services/analytics-financial-modeling/#risk"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Risk assessment</h4><p>A clear read on the risk inside a decision you are about to make.</p></a>
+      </div>
+    </div>
+
+    <div class="svc-row" id="strategy" style="scroll-margin-top:80px">
+      <div class="svc-left">
+        <div class="svc-num">04</div>
+        <h3>Strategy &amp; Go-to-Market</h3>
+        <p class="svc-pos">Data over opinion. Useful when the product is good and the open question is who buys it, at what price, through what channel.</p>
+        <a class="svc-more" href="/services/strategy-go-to-market/">Explore this service line
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+      </div>
+      <div class="offer-grid">
+        <a class="offer-card" href="/services/strategy-go-to-market/#research"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Market research &amp; sizing</h4><p>Who the buyers are, how many exist, and what they care about.</p></a>
+        <a class="offer-card" href="/services/strategy-go-to-market/#demand"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Demand &amp; pricing models</h4><p>What the market will pay and how demand moves when the price does.</p></a>
+        <a class="offer-card" href="/services/strategy-go-to-market/#gtm"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Go-to-market planning</h4><p>Channel, message, and sequence you can execute quarter by quarter.</p></a>
+        <a class="offer-card" href="/services/strategy-go-to-market/#entry"><span class="go"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span><h4>Market entry analysis</h4><p>Whether to enter, how to enter, and what it costs to win.</p></a>
+      </div>
+    </div>
+
+    <div class="svc-ctabar">
+      <div class="t">Not sure which service line fits?
+        <small>Describe the problem in one email. We will tell you what we would do, what it involves, and whether we are the right fit.</small>
+      </div>
+      <div class="svc-cta-actions">
+        <a class="btn-solid" href="mailto:info@cs-ventures.us">Start the conversation</a>
+        <a class="btn-quiet" href="/decks/process-automation-smb/" target="_blank" rel="noopener">Or read the deck first</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">CS Ventures</div>
+      </div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/services/">Services</a>
+        <a href="/portfolio/">Portfolio</a>
+        <a href="mailto:info@cs-ventures.us">info@cs-ventures.us</a>
+      </div>
+    </div>
+    <div class="footer-copy">CS Ventures &copy; 2026</div>
+  </div>
+</footer>
+
+</body>
+</html>
