@@ -73,11 +73,12 @@ class AiWorkControlPlanePageTests(unittest.TestCase):
             self.assertNotIn(forbidden, self.page)
         self.assertIn("Operational vendors, infrastructure, credentials", self.page)
 
-    def test_portfolio_lists_and_links_all_eight_builds(self):
-        self.assertIn('"numberOfItems": 8', self.portfolio)
-        self.assertEqual(self.portfolio.count('class="port-entry-n"'), 8)
+    def test_portfolio_lists_and_links_all_nine_entries(self):
+        self.assertIn('"numberOfItems": 9', self.portfolio)
+        self.assertEqual(self.portfolio.count('class="port-entry-n"'), 9)
         self.assertIn("AI Work Control Plane", self.portfolio)
         self.assertIn('href="/ai-work-control-plane/"', self.portfolio)
+        self.assertIn('href="/how-to-build-your-first-app/"', self.portfolio)
         self.assertIn("05 builds", self.portfolio)
 
 

@@ -110,6 +110,15 @@ Tags: Travel, Rankings, Personal Map, Mobile
 URL: https://cs-ventures.us/Altro/
 App: https://cartershannon000-create.github.io/Altro-travel/marketing.html
 
+### How to Build Your First App with AI
+
+A beginner-friendly field guide for moving from an idea to a deployed application with an AI coding assistant. It covers product planning, local setup, living design documents, modular development loops, Git and GitHub, CI/CD, secret handling, and turning repeated prompts into reusable automation.
+
+The guide includes a copyable SYSTEM_BLUEPRINT.md template that defines project intent, stack, environment, modular requirements, development protocol, deployment strategy, and an optional AI memory hook.
+
+Tags: Guide, AI Development, App Architecture, Git, Deployment
+URL: https://cs-ventures.us/how-to-build-your-first-app/
+
 ### Nos
 
 Nos is a prayer and journaling app built around novenas, daily reflection, and honest journaling.
@@ -128,6 +137,7 @@ App: https://novena-prayer-app.github.io/nos-prayer-app/marketing.html
 - About Carter: https://cs-ventures.us/about/
 - Experience: https://cs-ventures.us/about/experience.html
 - Portfolio: https://cs-ventures.us/portfolio/
+- How to Build Your First App: https://cs-ventures.us/how-to-build-your-first-app/
 - DeckForge: https://cs-ventures.us/DeckForge/
 - Altro: https://cs-ventures.us/Altro/
 - Nos: https://cs-ventures.us/Nos/

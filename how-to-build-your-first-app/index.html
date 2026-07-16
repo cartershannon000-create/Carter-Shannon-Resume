@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Build Your First App with AI | CS Ventures</title>
+<meta name="description" content="A practical, beginner-friendly guide to planning, building, testing, versioning, and deploying your first app with an AI coding assistant.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://cs-ventures.us/how-to-build-your-first-app/">
+<meta property="og:title" content="How to Build Your First App with AI | CS Ventures">
+<meta property="og:description" content="Plan the product, give your AI durable context, build in small loops, and ship through GitHub without losing control of the work.">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="https://cs-ventures.us/how-to-build-your-first-app/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Build Your First App with AI",
+  "description": "A practical workflow for planning, building, testing, versioning, and deploying a first application with an AI coding assistant.",
+  "url": "https://cs-ventures.us/how-to-build-your-first-app/",
+  "author": { "@type": "Organization", "name": "CS Ventures", "url": "https://cs-ventures.us" },
+  "step": [
+    { "@type": "HowToStep", "name": "Define the product", "text": "Write the problem, vision, success metrics, user journeys, and first-version scope before coding." },
+    { "@type": "HowToStep", "name": "Set up the local environment", "text": "Install the runtime and package manager, create an isolated environment, and document required environment variables." },
+    { "@type": "HowToStep", "name": "Create living design documents", "text": "Split the interface, database schema, and API flow into focused Markdown files." },
+    { "@type": "HowToStep", "name": "Build in small loops", "text": "Plan, execute one module, validate it locally, and commit the working state." },
+    { "@type": "HowToStep", "name": "Automate deployment", "text": "Use a GitHub Actions workflow to test, build, and deploy changes pushed to main." },
+    { "@type": "HowToStep", "name": "Turn repetition into automation", "text": "Review conversation logs for repeated prompts and convert stable patterns into scripts, skills, or specialized agents." }
+  ]
+}
+</script>
+<style>
+  :root {
+    --guide-bg:#eff0f2; --guide-panel:#f8f9fa; --guide-white:#fff;
+    --guide-ink:#161719; --guide-muted:#5c6068; --guide-line:rgba(18,22,29,.11);
+    --guide-dark:#0a0b0d; --guide-on-dark:#f5f5f7; --guide-on-dark-muted:rgba(245,245,247,.62);
+    --guide-green:#2e6b3f; --guide-bright:#56bb6e; --guide-soft:#dfead9;
+    --guide-code:#101316; --guide-radius:18px;
+    --guide-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Inter,system-ui,sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--guide-bg); color:var(--guide-ink); font:16px/1.7 var(--font-body); -webkit-font-smoothing:antialiased; }
+  a { color:var(--guide-green); text-decoration:none; }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 32px; }
+  .guide-hero { background:var(--guide-dark); color:var(--guide-on-dark); padding:34px 0 86px; overflow:hidden; position:relative; }
+  .guide-hero::after { content:""; position:absolute; width:540px; height:540px; right:-180px; bottom:-330px; border:1px solid rgba(86,187,110,.2); border-radius:50%; box-shadow:0 0 0 90px rgba(86,187,110,.025),0 0 0 180px rgba(86,187,110,.02); }
+  .crumb { position:relative; z-index:1; font:600 12px/1 var(--font-body); color:var(--guide-on-dark-muted); margin-bottom:76px; }
+  .crumb a { color:var(--guide-on-dark-muted); }
+  .crumb a:hover { color:var(--guide-on-dark); }
+  .crumb span { padding:0 9px; opacity:.55; }
+  .hero-grid { position:relative; z-index:1; display:grid; gap:54px; align-items:end; }
+  @media(min-width:850px){ .hero-grid { grid-template-columns:minmax(0,1.45fr) minmax(260px,.55fr); } }
+  .eyebrow { font:700 10.5px/1 var(--font-body); letter-spacing:.18em; text-transform:uppercase; color:var(--guide-bright); margin-bottom:22px; }
+  h1,h2,h3,p { margin-top:0; }
+  h1 { font:700 clamp(46px,7vw,82px)/.98 var(--guide-display); letter-spacing:-.052em; max-width:780px; margin-bottom:26px; }
+  .hero-lead { max-width:660px; margin:0; color:var(--guide-on-dark-muted); font-size:18px; line-height:1.72; }
+  .hero-rule { border-left:1px solid rgba(255,255,255,.14); padding-left:24px; }
+  .hero-rule strong { display:block; font:700 14px/1.4 var(--font-body); color:var(--guide-on-dark); margin-bottom:8px; }
+  .hero-rule p { color:var(--guide-on-dark-muted); font-size:13.5px; line-height:1.65; margin:0; }
+  .quick-nav { background:var(--guide-white); border-bottom:1px solid var(--guide-line); }
+  .quick-nav .wrap { display:flex; overflow-x:auto; scrollbar-width:none; }
+  .quick-nav a { flex:0 0 auto; padding:18px 18px 17px 0; margin-right:18px; font:600 12.5px/1 var(--font-body); color:var(--guide-muted); }
+  .quick-nav a:hover { color:var(--guide-green); }
+  .guide-layout { display:grid; gap:56px; padding-top:88px; padding-bottom:100px; }
+  @media(min-width:900px){ .guide-layout { grid-template-columns:220px minmax(0,720px); justify-content:space-between; } }
+  .side-note { align-self:start; }
+  @media(min-width:900px){ .side-note { position:sticky; top:84px; } }
+  .side-note-label { font:700 10px/1 var(--font-body); letter-spacing:.16em; text-transform:uppercase; color:var(--guide-green); margin-bottom:13px; }
+  .side-note p { color:var(--guide-muted); font-size:13.5px; line-height:1.65; }
+  .side-note a { display:inline-flex; font:600 12.5px/1.3 var(--font-body); border-bottom:1px solid currentColor; padding-bottom:3px; }
+  .chapter { padding:0 0 74px; margin-bottom:74px; border-bottom:1px solid var(--guide-line); scroll-margin-top:90px; }
+  .chapter:last-child { margin-bottom:0; }
+  .chapter-kicker { font:700 10.5px/1 var(--font-body); letter-spacing:.16em; text-transform:uppercase; color:var(--guide-green); margin-bottom:15px; }
+  .chapter h2 { font:700 clamp(30px,4vw,44px)/1.05 var(--guide-display); letter-spacing:-.038em; margin-bottom:20px; }
+  .chapter-intro { color:var(--guide-muted); font-size:16px; max-width:680px; margin-bottom:30px; }
+  .principle { background:var(--guide-dark); color:var(--guide-on-dark); border-radius:var(--guide-radius); padding:26px 28px; margin:30px 0; }
+  .principle small { display:block; color:var(--guide-bright); font:700 10px/1 var(--font-body); letter-spacing:.16em; text-transform:uppercase; margin-bottom:12px; }
+  .principle p { margin:0; font:600 17px/1.55 var(--font-body); }
+  .check-grid { display:grid; gap:12px; margin-top:26px; }
+  @media(min-width:620px){ .check-grid { grid-template-columns:1fr 1fr; } }
+  .check-card { background:var(--guide-white); border:1px solid var(--guide-line); border-radius:14px; padding:20px 21px; }
+  .check-card b { display:block; font-size:14px; margin-bottom:5px; }
+  .check-card p { color:var(--guide-muted); font-size:13px; line-height:1.6; margin:0; }
+  .steps { counter-reset:step; display:grid; gap:2px; margin:30px 0 0; }
+  .step { counter-increment:step; display:grid; grid-template-columns:44px 1fr; gap:16px; padding:24px 0; border-top:1px solid var(--guide-line); }
+  .step::before { content:counter(step,decimal-leading-zero); font:700 12px/1.3 var(--font-body); color:var(--guide-green); padding-top:4px; }
+  .step h3 { font:700 17px/1.35 var(--font-body); margin-bottom:6px; }
+  .step p { color:var(--guide-muted); font-size:14px; line-height:1.65; margin:0; }
+  .file-tree { background:var(--guide-code); color:#d8dde3; border-radius:var(--guide-radius); padding:26px 28px; font:13px/1.9 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; overflow:auto; }
+  .file-tree .folder { color:#7fcf8e; }
+  .file-tree .comment { color:#78808a; }
+  .pipeline { display:grid; gap:10px; margin-top:26px; }
+  @media(min-width:650px){ .pipeline { grid-template-columns:repeat(4,1fr); } }
+  .pipe-card { position:relative; background:var(--guide-white); border:1px solid var(--guide-line); border-radius:14px; padding:19px; }
+  .pipe-card span { display:block; color:var(--guide-green); font:700 10px/1 var(--font-body); letter-spacing:.12em; text-transform:uppercase; margin-bottom:9px; }
+  .pipe-card b { display:block; font-size:13.5px; line-height:1.4; }
+  .callout { border-left:3px solid var(--guide-green); padding:3px 0 3px 20px; color:var(--guide-muted); font-size:14px; margin:28px 0; }
+  .prompt { background:var(--guide-white); border:1px solid var(--guide-line); border-radius:14px; padding:22px 24px; margin-top:24px; }
+  .prompt-label { color:var(--guide-green); font:700 10px/1 var(--font-body); letter-spacing:.14em; text-transform:uppercase; margin-bottom:12px; }
+  .prompt p { font:500 14px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin:0; color:#34383e; }
+  .blueprint { background:var(--guide-code); border-radius:var(--guide-radius); overflow:hidden; box-shadow:0 24px 60px -32px rgba(0,0,0,.5); }
+  .blueprint-bar { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:14px 16px 14px 22px; border-bottom:1px solid rgba(255,255,255,.09); color:#aeb5bd; font:600 12px/1 var(--font-body); }
+  .copy-btn { border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.06); color:#e9edf1; border-radius:8px; padding:9px 13px; cursor:pointer; font:600 11.5px/1 var(--font-body); }
+  .copy-btn:hover { background:rgba(255,255,255,.11); }
+  pre { margin:0; padding:26px; overflow:auto; color:#d9dfe5; font:12.5px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; white-space:pre-wrap; tab-size:2; }
+  .closing { background:var(--guide-soft); border-radius:var(--guide-radius); padding:34px; }
+  .closing h2 { font-size:30px; }
+  .closing p { margin-bottom:0; color:#415042; }
+  footer { background:var(--guide-dark); padding:56px 0 44px; }
+  .footer-inner { display:flex; justify-content:space-between; gap:32px; flex-wrap:wrap; }
+  .footer-brand { font-family:var(--guide-display); font-size:20px; font-weight:700; color:var(--guide-on-dark); }
+  .footer-links { display:flex; flex-wrap:wrap; gap:18px; }
+  .footer-links a { color:var(--guide-on-dark-muted); font-size:12.5px; }
+  .footer-copy { margin-top:38px; padding-top:20px; border-top:1px solid rgba(255,255,255,.09); color:var(--guide-on-dark-muted); font-size:11.5px; }
+  @media(max-width:620px){ .wrap { padding:0 20px; } .guide-hero { padding-top:26px; padding-bottom:64px; } .crumb { margin-bottom:54px; } .guide-layout { padding-top:64px; } .chapter { padding-bottom:58px; margin-bottom:58px; } .blueprint-bar { align-items:flex-start; } }
+</style>
+</head>
+<body>
+
+<div class="csv-bar">
+  <a class="csv-brand" href="/"><svg class="csv-mark" viewBox="0 0 205 155" aria-hidden="true" fill="currentColor"><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="150" font-weight="400" x="4" y="108">C</text><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="125" font-weight="400" x="78" y="129">S</text></svg>CS Ventures</a>
+  <nav class="csv-nav"><a href="/">Home</a><a href="/about/">About</a><a href="/portfolio/" class="active">Portfolio</a><a href="/decks/">Decks</a></nav>
+</div>
+
+<header class="guide-hero">
+  <div class="wrap">
+    <div class="crumb"><a href="/portfolio/#apps-websites">Apps &amp; Websites</a><span>/</span>First App Guide</div>
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow">A field guide for first-time builders</div>
+        <h1>How to build your first app with AI</h1>
+        <p class="hero-lead">Move from asking an AI questions to directing a real software project. Plan the product, give the AI durable context, build in small loops, and ship through GitHub without losing control of the work.</p>
+      </div>
+      <div class="hero-rule">
+        <strong>You are the architect. The AI is the builder.</strong>
+        <p>You own the problem, scope, tradeoffs, and final judgment. The AI helps execute the plan quickly.</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="quick-nav" aria-label="Guide sections"><div class="wrap">
+  <a href="#plan">01 Plan</a><a href="#foundation">02 Set up</a><a href="#context">03 Give context</a><a href="#loop">04 Build</a><a href="#ship">05 Ship</a><a href="#automate">06 Automate</a><a href="#blueprint">Blueprint</a>
+</div></nav>
+
+<main class="wrap guide-layout">
+  <aside class="side-note">
+    <div class="side-note-label">The rule</div>
+    <p>Update the design document before the implementation. It keeps the plan, the code, and the AI’s context aligned.</p>
+    <a href="#blueprint">Jump to the blueprint</a>
+  </aside>
+
+  <article>
+    <section class="chapter" id="plan">
+      <div class="chapter-kicker">01 · Planning</div>
+      <h2>Do most of the thinking before the coding</h2>
+      <p class="chapter-intro">The fastest way to waste time with an AI coding tool is to start building an idea that has not been defined. Begin with the “what” and “why,” then turn them into design documents that become the source of truth.</p>
+      <div class="principle"><small>Target effort</small><p>Spend most of your early effort defining the product. Code is easier to change before it exists.</p></div>
+      <div class="check-grid">
+        <div class="check-card"><b>Define the problem</b><p>Write one sentence describing the pain point and who experiences it.</p></div>
+        <div class="check-card"><b>Describe the vision</b><p>Explain what becomes possible when the app works.</p></div>
+        <div class="check-card"><b>Choose success metrics</b><p>Pick observable measures such as signups, completed tasks, or records processed.</p></div>
+        <div class="check-card"><b>Cut the first version</b><p>Separate must-have flows from features that can wait.</p></div>
+      </div>
+      <div class="steps">
+        <div class="step"><div><h3>Map the user journey</h3><p>Use Excalidraw, a simple flowchart, or paper. Show where the user starts, each decision they make, and the outcome they reach.</p></div></div>
+        <div class="step"><div><h3>Break features into smaller flows</h3><p>“Authentication” becomes sign up, sign in, reset password, log out, and account recovery. Each flow can later become a focused build task.</p></div></div>
+        <div class="step"><div><h3>Write the requirements in Markdown</h3><p>Plain <code>.md</code> files are easy for humans to maintain, easy for Git to track, and easy for coding agents to read.</p></div></div>
+      </div>
+    </section>
+
+    <section class="chapter" id="foundation">
+      <div class="chapter-kicker">02 · Local foundation</div>
+      <h2>Prepare a safe place to build</h2>
+      <p class="chapter-intro">Your computer needs a repeatable project environment. Ask the AI to guide the setup, but document every command so the project can be recreated later.</p>
+      <div class="check-grid">
+        <div class="check-card"><b>Runtime</b><p>Install the required version of Python, Node.js, or another language runtime.</p></div>
+        <div class="check-card"><b>Package manager</b><p>Choose one tool—such as pip, Poetry, npm, or pnpm—and use it consistently.</p></div>
+        <div class="check-card"><b>Isolated environment</b><p>For Python, run <code>python -m venv venv</code> so one app’s packages do not break another.</p></div>
+        <div class="check-card"><b>Configuration</b><p>List required variables such as <code>DB_URL</code> and <code>API_KEY</code> without writing their secret values into documentation.</p></div>
+      </div>
+      <div class="callout"><strong>Never commit secrets.</strong> Put <code>.env</code>, API keys, database passwords, and local credentials in <code>.gitignore</code>. If a secret is committed, remove it and rotate it immediately.</div>
+    </section>
+
+    <section class="chapter" id="context">
+      <div class="chapter-kicker">03 · Durable context</div>
+      <h2>Give the AI a small set of living documents</h2>
+      <p class="chapter-intro">Do not force the whole project into one giant prompt. Split the specification by concern so the agent can load only the context needed for the task.</p>
+      <div class="file-tree" aria-label="Recommended documentation structure"><span class="folder">your-app/</span>
+├── SYSTEM_BLUEPRINT.md       <span class="comment"># intent, stack, workflow</span>
+├── <span class="folder">docs/</span>
+│   ├── UI_SPEC.md            <span class="comment"># components, palette, layouts</span>
+│   ├── DB_SCHEMA.md          <span class="comment"># tables, types, relationships</span>
+│   └── API_FLOW.md           <span class="comment"># internal and external requests</span>
+├── .env.example              <span class="comment"># names, never secret values</span>
+└── .gitignore</div>
+      <div class="steps">
+        <div class="step"><div><h3>Change the relevant document first</h3><p>If a feature or architecture decision changes, update its Markdown source before asking the AI to change code.</p></div></div>
+        <div class="step"><div><h3>Ask the agent to sync its context</h3><p>Tell it which files changed and ask it to summarize the new requirements before implementation.</p></div></div>
+        <div class="step"><div><h3>Keep tasks modular</h3><p>Build one flow or module at a time. Small tasks are easier to review, test, and undo.</p></div></div>
+      </div>
+    </section>
+
+    <section class="chapter" id="loop">
+      <div class="chapter-kicker">04 · Development loop</div>
+      <h2>Plan, build, validate, save</h2>
+      <p class="chapter-intro">Every meaningful change should pass through the same four-stage loop. This makes progress visible and gives you a known-good state to return to.</p>
+      <div class="pipeline" aria-label="Development loop">
+        <div class="pipe-card"><span>Phase 1</span><b>Update the plan</b></div>
+        <div class="pipe-card"><span>Phase 2</span><b>Build one module</b></div>
+        <div class="pipe-card"><span>Phase 3</span><b>Run and test it</b></div>
+        <div class="pipe-card"><span>Phase 4</span><b>Commit the result</b></div>
+      </div>
+      <div class="prompt"><div class="prompt-label">A better build prompt</div><p>Read docs/UI_SPEC.md and implement only the account settings form. Preserve existing behavior, add validation tests, run the relevant test suite, and summarize the files changed.</p></div>
+      <div class="callout">Treat AI output like work from a fast junior engineer: useful and capable, but still subject to your review. Run the app, test the edge cases, and read important changes before deployment.</div>
+    </section>
+
+    <section class="chapter" id="ship">
+      <div class="chapter-kicker">05 · Git &amp; deployment</div>
+      <h2>Build with an undo button</h2>
+      <p class="chapter-intro">Git saves snapshots of the project. GitHub keeps those snapshots off your computer and can turn a finished change into a live deployment.</p>
+      <div class="steps">
+        <div class="step"><div><h3>Start version control</h3><p>Run <code>git init</code> in the project folder. Commit each working milestone using a clear message such as <code>feat: add login flow</code> or <code>fix: handle expired sessions</code>.</p></div></div>
+        <div class="step"><div><h3>Keep local and remote in sync</h3><p>Use <code>git pull</code> to retrieve cloud changes and <code>git push</code> to publish your commits to GitHub. Keep <code>main</code> production-ready.</p></div></div>
+        <div class="step"><div><h3>Automate the path to production</h3><p>Configure GitHub Actions so a push to <code>main</code> runs tests, builds the app, and deploys to Vercel, Railway, AWS, or your selected host.</p></div></div>
+      </div>
+      <div class="principle"><small>The release path</small><p>Push to main → run the test suite → build the package or container → deploy.</p></div>
+    </section>
+
+    <section class="chapter" id="automate">
+      <div class="chapter-kicker">06 · Agentic work</div>
+      <h2>Turn repeated instructions into a system</h2>
+      <p class="chapter-intro">When the same task appears three times, stop re-explaining it. Capture the pattern and make it reusable.</p>
+      <div class="check-grid">
+        <div class="check-card"><b>Keep a memory hook</b><p>Optionally store session logs in <code>data/conversation_logs.db</code> so your decisions and prompts can be reviewed later.</p></div>
+        <div class="check-card"><b>Find repeated friction</b><p>Look for recurring prompts, boilerplate, and manual configuration steps.</p></div>
+        <div class="check-card"><b>Create a repeatable tool</b><p>Convert a stable pattern into a script, template, reusable skill, or specialized agent.</p></div>
+        <div class="check-card"><b>Give it standards</b><p>Define the style guide, test pattern, inputs, expected output, and review gate.</p></div>
+      </div>
+      <div class="prompt"><div class="prompt-label">Agent-design prompt</div><p>I want a specialized UI component agent. For every component, follow docs/UI_SPEC.md, include accessible states, add the project’s standard tests, and validate the result before returning it.</p></div>
+    </section>
+
+    <section class="chapter" id="blueprint">
+      <div class="chapter-kicker">Reusable project blueprint</div>
+      <h2>Start every app from the same operating document</h2>
+      <p class="chapter-intro">Copy this into <code>SYSTEM_BLUEPRINT.md</code>, replace the bracketed fields, and keep it current as the architecture changes.</p>
+      <div class="blueprint">
+        <div class="blueprint-bar"><span>SYSTEM_BLUEPRINT.md</span><button class="copy-btn" type="button" data-copy-blueprint>Copy blueprint</button></div>
+<pre id="blueprint-text"># Project Blueprint: [Insert App Name]
+
+## 1. Executive Summary &amp; Intent
+- **The Problem:** [One-sentence description of the pain point.]
+- **The Vision:** [What success looks like when this is live.]
+- **Success Metrics:** [Signups, tasks completed, data processed, etc.]
+
+## 2. Technical Stack &amp; Environment
+- **Frontend:** [Next.js, React, Tailwind CSS, etc.]
+- **Backend:** [Python/FastAPI, Node.js, etc.]
+- **Database:** [Supabase/PostgreSQL, MongoDB, etc.]
+- **Hosting:** [Vercel, Railway, AWS, etc.]
+
+### Local Setup Requirements
+- **Python Version:** [x.x]
+- **Package Manager:** [pip, Poetry, npm, pnpm]
+- **Virtual Environment:** `python -m venv venv`
+- **Required Environment Variables:** [DB_URL, API_KEY, etc.]
+- **Secret Handling:** Store values in `.env`; keep `.env` in `.gitignore`.
+
+## 3. Modular Requirements
+Keep detailed specifications as separate living documents:
+- `docs/UI_SPEC.md`: Components, color palette, states, and layout rules.
+- `docs/DB_SCHEMA.md`: Tables, relationships, constraints, and data types.
+- `docs/API_FLOW.md`: Frontend/backend requests and external services.
+
+## 4. Development Loop
+1. **Planning:** Update the relevant document before prompting for code.
+2. **Execution:** Build one specific module or flow at a time.
+3. **Validation:** Run local tests and check for breaking changes.
+4. **Versioning:** Commit the known-good state to Git.
+
+## 5. Git &amp; Deployment Strategy
+- Keep `main` production-ready.
+- Use conventional commits: `feat: ...`, `fix: ...`, `docs: ...`.
+- On push to `main`: test → build → deploy to [Hosting Provider].
+- Never commit secrets, `.env` files, or private credentials.
+
+## 6. Optimization &amp; Automation
+- **Memory Hook:** Store session logs in `data/conversation_logs.db`.
+- Review logs periodically for repeated prompts, boilerplate, and manual setup.
+- Turn stable patterns into scripts, templates, skills, or specialized agents.
+
+## Working Agreement
+- The design documents are the source of truth.
+- Update requirements before implementation.
+- Build and verify in small, reversible steps.
+- Human review is required before deployment.</pre>
+      </div>
+    </section>
+
+    <section class="chapter closing">
+      <div class="chapter-kicker">Your first session</div>
+      <h2>Initialize, seed, prompt, iterate</h2>
+      <div class="steps">
+        <div class="step"><div><h3>Initialize</h3><p>Run <code>git init</code> in your project folder.</p></div></div>
+        <div class="step"><div><h3>Seed</h3><p>Copy the blueprint above into <code>SYSTEM_BLUEPRINT.md</code> and fill in the bracketed fields.</p></div></div>
+        <div class="step"><div><h3>Prompt</h3><p>Attach the file and use the opening prompt below.</p></div></div>
+        <div class="step"><div><h3>Iterate</h3><p>Update the architecture document first, then ask the AI to sync its context and implement the revised requirement.</p></div></div>
+      </div>
+      <div class="prompt"><div class="prompt-label">Opening prompt</div><p>I am building a new application. I have attached my SYSTEM_BLUEPRINT.md. Read it to understand the architecture, design philosophy, and development workflow. Summarize the key decisions, identify any blocking gaps, and confirm when you are ready to start Phase 2: Scaffolding.</p></div>
+    </section>
+  </article>
+</main>
+
+<footer><div class="wrap"><div class="footer-inner"><div class="footer-brand">CS Ventures</div><div class="footer-links"><a href="/">Home</a><a href="/about/">About</a><a href="/portfolio/">Portfolio</a><a href="mailto:info@cs-ventures.us">info@cs-ventures.us</a></div></div><div class="footer-copy">CS Ventures &copy; 2026</div></div></footer>
+
+<script>
+  const copyButton = document.querySelector('[data-copy-blueprint]');
+  copyButton?.addEventListener('click', async () => {
+    const text = document.getElementById('blueprint-text')?.textContent || '';
+    try {
+      await navigator.clipboard.writeText(text);
+      copyButton.textContent = 'Copied';
+      window.setTimeout(() => { copyButton.textContent = 'Copy blueprint'; }, 1800);
+    } catch {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(document.getElementById('blueprint-text'));
+      selection.removeAllRanges();
+      selection.addRange(range);
+      copyButton.textContent = 'Selected — copy now';
+    }
+  });
+</script>
+</body>
+</html>
