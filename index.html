@@ -768,7 +768,6 @@
 
 <div id="film-lightbox" class="film-lightbox" hidden role="dialog" aria-modal="true" aria-label="Product film">
   <button class="film-lightbox-close" type="button" aria-label="Close video (Esc)">&#10005;</button>
-  <video controls playsinline></video>
 </div>
 <style>
 .film-lightbox{position:fixed;inset:0;z-index:500;background:rgba(4,13,9,.93);display:grid;place-items:center;padding:4vmin}
@@ -781,22 +780,27 @@
 <script>
 (function(){
   var lb=document.getElementById('film-lightbox');if(!lb)return;
-  var lbVideo=lb.querySelector('video');
   var closeBtn=lb.querySelector('.film-lightbox-close');
-  var opener=null;
-  function open(card,inline){
-    opener=card;
-    lbVideo.src=inline.currentSrc||inline.src;
-    if(inline.poster)lbVideo.poster=inline.poster;
-    try{lbVideo.currentTime=inline.currentTime}catch(e){}
+  var active=null; // {video, home, opener}
+  function open(card,video){
+    active={video:video,home:video.parentElement,opener:card};
+    lb.appendChild(video); // move the already-buffered element: plays instantly
+    video.removeAttribute('aria-hidden');video.removeAttribute('tabindex');
+    video.controls=true;video.muted=false;video.loop=false;
     lb.hidden=false;document.body.style.overflow='hidden';
-    lbVideo.muted=false;lbVideo.play().catch(function(){});
+    video.play().catch(function(){});
     closeBtn.focus();
   }
   function close(){
-    lbVideo.pause();lb.hidden=true;document.body.style.overflow='';
-    lbVideo.removeAttribute('src');lbVideo.load();
-    if(opener)opener.focus();
+    if(!active)return;
+    var video=active.video;
+    video.controls=false;video.muted=true;video.loop=true;
+    video.setAttribute('aria-hidden','true');video.setAttribute('tabindex','-1');
+    active.home.appendChild(video);
+    video.play().catch(function(){});
+    lb.hidden=true;document.body.style.overflow='';
+    if(active.opener)active.opener.focus();
+    active=null;
   }
   document.querySelectorAll('.deck-card').forEach(function(card){
     var v=card.querySelector('video');if(!v)return;
