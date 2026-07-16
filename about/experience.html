@@ -1,370 +1,356 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Experience | Carter Shannon</title>
-    <meta name="description" content="Carter Shannon's professional experience across Deloitte Consulting, Logistics Capital and Strategy, and nonprofit leadership.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://cs-ventures.us/about/experience.html">
-    <meta property="og:title" content="Experience | Carter Shannon">
-    <meta property="og:description" content="Carter Shannon's professional experience across financial risk, government analytics, and go-to-market strategy.">
-    <meta name="twitter:card" content="summary">
-    <link rel="canonical" href="https://cs-ventures.us/about/experience.html" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="/site.css" />
-    <link rel="stylesheet" href="/legacy.css" />
-    <style>
-      /* ── Layout offsets ── */
-      .site-shell { padding-top: 0; }
-      .profile-rail { top: 56px; height: calc(100vh - 56px); }
-      .top-nav { top: 56px; }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Experience | CS Ventures</title>
+<meta name="description" content="Professional experience for Carter Shannon across AI strategy, agent workflows, automation, Deloitte Consulting, Logistics Capital and Strategy, and nonprofit leadership.">
+<link rel="canonical" href="https://cs-ventures.us/about/experience.html">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Bodoni+Moda:opsz,wght@6..96,400&display=swap');
 
-      /* ── Dark sidebar ── */
-      .profile-rail {
-        background: var(--dark);
-        border-right: 1px solid var(--on-dark-line);
-      }
-      .brand-lockup { color: var(--on-dark); font-family: var(--font-body); }
-      .brand-lockup::after { background: var(--green); }
-      .profile-line { color: var(--on-dark-muted); font-size: 13px; }
-      .side-nav-link { color: var(--on-dark-muted); border-radius: 3px; }
-      .side-nav-link:hover { background: rgba(255,255,255,0.06); color: var(--on-dark); }
-      .side-nav-link.active {
-        background: rgba(255,255,255,0.07);
-        border-color: rgba(255,255,255,0.11);
-        color: var(--on-dark);
-      }
-      .social-links a { border-color: var(--on-dark-line); color: var(--on-dark-muted); border-radius: 3px; }
-      .social-links a:hover { color: var(--on-dark); background: rgba(255,255,255,0.07); }
-      .headshot { border-color: rgba(255,255,255,0.08); }
+:root {
+  --bg: #eff0f2;
+  --panel: #f7f8fa;
+  --panel-strong: #ffffff;
+  --ink: #161719;
+  --muted: #565961;
+  --line: rgba(18,22,29,.10);
+  --green: #2e6b3f;
+  --green-soft: #dde9cd;
+  --dark: #0a0b0d;
+  --dark-sub: #15161a;
+  --on-dark: #f5f5f7;
+  --on-dark-muted: rgba(245,245,247,.58);
+  --on-dark-line: rgba(255,255,255,.10);
+  --green-bright: #56bb6e;
+  --gold: #9e7132;
+  --shadow: 0 1px 2px rgba(18,22,29,.04), 0 8px 22px -10px rgba(18,22,29,.12);
+  --shadow-md: 0 18px 50px -16px rgba(18,22,29,.24), 0 4px 12px -6px rgba(18,22,29,.10);
+  --radius: 12px;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Inter, system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-logo: Didot, 'Bodoni Moda', 'Bodoni 72', 'Bodoni MT', Georgia, serif;
+  --logo-green: #173d2b;
+}
 
-      /* ── Top nav ── */
-      .top-nav {
-        background: rgba(234,233,224,0.94);
-        backdrop-filter: blur(12px);
-        border-bottom: 1px solid var(--line);
-        height: 52px;
-      }
-      .top-nav-link { font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: .01em; }
-      .top-nav-link.active { color: var(--green); }
-      .top-nav-link.active::after { background: var(--green); height: 2px; }
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; background: var(--bg); }
+body {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.65 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
 
-      /* ── Content ── */
-      body { background: var(--bg); }
-      .page-section { background: var(--bg); }
-      h1 {
-        font-family: var(--font-display) !important;
-        font-size: clamp(28px, 3.5vw, 42px) !important;
-        color: var(--ink) !important;
-        letter-spacing: -.01em !important;
-        margin-bottom: 18px !important;
-      }
-      .intro { font-size: 15.5px !important; color: var(--muted) !important; line-height: 1.74 !important; }
+a { color: var(--green); text-decoration: none; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
 
-      /* ── Tab shell ── */
-      .tab-shell {
-        border-radius: var(--radius) !important;
-        border: 1px solid var(--line) !important;
-        background: var(--panel) !important;
-      }
-      .tab-button {
-        border-radius: 3px !important;
-        font-family: var(--font-body);
-        font-size: 13px !important;
-        letter-spacing: .01em;
-      }
-      .tab-button.active {
-        background: var(--dark) !important;
-        border-color: transparent !important;
-        color: var(--on-dark) !important;
-      }
+/* ── Nav ── */
+.csv-bar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 56px;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
 
-      /* ── Experience cards ── */
-      .experience-card {
-        border-radius: var(--radius) !important;
-        background: var(--panel) !important;
-        transition: box-shadow .18s, border-color .18s, transform .18s !important;
-      }
-      .experience-card:hover {
-        transform: translateY(-2px) scale(1) !important;
-        border-color: rgba(46,107,63,.28) !important;
-        box-shadow: var(--shadow-md) !important;
-      }
-      .experience-card h2 {
-        font-family: var(--font-display);
-        font-size: 20px !important;
-        letter-spacing: -.01em;
-      }
-      .experience-role { color: var(--green) !important; font-size: 13.5px !important; }
-      .experience-meta { font-size: 11px !important; letter-spacing: .1em !important; }
-      .tag-row span {
-        border-radius: var(--radius) !important;
-        background: var(--green-soft) !important;
-        color: #294323 !important;
-        border-color: rgba(46,107,63,.18) !important;
-      }
+.csv-brand {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: .02em;
+  color: var(--on-dark);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
 
-      /* ── Section rule ── */
-      .s-rule {
-        display: flex; align-items: center; gap: 14px; margin-bottom: 6px;
-      }
-      .s-rule::before {
-        content: ''; display: block; flex: 0 0 28px; height: 1px; background: var(--ink);
-      }
-      .s-rule span {
-        font: 700 10px/1 var(--font-body); letter-spacing: .18em; text-transform: uppercase; color: var(--muted);
-      }
-    </style>
-  </head>
-  <body>
+.csv-mark {
+  width: 28px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--on-dark);
+  overflow: visible;
+}
 
-    <div class="csv-bar">
-      <a class="csv-brand" href="/"><svg class="csv-mark" viewBox="0 0 205 155" aria-hidden="true" fill="currentColor"><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="150" font-weight="400" x="4" y="108">C</text><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="125" font-weight="400" x="78" y="129">S</text></svg>CS Ventures</a>
-      <nav class="csv-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/about/" class="active">About</a><a href="/services/">Services</a><a href="/portfolio/">Portfolio</a></nav>
+.csv-nav { display: flex; gap: 0; }
+
+.csv-nav a {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 12.5px;
+  color: var(--on-dark-muted);
+  text-decoration: none;
+  padding: 7px 14px;
+  border-radius: 3px;
+  transition: color .13s;
+  white-space: nowrap;
+  letter-spacing: .02em;
+}
+
+.csv-nav a:hover { color: var(--on-dark); }
+.csv-nav a.active { color: var(--on-dark); font-weight: 600; }
+
+@media (max-width: 500px) {
+  .csv-bar { padding: 0 18px; }
+  .csv-nav a { padding: 7px 10px; }
+}
+
+/* ── FAQ accordion ── */
+.faq-list details { border-top: 1px solid var(--line); }
+.faq-list details:last-child { border-bottom: 1px solid var(--line); }
+.faq-list summary {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px; padding: 22px 0; cursor: pointer; list-style: none;
+  font: 600 15px/1.4 var(--font-body); color: var(--ink);
+}
+.faq-list summary::-webkit-details-marker { display: none; }
+.faq-toggle {
+  flex-shrink: 0; width: 18px; height: 18px; position: relative;
+}
+.faq-toggle::before, .faq-toggle::after {
+  content: ''; position: absolute; background: var(--muted);
+  top: 50%; left: 50%; border-radius: 1px;
+  transition: transform .18s;
+}
+.faq-toggle::before { width: 11px; height: 1.5px; transform: translate(-50%,-50%); }
+.faq-toggle::after  { width: 1.5px; height: 11px; transform: translate(-50%,-50%); }
+details[open] .faq-toggle::after { transform: translate(-50%,-50%) rotate(90deg); }
+.faq-answer { padding: 2px 0 24px; font-size: 14.5px; color: var(--muted); line-height: 1.74; max-width: 680px; margin: 0; }
+
+/* ── Carter Shannon logo component ── */
+.cs-logo {
+  width: 220px;
+  text-align: center;
+  font-family: var(--font-logo);
+  color: var(--logo-green);
+}
+.monogram {
+  position: relative;
+  width: 170px;
+  height: 150px;
+  margin: 0 auto 18px;
+}
+.monogram span {
+  position: absolute;
+  font-size: 150px;
+  font-weight: 400;
+  line-height: 1;
+  color: inherit;
+}
+.monogram .c { left: 4px; top: 0; transform: scaleX(1.05); z-index: 1; }
+.monogram .s { left: 78px; top: 39px; font-size: 125px; transform: scaleX(0.96); z-index: 2; }
+.ventures-wordmark { font-size: 24px; letter-spacing: 15px; font-weight: 400; margin-left: 14px; color: inherit; }
+.cs-logo-light { color: var(--on-dark); }
+
+/* Personal resume shell extensions */
+h1,h2,h3,p { margin-top: 0; }
+h1,h2,h3 { margin-bottom: 0; }
+
+.page-hero {
+  background: var(--dark);
+  padding: 80px 0 72px;
+  border-bottom: 1px solid var(--on-dark-line);
+}
+.hero-eyebrow {
+  font: 700 10.5px/1 var(--font-body); letter-spacing: .18em;
+  text-transform: uppercase; color: var(--green-bright); margin-bottom: 20px;
+}
+.page-hero h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(38px,5.2vw,62px);
+  line-height: 1.03;
+  letter-spacing: -.04em;
+  color: var(--on-dark);
+  max-width: 800px;
+  margin: 0 0 16px;
+}
+.page-hero .lead { color: var(--on-dark-muted); font-size: 16px; line-height: 1.72; max-width: 580px; margin: 0; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 34px; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 9px; padding: 12px 22px;
+  border-radius: var(--radius); background: var(--green); color: #fff;
+  font: 700 13px/1 var(--font-body); letter-spacing: .02em;
+}
+.txt-link { display: inline-flex; align-items: center; gap: 8px; color: var(--on-dark-muted); font: 600 13px/1 var(--font-body); }
+.txt-link:hover { color: var(--on-dark); }
+
+.experience-switch {
+  display: inline-flex; gap: 4px; padding: 5px; margin-bottom: 34px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.experience-switch button {
+  appearance: none; border: 0; border-radius: 3px; background: transparent; color: var(--muted);
+  cursor: pointer; font: 700 13px/1 var(--font-body); letter-spacing: .01em; padding: 11px 18px;
+}
+.experience-switch button.active { background: var(--dark); color: var(--on-dark); }
+.experience-panel { display: none; }
+.experience-panel.active { display: block; }
+.panel-intro {
+  display: grid; grid-template-columns: .82fr 1.18fr; gap: 44px; align-items: start; margin-bottom: 34px;
+}
+.panel-intro h2 { margin-bottom: 0; }
+.panel-intro p { margin: 0; }
+
+.section { padding: 76px 0; border-bottom: 1px solid var(--line); }
+.section-label { display: flex; align-items: center; gap: 14px; margin-bottom: 34px; }
+.section-label::before { content: ''; flex: 0 0 28px; height: 1px; background: var(--ink); }
+.section-label span { font: 700 10.5px/1 var(--font-body); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.section h2 { font-family: var(--font-display); font-size: clamp(28px,4vw,44px); line-height: 1.1; letter-spacing: -.01em; margin-bottom: 20px; }
+.body-text { color: var(--muted); max-width: 730px; font-size: 15.5px; line-height: 1.75; }
+
+.grid { display: grid; gap: 14px; }
+.grid.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.grid.three { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.grid.four { grid-template-columns: repeat(4, minmax(0,1fr)); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+.card h3 { font-family: var(--font-display); font-size: 20px; margin: 0 0 8px; }
+.card p, .card li { color: var(--muted); font-size: 14px; line-height: 1.65; }
+.card ul { padding-left: 18px; margin: 12px 0 0; }
+.meta { font: 800 10.5px/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+.tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 18px; }
+.tag { font: 800 10px/1 var(--font-body); letter-spacing: .08em; text-transform: uppercase; padding: 5px 10px; border-radius: var(--radius); background: var(--green-soft); color: #294323; }
+
+@media (max-width: 720px) {
+  .wrap { padding: 0 22px; }
+  .grid.two, .grid.three, .grid.four, .panel-intro { grid-template-columns: 1fr; }
+  .experience-switch { display: flex; width: 100%; }
+  .experience-switch button { flex: 1; }
+}
+
+footer { background: var(--dark); padding: 34px 0; }
+.footer-inner { display: flex; justify-content: space-between; align-items: center; }
+.footer-inner span { color: var(--on-dark); font: 700 15px/1 var(--font-display); }
+.footer-inner a { color: var(--on-dark-muted); font-size: 13px; }
+.footer-inner a:hover { color: var(--on-dark); }
+</style>
+</head>
+<body>
+<div class="csv-bar">
+  <a class="csv-brand" href="/"><svg class="csv-mark" viewBox="0 0 205 155" aria-hidden="true" fill="currentColor"><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="150" font-weight="400" x="4" y="108">C</text><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="125" font-weight="400" x="78" y="129">S</text></svg>CS Ventures</a>
+  <nav class="csv-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/about/" class="active">About</a><a href="/services/">Services</a><a href="/portfolio/">Portfolio</a></nav>
+</div>
+
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="hero-eyebrow">Experience</p>
+      <h1>AI and career experience</h1>
+      <p class="lead">Two views of the same background: AI strategy, agents, and automation on one side; career delivery, analytics, finance, and leadership experience on the other.</p>
     </div>
+  </section>
 
-    <div class="site-shell">
-      <aside class="profile-rail" aria-label="Profile summary">
-        <a class="brand-lockup" href="/about/" aria-label="Carter Shannon home">
-          <span>Carter Shannon</span>
-        </a>
+  <section class="section">
+    <div class="wrap">
+      <div class="experience-switch" role="tablist" aria-label="Experience sections">
+        <button class="active" type="button" role="tab" aria-selected="true" aria-controls="ai-experience" data-experience-tab="ai-experience">AI Experience</button>
+        <button type="button" role="tab" aria-selected="false" aria-controls="work-experience" data-experience-tab="work-experience">Work Experience</button>
+      </div>
 
-        <img
-          class="headshot"
-          src="/carter-shannon-headshot.png"
-          alt="Carter Shannon headshot"
-        />
-
-        <p class="profile-line">Strategy backed by Data</p>
-
-        <nav class="side-nav" aria-label="Section navigation">
-          <a class="side-nav-link" href="/about/">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M20 21a8 8 0 0 0-16 0" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            About Carter
-          </a>
-          <a class="side-nav-link active" href="/about/experience.html">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M10 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1" />
-              <rect x="3" y="6" width="18" height="14" rx="2" />
-              <path d="M3 12h18" />
-            </svg>
-            Experience
-          </a>
-        </nav>
-
-        <div class="social-links" aria-label="Contact links">
-          <a href="mailto:info@cs-ventures.us" aria-label="Email CS Ventures">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m4 6 8 7 8-7" />
-              <rect x="3" y="5" width="18" height="14" rx="2" />
-            </svg>
-          </a>
-          <a href="tel:+13364553421" aria-label="Call Carter">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.7.6 2.5a2 2 0 0 1-.5 2.1L8 9.5a16 16 0 0 0 6.5 6.5l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.6.5 2.5.6A2 2 0 0 1 22 16.9Z" />
-            </svg>
-          </a>
+      <div id="ai-experience" class="experience-panel active" role="tabpanel">
+        <div class="section-label"><span>AI experience</span></div>
+        <div class="panel-intro">
+          <h2>AI strategy, agent workflows, and automation experience.</h2>
+          <p class="body-text">My AI experience sits across market-facing strategy work through the Anthropic alliance and hands-on build work through independent agent and automation projects. The through line is practical adoption: where AI belongs, where deterministic automation is better, and how quality should be measured.</p>
         </div>
-      </aside>
+        <div class="grid two">
+          <article class="card">
+            <div class="meta">Anthropic alliance | Aug 2024 - Present</div>
+            <h3>AI go-to-market strategy</h3>
+            <p><strong>Public sector generative AI strategy</strong></p>
+            <ul>
+              <li>Developed internal go-to-market strategy for Anthropic's generative AI models across government and public sector markets.</li>
+              <li>Connected model capabilities to mission use cases, buyer priorities, pricing analysis, and competitive positioning.</li>
+              <li>Created monthly pricing and competitive analysis decks to synthesize generative AI market trends for senior leaders.</li>
+            </ul>
+            <div class="tags"><span class="tag">Generative AI</span><span class="tag">Go-to-Market</span><span class="tag">Market Analysis</span></div>
+          </article>
 
-      <main class="page-content">
-        <header class="top-nav">
-          <a class="top-nav-link" href="/about/">About Carter</a>
-          <a class="top-nav-link active" href="/about/experience.html">Experience</a>
-        </header>
+          <article class="card">
+            <div class="meta">Independent build work</div>
+            <h3>Agentic workflow design</h3>
+            <p><strong>Multi-step AI systems and quality loops</strong></p>
+            <ul>
+              <li>Built portfolio projects around multi-step agent systems, including DeckForge and Product Team Loop.</li>
+              <li>Designed explicit intake, scoring, review, revision, and ship gates rather than relying on one-shot generation.</li>
+              <li>Separated agent roles for discovery, drafting, critique, revision, and readiness checks.</li>
+            </ul>
+            <div class="tags"><span class="tag">AI Agents</span><span class="tag">Evaluation Loops</span><span class="tag">Workflow Design</span></div>
+          </article>
 
-        <section class="page-section" aria-labelledby="experience-title">
-          <div class="s-rule"><span>Experience</span></div>
-          <h1 id="experience-title">Experience</h1>
-          <p class="intro">
-            Carter started his career with Logistics Capital &amp; Strategy (LCS)
-            focused on the Transportation Sector, and for the last few years
-            been working with Deloitte Consulting within their Government &amp;
-            Public Sector focusing on technology, analytics, and financial
-            management projects.
-          </p>
-          <p class="intro secondary-intro">
-            Carter has a proven history of delivering client success stories,
-            building internal initiatives to drive growth from within Deloitte,
-            and nonprofit leadership to enable community growth on both the
-            local and national level.
-          </p>
+          <article class="card">
+            <div class="meta">Deloitte GPS delivery</div>
+            <h3>Automation and analytics systems</h3>
+            <p><strong>Workflow automation through data systems</strong></p>
+            <ul>
+              <li>Designed analytics and workflow systems using SQL, Snowflake, Tableau, and process analysis.</li>
+              <li>Automated KPI tracking and reduced manual work across operational reporting workflows.</li>
+              <li>Used workflow analysis to identify which steps were deterministic and which required human judgment.</li>
+            </ul>
+            <div class="tags"><span class="tag">Automation</span><span class="tag">SQL</span><span class="tag">Tableau</span></div>
+          </article>
 
-          <div class="tab-shell" aria-label="Experience categories">
-            <button class="tab-button active" type="button" data-tab="client-delivery">
-              Client Delivery
-            </button>
-            <button class="tab-button" type="button" data-tab="firm-growth">
-              Firm Growth
-            </button>
-            <button class="tab-button" type="button" data-tab="nonprofit-leadership">
-              Nonprofit Leadership
-            </button>
-          </div>
+          <article class="card">
+            <div class="meta">AI strategy translation</div>
+            <h3>Adoption and operating model thinking</h3>
+            <p><strong>Turning AI capability into practical implementation</strong></p>
+            <ul>
+              <li>Translate AI capabilities into workflow-level questions: what to automate, where judgment lives, and what evidence is needed.</li>
+              <li>Frame AI adoption around operating constraints, user behavior, quality control, and leadership decision needs.</li>
+              <li>Connect strategy language to buildable systems and measurable outputs.</li>
+            </ul>
+            <div class="tags"><span class="tag">AI Strategy</span><span class="tag">Operating Model</span><span class="tag">Quality Control</span></div>
+          </article>
+        </div>
+      </div>
 
-          <div class="experience-list tab-panel active" id="client-delivery" aria-label="Client delivery experience">
-            <article class="experience-card">
-              <div class="experience-meta">
-                <span>Deloitte GPS Consulting</span>
-                <span>Washington, D.C. | Feb 2026 - Present</span>
-              </div>
-              <h2>Pension Benefit Guaranty Corporation</h2>
-              <p class="experience-role">Financial Analyst</p>
-              <ul>
-                <li>Monitored a portfolio of 120 corporate pension plan sponsors, analyzing financial performance and pension liabilities to assess risk exposure.</li>
-                <li>Evaluated liquidity, debt profiles, and material financial events to identify emerging threats to long-term pension sustainability.</li>
-                <li>Conducted risk triage to prioritize companies with elevated probability of financial distress and potential pension claims.</li>
-              </ul>
-              <div class="tag-row" aria-label="Focus areas">
-                <span>Financial Risk</span>
-                <span>Portfolio Monitoring</span>
-                <span>Risk Triage</span>
-              </div>
-            </article>
-
-            <article class="experience-card">
-              <div class="experience-meta">
-                <span>Deloitte GPS Consulting</span>
-                <span>Denver, CO | Apr 2024 - Feb 2026</span>
-              </div>
-              <h2>State of Colorado</h2>
-              <p class="experience-role">Business Analyst</p>
-              <ul>
-                <li>Engineered an end-to-end analytics suite using SQL, Snowflake, and Tableau to automate tracking for 15+ strategic KPIs and support leadership-level data strategy.</li>
-                <li>Streamlined case management workflows across a 200,000+ claims system by analyzing process data and automating manual tasks.</li>
-                <li>Reduced appeal adjudication cycle times by 50% through workflow analysis, operational redesign, and implementation support.</li>
-              </ul>
-              <div class="tag-row" aria-label="Focus areas">
-                <span>Analytics Suite</span>
-                <span>Operational Change</span>
-                <span>Workflow Automation</span>
-              </div>
-            </article>
-
-            <article class="experience-card">
-              <div class="experience-meta">
-                <span>Financial &amp; Strategy Consulting</span>
-                <span>Jun 2023 - Apr 2024</span>
-              </div>
-              <h2>Logistics Capital &amp; Strategy</h2>
-              <p class="experience-role">Management Consultant</p>
-              <ul>
-                <li>Conducted market research and economic forecasting for buy-side diligence deals across the transportation sector, supporting mid-market private equity decisions.</li>
-                <li>Led demand modeling initiatives by integrating company transaction data with macroeconomic datasets to forecast cross-border commodity flows between the U.S. and Mexico.</li>
-                <li>Built an Excel-based lane profitability model that transformed complex P&amp;L data into actionable forecasts for real-time pricing and capacity optimization.</li>
-              </ul>
-              <div class="tag-row" aria-label="Focus areas">
-                <span>Market Research</span>
-                <span>Demand Modeling</span>
-                <span>Profitability Forecasting</span>
-              </div>
-            </article>
-          </div>
-
-          <div class="experience-list tab-panel" id="firm-growth" aria-label="Firm growth experience">
-            <article class="experience-card">
-              <div class="experience-meta">
-                <span>Deloitte TMT Portfolio</span>
-                <span>Washington, D.C. | May 2025 - Present</span>
-              </div>
-              <h2>Technology, Media, and Telecommunications Offering Portfolio</h2>
-              <p class="experience-role">Financial Analyst</p>
-              <ul>
-                <li>Conducted financial analytics and sector monitoring to identify strategic risks and growth opportunities across Deloitte's Technology, Media, and Telecommunications offering portfolio.</li>
-                <li>Informed practice-level investment and resource allocation decisions by translating sector performance trends into leadership-ready insights.</li>
-                <li>Built Power BI dashboards tracking financial performance metrics across the TMT sector, enabling strategic early-warning systems for portfolio management.</li>
-              </ul>
-              <div class="tag-row" aria-label="Focus areas">
-                <span>Sector Analytics</span>
-                <span>Power BI</span>
-                <span>Portfolio Strategy</span>
-              </div>
-            </article>
-
-            <article class="experience-card">
-              <div class="experience-meta">
-                <span>Anthropic Alliance</span>
-                <span>Washington, D.C. | Aug 2024 - Present</span>
-              </div>
-              <h2>Anthropic Go-to-Market Strategy</h2>
-              <p class="experience-role">Go-to-Market Strategy Analyst</p>
-              <ul>
-                <li>Developed internal go-to-market strategy for Anthropic's Generative AI models across government and public sector markets.</li>
-                <li>Helped increase the internal sales pipeline for Deloitte-led AI projects by connecting model capabilities to public sector use cases and buyer priorities.</li>
-                <li>Created monthly pricing and competitive analysis decks to synthesize trends in the generative AI landscape for senior leaders.</li>
-              </ul>
-              <div class="tag-row" aria-label="Focus areas">
-                <span>Go-to-Market</span>
-                <span>Generative AI</span>
-                <span>Market Analysis</span>
-              </div>
-            </article>
-          </div>
-
-          <div class="experience-list tab-panel" id="nonprofit-leadership" aria-label="Nonprofit leadership experience">
-            <article class="experience-card">
-              <div class="experience-meta">
-                <span>National &amp; Local Impact</span>
-                <span>Jan 2026 - Present</span>
-              </div>
-              <h2>Inspire Nonprofit</h2>
-              <p class="experience-role">Deloitte Lead</p>
-              <ul>
-                <li>Led 8 local Deloitte office branches, generating 20+ yearly engagements with local and national nonprofits.</li>
-                <li>Built Deloitte-specific workflows to track Deloitte sales activity by office and region.</li>
-                <li>Architected a Deloitte marketing initiative to grow the active volunteer base across Deloitte, maintaining 100+ active participants and an alumni network.</li>
-              </ul>
-              <div class="tag-row" aria-label="Focus areas">
-                <span>Program Leadership</span>
-                <span>Volunteer Growth</span>
-                <span>Workflow Design</span>
-              </div>
-            </article>
-
-            <article class="experience-card">
-              <div class="experience-meta">
-                <span>Local Impact</span>
-                <span>Jan 2025 - Dec 2025</span>
-              </div>
-              <h2>Inspire Nonprofit</h2>
-              <p class="experience-role">DMV Area Lead</p>
-              <ul>
-                <li>Led the outreach and sales funnel for the local Washington, D.C. area Inspire chapter.</li>
-                <li>Sold 3 consulting engagements to local nonprofits, connecting community organizations with pro bono consulting support.</li>
-              </ul>
-              <div class="tag-row" aria-label="Focus areas">
-                <span>Outreach</span>
-                <span>Sales Funnel</span>
-                <span>Local Partnerships</span>
-              </div>
-            </article>
-
-            <article class="experience-card">
-              <div class="experience-meta">
-                <span>Local Impact</span>
-                <span>Oct 2024 - Jan 2025</span>
-              </div>
-              <h2>Washington Heads of Office Leadership Council</h2>
-              <p class="experience-role">Case Lead</p>
-              <ul>
-                <li>Led a team of 6 consultants to build a local nonprofit's strategic growth roadmap.</li>
-                <li>Developed recommendations to continue the organization's growth and increase income generation for greater community impact.</li>
-              </ul>
-              <div class="tag-row" aria-label="Focus areas">
-                <span>Case Leadership</span>
-                <span>Growth Strategy</span>
-                <span>Community Impact</span>
-              </div>
-            </article>
-          </div>
-        </section>
-      </main>
+      <div id="work-experience" class="experience-panel" role="tabpanel">
+        <div class="section-label"><span>Work experience</span></div>
+        <div class="panel-intro">
+          <h2>Career experience across consulting, finance, analytics, and leadership.</h2>
+          <p class="body-text">Selected roles and initiatives across project delivery, internal growth work, financial analysis, analytics systems, and nonprofit leadership.</p>
+        </div>
+        <div class="grid two">
+          <article class="card"><div class="meta">Deloitte GPS | Feb 2026 - Present</div><h3>Pension Benefit Guaranty Corporation</h3><p><strong>Financial Analyst</strong></p><ul><li>Monitored a portfolio of 120 corporate pension plan sponsors, analyzing financial performance and pension liabilities to assess risk exposure.</li><li>Evaluated liquidity, debt profiles, and material financial events to identify emerging threats to long-term pension sustainability.</li><li>Conducted risk triage to prioritize companies with elevated probability of financial distress and potential pension claims.</li></ul><div class="tags"><span class="tag">Financial Risk</span><span class="tag">Portfolio Monitoring</span></div></article>
+          <article class="card"><div class="meta">Deloitte GPS | Apr 2024 - Feb 2026</div><h3>State of Colorado</h3><p><strong>Business Analyst</strong></p><ul><li>Engineered an end-to-end analytics suite using SQL, Snowflake, and Tableau to automate tracking for 15+ strategic KPIs.</li><li>Restructured case management workflows across a 200,000+ claims system.</li><li>Reduced appeal adjudication cycle times by 50% through workflow analysis and operational redesign.</li></ul><div class="tags"><span class="tag">Analytics Suite</span><span class="tag">Workflow Automation</span></div></article>
+          <article class="card"><div class="meta">Jun 2023 - Apr 2024</div><h3>Logistics Capital &amp; Strategy</h3><p><strong>Management Consultant</strong></p><ul><li>Conducted market research and economic forecasting for buy-side diligence deals across transportation.</li><li>Integrated transaction and macroeconomic datasets to forecast cross-border commodity flows.</li><li>Built an Excel lane profitability model for real-time pricing and capacity optimization.</li></ul><div class="tags"><span class="tag">Market Research</span><span class="tag">Demand Modeling</span></div></article>
+          <article class="card"><div class="meta">May 2025 - Present</div><h3>Deloitte TMT Portfolio</h3><p><strong>Financial Analyst</strong></p><ul><li>Conducted financial analytics and sector monitoring to identify strategic risks and growth opportunities.</li><li>Translated sector performance trends into leadership-ready insights.</li><li>Built Power BI dashboards for early-warning portfolio management.</li></ul><div class="tags"><span class="tag">Power BI</span><span class="tag">Portfolio Strategy</span></div></article>
+          <article class="card"><div class="meta">Aug 2024 - Present</div><h3>Anthropic Go-to-Market Strategy</h3><p><strong>Go-to-Market Strategy Analyst</strong></p><ul><li>Developed internal go-to-market strategy for Anthropic's generative AI models across public sector markets.</li><li>Connected model capabilities to public sector use cases and buyer priorities.</li><li>Created monthly pricing and competitive analysis decks for senior leaders.</li></ul><div class="tags"><span class="tag">Generative AI</span><span class="tag">Market Analysis</span></div></article>
+          <article class="card"><div class="meta">Oct 2024 - Present</div><h3>Nonprofit Leadership</h3><p><strong>Inspire and local leadership work</strong></p><ul><li>Led local Deloitte office branches and helped generate nonprofit engagements.</li><li>Built workflows to track outreach, volunteer growth, and regional participation.</li><li>Led consultants to build a strategic growth roadmap for a local nonprofit.</li></ul><div class="tags"><span class="tag">Program Leadership</span><span class="tag">Growth Strategy</span></div></article>
+        </div>
+      </div>
     </div>
-    <script src="/scripts.js"></script>
-  </body>
+  </section>
+</main>
+<footer><div class="wrap footer-inner"><span>CS Ventures</span><a href="/portfolio/">Portfolio</a></div></footer>
+<script>
+  document.querySelectorAll("[data-experience-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = button.dataset.experienceTab;
+      document.querySelectorAll("[data-experience-tab]").forEach((item) => {
+        item.classList.toggle("active", item === button);
+        item.setAttribute("aria-selected", item === button ? "true" : "false");
+      });
+      document.querySelectorAll(".experience-panel").forEach((panel) => {
+        panel.classList.toggle("active", panel.id === target);
+      });
+    });
+  });
+</script>
+</body>
 </html>
