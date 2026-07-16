@@ -20,6 +20,30 @@
       <div id="loginErr" class="auth-error" role="alert"></div>
       <button class="auth-submit" type="submit">Sign in</button>
     </form>
+
+    <form id="mfaForm" class="auth-card hidden">
+      <a class="brand" href="/"><span class="brand-mark">CS</span><span><strong>CS Ventures</strong><small>Control Plane</small></span></a>
+      <p class="eyebrow">TWO-FACTOR AUTHENTICATION</p>
+      <h1>Enter your code.</h1>
+      <p>Open your authenticator app and enter the 6-digit code for CS Ventures Control Plane.</p>
+      <label>Verification code<input id="mfaCode" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
+      <div id="mfaErr" class="auth-error" role="alert"></div>
+      <button class="auth-submit" type="submit">Verify</button>
+      <button id="mfaCancel" class="auth-alt" type="button">Back to sign in</button>
+    </form>
+
+    <form id="enrollForm" class="auth-card hidden">
+      <a class="brand" href="/"><span class="brand-mark">CS</span><span><strong>CS Ventures</strong><small>Control Plane</small></span></a>
+      <p class="eyebrow">SET UP TWO-FACTOR</p>
+      <h1>Add your authenticator.</h1>
+      <p>Scan this QR code with your authenticator app (or add the secret manually), then confirm with the app's 6-digit code. Every sign-in after this will ask for a code.</p>
+      <div id="enrollQr" class="mfa-qr" aria-label="Authenticator QR code"></div>
+      <p class="mfa-secret">Manual secret: <code id="enrollSecret"></code></p>
+      <label>Confirmation code<input id="enrollCode" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
+      <div id="enrollErr" class="auth-error" role="alert"></div>
+      <button class="auth-submit" type="submit">Turn on two-factor</button>
+      <button id="enrollCancel" class="auth-alt" type="button">Back to sign in</button>
+    </form>
   </section>
 
   <div id="app" class="hidden">

@@ -398,8 +398,38 @@ async function decideApproval(id,approved,startProvider='claude'){const model=st
 async function approveRelease(workId,title,button){if(!confirm(`Approve release for "${title||workId}"?\n\nThis records your acceptance and marks the work completed. It will not rerun an agent, merge a pull request, or deploy code.`))return;const original=button?.textContent;if(button){button.disabled=true;button.textContent='Approving…'}const{error}=await sb.rpc('api_release',{p_work_id:workId,p_note:'Release approved from CS Ventures control dashboard'});if(error){if(button){button.disabled=false;button.textContent=original}alert(`Release failed: ${error.message}`);return}await load()}
 async function decideRecommendation(id,action){const msg=action==='accept'?'Turn this recommendation into a work item? You will still approve its plan before anything runs.':'Dismiss this recommendation?';if(!confirm(msg))return;const{data,error}=await sb.rpc('api_decide_recommendation',{p_recommendation_id:id,p_action:action,p_note:'Decided from CS Ventures control dashboard'});if(error){alert(`Action failed: ${error.message}`);return}if(action==='accept'&&data?.work_id)console.log('created',data.work_id);await load()}
 function showApp(session){$('#login').classList.add('hidden');$('#app').classList.remove('hidden');$('#who').textContent=session.user.email;load().catch(error=>{$('#loading').className='loading-error';$('#loading').textContent=`Could not load dashboard data: ${error.message}`})}
-function showLogin(){$('#app').classList.add('hidden');$('#login').classList.remove('hidden')}
-$('#loginForm').addEventListener('submit',async event=>{event.preventDefault();$('#loginErr').textContent='';const{data,error}=await sb.auth.signInWithPassword({email:$('#email').value.trim(),password:$('#password').value});if(error){$('#loginErr').textContent='Invalid email or password.';return}showApp(data.session)});
+function authCard(id){$('#app').classList.add('hidden');$('#login').classList.remove('hidden');['loginForm','mfaForm','enrollForm'].forEach(f=>$(`#${f}`).classList.toggle('hidden',f!==id))}
+function showLogin(){authCard('loginForm')}
+
+// Two-factor (TOTP) flow: verified factor -> ask for a code; none -> enroll one.
+let mfaFactorId=null,enrollFactorId=null;
+async function routeAfterAuth(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){showLogin();return}
+  const{data:aal}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(aal?.currentLevel==='aal2'){showApp(session);return}
+  const{data:factors,error}=await sb.auth.mfa.listFactors();
+  if(error){$('#loginErr').textContent=`Two-factor check failed: ${error.message}`;showLogin();return}
+  const verified=(factors?.totp||[]).filter(f=>f.status==='verified');
+  if(verified.length){mfaFactorId=verified[0].id;$('#mfaCode').value='';$('#mfaErr').textContent='';authCard('mfaForm');$('#mfaCode').focus()}
+  else await startEnroll(factors?.all||[]);
+}
+async function startEnroll(existing){
+  for(const f of existing){if(f.status!=='verified')await sb.auth.mfa.unenroll({factorId:f.id}).catch(()=>{})}
+  const{data,error}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'CS Ventures authenticator'});
+  if(error){$('#loginErr').textContent=`Could not start two-factor setup: ${error.message}`;showLogin();return}
+  enrollFactorId=data.id;
+  const qr=data.totp?.qr_code||'';
+  $('#enrollQr').innerHTML=qr.startsWith('data:')?`<img src="${qr}" alt="Authenticator QR code">`:qr;
+  $('#enrollSecret').textContent=data.totp?.secret||'';
+  $('#enrollCode').value='';$('#enrollErr').textContent='';
+  authCard('enrollForm');$('#enrollCode').focus();
+}
+$('#loginForm').addEventListener('submit',async event=>{event.preventDefault();$('#loginErr').textContent='';const{error}=await sb.auth.signInWithPassword({email:$('#email').value.trim(),password:$('#password').value});if(error){$('#loginErr').textContent='Invalid email or password.';return}await routeAfterAuth()});
+$('#mfaForm').addEventListener('submit',async event=>{event.preventDefault();$('#mfaErr').textContent='';const{error}=await sb.auth.mfa.challengeAndVerify({factorId:mfaFactorId,code:$('#mfaCode').value.trim()});if(error){$('#mfaErr').textContent='That code did not work. Enter the current code from your app.';return}await routeAfterAuth()});
+$('#enrollForm').addEventListener('submit',async event=>{event.preventDefault();$('#enrollErr').textContent='';const{error}=await sb.auth.mfa.challengeAndVerify({factorId:enrollFactorId,code:$('#enrollCode').value.trim()});if(error){$('#enrollErr').textContent='That code did not work. Scan the QR again and enter the current code.';return}await routeAfterAuth()});
+$('#mfaCancel').addEventListener('click',async()=>{await sb.auth.signOut();showLogin()});
+$('#enrollCancel').addEventListener('click',async()=>{await sb.auth.signOut();showLogin()});
 $('#signout').addEventListener('click',async()=>{await sb.auth.signOut();showLogin()});
 $('#refresh').addEventListener('click',async()=>{const b=$('#refresh');b.textContent='Refreshing…';try{await load();b.textContent='Data refreshed'}catch(error){b.textContent='Refresh failed'}setTimeout(()=>b.textContent='Refresh data',1200)});
-const{data:{session}}=await sb.auth.getSession();if(session)showApp(session);else showLogin();
+await routeAfterAuth();
