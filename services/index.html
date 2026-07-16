@@ -63,8 +63,11 @@
   .number { color:var(--green); font:700 11px/1 var(--font-body); letter-spacing:.15em; }
   .arrow { width:36px; height:36px; border-radius:50%; background:var(--green-soft); color:var(--green); display:grid; place-items:center; font-size:19px; transition:transform .2s; }
   .service-card:hover .arrow { transform:translateX(3px); }
-  .service-card h3 { font:700 clamp(24px,3vw,32px)/1.1 var(--display); letter-spacing:-.03em; margin:auto 0 12px; max-width:420px; }
-  .service-card p { color:var(--muted); font-size:14px; line-height:1.68; margin:0; max-width:470px; }
+  .service-card h3 { font:700 clamp(24px,3vw,32px)/1.1 var(--display); letter-spacing:-.03em; margin:22px 0 10px; max-width:420px; }
+  .service-card p { color:var(--muted); font-size:14px; line-height:1.68; margin:0 0 24px; max-width:470px; }
+  .card-includes { margin-top:auto; padding-top:18px; border-top:1px solid var(--line); display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px 20px; }
+  .card-includes span { position:relative; padding-left:15px; color:var(--ink); font-size:12.5px; line-height:1.45; }
+  .card-includes span::before { content:""; position:absolute; left:0; top:8px; width:7px; height:2px; background:var(--green); }
   .page-cta { margin-top:34px; padding:28px 30px; border-radius:18px; background:#173d2b; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; }
   .page-cta strong { display:block; color:#fff; font-size:17px; }
   .page-cta span { display:block; color:rgba(255,255,255,.6); font-size:13px; margin-top:4px; }
@@ -105,10 +108,10 @@
   <div class="wrap">
     <div class="intro"><h2>What we do for clients</h2><p>Focused engagements with a concrete result—not an open-ended list of capabilities.</p></div>
     <div class="service-grid">
-      <a class="service-card" href="/services/ai-automation/"><div class="card-top"><span class="number">01</span><span class="arrow" aria-hidden="true">&rarr;</span></div><h3>AI &amp; Automation</h3><p>Automate routine work, add AI where judgment lives, and build the controls needed to keep agentic systems accountable.</p></a>
-      <a class="service-card" href="/services/product-design-build/"><div class="card-top"><span class="number">02</span><span class="arrow" aria-hidden="true">&rarr;</span></div><h3>Product Design &amp; Build</h3><p>Take an app, website, or MVP from a one-page idea through product definition, interface design, and a working launch.</p></a>
-      <a class="service-card" href="/services/analytics-financial-modeling/"><div class="card-top"><span class="number">03</span><span class="arrow" aria-hidden="true">&rarr;</span></div><h3>Analytics &amp; Financial Modeling</h3><p>Build decision-ready dashboards, data pipelines, financial models, and risk assessments grounded in real operating data.</p></a>
-      <a class="service-card" href="/services/strategy-go-to-market/"><div class="card-top"><span class="number">04</span><span class="arrow" aria-hidden="true">&rarr;</span></div><h3>Strategy &amp; Go-to-Market</h3><p>Clarify the buyers, market size, pricing, channels, and sequence behind a practical plan for growth or market entry.</p></a>
+      <a class="service-card" href="/services/ai-automation/"><div class="card-top"><span class="number">01</span><span class="arrow" aria-hidden="true">&rarr;</span></div><h3>AI &amp; Automation</h3><p>Automate routine work, add AI where judgment lives, and build the controls needed to keep agentic systems accountable.</p><div class="card-includes"><span>Process automation audit</span><span>Workflow automation build</span><span>AI at judgment steps</span><span>Agentic system design</span></div></a>
+      <a class="service-card" href="/services/product-design-build/"><div class="card-top"><span class="number">02</span><span class="arrow" aria-hidden="true">&rarr;</span></div><h3>Product Design &amp; Build</h3><p>Take an app, website, or MVP from a one-page idea through product definition, interface design, and a working launch.</p><div class="card-includes"><span>Product definition</span><span>Mobile app design &amp; build</span><span>Marketing sites</span><span>MVP builds</span></div></a>
+      <a class="service-card" href="/services/analytics-financial-modeling/"><div class="card-top"><span class="number">03</span><span class="arrow" aria-hidden="true">&rarr;</span></div><h3>Analytics &amp; Financial Modeling</h3><p>Build decision-ready dashboards, data pipelines, financial models, and risk assessments grounded in real operating data.</p><div class="card-includes"><span>Executive dashboards</span><span>Data pipelines</span><span>Financial models</span><span>Risk assessment</span></div></a>
+      <a class="service-card" href="/services/strategy-go-to-market/"><div class="card-top"><span class="number">04</span><span class="arrow" aria-hidden="true">&rarr;</span></div><h3>Strategy &amp; Go-to-Market</h3><p>Clarify the buyers, market size, pricing, channels, and sequence behind a practical plan for growth or market entry.</p><div class="card-includes"><span>Market research &amp; sizing</span><span>Demand &amp; pricing models</span><span>Go-to-market planning</span><span>Market entry analysis</span></div></a>
     </div>
     <div class="page-cta"><div><strong>Not sure where the problem fits?</strong><span>Describe it in one email and we will point you toward the right starting place.</span></div><a href="mailto:info@cs-ventures.us">Start a conversation</a></div>
   </div>
