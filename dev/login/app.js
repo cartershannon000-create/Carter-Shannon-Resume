@@ -416,7 +416,7 @@ async function routeAfterAuth(){
 }
 async function startEnroll(existing){
   for(const f of existing){if(f.status!=='verified')await sb.auth.mfa.unenroll({factorId:f.id}).catch(()=>{})}
-  const{data,error}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'CS Ventures authenticator'});
+  const{data,error}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'CS Ventures authenticator',issuer:'CS Ventures Control Plane'});
   if(error){$('#loginErr').textContent=`Could not start two-factor setup: ${error.message}`;showLogin();return}
   enrollFactorId=data.id;
   const qr=data.totp?.qr_code||'';
