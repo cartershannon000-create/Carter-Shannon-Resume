@@ -765,5 +765,47 @@
   </div>
 </footer>
 
+
+<div id="film-lightbox" class="film-lightbox" hidden role="dialog" aria-modal="true" aria-label="Product film">
+  <button class="film-lightbox-close" type="button" aria-label="Close video (Esc)">&#10005;</button>
+  <video controls playsinline></video>
+</div>
+<style>
+.film-lightbox{position:fixed;inset:0;z-index:500;background:rgba(4,13,9,.93);display:grid;place-items:center;padding:4vmin}
+.film-lightbox[hidden]{display:none}
+.film-lightbox video{width:min(1500px,94vw);max-height:88vh;border-radius:14px;box-shadow:0 40px 120px rgba(0,0,0,.6);background:#000;outline:none}
+.film-lightbox-close{position:fixed;top:18px;right:22px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.32);background:rgba(0,0,0,.45);color:#fff;font-size:18px;cursor:pointer;display:grid;place-items:center;z-index:501;transition:background .15s,color .15s}
+.film-lightbox-close:hover{background:#fff;color:#06140d}
+.deck-card:has(video){cursor:zoom-in}
+</style>
+<script>
+(function(){
+  var lb=document.getElementById('film-lightbox');if(!lb)return;
+  var lbVideo=lb.querySelector('video');
+  var closeBtn=lb.querySelector('.film-lightbox-close');
+  var opener=null;
+  function open(card,inline){
+    opener=card;
+    lbVideo.src=inline.currentSrc||inline.src;
+    if(inline.poster)lbVideo.poster=inline.poster;
+    try{lbVideo.currentTime=inline.currentTime}catch(e){}
+    lb.hidden=false;document.body.style.overflow='hidden';
+    lbVideo.muted=false;lbVideo.play().catch(function(){});
+    closeBtn.focus();
+  }
+  function close(){
+    lbVideo.pause();lb.hidden=true;document.body.style.overflow='';
+    lbVideo.removeAttribute('src');lbVideo.load();
+    if(opener)opener.focus();
+  }
+  document.querySelectorAll('.deck-card').forEach(function(card){
+    var v=card.querySelector('video');if(!v)return;
+    card.addEventListener('click',function(e){e.preventDefault();open(card,v)});
+  });
+  closeBtn.addEventListener('click',close);
+  lb.addEventListener('click',function(e){if(e.target===lb)close()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!lb.hidden)close()});
+})();
+</script>
 </body>
 </html>
