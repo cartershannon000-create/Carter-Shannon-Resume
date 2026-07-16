@@ -6,8 +6,8 @@
   align-items: center;
   color: #f5f5f7;
   background:
-    radial-gradient(circle at 80% 10%, rgba(23, 71, 52, .42), transparent 42%),
-    linear-gradient(145deg, #04100a 0%, #061710 40%, #082015 72%, #0b2719 100%) !important;
+    radial-gradient(circle at 85% 90%, rgba(23, 71, 52, .42), transparent 44%),
+    linear-gradient(180deg, #04100a 0%, #071b12 48%, #0b2719 100%) !important;
   border-bottom: 1px solid rgba(255, 255, 255, .10);
   overflow: hidden;
 }
