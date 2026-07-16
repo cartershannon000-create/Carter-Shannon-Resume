@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 HOME = ROOT / "index.html"
+ABOUT = ROOT / "about" / "index.html"
 PORTFOLIO = ROOT / "portfolio" / "index.html"
 SERVICES = ROOT / "services" / "index.html"
 GUIDE = ROOT / "how-to-build-your-first-app" / "index.html"
@@ -58,7 +59,7 @@ class SiteInformationArchitectureTests(unittest.TestCase):
         self.assertEqual(page.count('role="tabpanel"'), 3)
         self.assertEqual(page.count('class="offer-card"'), 11)
         self.assertEqual(page.count('class="work-card"'), 11)
-        for label in ("Agents &amp; AI", "Apps &amp; Websites", "Trainings &amp; Papers"):
+        for label in ("Agents &amp; AI", "Apps &amp; Websites", "Trainings &amp; Decks"):
             self.assertIn(label, page)
         block = re.search(
             r'id="panel-training".*?</section>', page, re.DOTALL
@@ -92,10 +93,30 @@ class SiteInformationArchitectureTests(unittest.TestCase):
             for block in blocks:
                 json.loads(block)
 
-    def test_guide_points_back_to_trainings_and_papers(self):
+    def test_guide_points_back_to_trainings_and_decks(self):
         page = GUIDE.read_text(encoding="utf-8")
         self.assertIn('href="/portfolio/#trainings-papers"', page)
-        self.assertIn("Trainings &amp; Papers", page)
+        self.assertIn("Trainings &amp; Decks", page)
+
+    def test_top_level_pages_share_the_same_hero_system(self):
+        expected_eyebrows = {
+            HOME: "CS Ventures</p>",
+            ABOUT: "CS Ventures &middot; About",
+            SERVICES: "CS Ventures &middot; Services",
+            PORTFOLIO: "CS Ventures &middot; Portfolio",
+        }
+        for path, eyebrow in expected_eyebrows.items():
+            page = path.read_text(encoding="utf-8")
+            self.assertIn('href="/top-hero.css"', page, path.relative_to(ROOT))
+            self.assertIn("csv-top-hero", page, path.relative_to(ROOT))
+            self.assertIn("csv-top-hero__pills", page, path.relative_to(ROOT))
+            self.assertIn(eyebrow, page, path.relative_to(ROOT))
+            self.assertRegex(page, r"<h1>.*?<em>.*?</em>.*?</h1>")
+
+        css = (ROOT / "top-hero.css").read_text(encoding="utf-8")
+        self.assertIn("min-height: 610px", css)
+        self.assertIn("linear-gradient(145deg", css)
+        self.assertIn("border-bottom: 1px", css)
 
     def test_all_public_pages_use_the_four_link_navigation(self):
         public_pages = sorted(
@@ -111,7 +132,7 @@ class SiteInformationArchitectureTests(unittest.TestCase):
             )
             self.assertIsNotNone(match, path.relative_to(ROOT))
             nav = match.group(1)
-            self.assertEqual(nav.count("<a "), 4, path.relative_to(ROOT))
+            self.assertIn(nav.count("<a "), (4, 5), path.relative_to(ROOT))
             cursor = -1
             for href, label in EXPECTED_NAV:
                 position = nav.find(href)

@@ -211,6 +211,7 @@
       .footer-links a + a::before { content: '·'; margin-right: 12px; color: var(--on-dark-line); }
       .footer-bottom { margin-top: 52px; padding-top: 24px; border-top: 1px solid var(--on-dark-line); font: 400 12px/1 var(--font-body); color: var(--on-dark-muted); }
     </style>
+    <link rel="stylesheet" href="/top-hero.css" />
   </head>
   <body>
 
@@ -219,15 +220,21 @@
       <nav class="csv-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/about/" class="active">About</a><a href="/services/">Services</a><a href="/portfolio/">Portfolio</a><a class="csv-login" href="/dev/login/">Log in</a></nav>
     </div>
 
-    <div class="page-hero">
+    <header class="page-hero csv-top-hero">
       <div class="wrap">
-        <p class="page-hero-eyebrow">CS Ventures</p>
+        <p class="page-hero-eyebrow csv-top-hero__eyebrow">CS Ventures &middot; About</p>
         <h1>Strategy Backed by <em>Data.</em></h1>
-        <p class="lead">CS Ventures is an independent product and strategy studio operating at the intersection of analytics, technology, and product development. We help individuals and organizations translate what is technically possible into decisions and tools that move them forward.</p>
+        <p class="lead csv-top-hero__lead">CS Ventures is an independent product and strategy studio operating at the intersection of analytics, technology, and product development. We help individuals and organizations translate what is technically possible into decisions and tools that move them forward.</p>
+        <nav class="csv-top-hero__pills" aria-label="About sections">
+          <a href="#approach">Our approach</a>
+          <a href="#who-we-serve">Who we serve</a>
+          <a href="#leadership">Leadership</a>
+          <a href="/about/experience.html">Experience</a>
+        </nav>
       </div>
-    </div>
+    </header>
 
-    <div class="section">
+    <div class="section" id="approach">
       <div class="wrap">
         <div class="section-label"><span>Our Approach</span></div>
         <div class="approach-grid">
@@ -279,7 +286,7 @@
       </div>
     </div>
 
-    <div class="section band">
+    <div class="section band" id="who-we-serve">
       <div class="wrap">
         <div class="section-label"><span>Who we serve</span></div>
         <h2 class="section-h2">Built for the people doing the work</h2>
@@ -325,7 +332,7 @@
       </div>
     </div>
 
-    <div class="section">
+    <div class="section" id="leadership">
       <div class="wrap">
         <div class="section-label"><span>Leadership</span></div>
         <div class="founder-grid">

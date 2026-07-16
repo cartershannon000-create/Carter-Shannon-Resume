@@ -89,6 +89,7 @@
     .service-card { min-height:235px; }
   }
 </style>
+<link rel="stylesheet" href="/top-hero.css">
 </head>
 <body>
 <div class="csv-bar">
@@ -96,11 +97,17 @@
   <nav class="csv-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/about/">About</a><a href="/services/" class="active">Services</a><a href="/portfolio/">Portfolio</a><a class="csv-login" href="/dev/login/">Log in</a></nav>
 </div>
 
-<header class="hero">
+<header class="hero csv-top-hero">
   <div class="wrap">
-    <div class="eyebrow">CS Ventures &middot; Services</div>
-    <h1>Four ways to move the work forward</h1>
-    <p>Choose the service line closest to the outcome you need. Each page breaks down the offerings, deliverables, and approach behind the work.</p>
+    <div class="eyebrow csv-top-hero__eyebrow">CS Ventures &middot; Services</div>
+    <h1>Four ways to <em>move the work forward</em></h1>
+    <p class="csv-top-hero__lead">Choose the service line closest to the outcome you need. Each page breaks down the offerings, deliverables, and approach behind the work.</p>
+    <nav class="csv-top-hero__pills" aria-label="Service lines">
+      <a href="/services/ai-automation/">AI &amp; Automation</a>
+      <a href="/services/product-design-build/">Product Design &amp; Build</a>
+      <a href="/services/analytics-financial-modeling/">Analytics &amp; Modeling</a>
+      <a href="/services/strategy-go-to-market/">Strategy &amp; GTM</a>
+    </nav>
   </div>
 </header>
 

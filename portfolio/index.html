@@ -163,6 +163,7 @@
   }
   @media(prefers-reduced-motion:reduce){ html { scroll-behavior:auto; } .compact-track { transition:none; } }
 </style>
+<link rel="stylesheet" href="/top-hero.css">
 </head>
 <body>
 <div class="csv-bar">
@@ -170,15 +171,22 @@
   <nav class="csv-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/about/">About</a><a href="/services/">Services</a><a href="/portfolio/" class="active">Portfolio</a><a class="csv-login" href="/dev/login/">Log in</a></nav>
 </div>
 
-<header class="portfolio-hero">
-  <div class="wrap hero-grid">
-    <div><div class="eyebrow">CS Ventures &middot; Shipped work</div><h1>Built, tested, and put into the world</h1><p class="hero-lead">Start with the quick tour, then scroll into the systems, products, and thinking behind each piece of work.</p></div>
-    <div class="hero-stat"><strong>11</strong><span>shipped builds, guides, and strategy papers across three focused categories.</span></div>
+<header class="portfolio-hero csv-top-hero">
+  <div class="wrap">
+    <div class="eyebrow csv-top-hero__eyebrow">CS Ventures &middot; Portfolio</div>
+    <h1>Built, tested, and <em>put into the world</em></h1>
+    <p class="hero-lead csv-top-hero__lead">Start with the quick tour, then scroll into the systems, products, and thinking behind each piece of work.</p>
+    <nav class="csv-top-hero__pills" aria-label="Portfolio categories">
+      <a href="#agents-ai">Agents &amp; AI</a>
+      <a href="#apps-websites">Apps &amp; Websites</a>
+      <a href="#trainings-papers">Trainings &amp; Decks</a>
+      <a href="#portfolio-tour">Quick tour</a>
+    </nav>
   </div>
 </header>
 
 <main>
-  <section class="switcher-shell" aria-label="Portfolio quick tour">
+  <section class="switcher-shell" id="portfolio-tour" aria-label="Portfolio quick tour">
     <div class="wrap">
       <div class="switcher-label">Quick tour &middot; choose a category</div>
       <div class="bucket-tabs" role="tablist" aria-label="Portfolio categories">
