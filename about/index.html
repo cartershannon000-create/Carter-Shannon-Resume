@@ -130,6 +130,23 @@
       .body-text { font-size: 15.5px; color: var(--muted); line-height: 1.74; max-width: 680px; margin-top: 28px; }
       .body-text + .body-text { margin-top: 18px; }
 
+      .approach-grid { display: grid; gap: 44px; align-items: center; }
+      @media(min-width:900px){ .approach-grid { grid-template-columns: minmax(0,1fr) 360px; gap: 72px; } }
+      .gap-rail {
+        background: linear-gradient(165deg, #173d2b, #0c2318);
+        border-radius: var(--r-lg); padding: 30px 28px; color: #fff;
+      }
+      .gap-rail-kicker { font: 700 10px/1 var(--font-body); letter-spacing: .16em; text-transform: uppercase; color: #75cc89; margin-bottom: 22px; }
+      .gap-step { padding: 16px 0; }
+      .gap-step .gap-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
+      .gap-step p { font-size: 13px; line-height: 1.6; color: rgba(255,255,255,.55); margin: 5px 0 0; }
+      .gap-step.gap-mid {
+        border-top: 1px dashed rgba(117,204,137,.45); border-bottom: 1px dashed rgba(117,204,137,.45);
+        padding: 18px 0; margin: 2px 0;
+      }
+      .gap-step.gap-mid .gap-name { color: #75cc89; }
+      .gap-step.gap-mid p { color: rgba(255,255,255,.75); }
+
       .serve-grid { display: grid; gap: 16px; margin-top: 44px; }
       @media(min-width:760px){ .serve-grid { grid-template-columns: repeat(3,1fr); } }
       .serve-card {
@@ -149,7 +166,9 @@
       .engage-row h3 { font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); margin-bottom: 8px; }
       .engage-row p { font-size: 14.5px; color: var(--muted); line-height: 1.7; margin: 0; max-width: 640px; }
 
-      .founder-grid { display: grid; gap: 40px; margin-top: 44px; align-items: start; }
+      .founder-grid { display: grid; gap: 40px; margin-top: 44px; align-items: center; }
+      @media(min-width:820px){ .founder-grid { grid-template-columns: 300px minmax(0,1fr); gap: 56px; } }
+      .founder-photo img { width: 100%; max-width: 340px; border-radius: var(--r-lg); border: 1px solid var(--line); box-shadow: var(--shadow); display: block; }
       .founder-body h3 { font-family: var(--font-display); font-size: 24px; font-weight: 700; letter-spacing: -.025em; color: var(--ink); margin-bottom: 4px; }
       .founder-role { font: 600 13px/1 var(--font-body); color: var(--green); margin-bottom: 18px; }
       .founder-body p { font-size: 15px; color: var(--muted); line-height: 1.74; margin: 0 0 14px; max-width: 640px; }
@@ -213,13 +232,32 @@
     <div class="section">
       <div class="wrap">
         <div class="section-label"><span>Our Approach</span></div>
-        <h2 class="section-h2">The bottleneck has shifted from execution to judgment.</h2>
-        <p class="body-text">
-          Technology has automated the deterministic layer of business. Data pipelines run without analysts. Reports generate in real time. Decisions that once required teams now require a prompt. What that creates is a new kind of demand for people who can think clearly about what technology makes possible, decide what is actually worth building, and move an idea from concept to delivery without losing the thread.
-        </p>
-        <p class="body-text">
-          That gap between idea and execution is where most organizations stall. CS Ventures fills it. Our leadership brings experience across financial risk analysis, public sector technology and analytics, go-to-market strategy, and end-to-end product development. The thread across all of it is the ability to translate what is technically possible into decisions and tools that actually move organizations forward.
-        </p>
+        <div class="approach-grid">
+          <div>
+            <h2 class="section-h2">The bottleneck has shifted from execution to judgment.</h2>
+            <p class="body-text">
+              Technology has automated the deterministic layer of business. Data pipelines run without analysts. Reports generate in real time. Decisions that once required teams now require a prompt. What that creates is a new kind of demand for people who can think clearly about what technology makes possible, decide what is actually worth building, and move an idea from concept to delivery without losing the thread.
+            </p>
+            <p class="body-text">
+              That gap between idea and execution is where most organizations stall. CS Ventures fills it. Our leadership brings experience across financial risk analysis, public sector technology and analytics, go-to-market strategy, and end-to-end product development. The thread across all of it is the ability to translate what is technically possible into decisions and tools that actually move organizations forward.
+            </p>
+          </div>
+          <aside class="gap-rail" aria-label="Where work stalls">
+            <div class="gap-rail-kicker">Where work stalls</div>
+            <div class="gap-step">
+              <div class="gap-name">The idea</div>
+              <p>Clear in someone's head. Undefined on paper.</p>
+            </div>
+            <div class="gap-step gap-mid">
+              <div class="gap-name">The gap: judgment</div>
+              <p>What is worth building, in what order, with what proof. This is the part CS Ventures fills.</p>
+            </div>
+            <div class="gap-step">
+              <div class="gap-name">The delivery</div>
+              <p>Shipped, measured, and in use.</p>
+            </div>
+          </aside>
+        </div>
 
         <div class="section-label" style="margin-top:56px"><span>What we bring</span></div>
         <div class="skill-grid">
@@ -293,6 +331,7 @@
       <div class="wrap">
         <div class="section-label"><span>Leadership</span></div>
         <div class="founder-grid">
+          <div class="founder-photo"><img src="/carter-shannon-headshot.png" alt="Carter Shannon, founder of CS Ventures" loading="lazy"></div>
           <div class="founder-body">
             <h3>Carter Shannon</h3>
             <div class="founder-role">Founder</div>
