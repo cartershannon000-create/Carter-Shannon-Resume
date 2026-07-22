@@ -59,6 +59,7 @@ tr.clickable:hover{background:#f4f7f5;transform:none;box-shadow:none}
 .run-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;background:#eaf2ec;color:var(--green)}
 .run-chip.bad{background:#f6e3e1;color:var(--rose)}
 .run-chip.live{background:#0e362a;color:#88d397}
+.run-chip.muted{background:var(--bg);color:var(--muted)}
 .run-chip .pulse{width:7px;height:7px;border-radius:50%;background:#88d397;animation:runpulse 1.4s ease infinite}
 @keyframes runpulse{0%,100%{box-shadow:0 0 0 0 rgba(136,211,151,.5)}55%{box-shadow:0 0 0 6px rgba(136,211,151,0)}}
 .run-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:10px;margin:6px 0 0}
@@ -80,6 +81,11 @@ tr[data-run]{cursor:pointer}tr[data-run]:hover td{background:#f6f9f6}
 .step-detail{margin:4px 0 0;color:#aabfb3;font-size:9.5px;line-height:1.5;word-break:break-word;white-space:pre-wrap}
 code.step-detail{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:rgba(255,255,255,.05);border-radius:6px;padding:6px 8px;color:#c8dcd0}
 .run-step.result .step-detail,.run-step.error .step-detail{color:#d5e4da}
+/* Clients reuse the dashboard card, KPI, chip, drill-row, and action primitives. */
+.client-create{margin-bottom:14px}.client-create .card-head{margin-bottom:0}.client-create:has(.office-form:not(.hidden)) .card-head{margin-bottom:15px}.client-list{display:grid;gap:10px}.client-row{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(150px,.7fr) minmax(180px,.8fr);gap:18px;align-items:center}.client-chips{display:flex;align-items:center;gap:6px}.client-identity h3{font:700 20px Georgia;margin:10px 0 4px}.client-identity>span,.client-measure small,.client-measure span{display:block;color:var(--muted);font-size:9px}.client-measure small{text-transform:uppercase;letter-spacing:.07em}.client-row .client-measure strong{font:700 17px Georgia;margin:6px 0 3px}.client-empty{background:var(--panel)}
+.office-form{padding:15px;border:1px solid var(--line);border-radius:11px;background:var(--bg)}.office-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.office-form label{display:grid;gap:6px;color:var(--muted);font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}.office-form-wide{grid-column:1/-1}.office-form input,.office-form select,.office-form textarea{display:block;width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font:11px inherit;text-transform:none;letter-spacing:0;outline:none}.office-form textarea{resize:vertical}.office-form input:focus,.office-form select:focus,.office-form textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--mint)}.office-form-actions{margin-top:12px}.office-form-error{min-height:18px;padding-top:7px;color:var(--rose);font-size:9px}.client-update .office-form{margin-top:10px}
+@media(max-width:760px){.client-row{grid-template-columns:1fr 1fr}.client-identity{grid-column:1/-1}}
+@media(max-width:520px){.client-row,.office-form-grid{grid-template-columns:1fr}.client-identity,.office-form-wide{grid-column:auto}}
 
 /* Two-factor auth */
 .mfa-qr { display: grid; place-items: center; margin: 6px 0 4px; }
