@@ -11,7 +11,7 @@ const money=v=>{const n=Number(v||0);return n>=1000?`$${new Intl.NumberFormat('e
 const date=v=>v?new Date(v).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Not available';
 const duration=s=>{if(s==null)return '—';s=Number(s);if(s<90)return `${Math.round(s)}s`;if(s<5400)return `${(s/60).toFixed(0)} min`;if(s<172800)return `${(s/3600).toFixed(1)} h`;return `${(s/86400).toFixed(1)} d`};
 const PCOLOR={claude:'var(--green)',codex:'var(--blue)'};
-let state;
+let state,officeState={clients:[]};
 
 function pageHead(title,detail,right=''){return `<div class="page-head"><div><h2>${esc(title)}</h2><p>${esc(detail)}</p></div>${right?`<span class="quiet">${esc(right)}</span>`:''}</div>`}
 function provider(name){return state.audit.providers.find(item=>item.provider===name)||{};}
@@ -287,6 +287,90 @@ function readyRow(icon,title,detail,status,mode){return `<div class="ready-row $
 function providerLine(name,value,max,label){return `<div class="provider-line ${name} clickable" data-provider="${name}"><strong>${esc(name)}</strong><div class="bar"><i style="width:${percent(Number(value||0),max)}%"></i></div><span>${esc(label)}</span></div>`}
 function workRow(task){return `<div class="work-row"><div><strong>${esc(task.objective)}</strong><p>${esc(task.next_action||'No next action recorded')}</p></div><time>v${task.checkpoint_version||0}<br>${date(task.updated_at)}</time></div>`}
 
+/* ── Clients ──────────────────────────────────────────────────────── */
+function relativeDate(value){
+  if(!value)return 'No touches yet';
+  const stamp=new Date(value).getTime();if(!Number.isFinite(stamp))return 'Not available';
+  const seconds=Math.round((Date.now()-stamp)/1000),future=seconds<0,amount=Math.abs(seconds);
+  let count,unit;
+  if(amount<60){count=amount;unit='second'}else if(amount<3600){count=Math.round(amount/60);unit='minute'}else if(amount<86400){count=Math.round(amount/3600);unit='hour'}else if(amount<2592000){count=Math.round(amount/86400);unit='day'}else if(amount<31536000){count=Math.round(amount/2592000);unit='month'}else{count=Math.round(amount/31536000);unit='year'}
+  return `${future?'in ':''}${count} ${unit}${count===1?'':'s'}${future?'':' ago'}`;
+}
+function latestTouch(client){return (client.touches||[]).reduce((latest,touch)=>!latest||new Date(touch.at)>new Date(latest.at)?touch:latest,null)}
+function openOpportunityValue(client){return (client.opportunities||[]).filter(opp=>!['won','lost'].includes(opp.stage)).reduce((sum,opp)=>sum+Number(opp.value_estimate||0)*Number(opp.probability||0),0)}
+function officeStatusChip(value,kind='client'){
+  const normalized=String(value||'').toLowerCase();
+  const good=kind==='client'?normalized==='active':kind==='opportunity'?normalized==='won':['active','completed','won'].includes(normalized);
+  const bad=kind==='client'?normalized==='lost':kind==='opportunity'?normalized==='lost':['lost','cancelled','canceled'].includes(normalized);
+  return `<span class="run-chip ${bad?'bad':good?'good':'muted'}">${esc(value||'—')}</span>`;
+}
+function clientForm(client=null){
+  const editing=!!client;
+  return `<form class="office-form hidden" data-office-form="client" data-client-id="${esc(client?.client_id||'')}"><div class="office-form-grid">
+    <label>Name<input name="name" value="${esc(client?.name||'')}" autocomplete="organization" required></label>
+    <label>Tier<select name="tier"><option value="A"${client?.tier==='A'?' selected':''}>A</option><option value="B"${client?.tier==='B'?' selected':''}>B</option><option value="C"${client?.tier==='C'?' selected':''}>C</option></select></label>
+    <label>Status<select name="status"><option value="lead"${!client||client.status==='lead'?' selected':''}>Lead</option><option value="active"${client?.status==='active'?' selected':''}>Active</option><option value="dormant"${client?.status==='dormant'?' selected':''}>Dormant</option><option value="lost"${client?.status==='lost'?' selected':''}>Lost</option></select></label>
+    <label>Source<input name="source" value="${esc(client?.source||'')}" placeholder="Referral, inbound, network…"></label>
+    <label class="office-form-wide">Notes<textarea name="notes" rows="3">${esc(client?.notes||'')}</textarea></label>
+  </div><div class="office-form-actions action-buttons"><button class="action-button approve" type="submit">${editing?'Save client':'Add client'}</button><button class="action-button reject" type="button" data-office-cancel>Cancel</button></div><div class="office-form-error" role="alert"></div></form>`;
+}
+function touchForm(){return `<form class="office-form hidden" data-office-form="touch"><div class="office-form-grid">
+  <label>Channel<input name="channel" placeholder="Email, call, meeting…" required></label><label>Direction<select name="direction"><option value="outbound">Outbound</option><option value="inbound">Inbound</option></select></label>
+  <label class="office-form-wide">Summary<textarea name="summary" rows="3" required></textarea></label><label>Follow-up due<input name="followup_due" type="datetime-local"></label>
+  </div><div class="office-form-actions action-buttons"><button class="action-button approve" type="submit">Log touch</button><button class="action-button reject" type="button" data-office-cancel>Cancel</button></div><div class="office-form-error" role="alert"></div></form>`}
+function opportunityForm(){return `<form class="office-form hidden" data-office-form="opportunity"><div class="office-form-grid">
+  <label class="office-form-wide">Title<input name="title" required></label><label>Stage<select name="stage"><option value="identified">Identified</option><option value="contacted">Contacted</option><option value="proposal">Proposal</option><option value="won">Won</option><option value="lost">Lost</option></select></label>
+  <label>Value estimate<input name="value_estimate" type="number" min="0" step="0.01" required></label><label>Probability (0–1)<input name="probability" type="number" min="0" max="1" step="0.01" required></label>
+  <label>Next action<input name="next_action"></label><label>Next action due<input name="next_action_due" type="datetime-local"></label>
+  </div><div class="office-form-actions action-buttons"><button class="action-button approve" type="submit">Add opportunity</button><button class="action-button reject" type="button" data-office-cancel>Cancel</button></div><div class="office-form-error" role="alert"></div></form>`}
+function engagementForm(){return `<form class="office-form hidden" data-office-form="engagement"><div class="office-form-grid">
+  <label class="office-form-wide">Scope<textarea name="scope" rows="3" required></textarea></label><label>Price<input name="price" type="number" min="0" step="0.01" required></label>
+  <label>Pricing model<input name="pricing_model" placeholder="Fixed, hourly, retainer…" required></label><label>Status<input name="status" value="active" required></label>
+  </div><div class="office-form-actions action-buttons"><button class="action-button approve" type="submit">Add engagement</button><button class="action-button reject" type="button" data-office-cancel>Cancel</button></div><div class="office-form-error" role="alert"></div></form>`}
+function officeRows(title,rows,emptyLabel){return `<div class="drill-section"><h4>${esc(title)}</h4>${rows.length?`<div class="drill-rows">${rows.map(row=>`<div class="drill-row"><div class="drill-row-top"><strong>${esc(row.label)}</strong>${row.chip?officeStatusChip(row.chip,row.kind):`<span>${esc(row.value||'')}</span>`}</div>${row.sub?`<p>${esc(row.sub)}</p>`:''}</div>`).join('')}</div>`:`<div class="empty-state"><strong>${esc(emptyLabel)}</strong></div>`}</div>`}
+function clientDrillContent(client){
+  const contacts=(client.contacts||[]).map(contact=>({label:contact.name||contact.email||'Unnamed contact',value:contact.role||'Contact',sub:[contact.email,contact.phone].filter(Boolean).join(' · ')}));
+  const opportunities=(client.opportunities||[]).map(opp=>({label:opp.title||'Untitled opportunity',chip:opp.stage,kind:'opportunity',sub:[`${money(opp.value_estimate)} estimated`,`${Math.round(Number(opp.probability||0)*100)}% probability`,opp.next_action?`Next: ${opp.next_action}`:'',opp.next_action_due?`due ${date(opp.next_action_due)}`:''].filter(Boolean).join(' · ')}));
+  const touches=(client.touches||[]).slice().sort((a,b)=>new Date(b.at)-new Date(a.at)).map(touch=>({label:[touch.channel,touch.direction].filter(Boolean).join(' · ')||'Touch',value:date(touch.at),sub:[touch.summary,touch.followup_due?`Follow up ${date(touch.followup_due)}`:''].filter(Boolean).join(' · ')}));
+  const engagements=(client.engagements||[]).map(engagement=>({label:engagement.scope||'Engagement',chip:engagement.status,kind:'engagement',sub:[money(engagement.price),engagement.pricing_model].filter(Boolean).join(' · ')}));
+  return `${officeRows('Contacts',contacts,'No contacts recorded')}${officeRows('Opportunities',opportunities,'No opportunities recorded')}${officeRows('Touches',touches,'No touches recorded')}${officeRows('Engagements',engagements,'No engagements recorded')}
+  <div class="drill-section client-update"><h4>Update client</h4><div class="action-buttons"><button class="action-button approve" type="button" data-office-toggle="touch">Log touch</button><button class="action-button approve" type="button" data-office-toggle="opportunity">Add opportunity</button><button class="action-button approve" type="button" data-office-toggle="engagement">Add engagement</button><button class="link-button" type="button" data-office-toggle="client">Edit details</button></div>${touchForm()}${opportunityForm()}${engagementForm()}${clientForm(client)}</div>`;
+}
+function openClientDrill(clientId){
+  const client=(officeState.clients||[]).find(item=>String(item.client_id)===String(clientId));if(!client)return;
+  const last=latestTouch(client);
+  openDrill({title:client.name,subtitle:client.source?`Source: ${client.source}`:'Client record',stats:[
+    {label:'Tier',value:client.tier||'—'},{label:'Status',value:client.status||'—'},{label:'Open value',value:money(openOpportunityValue(client)),sub:'Probability-weighted'},{label:'Last touch',value:relativeDate(last?.at),sub:last?date(last.at):'No activity recorded'}],
+    chart:clientDrillContent(client),note:client.notes||''});
+  bindOfficeForms($('#drill-body'),client.client_id);
+}
+function renderClients(){
+  const clients=officeState?.clients||[];$('#client-count').textContent=clients.length;
+  $('[data-panel="clients"]').innerHTML=pageHead('Clients','Relationships, pipeline, touches, and active engagements in one operating view.',`${clients.filter(client=>client.status==='active').length} active · ${clients.length} total`)+`
+  <article class="card client-create"><div class="card-head"><div><h3>Client directory</h3><p>Add a relationship, then use its drill-down to log activity and commercial work.</p></div><button class="action-button approve" type="button" data-office-toggle="client">Add client</button></div>${clientForm()}</article>
+  ${clients.length?`<div class="client-list">${clients.map(client=>{const last=latestTouch(client);return `<article class="kpi client-row clickable" data-client="${esc(client.client_id)}"><div class="client-identity"><div class="client-chips"><span class="chip">Tier ${esc(client.tier||'—')}</span>${officeStatusChip(client.status,'client')}</div><h3>${esc(client.name||'Unnamed client')}</h3><span>${esc(client.source||'Source not recorded')}</span></div><div class="client-measure"><small>Last touch</small><strong>${esc(relativeDate(last?.at))}</strong><span>${esc(last?date(last.at):'No activity recorded')}</span></div><div class="client-measure"><small>Open opportunity value</small><strong>${esc(money(openOpportunityValue(client)))}</strong><span>Probability-weighted pipeline</span></div></article>`}).join('')}</div>`:'<div class="empty-state client-empty"><strong>No clients yet</strong><p>Add the first client to begin tracking contacts, opportunities, touches, and engagements.</p></div>'}`;
+}
+function officeValue(form,name){return form.elements[name]?.value.trim()||null}
+function officeDate(form,name){const value=officeValue(form,name);return value?new Date(value).toISOString():null}
+async function mutateOffice(form,rpc,args,reopenClientId=null){
+  const errorBox=$('.office-form-error',form),button=$('[type="submit"]',form),original=button.textContent;errorBox.textContent='';button.disabled=true;button.textContent='Saving…';
+  try{const{data,error}=await sb.rpc(rpc,args);if(error)throw error;if(data?.ok===false)throw new Error(data.error||'The office update was not accepted.');await reloadOffice(reopenClientId)}catch(error){errorBox.textContent=`Action failed: ${error.message}`;button.disabled=false;button.textContent=original}
+}
+function submitClient(event){event.preventDefault();const form=event.currentTarget,clientId=form.dataset.clientId||null;return mutateOffice(form,'api_upsert_client',{p_client_id:clientId,p_name:officeValue(form,'name'),p_tier:officeValue(form,'tier'),p_status:officeValue(form,'status'),p_source:officeValue(form,'source'),p_notes:officeValue(form,'notes')},clientId)}
+function submitTouch(event,clientId){event.preventDefault();const form=event.currentTarget;return mutateOffice(form,'api_log_touch',{p_client_id:clientId,p_channel:officeValue(form,'channel'),p_direction:officeValue(form,'direction'),p_summary:officeValue(form,'summary'),p_followup_due:officeDate(form,'followup_due')},clientId)}
+function submitOpportunity(event,clientId){event.preventDefault();const form=event.currentTarget;return mutateOffice(form,'api_upsert_opportunity',{p_opp_id:null,p_client_id:clientId,p_title:officeValue(form,'title'),p_stage:officeValue(form,'stage'),p_value_estimate:Number(officeValue(form,'value_estimate')),p_probability:Number(officeValue(form,'probability')),p_next_action:officeValue(form,'next_action'),p_next_action_due:officeDate(form,'next_action_due'),p_owner_agent:null},clientId)}
+function submitEngagement(event,clientId){event.preventDefault();const form=event.currentTarget;return mutateOffice(form,'api_upsert_engagement',{p_engagement_id:null,p_client_id:clientId,p_scope:officeValue(form,'scope'),p_price:Number(officeValue(form,'price')),p_pricing_model:officeValue(form,'pricing_model'),p_status:officeValue(form,'status')},clientId)}
+function bindOfficeForms(scope,clientId=null){
+  if(!scope)return;
+  $$('[data-office-toggle]',scope).forEach(button=>button.onclick=()=>{$$('[data-office-form]',scope).forEach(form=>form.classList.toggle('hidden',form.dataset.officeForm!==button.dataset.officeToggle));const target=$$('[data-office-form]',scope).find(form=>form.dataset.officeForm===button.dataset.officeToggle);target?.querySelector('input,select,textarea')?.focus()});
+  $$('[data-office-cancel]',scope).forEach(button=>button.onclick=()=>button.closest('.office-form').classList.add('hidden'));
+  const client=$('[data-office-form="client"]',scope);if(client)client.onsubmit=submitClient;
+  const touch=$('[data-office-form="touch"]',scope);if(touch)touch.onsubmit=event=>submitTouch(event,clientId);
+  const opportunity=$('[data-office-form="opportunity"]',scope);if(opportunity)opportunity.onsubmit=event=>submitOpportunity(event,clientId);
+  const engagement=$('[data-office-form="engagement"]',scope);if(engagement)engagement.onsubmit=event=>submitEngagement(event,clientId);
+}
+async function reloadOffice(reopenClientId=null){const{data:office,error}=await sb.rpc('api_office_state');if(error)throw error;officeState=office||{clients:[]};renderClients();bindNavigation();if(reopenClientId)openClientDrill(reopenClientId)}
+
 /* ── Work / Agents (largely unchanged) ────────────────────────────── */
 function renderWork(){const tasks=state.continuity.tasks,live=state.operations.work||[];$('[data-panel="work"]').innerHTML=pageHead('Work queue','Durable continuity tasks and executable control-plane work in one view.',`${tasks.filter(t=>t.status==='active').length} active · ${live.length} control-plane`)+`<article class="card"><div class="card-head"><div><h3>Durable work</h3><p>Latest immutable checkpoint and evidence for every continuity task.</p></div></div><table class="queue-table"><thead><tr><th>Work item</th><th>Owner</th><th>Status</th><th>Checkpoint</th><th>Evidence</th></tr></thead><tbody>${tasks.map(task=>`<tr><td><strong>${esc(task.objective)}</strong><small>Next: ${esc(task.next_action||'Not recorded')}</small></td><td>${esc(task.owner_agent)}</td><td><span class="chip">${esc(task.status)}</span></td><td>v${task.checkpoint_version||0}<small>${date(task.checkpoint_at)}</small></td><td>${task.artifacts?.length||0} artifacts<small>${task.tests?.length||0} checks · ${task.blockers?.length||0} blockers</small></td></tr>`).join('')}</tbody></table></article><article class="card" style="margin-top:14px"><div class="card-head"><div><h3>Execution ledger</h3><p>Typed work items that can move through plan, lease, run, review, and release gates.</p></div></div>${live.length?`<table class="queue-table"><thead><tr><th>Work item</th><th>Project</th><th>Priority</th><th>State</th><th>Updated</th><th>Actions</th></tr></thead><tbody>${live.map(w=>{const running=RUN_ACTIVE.has(w.state),release=w.state===RELEASE_READY;return `<tr class="clickable" data-run="${esc(w.work_id)}" data-run-title="${esc(w.title)}"><td><strong>${esc(w.title)}</strong><small>${esc(w.description||w.work_id)}</small></td><td>${esc(w.project||'—')}</td><td>${esc(w.priority)}</td><td>${runChip(w.state,running)}</td><td>${date(w.updated_at)}</td><td><div class="work-actions">${release?`<button class="action-button approve" data-release-work="${esc(w.work_id)}" data-release-title="${esc(w.title)}">Approve release</button>`:''}<span class="run-open">${running?'Watch live':'View log'} →</span></div></td></tr>`}).join('')}</tbody></table>`:'<div class="empty-state"><strong>No executable work yet</strong><p>Continuity tracking remains available above.</p></div>'}</article>`}
 
@@ -381,8 +465,10 @@ function bindNavigation(){
   $$('[data-week]').forEach(el=>el.onclick=()=>drillWeek(el.dataset.week));
   $$('[data-metric]').forEach(el=>el.onclick=()=>drillMetric(el.dataset.metric));
   $$('[data-run]').forEach(el=>el.onclick=()=>openRunView(el.dataset.run,el.dataset.runTitle));
+  $$('[data-client]').forEach(el=>el.onclick=()=>openClientDrill(el.dataset.client));
   $$('[data-mode]').forEach(el=>el.onclick=()=>{usageMode=el.dataset.mode;renderUsage();bindNavigation()});
   $$('[data-drill]').forEach(el=>el.onclick=()=>{const d=el.dataset.drill;if(d==='cost')drillCost();else if(d==='tokens')drillTokens();else if(d==='work-tab')activate('work');else if(d==='approvals-tab')activate('approvals')});
+  bindOfficeForms($('[data-panel="clients"]'));
   $('#drill-backdrop').onclick=closeDrill;
 }
 function activate(tab,updateHash=true){if(!$(`[data-panel="${tab}"]`))return;closeDrill();$$('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));$$('[data-panel]').forEach(p=>p.classList.toggle('active',p.dataset.panel===tab));if(updateHash)history.replaceState(null,'',`#${tab}`);window.scrollTo({top:0,behavior:'smooth'})}
@@ -391,9 +477,9 @@ function render(){
   $('#loading').style.display='none';$('#updated-at').textContent=date(state.generated_at);$('#work-count').textContent=state.overview.active_work;$('#approval-count').textContent=state.overview.pending_review+state.overview.pending_approvals+releaseReadyWork().length;$('#metric-count').textContent=state.metrics.filter(m=>m.status==='needs_attention').length;
   const h1=$('.welcome h1');if(h1)h1.textContent=`${greeting()}, Carter.`;
   const connected=state.control_plane.local_runner==='connected';$('#runner-pill').classList.toggle('connected',connected);$('#runner-pill').innerHTML=`<i></i> ${connected?'Local runner connected':'Local runner offline'}`;
-  renderOverview();renderMetrics();renderWork();renderAgents();renderUsage();renderApprovals();renderSystem();bindNavigation();activate(location.hash.slice(1)||'overview',false);
+  renderOverview();renderClients();renderMetrics();renderWork();renderAgents();renderUsage();renderApprovals();renderSystem();bindNavigation();activate(location.hash.slice(1)||'overview',false);
 }
-async function load(){const[dashboard,quality]=await Promise.all([sb.rpc('api_dashboard_state'),sb.rpc('api_quality_state')]);if(dashboard.error)throw dashboard.error;if(quality.error)throw quality.error;state={...dashboard.data,quality:quality.data||{reviews:[],contracts:[],skill_summary:{},skill_weekly:[]}};render()}
+async function load(){const[dashboard,quality,officeResult]=await Promise.all([sb.rpc('api_dashboard_state'),sb.rpc('api_quality_state'),sb.rpc('api_office_state')]);const{data:office,error:officeError}=officeResult;if(dashboard.error)throw dashboard.error;if(quality.error)throw quality.error;if(officeError)throw officeError;officeState=office||{clients:[]};state={...dashboard.data,quality:quality.data||{reviews:[],contracts:[],skill_summary:{},skill_weekly:[]}};render()}
 async function decideApproval(id,approved,startProvider='claude'){const model=startProvider==='codex'?'Codex':'Claude';if(!confirm(`${approved?`Approve this plan and start with ${model}? Its job is queued for the runner immediately.`:'Reject this execution gate?'}`))return;const{error}=await sb.rpc('api_decide_approval',{p_approval_id:id,p_approved:approved,p_note:`Decided from CS Ventures control dashboard${approved?`; start model: ${model}`:''}`,p_start_provider:startProvider});if(error){alert(`Action failed: ${error.message}`);return}await load()}
 async function approveRelease(workId,title,button){if(!confirm(`Approve release for "${title||workId}"?\n\nThis records your acceptance and marks the work completed. It will not rerun an agent, merge a pull request, or deploy code.`))return;const original=button?.textContent;if(button){button.disabled=true;button.textContent='Approving…'}const{error}=await sb.rpc('api_release',{p_work_id:workId,p_note:'Release approved from CS Ventures control dashboard'});if(error){if(button){button.disabled=false;button.textContent=original}alert(`Release failed: ${error.message}`);return}await load()}
 async function decideRecommendation(id,action){const msg=action==='accept'?'Turn this recommendation into a work item? You will still approve its plan before anything runs.':'Dismiss this recommendation?';if(!confirm(msg))return;const{data,error}=await sb.rpc('api_decide_recommendation',{p_recommendation_id:id,p_action:action,p_note:'Decided from CS Ventures control dashboard'});if(error){alert(`Action failed: ${error.message}`);return}if(action==='accept'&&data?.work_id)console.log('created',data.work_id);await load()}

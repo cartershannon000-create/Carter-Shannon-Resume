@@ -64,6 +64,7 @@
         </div>
         <nav class="tabs" aria-label="Dashboard sections">
           <button class="active" data-tab="overview">Overview</button>
+          <button data-tab="clients">Clients <b id="client-count">—</b></button>
           <button data-tab="metrics">Metrics <b id="metric-count">—</b></button>
           <button data-tab="work">Work Queue <b id="work-count">—</b></button>
           <button data-tab="agents">Agents</button>
@@ -77,6 +78,7 @@
     <main class="dashboard">
       <div id="loading" class="loading">Loading the operating view from Supabase…</div>
       <section class="tab-panel active" data-panel="overview"></section>
+      <section class="tab-panel" data-panel="clients"></section>
       <section class="tab-panel" data-panel="metrics"></section>
       <section class="tab-panel" data-panel="work"></section>
       <section class="tab-panel" data-panel="agents"></section>
