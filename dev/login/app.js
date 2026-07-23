@@ -16,6 +16,9 @@ let state,officeState={clients:[]},agentGraph={agents:[],edges:[],recent_runs:[]
 const APP_TABS={client:['clients','finances'],system:['overview','metrics','work','agents','usage','approvals','system']};
 const APP_DEFAULT={client:'clients',system:'overview'};
 const LEGACY_TABS={clients:['client','clients'],money:['client','finances'],finances:['client','finances'],overview:['system','overview'],metrics:['system','metrics'],work:['system','work'],agents:['system','agents'],usage:['system','usage'],approvals:['system','approvals'],system:['system','system']};
+const DRILL_LAYOUT_KEY='cos.drillLayout',DRILL_LAYOUTS=new Set(['side','below','popout']);
+let drillLayout=(()=>{try{const saved=localStorage.getItem(DRILL_LAYOUT_KEY);return DRILL_LAYOUTS.has(saved)?saved:'side'}catch{return 'side'}})();
+let clientView={tier:'',status:'',search:'',sort:'name'};
 
 function pageHead(title,detail,right=''){return `<div class="page-head"><div><h2>${esc(title)}</h2><p>${esc(detail)}</p></div>${right?`<span class="quiet">${esc(right)}</span>`:''}</div>`}
 function provider(name){return state.audit.providers.find(item=>item.provider===name)||{};}
@@ -45,10 +48,23 @@ function metricInsight(metric){const guide=metricGuide(metric);if(!metric.availa
 function explainerCard(title,definition,numerator,denominator,relevance){return `<article class="explain-card"><h3>${esc(title)}</h3><p>${esc(definition)}</p><dl><div><dt>Numerator</dt><dd>${esc(numerator)}</dd></div><div><dt>Denominator</dt><dd>${esc(denominator)}</dd></div></dl><div class="insight-box"><strong>Why it matters</strong><span>${esc(relevance)}</span></div></article>`}
 
 /* ── Drill-down panel ─────────────────────────────────────────────── */
+function drillHeader(title,subtitle=''){return `<header class="drill-head"><div class="drill-heading"><h3 id="drill-title">${esc(title)}</h3>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div><div class="drill-actions"><div class="drill-layout" role="group" aria-label="Drill-down layout">${[['side','Side'],['below','Below'],['popout','Popout']].map(([mode,label])=>`<button type="button" data-drill-layout="${mode}" aria-pressed="${drillLayout===mode}" title="Open ${label.toLowerCase()}">${label}</button>`).join('')}</div><button id="drill-close" type="button" aria-label="Close drill-down">✕</button></div></header>`}
+function syncDrillLayout(persist=false){
+  const drill=$('#drill'),backdrop=$('#drill-backdrop');if(!drill||!backdrop)return;
+  if(drillLayout==='below')$('.dashboard').append(drill);else $('#app').append(drill);
+  drill.dataset.layout=drillLayout;drill.setAttribute('aria-labelledby','drill-title');
+  if(drillLayout==='popout')drill.setAttribute('role','dialog');else drill.removeAttribute('role');
+  $$('[data-drill-layout]',drill).forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.drillLayout===drillLayout)));
+  backdrop.classList.toggle('open',drill.classList.contains('open')&&drillLayout!=='below');
+  if(persist)try{localStorage.setItem(DRILL_LAYOUT_KEY,drillLayout)}catch{}
+}
+function setDrillLayout(mode){if(!DRILL_LAYOUTS.has(mode))return;drillLayout=mode;syncDrillLayout(true);if(mode==='below'&&$('#drill').classList.contains('open'))$('#drill').scrollIntoView({behavior:'smooth',block:'start'})}
+function bindDrillControls(){$('#drill-close').onclick=closeDrill;$$('[data-drill-layout]',$('#drill')).forEach(button=>button.onclick=()=>setDrillLayout(button.dataset.drillLayout))}
+function showDrill(){$('#drill').classList.add('open');syncDrillLayout();bindDrillControls()}
 function openDrill({title,subtitle='',stats=[],rows=[],rowsTitle='',note='',chart=''}){
   const max=Math.max(...rows.map(r=>Number(r.pctOf??0)),1);
   $('#drill-body').innerHTML=`
-    <header class="drill-head"><div><h3>${esc(title)}</h3>${subtitle?`<p>${esc(subtitle)}</p>`:''}</div><button id="drill-close" aria-label="Close">✕</button></header>
+    ${drillHeader(title,subtitle)}
     ${stats.length?`<div class="drill-stats">${stats.map(s=>`<div><small>${esc(s.label)}</small><strong>${esc(s.value)}</strong>${s.sub?`<span>${esc(s.sub)}</span>`:''}</div>`).join('')}</div>`:''}
     ${chart}
     ${rows.length?`<div class="drill-rows">${rowsTitle?`<h4>${esc(rowsTitle)}</h4>`:''}${rows.map(r=>`
@@ -56,8 +72,7 @@ function openDrill({title,subtitle='',stats=[],rows=[],rowsTitle='',note='',char
       ${r.sub?`<p>${esc(r.sub)}</p>`:''}
       ${r.pctOf!=null?`<div class="bar"><i style="width:${percent(Number(r.pctOf),max)}%;background:${r.color||'var(--green)'}"></i></div>`:''}</div>`).join('')}</div>`:''}
     ${note?`<div class="notice">${esc(note)}</div>`:''}`;
-  $('#drill').classList.add('open');$('#drill-backdrop').classList.add('open');
-  $('#drill-close').onclick=closeDrill;
+  showDrill();
 }
 function closeDrill(){stopRunPoll();$('#drill').classList.remove('open');$('#drill-backdrop').classList.remove('open')}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrill()});
@@ -79,10 +94,9 @@ function stepRow(p){const tag=p.kind==='tool'?'code':'p';return `<div class="run
 function openRunView(workId,title){
   stopRunPoll();
   $('#drill-body').innerHTML=`
-    <header class="drill-head"><div><h3>${esc(title||'Run')}</h3><p class="run-meta" id="run-meta">Loading run…</p></div><button id="drill-close" aria-label="Close">✕</button></header>
+    ${drillHeader(title||'Run','')}<p class="run-meta" id="run-meta">Loading run…</p>
     <div class="run-log" id="run-log"><div class="empty-state"><strong>Fetching step log…</strong></div></div>`;
-  $('#drill').classList.add('open');$('#drill-backdrop').classList.add('open');
-  $('#drill-close').onclick=closeDrill;
+  showDrill();
   runPoll={timer:null,workId,seq:0};
   pollRun(workId);
 }
@@ -318,6 +332,12 @@ function clientForm(client=null){
     <label class="office-form-wide">Notes<textarea name="notes" rows="3">${esc(client?.notes||'')}</textarea></label>
   </div><div class="office-form-actions action-buttons"><button class="action-button approve" type="submit">${editing?'Save client':'Add client'}</button><button class="action-button reject" type="button" data-office-cancel>Cancel</button></div><div class="office-form-error" role="alert"></div></form>`;
 }
+function contactForm(contact=null){const target=contact?.contact_id||'new';return `<form class="office-form hidden contact-form" data-office-form="contact" data-office-target="${esc(target)}" data-contact-id="${esc(contact?.contact_id||'')}"><div class="office-form-grid">
+  <label>Name<input name="name" value="${esc(contact?.name||'')}" autocomplete="name" required></label><label>Role<input name="role" value="${esc(contact?.role||'')}"></label>
+  <label>Email<input name="email" type="email" value="${esc(contact?.email||'')}" autocomplete="email"></label><label>Phone<input name="phone" type="tel" value="${esc(contact?.phone||'')}" autocomplete="tel"></label>
+  <label class="office-form-wide">LinkedIn<input name="linkedin" value="${esc(contact?.linkedin||'')}" placeholder="linkedin.com/in/name"></label><label class="office-form-wide">Address<input name="address" value="${esc(contact?.address||'')}" autocomplete="street-address"></label>
+  <label>City<input name="city" value="${esc(contact?.city||'')}" autocomplete="address-level2"></label><label>State<input name="state" value="${esc(contact?.state||'')}" autocomplete="address-level1"></label>
+  </div><div class="office-form-actions action-buttons"><button class="action-button approve" type="submit">${contact?'Save contact':'Add contact'}</button><button class="action-button reject" type="button" data-office-cancel>Cancel</button></div><div class="office-form-error" role="alert"></div></form>`}
 function touchForm(){return `<form class="office-form hidden" data-office-form="touch"><div class="office-form-grid">
   <label>Channel<input name="channel" placeholder="Email, call, meeting…" required></label><label>Direction<select name="direction"><option value="outbound">Outbound</option><option value="inbound">Inbound</option></select></label>
   <label class="office-form-wide">Summary<textarea name="summary" rows="3" required></textarea></label><label>Follow-up due<input name="followup_due" type="datetime-local"></label>
@@ -332,12 +352,20 @@ function engagementForm(){return `<form class="office-form hidden" data-office-f
   <label>Pricing model<input name="pricing_model" placeholder="Fixed, hourly, retainer…" required></label><label>Status<input name="status" value="active" required></label>
   </div><div class="office-form-actions action-buttons"><button class="action-button approve" type="submit">Add engagement</button><button class="action-button reject" type="button" data-office-cancel>Cancel</button></div><div class="office-form-error" role="alert"></div></form>`}
 function officeRows(title,rows,emptyLabel){return `<div class="drill-section"><h4>${esc(title)}</h4>${rows.length?`<div class="drill-rows">${rows.map(row=>`<div class="drill-row"><div class="drill-row-top"><strong>${esc(row.label)}</strong>${row.chip?officeStatusChip(row.chip,row.kind):`<span>${esc(row.value||'')}</span>`}</div>${row.sub?`<p>${esc(row.sub)}</p>`:''}</div>`).join('')}</div>`:`<div class="empty-state"><strong>${esc(emptyLabel)}</strong></div>`}</div>`}
+function externalContactUrl(value){if(!value)return '';try{const raw=String(value).trim(),url=new URL(/^[a-z][a-z0-9+.-]*:/i.test(raw)?raw:`https://${raw}`);return ['http:','https:'].includes(url.protocol)?url.href:''}catch{return ''}}
+function contactCard(contact){
+  const name=contact.name||contact.email||'Unnamed contact',linkedin=externalContactUrl(contact.linkedin),location=[contact.address,[contact.city,contact.state].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
+  return `<article class="drill-row contact-row"><div class="drill-row-top"><div><strong>${esc(name)}</strong><span>${esc(contact.role||'Contact')}</span></div><div class="contact-actions"><button class="link-button" type="button" data-office-toggle="contact" data-office-target="${esc(contact.contact_id)}">Edit</button><button class="link-button contact-delete" type="button" data-delete-contact="${esc(contact.contact_id)}">Delete</button></div></div><div class="contact-links">${contact.phone?`<a href="tel:${esc(contact.phone)}">${esc(contact.phone)}</a>`:''}${contact.email?`<a href="mailto:${esc(contact.email)}">${esc(contact.email)}</a>`:''}${linkedin?`<a href="${esc(linkedin)}" target="_blank" rel="noreferrer noopener">LinkedIn ↗</a>`:''}</div>${location?`<p>${esc(location)}</p>`:''}${contactForm(contact)}</article>`;
+}
+function contactSection(client){
+  const contacts=client.contacts||[],atCap=contacts.length>=10;
+  return `<div class="drill-section contact-section"><div class="drill-section-head"><h4>Contacts · ${contacts.length}/10</h4><button class="action-button approve" type="button" data-office-toggle="contact" data-office-target="new"${atCap?' title="The server will verify whether another contact can be added"':''}>Add contact</button></div>${atCap?'<p class="contact-cap">Maximum 10 contacts shown. You can still try to add one; the server will confirm the current limit.</p>':''}${contacts.length?`<div class="drill-rows">${contacts.map(contactCard).join('')}</div>`:'<div class="empty-state"><strong>No contacts recorded</strong></div>'}${contactForm()}</div>`;
+}
 function clientDrillContent(client){
-  const contacts=(client.contacts||[]).map(contact=>({label:contact.name||contact.email||'Unnamed contact',value:contact.role||'Contact',sub:[contact.email,contact.phone].filter(Boolean).join(' · ')}));
   const opportunities=(client.opportunities||[]).map(opp=>({label:opp.title||'Untitled opportunity',chip:opp.stage,kind:'opportunity',sub:[`${money(opp.value_estimate)} estimated`,`${Math.round(Number(opp.probability||0)*100)}% probability`,opp.next_action?`Next: ${opp.next_action}`:'',opp.next_action_due?`due ${dateOnly(opp.next_action_due)}`:''].filter(Boolean).join(' · ')}));
   const touches=(client.touches||[]).slice().sort((a,b)=>new Date(b.at)-new Date(a.at)).map(touch=>({label:[touch.channel,touch.direction].filter(Boolean).join(' · ')||'Touch',value:date(touch.at),sub:[touch.summary,touch.followup_due?`Follow up ${dateOnly(touch.followup_due)}`:''].filter(Boolean).join(' · ')}));
   const engagements=(client.engagements||[]).map(engagement=>({label:engagement.scope||'Engagement',chip:engagement.status,kind:'engagement',sub:[money(engagement.price),engagement.pricing_model].filter(Boolean).join(' · ')}));
-  return `${officeRows('Contacts',contacts,'No contacts recorded')}${officeRows('Opportunities',opportunities,'No opportunities recorded')}${officeRows('Touches',touches,'No touches recorded')}${officeRows('Engagements',engagements,'No engagements recorded')}
+  return `${contactSection(client)}${officeRows('Opportunities',opportunities,'No opportunities recorded')}${officeRows('Touches',touches,'No touches recorded')}${officeRows('Engagements',engagements,'No engagements recorded')}
   <div class="drill-section client-update"><h4>Update client</h4><div class="action-buttons"><button class="action-button approve" type="button" data-office-toggle="touch">Log touch</button><button class="action-button approve" type="button" data-office-toggle="opportunity">Add opportunity</button><button class="action-button approve" type="button" data-office-toggle="engagement">Add engagement</button><button class="link-button" type="button" data-office-toggle="client">Edit details</button></div>${touchForm()}${opportunityForm()}${engagementForm()}${clientForm(client)}</div>`;
 }
 function openClientDrill(clientId){
@@ -348,11 +376,33 @@ function openClientDrill(clientId){
     chart:clientDrillContent(client),note:client.notes||''});
   bindOfficeForms($('#drill-body'),client.client_id);
 }
+function visibleClientGroups(){
+  const search=clientView.search.trim().toLowerCase(),matches=client=>(!clientView.tier||client.tier===clientView.tier)&&(!clientView.status||client.status===clientView.status)&&(!search||String(client.name||'').toLowerCase().includes(search)),all=officeState?.clients||[];
+  const pinned=all.filter(client=>client.starred).filter(matches).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''))),rest=all.filter(client=>!client.starred).filter(matches);
+  const tiers={A:0,B:1,C:2};rest.sort((a,b)=>clientView.sort==='tier'?(tiers[a.tier]??3)-(tiers[b.tier]??3)||String(a.name||'').localeCompare(String(b.name||'')):clientView.sort==='value'?openOpportunityValue(b)-openOpportunityValue(a)||String(a.name||'').localeCompare(String(b.name||'')):String(a.name||'').localeCompare(String(b.name||'')));
+  return {pinned,rest};
+}
+function visibleClients(){const{pinned,rest}=visibleClientGroups();return [...pinned,...rest]}
+function clientCard(client){
+  const last=latestTouch(client),name=client.name||'Unnamed client';
+  return `<article class="kpi client-row clickable" data-client="${esc(client.client_id)}"><button class="client-star" type="button" data-client-star="${esc(client.client_id)}" data-starred="${client.starred?'true':'false'}" aria-label="${client.starred?'Unpin':'Pin'} ${esc(name)}" aria-pressed="${client.starred?'true':'false'}" title="${client.starred?'Remove from Pinned':'Add to Pinned'}">${client.starred?'★':'☆'}</button><div class="client-identity"><div class="client-chips"><span class="chip">Tier ${esc(client.tier||'—')}</span>${officeStatusChip(client.status,'client')}</div><h3>${esc(name)}</h3><span>${esc(client.source||'Source not recorded')}</span></div><div class="client-measure"><small>Last touch</small><strong>${esc(relativeDate(last?.at))}</strong><span>${esc(last?date(last.at):'No activity recorded')}</span></div><div class="client-measure"><small>Open opportunity value</small><strong>${esc(money(openOpportunityValue(client)))}</strong><span>Probability-weighted pipeline</span></div></article>`;
+}
+function clientSection(title,clients){return clients.length?`<section class="client-section"><h3>${esc(title)}</h3><div class="client-list">${clients.map(clientCard).join('')}</div></section>`:''}
+function clientResultsMarkup(){
+  const all=officeState?.clients||[],{pinned,rest}=visibleClientGroups();if(!pinned.length&&!rest.length)return all.length?'<div class="empty-state client-empty"><strong>No clients match</strong><p>Adjust the search, tier, or status filters to see more relationships.</p></div>':'<div class="empty-state client-empty"><strong>No clients yet</strong><p>Add the first client to begin tracking contacts, opportunities, touches, and engagements.</p></div>';
+  return `${clientSection('Pinned',pinned)}${clientSection(pinned.length?'Clients':'All clients',rest)}`;
+}
+function bindClientCards(scope=document){
+  $$('[data-client]',scope).forEach(el=>el.onclick=()=>openClientDrill(el.dataset.client));
+  $$('[data-client-star]',scope).forEach(button=>button.onclick=event=>setClientStar(event,button.dataset.clientStar,button.dataset.starred!=='true',button));
+}
+function renderClientResults(){const results=$('#client-results');if(!results)return;const clients=visibleClients();results.innerHTML=clientResultsMarkup();const count=$('#client-result-count');if(count)count.textContent=`${clients.length} shown`;bindClientCards(results)}
 function renderClients(){
   const clients=officeState?.clients||[];$('#client-count').textContent=clients.length;
   $('[data-panel="clients"]').innerHTML=pageHead('Clients','Relationships, pipeline, touches, and active engagements in one operating view.',`${clients.filter(client=>client.status==='active').length} active · ${clients.length} total`)+`
   <article class="card client-create"><div class="card-head"><div><h3>Client directory</h3><p>Add a relationship, then use its drill-down to log activity and commercial work.</p></div><button class="action-button approve" type="button" data-office-toggle="client">Add client</button></div>${clientForm()}</article>
-  ${clients.length?`<div class="client-list">${clients.map(client=>{const last=latestTouch(client);return `<article class="kpi client-row clickable" data-client="${esc(client.client_id)}"><div class="client-identity"><div class="client-chips"><span class="chip">Tier ${esc(client.tier||'—')}</span>${officeStatusChip(client.status,'client')}</div><h3>${esc(client.name||'Unnamed client')}</h3><span>${esc(client.source||'Source not recorded')}</span></div><div class="client-measure"><small>Last touch</small><strong>${esc(relativeDate(last?.at))}</strong><span>${esc(last?date(last.at):'No activity recorded')}</span></div><div class="client-measure"><small>Open opportunity value</small><strong>${esc(money(openOpportunityValue(client)))}</strong><span>Probability-weighted pipeline</span></div></article>`}).join('')}</div>`:'<div class="empty-state client-empty"><strong>No clients yet</strong><p>Add the first client to begin tracking contacts, opportunities, touches, and engagements.</p></div>'}`;
+  <div class="card client-controls"><div class="client-filter-grid"><label>Search<input type="search" data-client-filter="search" value="${esc(clientView.search)}" placeholder="Client name"></label><label>Tier<select data-client-filter="tier"><option value="">All tiers</option><option value="A"${clientView.tier==='A'?' selected':''}>Tier A</option><option value="B"${clientView.tier==='B'?' selected':''}>Tier B</option><option value="C"${clientView.tier==='C'?' selected':''}>Tier C</option></select></label><label>Status<select data-client-filter="status"><option value="">All statuses</option><option value="lead"${clientView.status==='lead'?' selected':''}>Lead</option><option value="active"${clientView.status==='active'?' selected':''}>Active</option><option value="dormant"${clientView.status==='dormant'?' selected':''}>Dormant</option><option value="lost"${clientView.status==='lost'?' selected':''}>Lost</option></select></label><label>Sort by<select data-client-filter="sort"><option value="name"${clientView.sort==='name'?' selected':''}>Name</option><option value="tier"${clientView.sort==='tier'?' selected':''}>Tier</option><option value="value"${clientView.sort==='value'?' selected':''}>Open value (high to low)</option></select></label></div><span class="quiet" id="client-result-count">${visibleClients().length} shown</span></div>
+  <div id="client-results">${clientResultsMarkup()}</div>`;
 }
 function officeValue(form,name){return form.elements[name]?.value.trim()||null}
 function officeDate(form,name){const value=officeValue(form,name);return value?new Date(value).toISOString():null}
@@ -361,6 +411,7 @@ async function mutateOffice(form,rpc,args,reopenClientId=null){
   try{const{data,error}=await sb.rpc(rpc,args);if(error)throw error;if(data?.ok===false)throw new Error(data.error||'The office update was not accepted.');await reloadOffice(reopenClientId)}catch(error){errorBox.textContent=`Action failed: ${error.message}`;button.disabled=false;button.textContent=original}
 }
 function submitClient(event){event.preventDefault();const form=event.currentTarget,clientId=form.dataset.clientId||null;return mutateOffice(form,'api_upsert_client',{p_client_id:clientId,p_name:officeValue(form,'name'),p_tier:officeValue(form,'tier'),p_status:officeValue(form,'status'),p_source:officeValue(form,'source'),p_notes:officeValue(form,'notes')},clientId)}
+function submitContact(event,clientId){event.preventDefault();const form=event.currentTarget;return mutateOffice(form,'api_upsert_contact',{p_contact_id:form.dataset.contactId||null,p_client_id:clientId,p_name:officeValue(form,'name'),p_email:officeValue(form,'email'),p_phone:officeValue(form,'phone'),p_role:officeValue(form,'role'),p_linkedin:officeValue(form,'linkedin'),p_address:officeValue(form,'address'),p_city:officeValue(form,'city'),p_state:officeValue(form,'state')},clientId)}
 function submitTouch(event,clientId){event.preventDefault();const form=event.currentTarget;return mutateOffice(form,'api_log_touch',{p_client_id:clientId,p_channel:officeValue(form,'channel'),p_direction:officeValue(form,'direction'),p_summary:officeValue(form,'summary'),p_followup_due:officeDate(form,'followup_due')},clientId)}
 function submitOpportunity(event,clientId){event.preventDefault();const form=event.currentTarget;return mutateOffice(form,'api_upsert_opportunity',{p_opp_id:null,p_client_id:clientId,p_title:officeValue(form,'title'),p_stage:officeValue(form,'stage'),p_value_estimate:Number(officeValue(form,'value_estimate')),p_probability:Number(officeValue(form,'probability')),p_next_action:officeValue(form,'next_action'),p_next_action_due:officeDate(form,'next_action_due'),p_owner_agent:null},clientId)}
 function submitEngagement(event,clientId){event.preventDefault();const form=event.currentTarget;return mutateOffice(form,'api_upsert_engagement',{p_engagement_id:null,p_client_id:clientId,p_scope:officeValue(form,'scope'),p_price:Number(officeValue(form,'price')),p_pricing_model:officeValue(form,'pricing_model'),p_status:officeValue(form,'status')},clientId)}
@@ -371,11 +422,21 @@ function markInvoicePaid(event){
   const form=event.currentTarget,invoice=(officeState.invoices||[]).find(item=>String(item.invoice_id)===form.dataset.invoiceId);if(!invoice)return;
   return mutateOffice(form,'api_upsert_invoice',{p_invoice_id:invoice.invoice_id,p_engagement_id:invoice.engagement_id,p_amount:Number(invoice.amount||0),p_issued_at:invoice.issued_at,p_due_at:invoice.due_at,p_paid_at:new Date().toISOString(),p_status:'paid'});
 }
+async function deleteContact(event,contactId,clientId){
+  event.preventDefault();if(!confirm('Delete this contact?'))return;const button=event.currentTarget;button.disabled=true;
+  try{const{data,error}=await sb.rpc('api_delete_contact',{p_contact_id:contactId});if(error)throw error;if(data?.ok===false)throw new Error(data.error||'The contact could not be deleted.');await reloadOffice(clientId)}catch(error){button.disabled=false;alert(`Action failed: ${error.message}`)}
+}
+async function setClientStar(event,clientId,starred,button){
+  event.preventDefault();event.stopPropagation();button.disabled=true;
+  try{const{data,error}=await sb.rpc('api_set_client_star',{p_client_id:clientId,p_starred:starred});if(error)throw error;if(data?.ok===false)throw new Error(data.error||'The client pin could not be updated.');await reloadOffice()}catch(error){button.disabled=false;alert(`Action failed: ${error.message}`)}
+}
 function bindOfficeForms(scope,clientId=null){
   if(!scope)return;
-  $$('[data-office-toggle]',scope).forEach(button=>button.onclick=()=>{$$('[data-office-form]',scope).forEach(form=>form.classList.toggle('hidden',form.dataset.officeForm!==button.dataset.officeToggle));const target=$$('[data-office-form]',scope).find(form=>form.dataset.officeForm===button.dataset.officeToggle);target?.querySelector('input,select,textarea')?.focus()});
+  $$('[data-office-toggle]',scope).forEach(button=>button.onclick=()=>{$$('[data-office-form]',scope).forEach(form=>form.classList.toggle('hidden',form.dataset.officeForm!==button.dataset.officeToggle||(button.dataset.officeTarget&&form.dataset.officeTarget!==button.dataset.officeTarget)));const target=$$('[data-office-form]',scope).find(form=>form.dataset.officeForm===button.dataset.officeToggle&&(!button.dataset.officeTarget||form.dataset.officeTarget===button.dataset.officeTarget));target?.querySelector('input,select,textarea')?.focus()});
   $$('[data-office-cancel]',scope).forEach(button=>button.onclick=()=>button.closest('.office-form').classList.add('hidden'));
   const client=$('[data-office-form="client"]',scope);if(client)client.onsubmit=submitClient;
+  $$('[data-office-form="contact"]',scope).forEach(contact=>contact.onsubmit=event=>submitContact(event,clientId));
+  $$('[data-delete-contact]',scope).forEach(button=>button.onclick=event=>deleteContact(event,button.dataset.deleteContact,clientId));
   const touch=$('[data-office-form="touch"]',scope);if(touch)touch.onsubmit=event=>submitTouch(event,clientId);
   const opportunity=$('[data-office-form="opportunity"]',scope);if(opportunity)opportunity.onsubmit=event=>submitOpportunity(event,clientId);
   const engagement=$('[data-office-form="engagement"]',scope);if(engagement)engagement.onsubmit=event=>submitEngagement(event,clientId);
@@ -569,7 +630,8 @@ function bindNavigation(){
   $$('[data-week]').forEach(el=>el.onclick=()=>drillWeek(el.dataset.week));
   $$('[data-metric]').forEach(el=>el.onclick=()=>drillMetric(el.dataset.metric));
   $$('[data-run]').forEach(el=>el.onclick=()=>openRunView(el.dataset.run,el.dataset.runTitle));
-  $$('[data-client]').forEach(el=>el.onclick=()=>openClientDrill(el.dataset.client));
+  bindClientCards();
+  $$('[data-client-filter]').forEach(control=>control.oninput=()=>{clientView[control.dataset.clientFilter]=control.value;renderClientResults()});
   $$('[data-agent]').forEach(el=>el.onclick=()=>openAgentDrill(el.dataset.agent));
   $$('[data-mode]').forEach(el=>el.onclick=()=>{usageMode=el.dataset.mode;renderUsage();bindNavigation()});
   $$('[data-drill]').forEach(el=>el.onclick=()=>{const d=el.dataset.drill;if(d==='cost')drillCost();else if(d==='tokens')drillTokens();else if(d==='work-tab')activate('work');else if(d==='approvals-tab')activate('approvals')});
