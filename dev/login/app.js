@@ -13,6 +13,9 @@ const dateOnly=v=>{if(!v)return 'Not available';const s=String(v).slice(0,10);co
 const duration=s=>{if(s==null)return '—';s=Number(s);if(s<90)return `${Math.round(s)}s`;if(s<5400)return `${(s/60).toFixed(0)} min`;if(s<172800)return `${(s/3600).toFixed(1)} h`;return `${(s/86400).toFixed(1)} d`};
 const PCOLOR={claude:'var(--green)',codex:'var(--blue)'};
 let state,officeState={clients:[]},agentGraph={agents:[],edges:[],recent_runs:[]};
+const APP_TABS={client:['clients','finances'],system:['overview','metrics','work','agents','usage','approvals','system']};
+const APP_DEFAULT={client:'clients',system:'overview'};
+const LEGACY_TABS={clients:['client','clients'],money:['client','finances'],finances:['client','finances'],overview:['system','overview'],metrics:['system','metrics'],work:['system','work'],agents:['system','agents'],usage:['system','usage'],approvals:['system','approvals'],system:['system','system']};
 
 function pageHead(title,detail,right=''){return `<div class="page-head"><div><h2>${esc(title)}</h2><p>${esc(detail)}</p></div>${right?`<span class="quiet">${esc(right)}</span>`:''}</div>`}
 function provider(name){return state.audit.providers.find(item=>item.provider===name)||{};}
@@ -380,10 +383,10 @@ function bindOfficeForms(scope,clientId=null){
   const expense=$('[data-office-form="expense"]',scope);if(expense)expense.onsubmit=submitExpense;
   $$('[data-mark-paid]',scope).forEach(form=>form.onsubmit=markInvoicePaid);
 }
-async function reloadOffice(reopenClientId=null){const{data:office,error}=await sb.rpc('api_office_state');if(error)throw error;officeState=office||{clients:[]};renderClients();renderMoney();bindNavigation();if(reopenClientId)openClientDrill(reopenClientId)}
+async function reloadOffice(reopenClientId=null){const{data:office,error}=await sb.rpc('api_office_state');if(error)throw error;officeState=office||{clients:[]};renderClients();renderFinances();bindNavigation();if(reopenClientId)openClientDrill(reopenClientId)}
 
-/* ── Money ────────────────────────────────────────────────────────── */
-function moneyEngagements(){return (officeState.clients||[]).flatMap(client=>(client.engagements||[]).map(engagement=>({...engagement,clientName:client.name||''})))}
+/* ── Finances ─────────────────────────────────────────────────────── */
+function financeEngagements(){return (officeState.clients||[]).flatMap(client=>(client.engagements||[]).map(engagement=>({...engagement,clientName:client.name||''})))}
 function invoiceForm(engagements){
   const today=new Date().toISOString().slice(0,10);
   return `<form class="office-form hidden" data-office-form="invoice"><div class="office-form-grid">
@@ -400,12 +403,12 @@ function expenseForm(){
     <label class="office-form-wide">Memo<textarea name="memo" rows="3"></textarea></label>
   </div><div class="office-form-actions action-buttons"><button class="action-button approve" type="submit">Log expense</button><button class="action-button reject" type="button" data-office-cancel>Cancel</button></div><div class="office-form-error" role="alert"></div></form>`;
 }
-function renderMoney(){
-  const invoices=officeState.invoices||[],expenses=officeState.expenses||[],rollups=officeState.rollups||{},engagements=moneyEngagements();
+function renderFinances(){
+  const invoices=officeState.invoices||[],expenses=officeState.expenses||[],rollups=officeState.rollups||{},engagements=financeEngagements();
   const engagementById=new Map(engagements.map(item=>[String(item.engagement_id),item]));
   const month=rollups.month_start?`Month starting ${dateOnly(rollups.month_start)}`:'Current month';
   const margins=rollups.engagement_margins||[];
-  $('[data-panel="money"]').innerHTML=pageHead('Money','Invoices, collections, engagement margins, and operating expenses in one view.',month)+`
+  $('[data-panel="finances"]').innerHTML=pageHead('Finances','Invoices, collections, engagement margins, and operating expenses in one view.',month)+`
   <div class="kpi-grid">
     <article class="kpi"><div class="kpi-top">Billed <i></i></div><strong>${money(rollups.month_billed)}</strong><span>${esc(month)}</span></article>
     <article class="kpi"><div class="kpi-top">Collected <i></i></div><strong>${money(rollups.month_collected)}</strong><span>${esc(month)}</span></article>
@@ -554,6 +557,7 @@ function renderSystem(){const connected=state.control_plane.local_runner==='conn
 
 /* ── Navigation / interactivity ───────────────────────────────────── */
 function bindNavigation(){
+  $$('[data-app-link]').forEach(button=>button.onclick=()=>selectApp(button.dataset.appLink));
   $$('[data-tab]').forEach(button=>button.onclick=()=>activate(button.dataset.tab));
   $$('[data-go]').forEach(button=>button.onclick=()=>activate(button.dataset.go));
   $$('[data-approval]').forEach(button=>button.onclick=()=>decideApproval(button.dataset.approval,button.dataset.decision==='true',button.closest('.approval-row')?.querySelector('[data-start-provider]')?.value||'claude'));
@@ -570,22 +574,36 @@ function bindNavigation(){
   $$('[data-mode]').forEach(el=>el.onclick=()=>{usageMode=el.dataset.mode;renderUsage();bindNavigation()});
   $$('[data-drill]').forEach(el=>el.onclick=()=>{const d=el.dataset.drill;if(d==='cost')drillCost();else if(d==='tokens')drillTokens();else if(d==='work-tab')activate('work');else if(d==='approvals-tab')activate('approvals')});
   bindOfficeForms($('[data-panel="clients"]'));
-  bindOfficeForms($('[data-panel="money"]'));
+  bindOfficeForms($('[data-panel="finances"]'));
   $('#drill-backdrop').onclick=closeDrill;
 }
-function activate(tab,updateHash=true){if(!$(`[data-panel="${tab}"]`))return;closeDrill();$$('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));$$('[data-panel]').forEach(p=>p.classList.toggle('active',p.dataset.panel===tab));if(updateHash)history.replaceState(null,'',`#${tab}`);window.scrollTo({top:0,behavior:'smooth'})}
+function appForTab(tab){return Object.keys(APP_TABS).find(app=>APP_TABS[app].includes(tab))}
+function resolveRoute(value){
+  const route=String(value||'');
+  if(!route||route==='home')return {app:'home'};
+  if(LEGACY_TABS[route])return {app:LEGACY_TABS[route][0],tab:LEGACY_TABS[route][1]};
+  if(APP_DEFAULT[route])return {app:route,tab:APP_DEFAULT[route]};
+  const parts=route.split('/');if(parts.length!==2||!APP_TABS[parts[0]])return {app:'home'};
+  const tab=parts[1]==='money'?'finances':parts[1];
+  return APP_TABS[parts[0]].includes(tab)?{app:parts[0],tab}:{app:'home'};
+}
+function setActiveApp(app){$$('[data-app-link]').forEach(button=>{const active=button.dataset.appLink===app;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')})}
+function showHome(updateHash=true){closeDrill();$('#home').hidden=false;$('.tabs').hidden=true;$('#loading').hidden=true;$$('[data-tab]').forEach(button=>{button.classList.remove('active');button.setAttribute('aria-selected','false');button.tabIndex=-1});$$('[data-panel]').forEach(panel=>{panel.classList.remove('active');panel.hidden=true});setActiveApp('home');if(updateHash)history.replaceState(null,'','#home');window.scrollTo({top:0,behavior:'smooth'})}
+function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}closeDrill();$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===tab;panel.classList.toggle('active',active);panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);window.scrollTo({top:0,behavior:'smooth'})}
+function selectApp(app){if(app==='home'){showHome();return}if(APP_DEFAULT[app])activate(APP_DEFAULT[app]);else showHome()}
+function routeLocation(updateHash=true){const route=resolveRoute(location.hash.slice(1));if(route.app==='home')showHome(updateHash);else activate(route.tab,updateHash)}
 function greeting(){const h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening'}
 function render(){
-  $('#loading').style.display='none';$('#updated-at').textContent=date(state.generated_at);$('#work-count').textContent=state.overview.active_work;$('#approval-count').textContent=state.overview.pending_review+state.overview.pending_approvals+releaseReadyWork().length;$('#metric-count').textContent=state.metrics.filter(m=>m.status==='needs_attention').length;
+  $('#loading').hidden=true;$('#updated-at').textContent=date(state.generated_at);$('#work-count').textContent=state.overview.active_work;$('#approval-count').textContent=state.overview.pending_review+state.overview.pending_approvals+releaseReadyWork().length;$('#metric-count').textContent=state.metrics.filter(m=>m.status==='needs_attention').length;
   const h1=$('.welcome h1');if(h1)h1.textContent=`${greeting()}, Carter.`;
   const connected=state.control_plane.local_runner==='connected';$('#runner-pill').classList.toggle('connected',connected);$('#runner-pill').innerHTML=`<i></i> ${connected?'Local runner connected':'Local runner offline'}`;
-  renderOverview();renderClients();renderMoney();renderMetrics();renderWork();renderAgents();renderUsage();renderApprovals();renderSystem();bindNavigation();activate(location.hash.slice(1)||'overview',false);
+  renderOverview();renderClients();renderFinances();renderMetrics();renderWork();renderAgents();renderUsage();renderApprovals();renderSystem();bindNavigation();routeLocation(false);
 }
 async function load(){const[dashboard,quality,officeResult,agentGraphResult]=await Promise.all([sb.rpc('api_dashboard_state'),sb.rpc('api_quality_state'),sb.rpc('api_office_state'),sb.rpc('api_agent_graph')]);const{data:office,error:officeError}=officeResult,{data:agentGraphData,error:agentGraphError}=agentGraphResult;if(dashboard.error)throw dashboard.error;if(quality.error)throw quality.error;if(officeError)throw officeError;if(agentGraphError)throw agentGraphError;officeState=office||{clients:[]};agentGraph=agentGraphData||{agents:[],edges:[],recent_runs:[]};state={...dashboard.data,quality:quality.data||{reviews:[],contracts:[],skill_summary:{},skill_weekly:[]}};render()}
 async function decideApproval(id,approved,startProvider='claude'){const model=startProvider==='codex'?'Codex':'Claude';if(!confirm(`${approved?`Approve this plan and start with ${model}? Its job is queued for the runner immediately.`:'Reject this execution gate?'}`))return;const{error}=await sb.rpc('api_decide_approval',{p_approval_id:id,p_approved:approved,p_note:`Decided from CS Ventures control dashboard${approved?`; start model: ${model}`:''}`,p_start_provider:startProvider});if(error){alert(`Action failed: ${error.message}`);return}await load()}
 async function approveRelease(workId,title,button){if(!confirm(`Approve release for "${title||workId}"?\n\nThis records your acceptance and marks the work completed. It will not rerun an agent, merge a pull request, or deploy code.`))return;const original=button?.textContent;if(button){button.disabled=true;button.textContent='Approving…'}const{error}=await sb.rpc('api_release',{p_work_id:workId,p_note:'Release approved from CS Ventures control dashboard'});if(error){if(button){button.disabled=false;button.textContent=original}alert(`Release failed: ${error.message}`);return}await load()}
 async function decideRecommendation(id,action){const msg=action==='accept'?'Turn this recommendation into a work item? You will still approve its plan before anything runs.':'Dismiss this recommendation?';if(!confirm(msg))return;const{data,error}=await sb.rpc('api_decide_recommendation',{p_recommendation_id:id,p_action:action,p_note:'Decided from CS Ventures control dashboard'});if(error){alert(`Action failed: ${error.message}`);return}if(action==='accept'&&data?.work_id)console.log('created',data.work_id);await load()}
-function showApp(session){$('#login').classList.add('hidden');$('#app').classList.remove('hidden');$('#who').textContent=session.user.email;load().catch(error=>{$('#loading').className='loading-error';$('#loading').textContent=`Could not load dashboard data: ${error.message}`})}
+function showApp(session){$('#login').classList.add('hidden');$('#app').classList.remove('hidden');$('#who').textContent=session.user.email;bindNavigation();routeLocation();load().catch(error=>{const loading=$('#loading');loading.className='loading-error';loading.textContent=`Could not load dashboard data: ${error.message}`;loading.hidden=!$('#home').hidden})}
 function authCard(id){$('#app').classList.add('hidden');$('#login').classList.remove('hidden');['loginForm','mfaForm','enrollForm'].forEach(f=>$(`#${f}`).classList.toggle('hidden',f!==id))}
 function showLogin(){authCard('loginForm')}
 
@@ -634,4 +652,5 @@ $('#mfaCancel').addEventListener('click',async()=>{await sb.auth.signOut();showL
 $('#enrollCancel').addEventListener('click',async()=>{await sb.auth.signOut();showLogin()});
 $('#signout').addEventListener('click',async()=>{await sb.auth.signOut();showLogin()});
 $('#refresh').addEventListener('click',async()=>{const b=$('#refresh');b.textContent='Refreshing…';try{await load();b.textContent='Data refreshed'}catch(error){b.textContent='Refresh failed'}setTimeout(()=>b.textContent='Refresh data',1200)});
+window.addEventListener('hashchange',()=>{if(!$('#app').classList.contains('hidden'))routeLocation()});
 await routeAfterAuth();

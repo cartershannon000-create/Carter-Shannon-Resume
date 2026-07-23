@@ -62,31 +62,47 @@
           <div><p>OPERATING SYSTEM · SUPABASE LIVE</p><h1>Good morning, Carter.</h1><span>Review durable work, track quality and usage, and keep consequential actions behind a visible gate.</span></div>
           <div class="date-block"><small>Last refreshed</small><strong id="updated-at">Loading…</strong></div>
         </div>
-        <nav class="tabs" aria-label="Dashboard sections">
-          <button class="active" data-tab="overview">Overview</button>
-          <button data-tab="clients">Clients <b id="client-count">—</b></button>
-          <button data-tab="money">Money</button>
-          <button data-tab="metrics">Metrics <b id="metric-count">—</b></button>
-          <button data-tab="work">Work Queue <b id="work-count">—</b></button>
-          <button data-tab="agents">Agents</button>
-          <button data-tab="usage">Usage</button>
-          <button data-tab="approvals">Approvals <b id="approval-count">—</b></button>
-          <button data-tab="system">System</button>
+        <nav class="app-switcher" aria-label="Dashboard apps">
+          <button class="active" type="button" data-app-link="home" aria-current="page">Home</button>
+          <button type="button" data-app-link="client">Client Dashboard</button>
+          <button type="button" data-app-link="system">System Dashboard</button>
+        </nav>
+        <nav class="tabs" aria-label="Dashboard sections" role="tablist" hidden>
+          <button id="tab-overview" type="button" role="tab" aria-selected="false" aria-controls="panel-overview" data-dashboard="system" data-tab="overview">Overview</button>
+          <button id="tab-clients" type="button" role="tab" aria-selected="false" aria-controls="panel-clients" data-dashboard="client" data-tab="clients">Clients <b id="client-count">—</b></button>
+          <button id="tab-finances" type="button" role="tab" aria-selected="false" aria-controls="panel-finances" data-dashboard="client" data-tab="finances">Finances</button>
+          <button id="tab-metrics" type="button" role="tab" aria-selected="false" aria-controls="panel-metrics" data-dashboard="system" data-tab="metrics">Metrics <b id="metric-count">—</b></button>
+          <button id="tab-work" type="button" role="tab" aria-selected="false" aria-controls="panel-work" data-dashboard="system" data-tab="work">Work Queue <b id="work-count">—</b></button>
+          <button id="tab-agents" type="button" role="tab" aria-selected="false" aria-controls="panel-agents" data-dashboard="system" data-tab="agents">Agents</button>
+          <button id="tab-usage" type="button" role="tab" aria-selected="false" aria-controls="panel-usage" data-dashboard="system" data-tab="usage">Usage</button>
+          <button id="tab-approvals" type="button" role="tab" aria-selected="false" aria-controls="panel-approvals" data-dashboard="system" data-tab="approvals">Approvals <b id="approval-count">—</b></button>
+          <button id="tab-system" type="button" role="tab" aria-selected="false" aria-controls="panel-system" data-dashboard="system" data-tab="system">System</button>
         </nav>
       </div>
     </header>
 
     <main class="dashboard">
-      <div id="loading" class="loading">Loading the operating view from Supabase…</div>
-      <section class="tab-panel active" data-panel="overview"></section>
-      <section class="tab-panel" data-panel="clients"></section>
-      <section class="tab-panel" data-panel="money"></section>
-      <section class="tab-panel" data-panel="metrics"></section>
-      <section class="tab-panel" data-panel="work"></section>
-      <section class="tab-panel" data-panel="agents"></section>
-      <section class="tab-panel" data-panel="usage"></section>
-      <section class="tab-panel" data-panel="approvals"></section>
-      <section class="tab-panel" data-panel="system"></section>
+      <section id="home" class="home-launcher" aria-labelledby="home-title">
+        <div class="page-head"><div><h2 id="home-title">Choose a dashboard</h2><p>Open the workspace for the part of the business you want to run.</p></div></div>
+        <div class="home-grid">
+          <button class="agent-card home-card clickable" type="button" data-app-link="client" aria-label="Open Client Dashboard: Clients and Finances">
+            <span class="agent-icon">C</span><span class="home-card-title">Client Dashboard</span><span class="home-card-detail">Clients and Finances</span><strong>Open on Clients →</strong>
+          </button>
+          <button class="agent-card home-card clickable" type="button" data-app-link="system" aria-label="Open System Dashboard: Overview, Metrics, Work Queue, Agents, Usage, Approvals, and System">
+            <span class="agent-icon">S</span><span class="home-card-title">System Dashboard</span><span class="home-card-detail">Overview, Metrics, Work Queue, Agents, Usage, Approvals, and System</span><strong>Open on Overview →</strong>
+          </button>
+        </div>
+      </section>
+      <div id="loading" class="loading" hidden>Loading the operating view from Supabase…</div>
+      <section id="panel-overview" class="tab-panel" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview"></section>
+      <section id="panel-clients" class="tab-panel" role="tabpanel" aria-labelledby="tab-clients" data-panel="clients"></section>
+      <section id="panel-finances" class="tab-panel" role="tabpanel" aria-labelledby="tab-finances" data-panel="finances"></section>
+      <section id="panel-metrics" class="tab-panel" role="tabpanel" aria-labelledby="tab-metrics" data-panel="metrics"></section>
+      <section id="panel-work" class="tab-panel" role="tabpanel" aria-labelledby="tab-work" data-panel="work"></section>
+      <section id="panel-agents" class="tab-panel" role="tabpanel" aria-labelledby="tab-agents" data-panel="agents"></section>
+      <section id="panel-usage" class="tab-panel" role="tabpanel" aria-labelledby="tab-usage" data-panel="usage"></section>
+      <section id="panel-approvals" class="tab-panel" role="tabpanel" aria-labelledby="tab-approvals" data-panel="approvals"></section>
+      <section id="panel-system" class="tab-panel" role="tabpanel" aria-labelledby="tab-system" data-panel="system"></section>
     </main>
     <div id="drill-backdrop"></div>
     <aside id="drill" aria-label="Metric drill-down"><div id="drill-body"></div></aside>
