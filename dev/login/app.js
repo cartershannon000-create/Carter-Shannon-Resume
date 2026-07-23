@@ -18,6 +18,8 @@ const APP_DEFAULT={client:'clients',system:'overview'};
 const LEGACY_TABS={clients:['client','clients'],money:['client','finances'],finances:['client','finances'],calendar:['client','calendar'],overview:['system','overview'],metrics:['system','metrics'],work:['system','work'],agents:['system','agents'],usage:['system','usage'],approvals:['system','approvals'],system:['system','system']};
 const DRILL_LAYOUT_KEY='cos.drillLayout',DRILL_LAYOUTS=new Set(['side','below','popout']);
 let drillLayout=(()=>{try{const saved=localStorage.getItem(DRILL_LAYOUT_KEY);return DRILL_LAYOUTS.has(saved)?saved:'side'}catch{return 'side'}})();
+const CALENDAR_VIEW_KEY='cos.calendarView',CALENDAR_VIEWS=new Set(['month','week','list']);
+let calendarView=(()=>{try{const saved=localStorage.getItem(CALENDAR_VIEW_KEY);return CALENDAR_VIEWS.has(saved)?saved:'month'}catch{return 'month'}})(),calendarCursor=new Date(),calendarCreatePreset=null;
 let clientView={tier:'',status:'',search:'',sort:'name'};
 
 function pageHead(title,detail,right=''){return `<div class="page-head"><div><h2>${esc(title)}</h2><p>${esc(detail)}</p></div>${right?`<span class="quiet">${esc(right)}</span>`:''}</div>`}
@@ -353,16 +355,16 @@ function engagementForm(){return `<form class="office-form hidden" data-office-f
   </div><div class="office-form-actions action-buttons"><button class="action-button approve" type="submit">Add engagement</button><button class="action-button reject" type="button" data-office-cancel>Cancel</button></div><div class="office-form-error" role="alert"></div></form>`}
 function calendarKind(value){return ['meeting','reminder','note'].includes(value)?value:'meeting'}
 function calendarInputDate(value){if(!value)return '';const stamp=new Date(value);if(!Number.isFinite(stamp.getTime()))return '';const pad=part=>String(part).padStart(2,'0');return `${stamp.getFullYear()}-${pad(stamp.getMonth()+1)}-${pad(stamp.getDate())}T${pad(stamp.getHours())}:${pad(stamp.getMinutes())}`}
-function calendarForm(item=null,presetClientId=null,reopenClientId=null){
-  const kind=calendarKind(item?.kind),target=item?.calendar_item_id||'new',selectedClient=item?.client_id??presetClientId??'';
+function calendarForm(item=null,presetClientId=null,reopenClientId=null,presetDate=null){
+  const kind=calendarKind(item?.kind),target=item?.calendar_item_id||'new',selectedClient=item?.client_id??presetClientId??'',selectedAt=item?.at??presetDate??'';
   return `<form class="office-form hidden calendar-form" data-office-form="calendar" data-office-target="${esc(target)}" data-calendar-item-id="${esc(item?.calendar_item_id||'')}" data-reopen-client-id="${esc(reopenClientId||'')}"><div class="office-form-grid">
     <label>Kind<select name="kind" required><option value="meeting"${kind==='meeting'?' selected':''}>Meeting</option><option value="reminder"${kind==='reminder'?' selected':''}>Reminder</option><option value="note"${kind==='note'?' selected':''}>Note</option></select></label>
-    <label>Date and time<input name="at" type="datetime-local" value="${esc(calendarInputDate(item?.at))}" required></label>
+    <label>Date and time<input name="at" type="datetime-local" value="${esc(calendarInputDate(selectedAt))}" required></label>
     <label class="office-form-wide">Title<input name="title" value="${esc(item?.title||'')}" required></label>
     <label class="office-form-wide">Detail<textarea name="detail" rows="3">${esc(item?.detail||'')}</textarea></label>
     <label>Client<select name="client_id"><option value="">Standalone</option>${(officeState.clients||[]).map(client=>`<option value="${esc(client.client_id)}"${String(client.client_id)===String(selectedClient)?' selected':''}>${esc(client.name||'Unnamed client')}</option>`).join('')}</select></label>
     <label class="calendar-done"${kind==='reminder'?'':' hidden'}><span>Reminder status</span><span class="calendar-check"><input name="done" type="checkbox"${item?.done?' checked':''}> Done</span></label>
-  </div><div class="office-form-actions action-buttons"><button class="action-button approve" type="submit">${item?'Save item':'Add item'}</button><button class="action-button reject" type="button" data-office-cancel>Cancel</button></div><div class="office-form-error" role="alert"></div></form>`;
+  </div><div class="office-form-actions action-buttons"><button class="action-button approve" type="submit">${item?'Save item':'Add item'}</button><button class="action-button reject" type="button" data-office-cancel>Cancel</button>${item?`<button class="link-button contact-delete" type="button" data-delete-calendar="${esc(item.calendar_item_id)}">Delete</button>`:''}</div><div class="office-form-error" role="alert"></div></form>`;
 }
 function officeRows(title,rows,emptyLabel){return `<div class="drill-section"><h4>${esc(title)}</h4>${rows.length?`<div class="drill-rows">${rows.map(row=>`<div class="drill-row"><div class="drill-row-top"><strong>${esc(row.label)}</strong>${row.chip?officeStatusChip(row.chip,row.kind):`<span>${esc(row.value||'')}</span>`}</div>${row.sub?`<p>${esc(row.sub)}</p>`:''}</div>`).join('')}</div>`:`<div class="empty-state"><strong>${esc(emptyLabel)}</strong></div>`}</div>`}
 function externalContactUrl(value){if(!value)return '';try{const raw=String(value).trim(),url=new URL(/^[a-z][a-z0-9+.-]*:/i.test(raw)?raw:`https://${raw}`);return ['http:','https:'].includes(url.protocol)?url.href:''}catch{return ''}}
@@ -458,7 +460,7 @@ async function setClientStar(event,clientId,starred,button){
 }
 function bindOfficeForms(scope,clientId=null){
   if(!scope)return;
-  $$('[data-office-toggle]',scope).forEach(button=>button.onclick=()=>{$$('[data-office-form]',scope).forEach(form=>form.classList.toggle('hidden',form.dataset.officeForm!==button.dataset.officeToggle||(button.dataset.officeTarget&&form.dataset.officeTarget!==button.dataset.officeTarget)));const target=$$('[data-office-form]',scope).find(form=>form.dataset.officeForm===button.dataset.officeToggle&&(!button.dataset.officeTarget||form.dataset.officeTarget===button.dataset.officeTarget));target?.querySelector('input,select,textarea')?.focus()});
+  $$('[data-office-toggle]',scope).forEach(button=>button.onclick=()=>{$$('[data-office-form]',scope).forEach(form=>form.classList.toggle('hidden',form.dataset.officeForm!==button.dataset.officeToggle||(button.dataset.officeTarget&&form.dataset.officeTarget!==button.dataset.officeTarget)));const target=$$('[data-office-form]',scope).find(form=>form.dataset.officeForm===button.dataset.officeToggle&&(!button.dataset.officeTarget||form.dataset.officeTarget===button.dataset.officeTarget));if(target&&button.dataset.officeToggle==='calendar'&&button.dataset.officeTarget==='new'){calendarCreatePreset=button.dataset.calendarDay?calendarDateAt(button.dataset.calendarDay):null;target.elements.at.value=calendarInputDate(calendarCreatePreset)}target?.querySelector('input,select,textarea')?.focus()});
   $$('[data-office-cancel]',scope).forEach(button=>button.onclick=()=>button.closest('.office-form').classList.add('hidden'));
   const client=$('[data-office-form="client"]',scope);if(client)client.onsubmit=submitClient;
   $$('[data-office-form="contact"]',scope).forEach(contact=>contact.onsubmit=event=>submitContact(event,clientId));
@@ -512,6 +514,47 @@ function renderFinances(){
 
 /* ── Calendar ─────────────────────────────────────────────────────── */
 function calendarStamp(item){const stamp=new Date(item.at).getTime();return Number.isFinite(stamp)?stamp:Number.MAX_SAFE_INTEGER}
+function localDayKey(value){const stamp=value instanceof Date?value:new Date(value);if(!Number.isFinite(stamp.getTime()))return '';const pad=part=>String(part).padStart(2,'0');return `${stamp.getFullYear()}-${pad(stamp.getMonth()+1)}-${pad(stamp.getDate())}`}
+function calendarDateAt(key,hour=9){const parts=String(key||'').split('-').map(Number);return parts.length===3&&parts.every(Number.isFinite)?new Date(parts[0],parts[1]-1,parts[2],hour):null}
+function calendarDay(year,month,day){return new Date(year,month,day,12)}
+function calendarAddDays(value,amount){const next=new Date(value);next.setDate(next.getDate()+amount);return next}
+function calendarWeekStart(value){return calendarAddDays(calendarDay(value.getFullYear(),value.getMonth(),value.getDate()),-value.getDay())}
+function nthWeekday(year,month,weekday,n){const first=calendarDay(year,month,1);return calendarDay(year,month,1+(7+weekday-first.getDay())%7+(n-1)*7)}
+function lastWeekday(year,month,weekday){const last=calendarDay(year,month+1,0);return calendarAddDays(last,-(7+last.getDay()-weekday)%7)}
+function bankFixedHoliday(year,month,day,name){const actual=calendarDay(year,month,day),observed=actual.getDay()===0;return {date:observed?calendarAddDays(actual,1):actual,name,observed}}
+function usBankHolidays(year){
+  return [
+    bankFixedHoliday(year,0,1,"New Year's Day"),
+    {date:nthWeekday(year,0,1,3),name:'Martin Luther King Jr. Day'},
+    {date:nthWeekday(year,1,1,3),name:"Washington's Birthday"},
+    {date:lastWeekday(year,4,1),name:'Memorial Day'},
+    bankFixedHoliday(year,5,19,'Juneteenth'),
+    bankFixedHoliday(year,6,4,'Independence Day'),
+    {date:nthWeekday(year,8,1,1),name:'Labor Day'},
+    {date:nthWeekday(year,9,1,2),name:'Columbus Day'},
+    bankFixedHoliday(year,10,11,'Veterans Day'),
+    {date:nthWeekday(year,10,4,4),name:'Thanksgiving Day'},
+    bankFixedHoliday(year,11,25,'Christmas Day')
+  ].sort((a,b)=>a.date-b.date);
+}
+function calendarHolidayMap(days){const years=[...new Set(days.map(day=>day.getFullYear()))],map=new Map();years.flatMap(usBankHolidays).forEach(holiday=>{const key=localDayKey(holiday.date),list=map.get(key)||[];list.push(holiday);map.set(key,list)});return map}
+function calendarBuckets(items){const map=new Map();items.slice().sort((a,b)=>calendarStamp(a)-calendarStamp(b)).forEach(item=>{const key=localDayKey(item.at),list=map.get(key)||[];if(key){list.push(item);map.set(key,list)}});return map}
+function calendarTime(value){const stamp=new Date(value);return Number.isFinite(stamp.getTime())?stamp.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'Time unavailable'}
+function calendarGridChip(item,overflow=false){const kind=calendarKind(item.kind),title=item.title||'Untitled item',overdue=item.overdue&&!item.done,client=item.client_name?` · ${item.client_name}`:'';return `<button class="chip calendar-kind calendar-grid-item kind-${kind}${overdue?' calendar-grid-overdue':''}${item.done?' calendar-muted':''}${overflow?' calendar-overflow':''}" type="button" data-office-toggle="calendar" data-office-target="${esc(item.calendar_item_id)}" aria-label="Edit ${esc(title)}${esc(client)} at ${esc(calendarTime(item.at))}${overdue?', overdue':''}"><span>${esc(title)}</span><time>${esc(calendarTime(item.at))}</time>${overdue?'<small>Overdue</small>':''}</button>`}
+function calendarHolidayPills(holidays){return holidays.map(holiday=>`<span class="calendar-holiday" aria-label="${esc(holiday.name)} bank holiday${holiday.observed?', observed':''}">${esc(holiday.name)}${holiday.observed?' · observed':''}</span>`).join('')}
+function calendarDayCell(day,items,holidays,currentMonth=null,mode='month'){
+  const key=localDayKey(day),today=key===localDayKey(new Date()),other=currentMonth!=null&&day.getMonth()!==currentMonth,limit=mode==='month'?3:items.length,hidden=Math.max(0,items.length-limit),label=day.toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  return `<article class="calendar-day${today?' calendar-today':''}${other?' calendar-other-month':''}" role="gridcell" tabindex="0" data-calendar-day-cell="${key}" aria-label="${esc(label)}${today?', today':''}"><header><button type="button" data-office-toggle="calendar" data-office-target="new" data-calendar-day="${key}" aria-label="Add item on ${esc(label)}">${mode==='week'?`<span>${esc(day.toLocaleDateString([], {weekday:'short'}))}</span><strong>${day.getDate()}</strong>`:`<strong>${day.getDate()}</strong>`}</button></header>${calendarHolidayPills(holidays)}<div class="calendar-day-items">${items.map((item,index)=>calendarGridChip(item,index>=limit)).join('')}</div>${hidden?`<button class="calendar-more-items" type="button" data-calendar-more="${hidden}" aria-expanded="false">+${hidden} more</button>`:''}<button class="calendar-day-add" type="button" data-office-toggle="calendar" data-office-target="new" data-calendar-day="${key}">+ add</button></article>`;
+}
+function calendarToolbar(label){return `<div class="card calendar-toolbar"><div class="calendar-nav"><button class="action-button reject" type="button" data-calendar-shift="-1" aria-label="Previous ${calendarView}">←</button><button class="action-button reject" type="button" data-calendar-today>Today</button><button class="action-button reject" type="button" data-calendar-shift="1" aria-label="Next ${calendarView}">→</button></div><strong>${esc(label)}</strong></div>`}
+function calendarMonthView(items){
+  const month=calendarCursor.getMonth(),first=calendarDay(calendarCursor.getFullYear(),month,1),start=calendarAddDays(first,-first.getDay()),days=Array.from({length:42},(_,index)=>calendarAddDays(start,index)),buckets=calendarBuckets(items),holidays=calendarHolidayMap(days);
+  return `${calendarToolbar(first.toLocaleDateString([], {month:'long',year:'numeric'}))}<div class="calendar-grid-scroll"><div class="calendar-grid" role="grid" aria-label="${esc(first.toLocaleDateString([], {month:'long',year:'numeric'}))} calendar">${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].map(day=>`<div class="calendar-weekday" role="columnheader">${day}</div>`).join('')}${days.map(day=>calendarDayCell(day,buckets.get(localDayKey(day))||[],holidays.get(localDayKey(day))||[],month)).join('')}</div></div>`;
+}
+function calendarWeekView(items){
+  const start=calendarWeekStart(calendarCursor),days=Array.from({length:7},(_,index)=>calendarAddDays(start,index)),end=days[6],sameYear=start.getFullYear()===end.getFullYear(),format=day=>day.toLocaleDateString([], {month:'short',day:'numeric',year:sameYear?undefined:'numeric'}),label=`Week of ${format(start)} – ${format(end)}${sameYear?`, ${end.getFullYear()}`:''}`,buckets=calendarBuckets(items),holidays=calendarHolidayMap(days);
+  return `${calendarToolbar(label)}<div class="calendar-grid-scroll"><div class="calendar-week-grid" role="grid" aria-label="${esc(label)}">${days.map(day=>calendarDayCell(day,buckets.get(localDayKey(day))||[],holidays.get(localDayKey(day))||[],null,'week')).join('')}</div></div>`;
+}
 function calendarRow(item){
   const kind=calendarKind(item.kind),overdue=item.overdue&&!item.done,client=item.client_name?`<button class="link-button calendar-client" type="button" data-client="${esc(item.client_id)}">${esc(item.client_name)}</button>`:'<span class="quiet">Standalone</span>';
   return `<article class="calendar-row${overdue?' calendar-overdue-row':''}${item.done?' calendar-muted':''}"><div class="calendar-row-main"><div class="calendar-row-meta"><span class="chip calendar-kind kind-${kind}">${esc(kind)}</span>${overdue?'<span class="calendar-overdue">Overdue</span>':item.due_today&&!item.done?'<span class="quiet">Due today</span>':''}<time>${esc(date(item.at))}</time>${client}</div><h3>${esc(item.title||'Untitled item')}</h3>${item.detail?`<p>${esc(item.detail)}</p>`:''}</div><div class="calendar-actions">${kind==='reminder'?`<form class="calendar-quick" data-calendar-done="${esc(item.calendar_item_id)}"><button class="link-button" type="submit">${item.done?'Mark open':'Mark done'}</button><span class="office-form-error" role="alert"></span></form>`:''}<button class="link-button" type="button" data-office-toggle="calendar" data-office-target="${esc(item.calendar_item_id)}">Edit</button><button class="link-button contact-delete" type="button" data-delete-calendar="${esc(item.calendar_item_id)}">Delete</button></div>${calendarForm(item)}</article>`;
@@ -522,9 +565,20 @@ function calendarGroup(title,items,mode=''){
 }
 function renderCalendar(){
   const items=(officeState.calendar||[]).slice(),ascending=(a,b)=>calendarStamp(a)-calendarStamp(b),overdue=items.filter(item=>item.overdue&&!item.done).sort(ascending),upcoming=items.filter(item=>!item.done&&!item.overdue).sort(ascending),done=items.filter(item=>item.done).sort((a,b)=>calendarStamp(b)-calendarStamp(a));
-  $('[data-panel="calendar"]').innerHTML=pageHead('Calendar','Meetings, reminders, and notes linked to the relationships you run.',`${overdue.length} overdue · ${upcoming.length} upcoming`)+`
-  <article class="card calendar-create"><div class="card-head"><div><h3>Schedule</h3><p>Add a standalone item or link it directly to a client.</p></div><button class="action-button approve" type="button" data-office-toggle="calendar" data-office-target="new">Add item</button></div>${calendarForm()}</article>
-  ${items.length?`${calendarGroup('Overdue',overdue,'overdue')}${calendarGroup('Upcoming',upcoming)}${calendarGroup('Done / past',done,'done')}`:'<div class="empty-state calendar-empty"><strong>No calendar items yet</strong><p>Add a meeting, reminder, or note to start running the week here.</p></div>'}`;
+  const toggle=`<div class="calendar-view-toggle" role="group" aria-label="Calendar view">${['month','week','list'].map(view=>`<button type="button" data-calendar-view="${view}" aria-pressed="${calendarView===view}">${view[0].toUpperCase()+view.slice(1)}</button>`).join('')}</div>`,content=calendarView==='month'?calendarMonthView(items):calendarView==='week'?calendarWeekView(items):items.length?`${calendarGroup('Overdue',overdue,'overdue')}${calendarGroup('Upcoming',upcoming)}${calendarGroup('Done / past',done,'done')}`:'<div class="empty-state calendar-empty"><strong>No calendar items yet</strong><p>Add a meeting, reminder, or note to start running the week here.</p></div>',editors=calendarView==='list'?'':items.map(item=>calendarForm(item)).join('');
+  $('[data-panel="calendar"]').innerHTML=`<div class="page-head calendar-page-head"><div><h2>Calendar</h2><p>Meetings, reminders, and notes linked to the relationships you run.</p></div><div class="calendar-page-actions"><span class="quiet">${overdue.length} overdue · ${upcoming.length} upcoming</span>${toggle}</div></div>
+  <article class="card calendar-create"><div class="card-head"><div><h3>Schedule</h3><p>Add a standalone item or link it directly to a client.</p></div><button class="action-button approve" type="button" data-office-toggle="calendar" data-office-target="new">Add item</button></div>${calendarForm(null,null,null,calendarCreatePreset)}${editors}</article>
+  ${content}`;
+}
+
+function bindCalendarControls(){
+  const panel=$('[data-panel="calendar"]');if(!panel)return;
+  $$('[data-calendar-view]',panel).forEach(button=>button.onclick=()=>{calendarView=button.dataset.calendarView;try{localStorage.setItem(CALENDAR_VIEW_KEY,calendarView)}catch{}renderCalendar();bindCalendarControls()});
+  $$('[data-calendar-shift]',panel).forEach(button=>button.onclick=()=>{const amount=Number(button.dataset.calendarShift);calendarCursor=calendarView==='month'?calendarDay(calendarCursor.getFullYear(),calendarCursor.getMonth()+amount,1):calendarAddDays(calendarCursor,amount*7);renderCalendar();bindCalendarControls()});
+  $$('[data-calendar-today]',panel).forEach(button=>button.onclick=()=>{calendarCursor=new Date();renderCalendar();bindCalendarControls()});
+  $$('[data-calendar-more]',panel).forEach(button=>button.onclick=()=>{const cell=button.closest('.calendar-day'),expanded=cell.classList.toggle('calendar-expanded');button.setAttribute('aria-expanded',String(expanded));button.textContent=expanded?'Show fewer':`+${button.dataset.calendarMore} more`});
+  $$('[data-calendar-day-cell]',panel).forEach(cell=>{const open=event=>{if(event.target!==cell&&!event.target.classList.contains('calendar-day-items'))return;$('[data-calendar-day]',cell)?.click()};cell.onclick=open;cell.onkeydown=event=>{if((event.key==='Enter'||event.key===' ')&&event.target===cell){event.preventDefault();$('[data-calendar-day]',cell)?.click()}}});
+  bindClientCards(panel);bindOfficeForms(panel);
 }
 
 /* ── Work / Agents (largely unchanged) ────────────────────────────── */
@@ -683,7 +737,7 @@ function bindNavigation(){
   $$('[data-drill]').forEach(el=>el.onclick=()=>{const d=el.dataset.drill;if(d==='cost')drillCost();else if(d==='tokens')drillTokens();else if(d==='work-tab')activate('work');else if(d==='approvals-tab')activate('approvals')});
   bindOfficeForms($('[data-panel="clients"]'));
   bindOfficeForms($('[data-panel="finances"]'));
-  bindOfficeForms($('[data-panel="calendar"]'));
+  bindCalendarControls();
   $('#drill-backdrop').onclick=closeDrill;
 }
 function appForTab(tab){return Object.keys(APP_TABS).find(app=>APP_TABS[app].includes(tab))}
