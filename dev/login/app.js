@@ -12,7 +12,7 @@ const date=v=>v?new Date(v).toLocaleString([], {month:'short',day:'numeric',hour
 const dateOnly=v=>{if(!v)return 'Not available';const s=String(v).slice(0,10);const p=s.split('-').map(Number);if(p.length!==3||p.some(n=>!Number.isFinite(n)))return 'Not available';return new Date(p[0],p[1]-1,p[2]).toLocaleDateString([], {year:'numeric',month:'short',day:'numeric'})};
 const duration=s=>{if(s==null)return '—';s=Number(s);if(s<90)return `${Math.round(s)}s`;if(s<5400)return `${(s/60).toFixed(0)} min`;if(s<172800)return `${(s/3600).toFixed(1)} h`;return `${(s/86400).toFixed(1)} d`};
 const PCOLOR={claude:'var(--green)',codex:'var(--blue)'};
-let state,officeState={clients:[]};
+let state,officeState={clients:[]},agentGraph={agents:[],edges:[],recent_runs:[]};
 
 function pageHead(title,detail,right=''){return `<div class="page-head"><div><h2>${esc(title)}</h2><p>${esc(detail)}</p></div>${right?`<span class="quiet">${esc(right)}</span>`:''}</div>`}
 function provider(name){return state.audit.providers.find(item=>item.provider===name)||{};}
@@ -420,13 +420,67 @@ function renderMoney(){
 /* ── Work / Agents (largely unchanged) ────────────────────────────── */
 function renderWork(){const tasks=state.continuity.tasks,live=state.operations.work||[];$('[data-panel="work"]').innerHTML=pageHead('Work queue','Durable continuity tasks and executable control-plane work in one view.',`${tasks.filter(t=>t.status==='active').length} active · ${live.length} control-plane`)+`<article class="card"><div class="card-head"><div><h3>Durable work</h3><p>Latest immutable checkpoint and evidence for every continuity task.</p></div></div><table class="queue-table"><thead><tr><th>Work item</th><th>Owner</th><th>Status</th><th>Checkpoint</th><th>Evidence</th></tr></thead><tbody>${tasks.map(task=>`<tr><td><strong>${esc(task.objective)}</strong><small>Next: ${esc(task.next_action||'Not recorded')}</small></td><td>${esc(task.owner_agent)}</td><td><span class="chip">${esc(task.status)}</span></td><td>v${task.checkpoint_version||0}<small>${date(task.checkpoint_at)}</small></td><td>${task.artifacts?.length||0} artifacts<small>${task.tests?.length||0} checks · ${task.blockers?.length||0} blockers</small></td></tr>`).join('')}</tbody></table></article><article class="card" style="margin-top:14px"><div class="card-head"><div><h3>Execution ledger</h3><p>Typed work items that can move through plan, lease, run, review, and release gates.</p></div></div>${live.length?`<table class="queue-table"><thead><tr><th>Work item</th><th>Project</th><th>Priority</th><th>State</th><th>Updated</th><th>Actions</th></tr></thead><tbody>${live.map(w=>{const running=RUN_ACTIVE.has(w.state),release=w.state===RELEASE_READY;return `<tr class="clickable" data-run="${esc(w.work_id)}" data-run-title="${esc(w.title)}"><td><strong>${esc(w.title)}</strong><small>${esc(w.description||w.work_id)}</small></td><td>${esc(w.project||'—')}</td><td>${esc(w.priority)}</td><td>${runChip(w.state,running)}</td><td>${date(w.updated_at)}</td><td><div class="work-actions">${release?`<button class="action-button approve" data-release-work="${esc(w.work_id)}" data-release-title="${esc(w.title)}">Approve release</button>`:''}<span class="run-open">${running?'Watch live':'View log'} →</span></div></td></tr>`}).join('')}</tbody></table>`:'<div class="empty-state"><strong>No executable work yet</strong><p>Continuity tracking remains available above.</p></div>'}</article>`}
 
-function renderAgents(){const c=provider('claude'),x=provider('codex');$('[data-panel="agents"]').innerHTML=pageHead('Agents','Model roles, observed activity, and the planned orchestration hierarchy.','Runtime status is distinct from historical usage')+`<div class="agent-grid">
+const AGENT_KINDS=['cos','builder','reviewer','watchdog','persona'];
+const AGENT_KIND_COLOR={cos:'var(--green)',builder:'var(--blue)',reviewer:'var(--amber)',watchdog:'var(--muted)',persona:'var(--purple)'};
+const AGENT_EDGE_COLOR={directs:'var(--green)',reviews:'var(--amber)',built:'var(--blue)'};
+function agentKind(agent){return AGENT_KINDS.includes(agent.kind)?agent.kind:'watchdog'}
+function agentRadius(agent){return Math.min(34,16+Math.sqrt(Math.max(0,Number(agent.run_count||0)))*2.3)}
+function agentPercent(value){const n=Number(value);if(!Number.isFinite(n))return '—';return `${Math.round((n<=1?n*100:n)*10)/10}%`}
+function agentDecimal(value){const n=Number(value);return Number.isFinite(n)?n.toFixed(1):'—'}
+function agentQuality(agent){const q=agent.quality;if(agent.kind!=='builder'||!q)return '—';return `FPY ${agentPercent(q.fpy)} · ${agentDecimal(q.mean_attempts)} att · ${agentDecimal(q.avg_score)}/20`}
+function agentGraphLayout(agents){
+  const columns=new Map(AGENT_KINDS.map(kind=>[kind,[]]));
+  agents.forEach(agent=>columns.get(agentKind(agent)).push(agent));
+  const height=Math.max(440,Math.max(...[...columns.values()].map(items=>items.length),1)*124+76);
+  const positions=new Map();
+  AGENT_KINDS.forEach((kind,columnIndex)=>{
+    const items=columns.get(kind),x=90+columnIndex*230;
+    items.forEach((agent,index)=>{
+      const y=items.length===1?height/2:92+index*(height-174)/(items.length-1);
+      positions.set(String(agent.agent_id),{x,y,r:agentRadius(agent),kind});
+    });
+  });
+  return {height,positions};
+}
+function renderAgentGraph(agents,edges){
+  if(!agents.length)return '<div class="empty-state"><strong>No agent activity yet — the graph fills in as the runner processes real jobs.</strong></div>';
+  const{height,positions}=agentGraphLayout(agents);
+  const paths=edges.map(edge=>{
+    const from=positions.get(String(edge.from)),to=positions.get(String(edge.to));if(!from||!to)return '';
+    const count=Math.max(0,Number(edge.run_count||0)),width=Math.min(6,1.5+Math.log1p(count)*1.15),opacity=Math.min(.82,.28+Math.log1p(count)*.13);
+    const dir=to.x>=from.x?1:-1,x1=from.x+dir*from.r,x2=to.x-dir*(to.r+9),curve=Math.max(60,Math.abs(x2-x1)*.42),color=AGENT_EDGE_COLOR[edge.edge_type]||'var(--muted)',marker=AGENT_EDGE_COLOR[edge.edge_type]?edge.edge_type:'other';
+    return `<path d="M${x1} ${from.y}C${x1+dir*curve} ${from.y} ${x2-dir*curve} ${to.y} ${x2} ${to.y}" fill="none" stroke="${color}" stroke-width="${width.toFixed(2)}" opacity="${opacity.toFixed(2)}" marker-end="url(#agent-arrow-${marker})"/>`;
+  }).join('');
+  const nodes=agents.map(agent=>{
+    const point=positions.get(String(agent.agent_id));if(!point)return '';
+    const size=point.r*2,color=AGENT_KIND_COLOR[point.kind],initial=String(agent.name||agent.agent_id||'?').trim().slice(0,1).toUpperCase();
+    return `<button class="agent-graph-node" type="button" data-agent="${esc(agent.agent_id)}" aria-label="Open ${esc(agent.name||agent.agent_id)} agent details" style="left:${point.x}px;top:${point.y}px;width:${size}px;height:${size}px;--agent-node-color:${color}"><span class="agent-node-mark" aria-hidden="true">${esc(initial)}</span><span class="agent-node-label"><strong>${esc(agent.name||agent.agent_id||'Unnamed agent')}</strong><small>${esc(agent.model||agent.provider||'Model unavailable')}</small></span></button>`;
+  }).join('');
+  const headings=AGENT_KINDS.map((kind,index)=>`<text class="agent-column-label" x="${90+index*230}" y="30" text-anchor="middle">${esc(kind)}</text>`).join('');
+  return `<div class="agent-graph-scroll"><div class="system-board agent-graph-board" style="height:${height}px"><svg class="system-svg" viewBox="0 0 1100 ${height}" aria-hidden="true"><defs><marker id="agent-arrow-directs" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0L7 3L0 6Z" fill="var(--green)"/></marker><marker id="agent-arrow-reviews" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0L7 3L0 6Z" fill="var(--amber)"/></marker><marker id="agent-arrow-built" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0L7 3L0 6Z" fill="var(--blue)"/></marker><marker id="agent-arrow-other" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0L7 3L0 6Z" fill="var(--muted)"/></marker></defs>${headings}${paths}</svg>${nodes}</div></div>`;
+}
+function openAgentDrill(agentId){
+  const agent=(agentGraph.agents||[]).find(item=>String(item.agent_id)===String(agentId));if(!agent)return;
+  const q=agent.quality,stats=[
+    {label:'Kind',value:agent.kind||'—'},{label:'Model',value:[agent.provider,agent.model].filter(Boolean).join(' · ')||'—'},
+    {label:'Status',value:agent.status||'—'},{label:'Runs',value:number(agent.run_count)},{label:'Total cost',value:money(agent.total_cost)}
+  ];
+  if(agent.kind==='builder')stats.push({label:'First-pass yield',value:q?agentPercent(q.fpy):'—'},{label:'Mean attempts',value:q?agentDecimal(q.mean_attempts):'—'},{label:'Average score',value:q?`${agentDecimal(q.avg_score)}/20`:'—'});
+  const rows=(agentGraph.recent_runs||[]).filter(run=>String(run.agent_id)===String(agent.agent_id)).map(run=>({label:run.work_id||run.job_id||'Run',value:money(run.cost),sub:[run.outcome||'Outcome unavailable',date(run.created_at)].join(' · ')}));
+  openDrill({title:agent.name||agent.agent_id||'Agent',subtitle:[agent.kind,agent.model].filter(Boolean).join(' · '),stats,rows,rowsTitle:'Recent runs',note:rows.length?'':'No recent runs are available for this agent.'});
+}
+function renderAgentRoster(agents){
+  if(!agents.length)return '<div class="empty-state"><strong>No workforce activity yet</strong><p>Agents appear here after the runner processes real jobs.</p></div>';
+  return `<table class="queue-table"><thead><tr><th>Agent</th><th>Model</th><th>Status</th><th>Runs</th><th>Cost</th><th>Quality</th></tr></thead><tbody>${agents.map(agent=>`<tr><td><strong>${esc(agent.name||agent.agent_id||'Unnamed agent')}</strong><small><span class="chip agent-kind kind-${agentKind(agent)}">${esc(agent.kind||'unknown')}</span></small></td><td>${esc(agent.model||'—')}<small>${esc(agent.provider||'')}</small></td><td><span class="run-chip ${agent.status==='retired'?'muted':''}">${esc(agent.status||'—')}</span></td><td>${number(agent.run_count)}</td><td>${money(agent.total_cost)}</td><td>${esc(agentQuality(agent))}</td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderAgents(){const c=provider('claude'),x=provider('codex'),agents=agentGraph.agents||[],edges=agentGraph.edges||[];$('[data-panel="agents"]').innerHTML=pageHead('Agents','Model roles, observed activity, and the planned orchestration hierarchy.','Runtime status is distinct from historical usage')+`<div class="agent-grid">
   ${agentCard('O','CoS Orchestrator','Claude Opus 4.8','Architecture, decomposition, arbitration, acceptance, and escalation.','primary','Configured','Not running')}
   ${agentCard('C','Claude','Opus / Sonnet / Haiku',`${number(c.events)} completed exchanges across ${number(c.sessions)} sessions.`,'',`${money(c.est_cost)} est.`,`${compact(tokensAll(c))} tokens`)}
   ${agentCard('X','Codex','GPT-5.x repository worker',`${number(x.events)} recorded events across ${number(x.sessions)} sessions.`,'',`${money(x.est_cost)} est.`,`${compact(tokensAll(x))} tokens`)}
   </div><div class="card" style="margin-top:14px"><div class="card-head"><div><h3>Model routing</h3><p>Use the least expensive model that can satisfy the packet and verification contract.</p></div></div><div class="routing-grid">
   <div class="route"><strong>Opus 4.8</strong><p>Orchestration, ambiguous architecture, conflict resolution, high-risk acceptance.</p></div><div class="route"><strong>Sonnet</strong><p>Implementation, synthesis, review, and surgical revision.</p></div><div class="route"><strong>Haiku</strong><p>Narrow recon, extraction, inventory, and deterministic tool work.</p></div><div class="route"><strong>Codex</strong><p>Repository editing, terminal execution, tests, and coding-agent workflows.</p></div>
-  </div></div>`}
+  </div></div><article class="card" style="margin-top:14px"><div class="card-head"><div><h3>Agent org graph</h3><p>Derived from real executions — who directs, builds, and reviews whom.</p></div></div>${renderAgentGraph(agents,edges)}</article><article class="card" style="margin-top:14px"><div class="card-head"><div><h3>Workforce</h3><p>Live roster, execution volume, spend, and builder quality.</p></div></div>${renderAgentRoster(agents)}</article>`}
 function agentCard(icon,title,model,detail,mode,a,b){return `<article class="agent-card ${mode}"><span class="agent-icon">${icon}</span><h3>${esc(title)}</h3><p>${esc(detail)}</p><div class="agent-meta"><div><small>Model / role</small><strong>${esc(model)}</strong></div><div><small>Est. cost</small><strong>${esc(a)}</strong></div><div><small>Volume</small><strong>${esc(b)}</strong></div><div><small>Authority</small><strong>${title==='CoS Orchestrator'?'Human-gated':'Task packet'}</strong></div></div></article>`}
 
 /* ── Metrics ──────────────────────────────────────────────────────── */
@@ -512,6 +566,7 @@ function bindNavigation(){
   $$('[data-metric]').forEach(el=>el.onclick=()=>drillMetric(el.dataset.metric));
   $$('[data-run]').forEach(el=>el.onclick=()=>openRunView(el.dataset.run,el.dataset.runTitle));
   $$('[data-client]').forEach(el=>el.onclick=()=>openClientDrill(el.dataset.client));
+  $$('[data-agent]').forEach(el=>el.onclick=()=>openAgentDrill(el.dataset.agent));
   $$('[data-mode]').forEach(el=>el.onclick=()=>{usageMode=el.dataset.mode;renderUsage();bindNavigation()});
   $$('[data-drill]').forEach(el=>el.onclick=()=>{const d=el.dataset.drill;if(d==='cost')drillCost();else if(d==='tokens')drillTokens();else if(d==='work-tab')activate('work');else if(d==='approvals-tab')activate('approvals')});
   bindOfficeForms($('[data-panel="clients"]'));
@@ -526,7 +581,7 @@ function render(){
   const connected=state.control_plane.local_runner==='connected';$('#runner-pill').classList.toggle('connected',connected);$('#runner-pill').innerHTML=`<i></i> ${connected?'Local runner connected':'Local runner offline'}`;
   renderOverview();renderClients();renderMoney();renderMetrics();renderWork();renderAgents();renderUsage();renderApprovals();renderSystem();bindNavigation();activate(location.hash.slice(1)||'overview',false);
 }
-async function load(){const[dashboard,quality,officeResult]=await Promise.all([sb.rpc('api_dashboard_state'),sb.rpc('api_quality_state'),sb.rpc('api_office_state')]);const{data:office,error:officeError}=officeResult;if(dashboard.error)throw dashboard.error;if(quality.error)throw quality.error;if(officeError)throw officeError;officeState=office||{clients:[]};state={...dashboard.data,quality:quality.data||{reviews:[],contracts:[],skill_summary:{},skill_weekly:[]}};render()}
+async function load(){const[dashboard,quality,officeResult,agentGraphResult]=await Promise.all([sb.rpc('api_dashboard_state'),sb.rpc('api_quality_state'),sb.rpc('api_office_state'),sb.rpc('api_agent_graph')]);const{data:office,error:officeError}=officeResult,{data:agentGraphData,error:agentGraphError}=agentGraphResult;if(dashboard.error)throw dashboard.error;if(quality.error)throw quality.error;if(officeError)throw officeError;if(agentGraphError)throw agentGraphError;officeState=office||{clients:[]};agentGraph=agentGraphData||{agents:[],edges:[],recent_runs:[]};state={...dashboard.data,quality:quality.data||{reviews:[],contracts:[],skill_summary:{},skill_weekly:[]}};render()}
 async function decideApproval(id,approved,startProvider='claude'){const model=startProvider==='codex'?'Codex':'Claude';if(!confirm(`${approved?`Approve this plan and start with ${model}? Its job is queued for the runner immediately.`:'Reject this execution gate?'}`))return;const{error}=await sb.rpc('api_decide_approval',{p_approval_id:id,p_approved:approved,p_note:`Decided from CS Ventures control dashboard${approved?`; start model: ${model}`:''}`,p_start_provider:startProvider});if(error){alert(`Action failed: ${error.message}`);return}await load()}
 async function approveRelease(workId,title,button){if(!confirm(`Approve release for "${title||workId}"?\n\nThis records your acceptance and marks the work completed. It will not rerun an agent, merge a pull request, or deploy code.`))return;const original=button?.textContent;if(button){button.disabled=true;button.textContent='Approving…'}const{error}=await sb.rpc('api_release',{p_work_id:workId,p_note:'Release approved from CS Ventures control dashboard'});if(error){if(button){button.disabled=false;button.textContent=original}alert(`Release failed: ${error.message}`);return}await load()}
 async function decideRecommendation(id,action){const msg=action==='accept'?'Turn this recommendation into a work item? You will still approve its plan before anything runs.':'Dismiss this recommendation?';if(!confirm(msg))return;const{data,error}=await sb.rpc('api_decide_recommendation',{p_recommendation_id:id,p_action:action,p_note:'Decided from CS Ventures control dashboard'});if(error){alert(`Action failed: ${error.message}`);return}if(action==='accept'&&data?.work_id)console.log('created',data.work_id);await load()}
