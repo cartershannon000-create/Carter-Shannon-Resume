@@ -71,6 +71,7 @@
           <button id="tab-overview" type="button" role="tab" aria-selected="false" aria-controls="panel-overview" data-dashboard="system" data-tab="overview">Overview</button>
           <button id="tab-clients" type="button" role="tab" aria-selected="false" aria-controls="panel-clients" data-dashboard="client" data-tab="clients">Clients <b id="client-count">—</b></button>
           <button id="tab-finances" type="button" role="tab" aria-selected="false" aria-controls="panel-finances" data-dashboard="client" data-tab="finances">Finances</button>
+          <button id="tab-calendar" type="button" role="tab" aria-selected="false" aria-controls="panel-calendar" data-dashboard="client" data-tab="calendar">Calendar</button>
           <button id="tab-metrics" type="button" role="tab" aria-selected="false" aria-controls="panel-metrics" data-dashboard="system" data-tab="metrics">Metrics <b id="metric-count">—</b></button>
           <button id="tab-work" type="button" role="tab" aria-selected="false" aria-controls="panel-work" data-dashboard="system" data-tab="work">Work Queue <b id="work-count">—</b></button>
           <button id="tab-agents" type="button" role="tab" aria-selected="false" aria-controls="panel-agents" data-dashboard="system" data-tab="agents">Agents</button>
@@ -85,8 +86,8 @@
       <section id="home" class="home-launcher" aria-labelledby="home-title">
         <div class="page-head"><div><h2 id="home-title">Choose a dashboard</h2><p>Open the workspace for the part of the business you want to run.</p></div></div>
         <div class="home-grid">
-          <button class="agent-card home-card clickable" type="button" data-app-link="client" aria-label="Open Client Dashboard: Clients and Finances">
-            <span class="agent-icon">C</span><span class="home-card-title">Client Dashboard</span><span class="home-card-detail">Clients and Finances</span><strong>Open on Clients →</strong>
+          <button class="agent-card home-card clickable" type="button" data-app-link="client" aria-label="Open Client Dashboard: Clients, Finances, and Calendar">
+            <span class="agent-icon">C</span><span class="home-card-title">Client Dashboard</span><span class="home-card-detail">Clients, Finances, and Calendar</span><strong>Open on Clients →</strong>
           </button>
           <button class="agent-card home-card clickable" type="button" data-app-link="system" aria-label="Open System Dashboard: Overview, Metrics, Work Queue, Agents, Usage, Approvals, and System">
             <span class="agent-icon">S</span><span class="home-card-title">System Dashboard</span><span class="home-card-detail">Overview, Metrics, Work Queue, Agents, Usage, Approvals, and System</span><strong>Open on Overview →</strong>
@@ -97,6 +98,7 @@
       <section id="panel-overview" class="tab-panel" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview"></section>
       <section id="panel-clients" class="tab-panel" role="tabpanel" aria-labelledby="tab-clients" data-panel="clients"></section>
       <section id="panel-finances" class="tab-panel" role="tabpanel" aria-labelledby="tab-finances" data-panel="finances"></section>
+      <section id="panel-calendar" class="tab-panel" role="tabpanel" aria-labelledby="tab-calendar" data-panel="calendar"></section>
       <section id="panel-metrics" class="tab-panel" role="tabpanel" aria-labelledby="tab-metrics" data-panel="metrics"></section>
       <section id="panel-work" class="tab-panel" role="tabpanel" aria-labelledby="tab-work" data-panel="work"></section>
       <section id="panel-agents" class="tab-panel" role="tabpanel" aria-labelledby="tab-agents" data-panel="agents"></section>
