@@ -170,16 +170,22 @@ body.print .nav, body.print .hint{ display:none; }
 #s1.cover h1 .l1{ display:block; font-size:44px; }
 #s1.cover h1 .l2{ display:block; font-size:32px; margin-top:8px; color:#DCEBE1; }
 /* sections/00-front-matter/2-exec-summary.html */
-#s2 .es-grid{ display:grid; grid-template-columns:1fr 1fr 1fr 250px; gap:32px; margin-top:8px; align-items:stretch; flex:1; }
-#s2 .es-col{ display:flex; flex-direction:column; justify-content:flex-start; }
+#s2 .es-body{ flex:1; display:flex; flex-direction:column; }
+#s2 .es-grid{ display:grid; grid-template-columns:1fr 1fr 1fr 250px; gap:32px; margin-top:8px; align-items:start; }
+#s2 .es-col{ display:flex; flex-direction:column; }
 #s2 .es-col .eyebrow{ font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--cyan-strong); margin:0 0 8px; }
 #s2 .es-col h3{ font-size:15px; font-weight:700; margin:0 0 10px; }
-#s2 .es-col p{ font-size:15px; line-height:1.75; color:#333; margin:0 0 10px; }
+#s2 .es-col p{ font-size:15px; line-height:1.7; color:#333; margin:0 0 10px; }
 #s2 .es-col b{ color:var(--callout); }
-#s2 .es-box{ background:var(--navy); color:#fff; border-radius:4px; padding:32px 22px; display:flex; flex-direction:column; justify-content:flex-start; gap:14px; }
-#s2 .es-box h4{ font-size:14px; margin:0 0 4px; color:var(--cyan); }
-#s2 .es-box .big{ font-family:var(--serif); font-weight:700; font-size:32px; line-height:1; margin-bottom:4px; }
+#s2 .es-box{ align-self:start; background:var(--navy); color:#fff; border-radius:8px; padding:22px 22px 24px; }
+#s2 .es-box h4{ font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin:0 0 8px; color:var(--cyan); }
+#s2 .es-box .big{ font-family:var(--serif); font-weight:700; font-size:34px; line-height:1; margin-bottom:8px; }
 #s2 .es-box .lbl{ font-size:13px; line-height:1.5; color:#c6d3dc; }
+#s2 .es-kicker{ margin-top:auto; display:flex; align-items:center; gap:24px; background:var(--navy); border-left:8px solid var(--cyan); border-radius:10px; padding:18px 28px; }
+#s2 .es-kicker .mark{ flex:none; width:66px; height:50px; color:#fff; }
+#s2 .es-kicker .mark svg{ width:100%; height:100%; }
+#s2 .es-kicker .ktext{ font-size:16.5px; line-height:1.42; color:#fff; font-weight:500; }
+#s2 .es-kicker .ktext b{ color:#4CC98A; font-weight:700; }
 /* sections/01-opportunity/3-two-engines.html */
 #s3 .cols2{ display:flex; gap:56px; height:412px; margin-top:20px; }
 #s3 .cols2 > div{ display:flex; flex-direction:column; flex:1 1 0; min-width:0; }
@@ -453,29 +459,41 @@ body.print .nav, body.print .hint{ display:none; }
 <section id="s2" class="slide" data-evidence="E001|E002|E003|E004">
   <h2 class="action-title">PE Conviction Sits at 84% While Enterprise-Scale Deployment Sits at&nbsp;7%, so the Binding Constraint Is Operating Model, Not Belief</h2>
   <div class="rule"></div>
-  <div class="es-grid">
-    <div class="es-col">
-      <div class="eyebrow">Conviction</div>
-      <h3>High Conviction, Low Execution Clarity</h3>
-      <p>PE has conviction, not execution clarity: <b>84%</b> of funds expect AI to transform portfolio value.</p>
-      <p>Only <b>7%</b> reach enterprise-scale deployment; <b>43%</b> stay experimental, limited, or immaterial.</p>
+  <div class="es-body">
+    <div class="es-grid">
+      <div class="es-col">
+        <div class="eyebrow">Conviction</div>
+        <h3>High Conviction, Low Execution Clarity</h3>
+        <p>PE has conviction, not execution clarity: <b>84%</b> of funds expect AI to transform portfolio value.</p>
+        <p>Only <b>7%</b> reach enterprise-scale deployment; <b>43%</b> stay experimental, limited, or immaterial.</p>
+      </div>
+      <div class="es-col">
+        <div class="eyebrow">The Stall</div>
+        <h3>Why Execution Stalls</h3>
+        <p>Talent and skills gaps hold back <b>35%</b> of funds; data readiness holds back <b>33%</b> more.</p>
+        <p>Time-to-value concerns account for a further <b>29%</b> -- an operating-model problem, not a belief problem.</p>
+      </div>
+      <div class="es-col">
+        <div class="eyebrow">The Close</div>
+        <h3>What Closes the Gap</h3>
+        <p>Technical fluency ships the build. Operator fluency connects it to EBITDA.</p>
+        <p>Adoption discipline changes how work is actually performed -- the piece most engagements skip.</p>
+      </div>
+      <div class="es-box">
+        <h4>The Ask</h4>
+        <div class="big">30&ndash;60 Days</div>
+        <div class="lbl">Select one portfolio company for a 30&ndash;60-day AI-to-EBITDA diagnostic.</div>
+      </div>
     </div>
-    <div class="es-col">
-      <div class="eyebrow">The Stall</div>
-      <h3>Why Execution Stalls</h3>
-      <p>Talent and skills gaps hold back <b>35%</b> of funds; data readiness holds back <b>33%</b> more.</p>
-      <p>Time-to-value concerns account for a further <b>29%</b> -- an operating-model problem, not a belief problem.</p>
-    </div>
-    <div class="es-col">
-      <div class="eyebrow">The Close</div>
-      <h3>What Closes the Gap</h3>
-      <p>Technical fluency ships the build. Operator fluency connects it to EBITDA.</p>
-      <p>Adoption discipline changes how work is actually performed -- the piece most engagements skip.</p>
-    </div>
-    <div class="es-box">
-      <h4>The Ask</h4>
-      <div class="big">30&ndash;60 Days</div>
-      <div class="lbl">Select one portfolio company for a 30&ndash;60-day AI-to-EBITDA diagnostic.</div>
+
+    <div class="es-kicker">
+      <div class="mark">
+        <svg viewBox="0 0 205 155" fill="currentColor" aria-hidden="true">
+          <text font-family="Didot,'Bodoni Moda','Bodoni 72',Georgia,serif" font-size="150" x="4" y="108">C</text>
+          <text font-family="Didot,'Bodoni Moda','Bodoni 72',Georgia,serif" font-size="125" x="78" y="129">S</text>
+        </svg>
+      </div>
+      <div class="ktext"><b>CS Ventures</b> provides the expertise and data-backed strategy to turn that gap into real returns for your portfolio and your bottom line.</div>
     </div>
   </div>
   <div class="source">Source: EY, "How AI is sustainably transforming value creation in private equity," 2026 [S001]; FTI Consulting, "2026 Private Equity AI Radar" (200 PE decision makers, December 2025) [S002].</div>
