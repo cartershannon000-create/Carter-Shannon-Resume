@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>AI-to-EBITDA Strategy for PE-Backed Portfolio Companies</title><link rel="stylesheet" href="/site.css">
+<title>AI Driven Growth: Improving EBITDA Through Efficiencies and Untapped Opportunities</title>
 <style>
 /* McKinsey house-style slide system — shared tokens + reusable frame.
    16:9 slide = 1280x720. Import into each template; the template only fills the visual zone.
@@ -139,7 +139,7 @@ ul.dash li::before{ content:"—"; position:absolute; left:0; color:var(--muted)
 <style>
 /* presenter shell */
 html,body{ height:100%; background:#12171c; overflow:hidden; }
-.stage{ position:absolute; top:calc(50% + 28px); left:50%; width:1280px; height:720px;
+.stage{ position:absolute; top:50%; left:50%; width:1280px; height:720px;
         transform:translate(-50%,-50%) scale(var(--k,1)); transform-origin:center center; }
 .stage .slide{ position:absolute; inset:0; display:none; box-shadow:0 12px 60px rgba(0,0,0,.5); }
 .stage .slide.active{ display:flex; }
@@ -148,206 +148,268 @@ html,body{ height:100%; background:#12171c; overflow:hidden; }
       font-family:Inter,Arial,sans-serif; font-size:13px; }
 .nav button{ background:#20272e; color:#cdd8df; border:1px solid #2f3942; border-radius:5px;
       padding:6px 12px; cursor:pointer; font:inherit; }
-.hint{ position:fixed; top:70px; right:18px; color:#5c6b76;
+.hint{ position:fixed; top:14px; right:18px; color:#5c6b76;
       font-family:Inter,Arial,sans-serif; font-size:12px; z-index:10; }
 /* shot mode: exactly one slide, 1:1 at origin, no chrome */
 body.shot{ overflow:visible; background:#fff; }
 body.shot .stage{ position:absolute; top:0; left:0; transform:none; }
-body.shot .nav, body.shot .hint, body.shot .csv-bar{ display:none; }
+body.shot .nav, body.shot .hint{ display:none; }
 /* print mode: all slides stacked, one per page */
 body.print{ overflow:visible; background:#fff; }
 body.print .stage{ position:static; transform:none; width:1280px; height:auto; margin:0; }
 body.print .slide{ display:flex; position:relative; inset:auto; box-shadow:none;
       page-break-after:always; break-after:page; }
-body.print .nav, body.print .hint, body.print .csv-bar{ display:none; }
+body.print .nav, body.print .hint{ display:none; }
 @page{ size:1280px 720px; margin:0; }
 /* per-slide scoped styles */
 /* sections/00-front-matter/1-cover.html */
 #s1.dark.cover{ background:linear-gradient(118deg,#081F16 0%, #0E362A 46%, #17553D 100%); }
 #s1.cover .flowlines{ position:absolute; left:0; top:0; width:1280px; height:720px; pointer-events:none; }
 #s1.cover .logo, #s1.cover h1, #s1.cover .subline, #s1.cover .footnote{ position:relative; z-index:1; }
-/* sections/00-front-matter/2-agenda.html */
-#s2.agenda-4 .agenda-grid{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:34px; margin-top:30px; flex:1; }
-#s2.agenda-4 .agenda-grid > div{ display:flex; flex-direction:column; justify-content:center; gap:16px; }
-#s2.agenda-4 .num{ font-family:var(--serif); font-weight:700; font-size:54px; line-height:1; color:var(--cyan); opacity:.4; margin:0; }
-#s2.agenda-4 .group-h{ font-size:26px; }
-#s2.agenda-4 .group-h .letter{ color:var(--cyan); margin-right:6px; }
-#s2.agenda-4 .agenda-item{ font-size:17px; padding:12px 0; }
-/* sections/00-front-matter/3-exec-summary.html */
-#s3 .es-grid{ display:grid; grid-template-columns:1fr 1fr 1fr 250px; gap:32px; margin-top:40px; align-items:stretch; flex:1; }
-#s3 .es-col{ display:flex; flex-direction:column; justify-content:center; }
-#s3 .es-col .eyebrow{ font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--cyan-strong); margin:0 0 8px; }
-#s3 .es-col h3{ font-size:15px; font-weight:700; margin:0 0 10px; }
-#s3 .es-col p{ font-size:15px; line-height:1.75; color:#333; margin:0 0 10px; }
-#s3 .es-col b{ color:var(--callout); }
-#s3 .es-box{ background:var(--navy); color:#fff; border-radius:4px; padding:22px; display:flex; flex-direction:column; justify-content:space-between; }
-#s3 .es-box h4{ font-size:14px; margin:0 0 12px; color:var(--cyan); }
-#s3 .es-box .big{ font-family:var(--serif); font-weight:700; font-size:32px; line-height:1; margin-bottom:4px; }
-#s3 .es-box .lbl{ font-size:12px; color:#c6d3dc; margin-bottom:14px; }
-/* sections/01-the-gap/5-icon-stat-grid.html */
-#s5 .is-hero{ display:flex; align-items:center; justify-content:center; gap:52px; margin-top:46px; }
-#s5 .is-num{ text-align:center; }
-#s5 .is-num .stat-huge{ font-family:var(--serif); font-weight:700; font-size:118px; line-height:.86; letter-spacing:-.02em; }
-#s5 .is-num.a .stat-huge{ color:#fff; }
-#s5 .is-num.b .stat-huge{ color:var(--cyan); }
-#s5 .is-num .stat-huge-label{ font-size:16px; line-height:1.4; max-width:230px; margin:16px auto 0; }
-#s5.dark .is-num .stat-huge-label{ color:#DCE8DE; }
-#s5 .is-divider{ width:1px; align-self:stretch; margin:8px 0; }
-#s5.dark .is-divider{ background:#2E5646; }
-#s5 .is-support{ margin:40px auto 0; max-width:820px; text-align:center; }
-#s5 .is-support-line{ font-size:14.5px; line-height:1.55; }
-#s5 .is-support-line + .is-support-line{ margin-top:8px; }
-#s5.dark .is-support-line{ color:#B8CBBE; }
-#s5.dark .is-support-line b{ color:#fff; }
-#s5.dark .action-title{ color:#fff; }
-#s5.dark .subtitle2{ color:#B8CBBE; font-size:15px; }
-/* sections/01-the-gap/6-two-column.html */
-#s6 .cols2{ display:flex; gap:56px; height:412px; margin-top:20px; }
-#s6 .cols2 > div{ display:flex; flex-direction:column; flex:1 1 0; min-width:0; }
-#s6 .cols2 ul.dash li{ font-size:15.5px; line-height:1.6; padding:0 0 20px 18px; }
-#s6 .impact-band{ margin-top:auto; padding:16px 20px; border-radius:4px; font-size:14.5px; line-height:1.5; color:var(--ink); min-height:76px; display:flex; align-items:center; }
-#s6 .impact-band b{ font-weight:700; }
-#s6 .impact-band.eff{ background:var(--cat-1s); }
-#s6 .impact-band.opp{ background:var(--cat-2s); }
-/* sections/02-the-proof/8-segment-impact-list.html */
-#s8 .si-wrap{ display:grid; grid-template-columns:0.95fr 1.75fr; gap:44px; margin-top:16px; }
-#s8 .si-hero .stat{ font-family:var(--serif); font-weight:700; font-size:44px; color:var(--callout); line-height:1.05; }
-#s8 .si-hero .cap{ font-size:14px; color:#2c352f; margin-top:12px; line-height:1.5; max-width:260px; }
-#s8 .si-row{ display:grid; grid-template-columns:0.8fr 1.6fr; gap:22px; padding:14px 0; border-top:1px solid var(--hair); align-items:start; }
-#s8 .si-row:first-child{ border-top:none; }
-#s8 .si-seg{ display:flex; align-items:center; gap:12px; }
-#s8 .si-seg .ic{ width:30px; height:30px; color:var(--navy); flex:none; }
-#s8 .si-seg .lbl{ font-size:15px; font-weight:600; color:var(--ink); line-height:1.2; }
-#s8 .si-desc{ font-size:13px; color:#3c4a42; line-height:1.45; }
-#s8 .si-desc b{ color:var(--ink); }
-/* sections/02-the-proof/9-before-after.html */
-#s9 .ba{ display:grid; grid-template-columns:1fr 60px 1fr; gap:0; margin-top:22px; align-items:stretch; }
-#s9 .ba .panel{ border-radius:5px; padding:22px 24px; }
-#s9 .ba .before{ background:var(--paper-2); border:1px solid var(--hair); }
-#s9 .ba .after{ background:var(--navy); color:#fff; }
-#s9 .ba .ey{ font-size:12px; letter-spacing:.12em; text-transform:uppercase; font-weight:600; margin-bottom:4px; }
-#s9 .ba .before .ey{ color:var(--muted); }
-#s9 .ba .after .ey{ color:var(--cyan); }
-#s9 .ba h3{ margin:0 0 14px; font-family:var(--serif); font-size:22px; }
-#s9 .ba ul{ list-style:none; margin:0; padding:0; }
-#s9 .ba li{ font-size:13.5px; line-height:1.4; padding:8px 0 8px 20px; position:relative; }
-#s9 .ba .before li{ color:#4a5650; border-top:1px solid var(--hair); }
-#s9 .ba .before li:first-child{ border-top:none; }
-#s9 .ba .after li{ color:#dfeae2; border-top:1px solid #2E5646; }
-#s9 .ba .after li:first-child{ border-top:none; }
-#s9 .ba .before li::before{ content:"\00d7"; position:absolute; left:0; color:#9AA79D; font-weight:700; }
-#s9 .ba .after li::before{ content:"\2713"; position:absolute; left:0; color:var(--cyan); font-weight:700; }
-#s9 .arrow{ display:flex; align-items:center; justify-content:center; color:var(--callout); font-size:34px; }
-#s9 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:64px; }
-#s9 .kicker b{ color:#4CC98A; }
-/* sections/02-the-proof/11-ranked-bar.html */
-#s10 .rb{ margin-top:6px; }
-#s10 .rb-row{ display:grid; grid-template-columns:200px 1fr 60px; align-items:center; gap:12px; margin-bottom:16px; }
-#s10 .rb-lbl{ font-size:12.5px; color:var(--ink); text-align:right; font-weight:500; line-height:1.25; }
-#s10 .rb-track{ height:26px; background:var(--paper-2); border-radius:3px; overflow:hidden; }
-#s10 .rb-fill{ height:100%; background:var(--cyan); border-radius:3px; }
-#s10 .rb-row.top .rb-fill{ background:var(--callout); }
-#s10 .rb-row.top .rb-lbl{ font-weight:700; color:var(--callout); }
-#s10 .rb-val{ font-family:var(--serif); font-weight:700; font-size:18px; color:var(--ink); }
-#s10 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:22px; }
+#s1.cover h1{ font-family:var(--serif); font-weight:700; line-height:1.16; margin:0 0 20px; max-width:820px; }
+#s1.cover h1 .l1{ display:block; font-size:44px; }
+#s1.cover h1 .l2{ display:block; font-size:32px; margin-top:8px; color:#DCEBE1; }
+/* sections/00-front-matter/2-exec-summary.html */
+#s2 .es-grid{ display:grid; grid-template-columns:1fr 1fr 1fr 250px; gap:32px; margin-top:40px; align-items:stretch; flex:1; }
+#s2 .es-col{ display:flex; flex-direction:column; justify-content:center; }
+#s2 .es-col .eyebrow{ font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--cyan-strong); margin:0 0 8px; }
+#s2 .es-col h3{ font-size:15px; font-weight:700; margin:0 0 10px; }
+#s2 .es-col p{ font-size:15px; line-height:1.75; color:#333; margin:0 0 10px; }
+#s2 .es-col b{ color:var(--callout); }
+#s2 .es-box{ background:var(--navy); color:#fff; border-radius:4px; padding:22px; display:flex; flex-direction:column; justify-content:center; gap:14px; }
+#s2 .es-box h4{ font-size:14px; margin:0 0 4px; color:var(--cyan); }
+#s2 .es-box .big{ font-family:var(--serif); font-weight:700; font-size:32px; line-height:1; margin-bottom:4px; }
+#s2 .es-box .lbl{ font-size:13px; line-height:1.5; color:#c6d3dc; }
+/* sections/01-opportunity/3-two-engines.html */
+#s3 .cols2{ display:flex; gap:56px; height:412px; margin-top:20px; }
+#s3 .cols2 > div{ display:flex; flex-direction:column; flex:1 1 0; min-width:0; }
+#s3 .def{ font-size:14.5px; line-height:1.5; color:var(--ink); margin:2px 0 16px; padding-bottom:14px; border-bottom:1px solid var(--hair); }
+#s3 .def b{ font-weight:700; }
+#s3 .cols2 ul.dash li{ font-size:15px; line-height:1.55; padding:0 0 16px 18px; }
+#s3 .impact-band{ margin-top:auto; padding:16px 20px; border-radius:4px; font-size:14.5px; line-height:1.5; color:var(--ink); min-height:76px; display:flex; align-items:center; }
+#s3 .impact-band b{ font-weight:700; }
+#s3 .impact-band.eff{ background:var(--cat-1s); }
+#s3 .impact-band.opp{ background:var(--cat-2s); }
+/* sections/01-opportunity/4-replit-at-scale.html */
+#s4 .eyebrow{ margin:2px 0 0; }
+#s4 .kpis{ flex:1; display:grid; grid-template-columns:repeat(4,1fr); gap:0; align-content:center; margin-top:6px; }
+#s4 .kpi{ padding:0 28px; border-left:1px solid var(--hair); }
+#s4 .kpi:first-child{ border-left:0; padding-left:0; }
+#s4 .kpi .ic{ width:32px; height:32px; color:var(--cat-1); margin-bottom:14px; }
+#s4 .kpi .n{ font-family:var(--serif); font-weight:700; font-size:64px; color:var(--callout); line-height:.95; }
+#s4 .kpi .n small{ font-size:30px; }
+#s4 .kpi .l{ font-size:15px; font-weight:600; color:var(--ink); margin-top:14px; line-height:1.35; min-height:40px; }
+#s4 .kpi .d{ font-size:12px; color:var(--muted); margin-top:10px; line-height:1.4; }
+#s4 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:20px 26px; font-size:15px; line-height:1.5; margin-top:16px; }
+#s4 .kicker b{ color:#4CC98A; }
+/* sections/01-opportunity/5-before-after.html */
+#s5 .ba{ display:grid; grid-template-columns:1fr 60px 1fr; gap:0; margin-top:26px; align-items:stretch; }
+#s5 .ba .panel{ border-radius:5px; padding:24px 26px; }
+#s5 .ba .before{ background:var(--paper-2); border:1px solid var(--hair); }
+#s5 .ba .after{ background:var(--navy); color:#fff; }
+#s5 .ba .ey{ font-size:12px; letter-spacing:.12em; text-transform:uppercase; font-weight:600; margin-bottom:4px; }
+#s5 .ba .before .ey{ color:var(--muted); }
+#s5 .ba .after .ey{ color:var(--cyan); }
+#s5 .ba h3{ margin:0 0 14px; font-family:var(--serif); font-size:22px; }
+#s5 .ba ul{ list-style:none; margin:0; padding:0; }
+#s5 .ba li{ font-size:14px; line-height:1.45; padding:12px 0 12px 20px; position:relative; }
+#s5 .ba .before li{ color:#4a5650; border-top:1px solid var(--hair); }
+#s5 .ba .before li:first-child{ border-top:none; }
+#s5 .ba .after li{ color:#dfeae2; border-top:1px solid #2E5646; }
+#s5 .ba .after li:first-child{ border-top:none; }
+#s5 .ba .before li::before{ content:"\00d7"; position:absolute; left:0; color:#9AA79D; font-weight:700; }
+#s5 .ba .after li::before{ content:"\2713"; position:absolute; left:0; color:var(--cyan); font-weight:700; }
+#s5 .arrow{ display:flex; align-items:center; justify-content:center; color:var(--callout); font-size:30px; }
+#s5 .measure-eyebrow{ font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--cyan-strong); font-weight:700; margin:30px 0 12px; }
+#s5 .measure-row{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
+#s5 .measure{ border:1px dashed var(--hair); border-radius:5px; padding:16px 15px; background:var(--paper); }
+#s5 .measure .m-l{ font-size:12.5px; font-weight:600; color:var(--ink); line-height:1.34; }
+#s5 .measure .m-d{ font-size:11px; color:var(--muted); margin-top:7px; }
+/* sections/01-opportunity/6-multiples.html */
+#s6 .rb{ margin-top:6px; }
+#s6 .rb-row{ display:grid; grid-template-columns:200px 1fr 60px; align-items:center; gap:12px; margin-bottom:16px; }
+#s6 .rb-lbl{ font-size:12.5px; color:var(--ink); text-align:right; font-weight:500; line-height:1.25; }
+#s6 .rb-track{ height:26px; background:var(--paper-2); border-radius:3px; overflow:hidden; }
+#s6 .rb-fill{ height:100%; background:var(--cyan); border-radius:3px; }
+#s6 .rb-row.top .rb-fill{ background:var(--callout); }
+#s6 .rb-row.top .rb-lbl{ font-weight:700; color:var(--callout); }
+#s6 .rb-val{ font-family:var(--serif); font-weight:700; font-size:18px; color:var(--ink); }
+#s6 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:22px; }
+#s6 .kicker b{ color:#4CC98A; }
+/* sections/02-execution-stalls/7-barriers.html */
+#s7 .is-groups{ display:grid; grid-template-columns:repeat(5,1fr) 1.15fr; margin-top:16px; }
+#s7 .is-h{ font-size:14px; font-weight:600; padding-bottom:7px; }
+#s7.dark .is-h{ color:#fff; border-bottom:1px solid #2E5646; }
+#s7 .is-h.rail{ }
+#s7 .is-row{ display:grid; grid-template-columns:repeat(5,1fr) 1.15fr; }
+#s7 .is-unit{ padding:22px 16px 0 0; }
+#s7 .is-unit .ic{ width:30px; height:30px; }
+#s7.dark .is-unit .ic{ color:#EAF1EA; }
+#s7 .is-unit .stat{ font-family:var(--serif); font-weight:700; font-size:40px; line-height:1; margin:18px 0 9px; }
+#s7.dark .is-unit .stat{ color:#fff; }
+#s7 .is-unit .desc{ font-size:12px; line-height:1.42; }
+#s7.dark .is-unit .desc{ color:#B8CBBE; }
+#s7.dark .is-unit .desc b{ color:#fff; }
+#s7 .is-rail{ padding:22px 0 0 20px; }
+#s7.dark .is-rail{ border-left:1px solid #2E5646; }
+#s7.dark .is-rail li{ color:#B8CBBE; }
+#s7.dark .is-rail li::before{ color:var(--cyan); }
+#s7.dark .action-title{ color:#fff; }
+#s7.dark .subtitle2{ color:#B8CBBE; font-size:15px; }
+#s7 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:80px; }
+#s7 .kicker b{ color:#4CC98A; }
+#s7.dark .kicker{ background:#0C3327; }
+/* sections/02-execution-stalls/8-capability-split.html */
+#s8 .cm{ width:100%; border-collapse:collapse; margin-top:18px; table-layout:fixed; }
+#s8 .cm th{ font-size:13px; font-weight:600; text-align:center; padding:6px 8px; border-bottom:1px solid var(--ink); vertical-align:bottom; }
+#s8 .cm th.co{ text-align:left; width:27%; }
+#s8 .cm td{ padding:8px 8px; border-bottom:1px solid var(--hair); text-align:center; vertical-align:middle; }
+#s8 .cm td.co{ text-align:left; font-size:13.5px; line-height:1.28; font-weight:600; color:var(--ink); }
+#s8 .cm tr.us td{ background:var(--paper-2); }
+#s8 .cm tr.us td.co{ color:var(--callout); }
+#s8 .cm th.us{ color:var(--callout); }
+#s8 .lg{ display:flex; align-items:center; gap:10px; font-size:12px; color:var(--muted); margin-top:12px; }
+#s8 .lg svg{ vertical-align:middle; }
+#s8 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:13px 26px; font-size:14.5px; line-height:1.44; margin-top:18px; }
+#s8 .kicker b{ color:#4CC98A; }
+/* sections/03-execution-model/9-operating-loop.html */
+#s9 .loop-body{ flex:1; display:flex; flex-direction:column; justify-content:flex-start; }
+#s9 .loop{ position:relative; width:100%; height:380px; margin-top:14px; }
+#s9 .loop svg{ position:absolute; inset:0; width:100%; height:100%; }
+#s9 .node{ position:absolute; width:190px; }
+#s9 .node h4{ margin:0 0 3px; font-size:13.5px; font-weight:700; color:var(--ink); }
+#s9 .node p{ margin:0; font-size:11.5px; line-height:1.38; color:#455049; }
+#s9 .node.top, #s9 .node.bottom{ text-align:center; }
+#s9 .node.right{ text-align:left; }
+#s9 .node.left{ text-align:right; }
+#s9 .gov-rail{ margin-top:16px; background:var(--navy); border-radius:8px; padding:12px 26px;
+    display:flex; align-items:center; gap:26px; }
+#s9 .gov-rail .gl{ flex:none; }
+#s9 .gov-rail .gl .eyebrow{ color:#8FD4AE; margin-bottom:2px; }
+#s9 .gov-rail .gl .gt{ font-size:12px; color:#DCE8DE; max-width:150px; line-height:1.3; }
+#s9 .gov-rail .items{ flex:1; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+#s9 .gov-rail .items span{ font-size:12.5px; font-weight:600; color:#fff; white-space:nowrap; }
+#s9 .gov-rail .items i{ color:#3E6E54; font-style:normal; }
+#s9 .loop-center{ position:absolute; left:568px; top:193px; transform:translate(-50%,-50%); width:140px; text-align:center; pointer-events:none; }
+#s9 .loop-center .lc-eyebrow{ font-size:9.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:3px; }
+#s9 .loop-center .lc-label{ font-family:var(--serif); font-weight:700; font-size:16px; line-height:1.15; color:var(--callout); }
+/* sections/03-execution-model/10-diagnostic-deliverables.html */
+#s10 .body{ flex:1; display:flex; flex-direction:column; }
+#s10 .fg{ display:grid; grid-template-columns:repeat(3,1fr); gap:34px 36px; margin-top:26px; }
+#s10 .feat{ display:flex; gap:18px; align-items:flex-start; }
+#s10 .feat .ic{ width:60px; height:60px; border-radius:13px; flex:none; display:flex; align-items:center; justify-content:center;
+    background:var(--cs); color:var(--c); }
+#s10 .feat .ic svg{ width:32px; height:32px; }
+#s10 .feat h3{ margin:2px 0 7px; font-size:16px; font-weight:700; color:var(--ink); }
+#s10 .feat ul{ margin:0; padding:0; list-style:none; }
+#s10 .feat li{ position:relative; padding:0 0 6px 14px; font-size:13px; line-height:1.4; color:#3c4a42; }
+#s10 .feat li::before{ content:""; position:absolute; left:0; top:6px; width:5px; height:5px; border-radius:50%; background:var(--c); }
+#s10 .feat li:last-child{ padding-bottom:0; }
+#s10 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:16px 26px; font-size:14.5px; line-height:1.46; margin-top:auto; }
 #s10 .kicker b{ color:#4CC98A; }
-/* sections/02-the-proof/12-icon-stat-grid.html */
-#s11 .is-groups{ display:grid; grid-template-columns:repeat(5,1fr) 1.15fr; margin-top:16px; }
-#s11 .is-h{ font-size:14px; font-weight:600; padding-bottom:7px; }
-#s11.dark .is-h{ color:#fff; border-bottom:1px solid #2E5646; }
-#s11 .is-h.rail{ }
-#s11 .is-row{ display:grid; grid-template-columns:repeat(5,1fr) 1.15fr; }
-#s11 .is-unit{ padding:22px 16px 0 0; }
-#s11 .is-unit .ic{ width:30px; height:30px; }
-#s11.dark .is-unit .ic{ color:#EAF1EA; }
-#s11 .is-unit .stat{ font-family:var(--serif); font-weight:700; font-size:40px; line-height:1; margin:18px 0 9px; }
-#s11.dark .is-unit .stat{ color:#fff; }
-#s11 .is-unit .desc{ font-size:12px; line-height:1.42; }
-#s11.dark .is-unit .desc{ color:#B8CBBE; }
-#s11.dark .is-unit .desc b{ color:#fff; }
-#s11 .is-rail{ padding:22px 0 0 20px; }
-#s11.dark .is-rail{ border-left:1px solid #2E5646; }
-#s11.dark .is-rail li{ color:#B8CBBE; }
-#s11.dark .is-rail li::before{ color:var(--cyan); }
-#s11.dark .action-title{ color:#fff; }
-#s11.dark .subtitle2{ color:#B8CBBE; font-size:15px; }
-#s11 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:80px; }
+/* sections/03-execution-model/11-engagement-path.html */
+#s11 .sw{ display:grid; grid-template-columns:0.62fr 1fr 1fr 1fr; gap:0 14px; margin-top:20px; overflow:visible; }
+#s11 .ph{ background:var(--navy); color:#fff; border-radius:4px 4px 0 0; padding:11px 16px; }
+#s11 .ph .t{ font-weight:700; font-size:15px; }
+#s11 .ph .d{ font-size:11px; color:var(--cyan); letter-spacing:.03em; margin-top:2px; }
+#s11 .corner{ }
+#s11 .lane{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted);
+    display:flex; align-items:flex-start; padding:14px 12px 14px 0; border-top:1px solid var(--hair); }
+#s11 .cell{ position:relative; border-top:1px solid var(--hair); padding:13px 12px; overflow:visible; }
+#s11 .cell ul{ margin:0; padding:0; list-style:none; }
+#s11 .cell li{ font-size:12.5px; color:#3c4a42; line-height:1.42; padding:0 0 7px 14px; position:relative; }
+#s11 .cell li:last-child{ padding-bottom:0; }
+#s11 .cell li::before{ content:""; position:absolute; left:0; top:6px; width:6px; height:6px; border-radius:50%; background:var(--cyan); }
+#s11 .lane.first, #s11 .cell.first{ border-top:none; }
+#s11 .cell.gate{ background:var(--cat-1s); border-radius:5px; border-top:none; margin-top:8px; padding:11px 14px; }
+#s11 .cell.gate p{ margin:0; font-size:12.5px; font-weight:600; color:var(--ink); line-height:1.38; }
+#s11 .cell.gate.bridge::after{ content:""; position:absolute; right:-13px; top:50%; transform:translateY(-50%);
+    width:0; height:0; border-top:6px solid transparent; border-bottom:6px solid transparent; border-left:9px solid var(--cyan-strong); z-index:2; }
+#s11 .lane.gatelane{ align-items:center; padding-top:22px; }
+#s11 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:13px 26px; font-size:14px; line-height:1.44; margin-top:auto; }
 #s11 .kicker b{ color:#4CC98A; }
-#s11.dark .kicker{ background:#0C3327; }
-/* sections/03-the-wedge/14-competitor-matrix.html */
-#s13 .cm{ width:100%; border-collapse:collapse; margin-top:22px; }
-#s13 .cm th{ font-size:13px; font-weight:600; text-align:center; padding:8px 10px; border-bottom:1px solid var(--ink); vertical-align:bottom; }
-#s13 .cm th.co{ text-align:left; width:30%; }
-#s13 .cm td{ padding:14px 10px; border-bottom:1px solid var(--hair); text-align:center; }
-#s13 .cm td.co{ text-align:left; font-size:14px; font-weight:600; color:var(--ink); }
-#s13 .cm tr.us td{ background:var(--paper-2); }
-#s13 .cm tr.us td.co{ color:var(--callout); }
-#s13 .cm th.us{ color:var(--callout); }
-#s13 .lg{ display:flex; align-items:center; gap:10px; font-size:12px; color:var(--muted); margin-top:16px; }
-#s13 .lg svg{ vertical-align:middle; }
-#s13 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:26px; }
-#s13 .kicker b{ color:#4CC98A; }
-/* sections/03-the-wedge/15-data-table.html */
-#s14 .eng{ display:inline-block; padding:5px 12px; border-radius:4px; font-size:13px; font-weight:600; margin:2px 5px 2px 0; }
-#s14 .eng.e1{ background:var(--cat-1s); color:var(--cat-1); }
-#s14 .eng.e2{ background:var(--cat-2s); color:var(--cat-2); }
-#s14 .tbl{ font-size:14.5px; }
-#s14 .tbl th{ padding:10px 14px; }
-#s14 .tbl td{ padding:14px 14px; line-height:1.45; }
-#s14 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:18px 26px; font-size:15px; line-height:1.5; margin-top:26px; }
-#s14 .kicker b{ color:#4CC98A; }
-/* sections/03-the-wedge/16-manifesto.html */
-#s15 .manifesto{ display:flex; flex-direction:column; justify-content:center; height:100%; max-width:1000px; }
-#s15 .kicker{ font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--cyan); font-weight:700; margin-bottom:22px; }
-#s15 .big-statement{ font-family:var(--serif); font-weight:700; font-size:54px; line-height:1.12; letter-spacing:-.01em; margin:0; color:#fff; }
-#s15 .big-statement .g{ color:var(--cat-1); }
-#s15 .big-statement .a{ color:var(--cat-4); }
-#s15 .standfirst{ font-size:17px; line-height:1.55; color:#C6D6C9; max-width:720px; margin:28px 0 0; }
-#s15 .byline{ margin-top:34px; font-size:13px; color:#8FA89A; }
-#s15 .byline b{ color:#EAF1EA; font-weight:600; }
-/* sections/04-the-offer/18-segment-cards.html */
-#s17 .ladder{ margin-top:20px; }
-#s17 .lrow{ display:grid; grid-template-columns:52px 1fr 150px; align-items:center; gap:20px;
-    padding:14px 18px; border-bottom:1px solid var(--hair); }
-#s17 .lrow:first-child{ border-top:1px solid var(--hair); }
-#s17 .lrow.hl{ background:var(--cat-1s); border-radius:6px; border-bottom-color:transparent; }
-#s17 .lrow.hl + .lrow{ border-top:1px solid var(--hair); }
-#s17 .lrow .ln{ font-family:var(--serif); font-weight:700; font-size:34px; color:var(--callout); line-height:1; }
-#s17 .lrow .lb h3{ margin:0 0 3px; font-size:16px; font-weight:700; color:var(--ink); }
-#s17 .lrow .lb p{ margin:0; font-size:13.5px; line-height:1.45; color:#3c4a42; }
-#s17 .lrow .lb b{ color:var(--ink); }
-#s17 .lrow .lrole{ text-align:right; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
-#s17 .lrow.hl .lrole{ color:var(--cyan-strong); }
-/* sections/04-the-offer/19-key-takeaways.html */
-#s18 .kt{ margin-top:14px; }
-#s18 .kt-row{ display:grid; grid-template-columns:60px 1fr; gap:20px; padding:16px 0; border-top:1px solid var(--hair); align-items:start; }
-#s18 .kt-row:first-child{ border-top:none; }
-#s18 .kt-n{ font-family:var(--serif); font-weight:700; font-size:40px; color:var(--callout); line-height:.9; }
-#s18 .kt-b h4{ margin:0 0 4px; font-size:17.5px; color:var(--ink); }
-#s18 .kt-b p{ margin:0; font-size:14.5px; line-height:1.46; color:#3c4a42; }
-#s18 .kt-b b{ color:var(--ink); }
-#s18 .cta-bar{ margin-top:auto; padding:20px 28px; background:var(--navy); border-left:8px solid var(--cyan);
-    border-radius:6px; display:flex; align-items:center; gap:28px;
-    box-shadow:0 8px 26px rgba(16,61,46,.25); }
-#s18 .cta-bar .cta-label{ font-size:18px; color:#CFE0D4; font-weight:600; line-height:1.3; flex:none; }
-#s18 .cta-bar .cta-ask{ font-family:var(--serif); font-weight:700; font-size:21px; color:#fff; line-height:1.2; text-align:left; }
-#s18 .cta-bar .cta-ask b{ color:#4CC98A; font-weight:700; }
+/* sections/03-execution-model/12-close.html */
+#s12 .kt{ margin-top:20px; }
+#s12 .kt-row{ display:grid; grid-template-columns:56px 1fr; gap:20px; padding:32px 0; border-top:1px solid var(--hair); align-items:start; }
+#s12 .kt-row:first-child{ border-top:none; }
+#s12 .kt-n{ font-family:var(--serif); font-weight:700; font-size:34px; color:var(--callout); line-height:.9; }
+#s12 .kt-b h4{ margin:0 0 4px; font-size:16px; color:var(--ink); }
+#s12 .kt-b p{ margin:0; font-size:13.5px; line-height:1.48; color:#3c4a42; }
+#s12 .kt-b b{ color:var(--ink); }
+#s12 .cta-bar{ margin-top:auto; padding:18px 28px; background:var(--navy); border-left:8px solid var(--cyan);
+    border-radius:6px; box-shadow:0 8px 26px rgba(16,61,46,.25); }
+#s12 .cta-bar .cta-label{ font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:#8FD4AE; font-weight:700; margin-bottom:12px; }
+#s12 .cta-steps{ display:flex; align-items:stretch; gap:0; }
+#s12 .cta-step{ flex:1; display:flex; align-items:flex-start; gap:12px; padding:0 20px; border-left:1px solid #2E5646; }
+#s12 .cta-step:first-child{ border-left:none; padding-left:0; }
+#s12 .cta-step .n{ flex:none; width:26px; height:26px; border-radius:50%; background:var(--cyan); color:var(--navy);
+    font-family:var(--serif); font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; }
+#s12 .cta-step .txt{ font-family:var(--serif); font-weight:700; font-size:15px; color:#fff; line-height:1.28; }
+/* sections/04-appendix/14-outcomes.html */
+#s14 .eyebrow{ margin:2px 0 0; }
+#s14 .dash8{ display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:1fr 1fr; gap:18px 16px; margin-top:18px; flex:1; }
+#s14 .t8{ border:1px solid var(--hair); border-radius:6px; padding:14px 15px 12px; display:flex; flex-direction:column; justify-content:center; }
+#s14 .t8 .n{ font-family:var(--serif); font-weight:700; color:var(--callout); font-size:34px; line-height:1; display:flex; align-items:center; gap:8px; }
+#s14 .t8 .n small{ font-size:18px; }
+#s14 .t8 .n svg{ width:24px; height:24px; flex:none; }
+#s14 .t8 .l{ font-size:12.5px; font-weight:600; color:var(--ink); margin-top:8px; line-height:1.32; min-height:32px; }
+#s14 .t8 .d{ font-size:10.5px; color:var(--muted); margin-top:6px; line-height:1.35; }
+#s14 .takeaway{ background:var(--paper-2); border-left:6px solid var(--cyan); border-radius:4px; padding:10px 16px; font-size:12.5px; color:var(--ink); margin-top:14px; line-height:1.4; }
+#s14 .takeaway b{ color:var(--callout); }
+/* sections/04-appendix/15-architecture.html */
+#s15 .arch{ display:flex; flex-direction:column; gap:11px; margin-top:14px; }
+#s15 .layer{ border:1px solid var(--hair); border-left:6px solid var(--c); border-radius:8px; padding:10px 18px 11px; background:#fff; }
+#s15 .layer.controls{ background:var(--navy); border-color:#0C3327; }
+#s15 .lh{ display:flex; align-items:baseline; gap:8px; margin-bottom:7px; }
+#s15 .lh .nm{ font-size:11.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--c); }
+#s15 .lh .sm{ font-size:11px; color:var(--muted); }
+#s15 .layer.controls .lh .sm{ color:#B8CBBE; }
+#s15 .nodes{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+#s15 .node{ font-size:11px; font-weight:600; line-height:1.28; color:var(--ink); background:var(--cs); border:1px solid var(--c); border-radius:6px; padding:6px 11px; }
+#s15 .layer.controls .node{ background:rgba(255,255,255,.08); border-color:var(--cyan); color:#fff; }
+#s15 .arrow{ color:var(--muted); font-size:15px; font-weight:600; padding:0 1px; }
+#s15 .layer.flow .node{ min-width:150px; text-align:center; }
+/* sections/04-appendix/16-adoption.html */
+#s16 .principles{ display:grid; grid-template-columns:repeat(4,1fr); gap:24px 28px; margin-top:20px; }
+#s16 .pr{ display:grid; grid-template-columns:48px 1fr; gap:14px; align-items:start; padding:13px 0; border-top:2px solid var(--c); }
+#s16 .pr .no{ font-family:var(--serif); font-weight:700; font-size:34px; line-height:.85; color:var(--c); }
+#s16 .pr h3{ margin:0 0 4px; font-size:14px; font-weight:700; color:var(--ink); }
+#s16 .pr p{ margin:0; font-size:12px; line-height:1.44; color:#424d46; }
+/* sections/04-appendix/17-translation.html */
+#s17 .tbl2{ width:100%; border-collapse:collapse; font-size:12px; margin-top:14px; table-layout:fixed; }
+#s17 .tbl2 th{ text-align:left; font-weight:700; color:var(--ink); padding:7px 12px 8px; border-bottom:1px solid var(--ink); font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; }
+#s17 .tbl2 td{ padding:10px 12px; border-bottom:1px solid var(--hair); color:var(--ink); vertical-align:top; line-height:1.38; }
+#s17 .tbl2 td.fn{ font-weight:700; }
+#s17 .takeaway{ background:var(--paper-2); border-left:6px solid var(--cyan); border-radius:4px; padding:10px 16px; font-size:12.5px; color:var(--ink); margin-top:12px; line-height:1.4; }
+#s17 .takeaway b{ color:var(--callout); }
+/* sections/04-appendix/18-portco-plan.html */
+#s18 .tl4{ display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:1fr; gap:18px; margin-top:16px; flex:1; }
+#s18 .ph{ border:1px solid var(--hair); border-radius:8px; border-top:4px solid var(--c); padding:18px 18px 20px; display:flex; flex-direction:column; }
+#s18 .ph .days{ font-family:var(--serif); font-weight:700; font-size:19px; color:var(--callout); line-height:1; }
+#s18 .ph h4{ margin:5px 0 8px; font-size:13.5px; font-weight:700; color:var(--ink); }
+#s18 .ph ul{ list-style:none; margin:0; padding:0; }
+#s18 .ph li{ position:relative; padding:0 0 7px 14px; font-size:11.5px; line-height:1.4; color:#33413a; }
+#s18 .ph li:last-child{ padding-bottom:0; }
+#s18 .ph li::before{ content:""; position:absolute; left:0; top:6px; width:5px; height:5px; border-radius:50%; background:var(--c); }
+#s18 .metrics{ background:var(--paper-2); border-left:6px solid var(--cyan); border-radius:4px; padding:9px 16px; font-size:11px; color:var(--ink); margin-top:14px; line-height:1.42; }
+#s18 .metrics b{ color:var(--callout); }
 </style></head>
-<body><div class="csv-bar"><a class="csv-brand" href="/"><svg class="csv-mark" viewBox="0 0 205 155" aria-hidden="true" fill="currentColor"><text font-family="Georgia,serif" font-size="150" x="4" y="108">C</text><text font-family="Georgia,serif" font-size="125" x="78" y="129">S</text></svg>CS Ventures</a><nav class="csv-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/about/">About</a><a href="/services/">Services</a><a href="/portfolio/" class="active">Portfolio</a></nav></div>
+<body>
 <div class="hint">&larr; / &rarr; or Space &middot; F fullscreen</div>
 <div class="stage" id="stage">
 <!-- S1: sections/00-front-matter/1-cover.html -->
 <section id="s1" class="slide dark cover">
   <div class="logo">CS <span class="co">Ventures</span></div>
   <div class="spacer"></div>
-  <h1 style="font-family:var(--serif);font-weight:700;font-size:46px;line-height:1.12;margin:0 0 18px;max-width:60%">
-    AI Drives EBITDA,<br>but Requires a Strong Strategy
+  <h1>
+    <span class="l1">AI Driven Growth</span>
+    <span class="l2">Improving EBITDA Through Efficiencies and Untapped Opportunities</span>
   </h1>
-  <div class="subline" style="font-size:15px;color:#9fb2bf">AI strategy for PE-backed SMB and midmarket portfolio companies</div>
-  <div class="subline" style="font-size:15px;color:#9fb2bf">Efficiency and opportunity gains. Built and adopted together.</div>
+  <div class="subline" style="font-size:15px;color:#B8CBBE">Efficiency gains protect margin. Opportunity gains change the growth story.</div>
+  <div class="subline" style="font-size:15px;color:#B8CBBE">Strategy, build, adoption, and measurement in one operating loop.</div>
   <div class="spacer"></div>
   <div class="footnote" style="color:#B8CBBE;max-width:60%">
-    Prepared by CS Ventures. Built from public research and proprietary build experience; all conclusions are our own.
+    Prepared by CS Ventures from public research on AI value creation in private equity.
   </div>
   <!-- flowing line motif: scattered strands (pilots, tools, beliefs) converging
        into a tight braid (a measured EBITDA lever) -->
@@ -365,123 +427,42 @@ body.print .nav, body.print .hint, body.print .csv-bar{ display:none; }
   </svg>
 </section>
 
-<!-- S2: sections/00-front-matter/2-agenda.html -->
-<section id="s2" class="slide dark agenda-4">
-  <h2 style="font-family:var(--serif);font-weight:700;font-size:32px;margin:0">The Case in Four Parts</h2>
-  <div class="rule"></div>
-  <div class="agenda-grid">
-    <div>
-      <div class="num">01</div>
-      <div class="group-h"><span class="letter">A</span>The Gap</div>
-      <div class="agenda-item">AI conviction, without enterprise-scale execution</div>
-      <div class="agenda-item">Two value engines set the target: efficiency, opportunity</div>
-    </div>
-    <div>
-      <div class="num">02</div>
-      <div class="group-h"><span class="letter">B</span>The Proof</div>
-      <div class="agenda-item">Real, measurable gains on both engines</div>
-      <div class="agenda-item">Opportunity gains carry the larger valuation upside</div>
-    </div>
-    <div>
-      <div class="num">03</div>
-      <div class="group-h"><span class="letter">C</span>The Wedge</div>
-      <div class="agenda-item">Big consulting and tech shops each deliver half</div>
-      <div class="agenda-item">Builder-operator fluency, proven on four live builds</div>
-    </div>
-    <div>
-      <div class="num">04</div>
-      <div class="group-h"><span class="letter">D</span>The Offer</div>
-      <div class="agenda-item">A right-sized engagement model for any portco</div>
-      <div class="agenda-item">Entry point: a single-portco diagnostic</div>
-    </div>
-  </div>
-  <div class="page">2</div>
-  <div class="section-tab">AI-to-EBITDA strategy</div>
-</section>
-
-<!-- S3: sections/00-front-matter/3-exec-summary.html -->
-<section id="s3" class="slide">
-  <h2 class="action-title">PE's AI Execution Gap Closes Only When Builder and Operator Fluency Sit in the Same Engagement</h2>
+<!-- S2: sections/00-front-matter/2-exec-summary.html -->
+<section id="s2" class="slide" data-evidence="E001|E002|E003|E004">
+  <h2 class="action-title">PE Conviction Sits at 84% While Enterprise-Scale Deployment Sits at 7%, so the Binding Constraint Is Operating Model, Not Belief</h2>
   <div class="rule"></div>
   <div class="es-grid">
     <div class="es-col">
-      <div class="eyebrow">The Gap</div>
-      <h3>The Gap</h3>
-      <p>PE has AI conviction, not an AI awareness problem: <b>84%</b> of funds expect AI to transform portfolio value.</p>
-      <p>Yet only <b>7%</b> have reached enterprise-scale deployment. Execution capacity, not belief, is the bottleneck.</p>
+      <div class="eyebrow">Conviction</div>
+      <h3>High Conviction, Low Execution Clarity</h3>
+      <p>PE has conviction, not execution clarity: <b>84%</b> of funds expect AI to transform portfolio value.</p>
+      <p>Only <b>7%</b> reach enterprise-scale deployment; <b>43%</b> stay experimental, limited, or immaterial.</p>
     </div>
     <div class="es-col">
-      <div class="eyebrow">The Split</div>
-      <h3>The Split</h3>
-      <p>Efficiency gains protect margin: faster, cheaper, more accurate work across support, finance, and sales.</p>
-      <p>Opportunity gains change the growth story: median revenue multiples climb from <b>14x</b> to <b>31x</b> as portcos move from operating enhancement to business building.</p>
+      <div class="eyebrow">The Stall</div>
+      <h3>Why Execution Stalls</h3>
+      <p>Talent and skills gaps hold back <b>35%</b> of funds; data readiness holds back <b>33%</b> more.</p>
+      <p>Time-to-value concerns account for a further <b>29%</b> -- an operating-model problem, not a belief problem.</p>
     </div>
     <div class="es-col">
-      <div class="eyebrow">The Requirement</div>
-      <h3>The Requirement</h3>
-      <p>Technical fluency ships the build. Business fluency frames it to EBITDA. Adoption discipline gets the people closest to the work to actually change it.</p>
-      <p>Big consulting and tech shops each cover part of that list. Builder-operator fluency covers all three, proven across four live builds.</p>
+      <div class="eyebrow">The Close</div>
+      <h3>What Closes the Gap</h3>
+      <p>Technical fluency ships the build. Operator fluency connects it to EBITDA.</p>
+      <p>Adoption discipline changes how work is actually performed -- the piece most engagements skip.</p>
     </div>
     <div class="es-box">
-      <h4>The ask</h4>
-      <div class="big">30-60 days</div>
-      <div class="lbl">single-portco AI-to-EBITDA diagnostic</div>
-      <div class="big">5</div>
-      <div class="lbl">engagement models, diagnostic to fund-wide</div>
+      <h4>The Ask</h4>
+      <div class="big">30&ndash;60 Days</div>
+      <div class="lbl">Select one portfolio company for a 30&ndash;60-day AI-to-EBITDA diagnostic.</div>
     </div>
   </div>
-  <div class="source">Source: EY, "How AI is sustainably transforming value creation in private equity"; FTI Consulting, "2026 Private Equity AI Radar"; McKinsey, "Beyond productivity: How AI creates value in private equity."</div>
-  <div class="page">3</div>
-  <div class="section-tab">Executive summary</div>
+  <div class="source">Source: EY, "How AI is sustainably transforming value creation in private equity," 2026 [S001]; FTI Consulting, "2026 Private Equity AI Radar" (200 PE decision makers, December 2025) [S002].</div>
+  <div class="page">2</div>
+  <div class="section-tab">The Opportunity</div>
 </section>
 
-<!-- S4: sections/01-the-gap/4-divider.html -->
-<section id="s4" class="slide dark center">
-  <div class="logo" style="position:absolute;top:60px;left:72px">CS Ventures</div>
-  <div class="eyebrow" style="color:var(--cyan);margin-bottom:14px;position:relative;z-index:1">Section A</div>
-  <h1 style="font-family:var(--serif);font-weight:700;font-size:64px;line-height:1.02;margin:0;position:relative;z-index:1">The Gap</h1>
-  <div style="width:56px;height:4px;background:var(--cyan);margin:24px 0"></div>
-  <p style="font-size:20px;color:#c6d3dc;max-width:620px;margin:0;position:relative;z-index:1">
-    PE has AI conviction but almost no enterprise-scale execution. The two value engines below define where that execution should aim.
-  </p>
-  <div class="page" style="right:72px">#</div>
-  <!-- section motif: outlined serif marker + flowline strands, echoing the cover -->
-  <svg class="div-art" width="620" height="720" viewBox="0 0 620 720" fill="none" style="position:absolute;right:0;top:0;pointer-events:none">
-    <text x="390" y="500" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="440" fill="none" stroke="#2F9E63" stroke-width="1.5" opacity=".28">A</text>
-    <path d="M-40 660 C 140 630, 280 690, 400 590 S 580 430, 660 380" stroke="#2F9E63" stroke-width="2" opacity=".6"></path>
-    <path d="M-40 610 C 150 580, 300 660, 420 570 S 590 420, 660 366" stroke="#4CC98A" stroke-width="1.4" opacity=".42"></path>
-    <path d="M-40 700 C 150 680, 300 720, 430 615 S 600 440, 660 395" stroke="#8FD4AE" stroke-width="1" opacity=".3"></path>
-    <circle cx="470" cy="540" r="5" fill="#4CC98A" opacity=".85"></circle>
-    <circle cx="380" cy="596" r="3" fill="#2F9E63" opacity=".6"></circle>
-  </svg>
-</section>
-
-<!-- S5: sections/01-the-gap/5-icon-stat-grid.html -->
-<section id="s5" class="slide dark">
-  <h2 class="action-title">84% of PE Funds Expect AI to Transform Portfolio Value, but Only 7% Have Reached Enterprise-Scale Deployment</h2>
-  <div class="subtitle2" style="margin:6px 0 0">Conviction is nearly universal. Enterprise-scale execution is still rare.</div>
-  <div class="rule"></div>
-  <div class="is-hero">
-    <div class="is-num a">
-      <div class="stat-huge">84%</div>
-      <div class="stat-huge-label">of PE funds expect AI to transform portfolio value</div>
-    </div>
-    <div class="is-divider"></div>
-    <div class="is-num b">
-      <div class="stat-huge">7%</div>
-      <div class="stat-huge-label">of portfolio companies have reached enterprise-scale deployment</div>
-    </div>
-  </div>
-  <div class="is-support">
-    <div class="is-support-line"><b>43%</b> of portfolio companies are still experimenting, limited-use, or not using AI materially.</div>
-    <div class="is-support-line">The <b>AI PE Alpha Tier</b> outperforms on where and how it deploys AI, not on how much it spends.</div>
-  </div>
-  <div class="source" style="color:#B8CBBE">Source: EY, "How AI is sustainably transforming value creation in private equity," 2026; FTI Consulting, "2026 Private Equity AI Radar" (200 PE decision makers surveyed, Dec 2025).</div>
-  <div class="page">5</div><div class="section-tab">The Gap</div>
-</section>
-
-<!-- S6: sections/01-the-gap/6-two-column.html -->
-<section id="s6" class="slide">
+<!-- S3: sections/01-opportunity/3-two-engines.html -->
+<section id="s3" class="slide">
   <h2 class="action-title">AI Value Splits Into Two Engines: Efficiency Gains That Protect Margin and Opportunity Gains That Change the Growth Story</h2>
   <div class="rule"></div>
   <div class="cols2">
@@ -490,78 +471,77 @@ body.print .nav, body.print .hint, body.print .csv-bar{ display:none; }
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--cat-1)" stroke-width="2"><path d="M4 12h4l2-7 4 14 2-7h4"/></svg>
         Efficiency gains
       </div>
+      <div class="def"><b>Perform existing work faster, cheaper, or more accurately.</b></div>
       <ul class="dash">
-        <li>Customer support, finance (AP/AR, close), and sales workflows automated end to end.</li>
-        <li>Procurement, vendor management, and low-value contractor spend reduced.</li>
+        <li>Customer support and sales workflows automated end to end.</li>
+        <li>Finance workflows -- AP/AR and close -- automated end to end.</li>
+        <li>Procurement and vendor management costs reduced.</li>
+        <li>Low-value contractor spend reduced.</li>
         <li>Process automation cuts cycle time and error rate across core operations.</li>
       </ul>
-      <div class="impact-band eff"><span><b>Impact:</b> margin expansion, cost reduction, stronger cash conversion.</span></div>
+      <div class="impact-band eff"><span><b>Impact:</b> margin expansion, cost reduction, cash conversion.</span></div>
     </div>
     <div>
       <div class="col-h">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--cat-2)" stroke-width="2"><path d="M4 18l5-6 3 3 4-7 4 5"/><path d="M20 13v-5h-5"/></svg>
         Opportunity gains
       </div>
+      <div class="def"><b>Create capabilities the portfolio company could not previously support economically.</b></div>
       <ul class="dash">
-        <li>Near-enterprise customer analytics and account-based marketing at SMB scale.</li>
-        <li>Calls, tickets, contracts, and CRM notes mined for churn, pricing, and expansion signal.</li>
-        <li>Lean teams ship product, board analysis, and scenario planning without added headcount.</li>
+        <li>Continuous risk and customer surveillance</li>
+        <li>Predictive retention and expansion</li>
+        <li>Enterprise-grade account intelligence at SMB economics</li>
+        <li>Faster product development</li>
+        <li>New AI-enabled products or revenue models</li>
       </ul>
       <div class="impact-band opp"><span><b>Impact:</b> revenue growth, pricing power, retention, and a stronger exit narrative.</span></div>
     </div>
   </div>
-  <div class="source">Source: AI-to-EBITDA Strategy framework, Section 2 (Two Engines of AI Value).</div>
-  <div class="page">6</div>
-  <div class="section-tab">The Gap</div>
+  <div class="source">Source: AI-to-EBITDA framework, two engines of AI value [S006]</div>
+  <div class="page">3</div>
+  <div class="section-tab">The Opportunity</div>
 </section>
 
-<!-- S7: sections/02-the-proof/7-divider.html -->
-<section id="s7" class="slide dark center">
-  <div class="logo" style="position:absolute;top:60px;left:72px">CS Ventures</div>
-  <div class="eyebrow" style="color:var(--cyan);margin-bottom:14px;position:relative;z-index:1">Section B</div>
-  <h1 style="font-family:var(--serif);font-weight:700;font-size:64px;line-height:1.02;margin:0;position:relative;z-index:1">The Proof</h1>
-  <div style="width:56px;height:4px;background:var(--cyan);margin:24px 0"></div>
-  <p style="font-size:20px;color:#c6d3dc;max-width:620px;margin:0;position:relative;z-index:1">
-    The gains are real. The winners are the firms that can execute.
-  </p>
-  <div class="page" style="right:72px">#</div>
-  <!-- section motif: outlined serif marker + flowline strands, echoing the cover -->
-  <svg class="div-art" width="620" height="720" viewBox="0 0 620 720" fill="none" style="position:absolute;right:0;top:0;pointer-events:none">
-    <text x="390" y="500" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="440" fill="none" stroke="#2F9E63" stroke-width="1.5" opacity=".28">B</text>
-    <path d="M-40 660 C 140 630, 280 690, 400 590 S 580 430, 660 380" stroke="#2F9E63" stroke-width="2" opacity=".6"></path>
-    <path d="M-40 610 C 150 580, 300 660, 420 570 S 590 420, 660 366" stroke="#4CC98A" stroke-width="1.4" opacity=".42"></path>
-    <path d="M-40 700 C 150 680, 300 720, 430 615 S 600 440, 660 395" stroke="#8FD4AE" stroke-width="1" opacity=".3"></path>
-    <circle cx="470" cy="540" r="5" fill="#4CC98A" opacity=".85"></circle>
-    <circle cx="380" cy="596" r="3" fill="#2F9E63" opacity=".6"></circle>
-  </svg>
-</section>
-
-<!-- S8: sections/02-the-proof/8-segment-impact-list.html -->
-<section id="s8" class="slide">
-  <h2 class="action-title">Efficiency Gains Are Already Live: One Knowledge-Work Agent Cut Board-Deck Production From a Week to Two Hours</h2>
+<!-- S4: sections/01-opportunity/4-replit-at-scale.html -->
+<section id="s4" class="slide">
+  <h2 class="action-title">Replit Reports 2.9x Code Output per Engineer After Wiring Agents Into Company Systems, With Review Latency Flat</h2>
   <div class="rule"></div>
-  <div class="si-wrap">
-    <div class="si-hero">
-      <div class="eyebrow" style="margin-bottom:14px">Proof point</div>
-      <div class="stat">1 wk &rarr; 2 hrs</div>
-      <div class="cap">to produce a board-ready deck, using a single knowledge-work agent. The same pattern -- an agent doing recurring knowledge work end to end -- extends to every workflow listed here.</div>
+  <div class="eyebrow">Replit self-reported, internal deployment across its own engineering organization</div>
+  <div class="kpis" data-evidence="E008|E010|E011|E012">
+    <div class="kpi">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="8 6 3 12 8 18"/><polyline points="16 6 21 12 16 18"/></svg>
+      <div class="n">2.9<small>x</small></div>
+      <div class="l">code output per engineer</div>
+      <div class="d">consistent cohort, company-reported</div>
     </div>
-    <div>
-      <div class="eyebrow" style="margin-bottom:10px">Where the same agent pattern applies next</div>
-      <div class="si-row"><div class="si-seg"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v16M4 12h16" /><circle cx="12" cy="12" r="9"/></svg><div class="lbl">Customer support automation</div></div><div class="si-desc">Ticket triage and <b>agent-assist</b> that resolves routine issues without adding headcount.</div></div>
-      <div class="si-row"><div class="si-seg"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8h16l-1 12H5z"/><path d="M8 8a4 4 0 018 0"/></svg><div class="lbl">Finance automation (AP/AR/close)</div></div><div class="si-desc"><b>Invoice coding, collections prioritization, and close support</b> that compress the monthly cycle.</div></div>
-      <div class="si-row"><div class="si-seg"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13l2-5h14l2 5v5H3z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg><div class="lbl">Sales productivity</div></div><div class="si-desc"><b>Follow-up and proposal generation</b> that keep reps in active accounts, not drafting documents.</div></div>
-      <div class="si-row"><div class="si-seg"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12l20-7-7 20-3-8z"/></svg><div class="lbl">Procurement &amp; vendor management</div></div><div class="si-desc">Faster <b>vendor review and contract intake</b> without expanding the procurement team.</div></div>
-      <div class="si-row"><div class="si-seg"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="12" rx="1"/><circle cx="12" cy="12" r="3"/></svg><div class="lbl">IT helpdesk &amp; knowledge retrieval</div></div><div class="si-desc"><b>First-line resolution and internal knowledge lookup</b> handled before a ticket reaches a person.</div></div>
+    <div class="kpi">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H6a2 2 0 00-2 2v11a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-3"/><path d="M9 4.5A1.5 1.5 0 0110.5 3h3A1.5 1.5 0 0115 4.5v1A1.5 1.5 0 0113.5 7h-3A1.5 1.5 0 019 5.5z"/><path d="M9 12l2 2 4-4"/></svg>
+      <div class="n">30<small>%</small></div>
+      <div class="l">human PR review time saved</div>
+      <div class="d">review latency held flat, company-reported</div>
+    </div>
+    <div class="kpi">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+      <div class="n">60<small>%</small></div>
+      <div class="l">faster resolution of the hardest support tickets</div>
+      <div class="d">company-reported</div>
+    </div>
+    <div class="kpi">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+      <div class="n">1</div>
+      <div class="l">seven-figure SaaS product eliminated</div>
+      <div class="d">after an internal build outperformed it, company-reported</div>
     </div>
   </div>
-  <div class="source">Source: author client engagement (knowledge-work agent build). Workflow categories per AI-to-EBITDA service scope.</div>
-  <div class="page">8</div><div class="section-tab">Efficiency, live</div>
+  <div class="kicker"><b>The gain is not the chatbot, it is the wiring:</b> agents connected to company systems, trusted data, permissions, playbooks, verification loops, and human escalation. That operating pattern, not the raw multiple, is what a portfolio company can replicate.</div>
+  <div class="source">Source: Replit, "The Self-Driving Company," July 16, 2026; company-reported figures, not third-party audited [S004]</div>
+  <div class="page">4</div>
+  <div class="section-tab">The Opportunity</div>
 </section>
 
-<!-- S9: sections/02-the-proof/9-before-after.html -->
-<section id="s9" class="slide">
-  <h2 class="action-title">Opportunity Gains Turn Periodic, Reactive Portfolio Review Into Continuous, Proactive Risk Surveillance</h2>
+<!-- S5: sections/01-opportunity/5-before-after.html -->
+<section id="s5" class="slide">
+  <h2 class="action-title">Opportunity Gains Turn Periodic, Reactive Portfolio Review Into Continuous Surveillance at SMB Headcount</h2>
   <div class="rule"></div>
   <div class="ba">
     <div class="panel before">
@@ -572,33 +552,38 @@ body.print .nav, body.print .hint, body.print .csv-bar{ display:none; }
         <li>Signals surface only after results already moved</li>
         <li>Enterprise-grade analytics require a large dedicated team</li>
         <li>Churn, pricing, and contract risk mined by hand, if at all</li>
-        <li>Insight arrives too late to change the outcome</li>
       </ul>
     </div>
     <div class="arrow">&rarr;</div>
     <div class="panel after">
-      <div class="ey">After &middot; autonomous risk agent</div>
+      <div class="ey">After &middot; opportunity engine applied</div>
       <h3>Continuous, proactive</h3>
       <ul>
-        <li>Portfolio risk monitored continuously by an autonomous agent</li>
-        <li>Signals flagged before they hit the P&amp;L</li>
-        <li>Near-enterprise analytics run at SMB headcount and budget</li>
-        <li>Calls, tickets, and contracts mined automatically for risk signal</li>
-        <li>Insight arrives early enough to act</li>
+        <li>Portfolio risk surveilled on a continuous basis</li>
+        <li>Signals flagged ahead of P&amp;L impact</li>
+        <li>Enterprise-grade coverage at SMB headcount and economics</li>
+        <li>Calls, tickets, and contracts screened automatically for risk signal</li>
       </ul>
     </div>
   </div>
-  <div class="kicker"><b>The shift is categorical, not incremental:</b> from finding problems at the next quarterly review to catching them the week they emerge.</div>
-  <div class="source">Source: author client engagement (autonomous portfolio risk monitoring agent build).</div>
-  <div class="page">9</div><div class="section-tab">Opportunity, live</div>
+  <div class="measure-eyebrow">Measurement categories a diagnostic would baseline and an engagement would track -- not observed results</div>
+  <div class="measure-row">
+    <div class="measure"><div class="m-l">Signal detection lead time</div><div class="m-d">to be baselined</div></div>
+    <div class="measure"><div class="m-l">Analyst hours required</div><div class="m-d">to be baselined</div></div>
+    <div class="measure"><div class="m-l">Share of portfolio continuously monitored</div><div class="m-d">to be baselined</div></div>
+    <div class="measure"><div class="m-l">Risks surfaced before P&amp;L impact</div><div class="m-d">to be baselined</div></div>
+    <div class="measure"><div class="m-l">Management actions triggered</div><div class="m-d">to be baselined</div></div>
+  </div>
+  <div class="source">Source: illustrative portfolio-operations scenario; KPI row shows measurement categories, not observed results [S006]</div>
+  <div class="page">5</div><div class="section-tab">The Opportunity</div>
 </section>
 
-<!-- S10: sections/02-the-proof/11-ranked-bar.html -->
-<section id="s10" class="slide">
-  <h2 class="action-title">Median Revenue Multiples Climb From 14x to 31x as Portfolio Companies Move From Operating Enhancement to Business Building</h2>
+<!-- S6: sections/01-opportunity/6-multiples.html -->
+<section id="s6" class="slide" data-evidence="E005|E006|E007|E021|E022|E023">
+  <h2 class="action-title">Median Revenue Multiples Rise From 14x to 31x Across McKinsey's AI-Maturity Levels, an Association the Sample Cannot Prove Causal</h2>
   <div class="rule"></div>
   <div class="subtitle">Median revenue multiple by AI maturity level (McKinsey defines four), <span class="unit">x revenue</span></div>
-  <div class="exhibit">
+  <div class="exhibit" data-evidence="E005|E006|E007">
     <div class="chart-area">
       <div class="rb">
         <div class="rb-row"><div class="rb-lbl">Level 1 &middot; Opportunistic adoption</div>
@@ -622,14 +607,14 @@ body.print .nav, body.print .hint, body.print .csv-bar{ display:none; }
       <li><b>4 &middot; Business building:</b> AI creates new revenue streams and businesses.</li>
     </ul></div>
   </div>
-  <div class="kicker"><b>Multiples reward what AI makes the company become:</b> moving from operating enhancement to business building more than doubles the median revenue multiple.</div>
-  <div class="source">Source: McKinsey, "Beyond productivity: How AI creates value in private equity" -- analysis of 471 PE-backed companies, $1M&ndash;$250M revenue, 30 countries. McKinsey's model has exactly four levels. &sup1;No median multiple reported for Level 1; Level 2 shows ~20% higher revenue per employee than Level 1. Level 3's multiple is 43% above Level 2's; Level 4's revenue per employee is 52% above Level 3's.</div>
-  <div class="page">10</div><div class="section-tab">Multiple by level</div>
+  <div class="kicker"><b>Read as association, not proof of cause:</b> higher AI-maturity levels travel with higher median multiples as companies progress from operating enhancement to product transformation to business building. The sample design cannot establish that AI drove the increase.</div>
+  <div class="source">Source: McKinsey, "Beyond productivity: How AI creates value in private equity" -- 471 PE-backed companies, $1M&ndash;$250M revenue, 30 countries; association across maturity levels, not a causal estimate [S003]. McKinsey's model has exactly four levels. &sup1;No median multiple reported for Level 1; Level 2 shows ~20% higher revenue per employee than Level 1. Level 3's multiple is 43% above Level 2's; Level 4's revenue per employee is 52% above Level 3's.</div>
+  <div class="page">6</div><div class="section-tab">The Opportunity</div>
 </section>
 
-<!-- S11: sections/02-the-proof/12-icon-stat-grid.html -->
-<section id="s11" class="slide dark">
-  <h2 class="action-title">Talent Shortage, Data Readiness, and Time-to-Value Are the Top Three Barriers Keeping AI Stuck in Pilot Mode</h2>
+<!-- S7: sections/02-execution-stalls/7-barriers.html -->
+<section id="s7" class="slide dark" data-evidence="E004">
+  <h2 class="action-title">Talent, Data Readiness, and Time-to-Value Keep AI Stuck in Pilot Mode, Which Is an Operating-Model Problem Rather Than an Awareness Problem</h2>
   <div class="subtitle2" style="margin:6px 0 0">Share of PE decision makers citing each barrier to scaling AI across the portfolio.</div>
   <div class="rule"></div>
   <div class="is-groups">
@@ -647,135 +632,268 @@ body.print .nav, body.print .hint, body.print .csv-bar{ display:none; }
       <li>Requires operating support, workflow expertise, and governance together.</li>
     </ul></div>
   </div>
-  <div class="kicker"><b>These are execution gaps, not tooling gaps</b> -- exactly what a diagnosis-only or a build-only engagement leaves unsolved.</div>
-  <div class="source" style="color:#B8CBBE">Source: FTI Consulting, "2026 Private Equity AI Radar" (survey of 200 PE decision makers, December 2025).</div>
-  <div class="page">11</div><div class="section-tab">Execution barriers</div>
+  <div class="kicker"><b>PE does not have an AI-awareness problem, it has an operating-model problem</b> -- conviction is already high; what is missing is the talent, data, and delivery speed to execute at scale.</div>
+  <div class="source" style="color:#B8CBBE">Source: FTI Consulting, "2026 Private Equity AI Radar" (survey of 200 PE decision makers, December 2025) [S002].</div>
+  <div class="page">7</div><div class="section-tab">Why Execution Stalls</div>
 </section>
 
-<!-- S12: sections/03-the-wedge/13-divider.html -->
-<section id="s12" class="slide dark center">
-  <div class="logo" style="position:absolute;top:60px;left:72px">CS <span class="co">Ventures</span></div>
-  <div class="eyebrow" style="color:var(--cyan);margin-bottom:14px;position:relative;z-index:1">Section C</div>
-  <h1 style="font-family:var(--serif);font-weight:700;font-size:64px;line-height:1.02;margin:0;position:relative;z-index:1">The Wedge</h1>
-  <div style="width:56px;height:4px;background:var(--cyan);margin:24px 0"></div>
-  <p style="font-size:20px;color:#c6d3dc;max-width:620px;margin:0;position:relative;z-index:1">
-    Consultants advise. Tech shops build. This work takes both, in one engagement.
-  </p>
-  <div class="page" style="right:72px">#</div>
-  <!-- section motif: outlined serif marker + flowline strands, echoing the cover -->
-  <svg class="div-art" width="620" height="720" viewBox="0 0 620 720" fill="none" style="position:absolute;right:0;top:0;pointer-events:none">
-    <text x="390" y="500" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="440" fill="none" stroke="#2F9E63" stroke-width="1.5" opacity=".28">C</text>
-    <path d="M-40 660 C 140 630, 280 690, 400 590 S 580 430, 660 380" stroke="#2F9E63" stroke-width="2" opacity=".6"></path>
-    <path d="M-40 610 C 150 580, 300 660, 420 570 S 590 420, 660 366" stroke="#4CC98A" stroke-width="1.4" opacity=".42"></path>
-    <path d="M-40 700 C 150 680, 300 720, 430 615 S 600 440, 660 395" stroke="#8FD4AE" stroke-width="1" opacity=".3"></path>
-    <circle cx="470" cy="540" r="5" fill="#4CC98A" opacity=".85"></circle>
-    <circle cx="380" cy="596" r="3" fill="#2F9E63" opacity=".6"></circle>
-  </svg>
-</section>
-
-<!-- S13: sections/03-the-wedge/14-competitor-matrix.html -->
-<section id="s13" class="slide">
-  <h2 class="action-title">Big Consulting Delivers Frameworks Without Builds; Tech Shops Deliver Builds Without Adoption -- Only Builder-Operator Fluency Covers All Three Capabilities</h2>
+<!-- S8: sections/02-execution-stalls/8-capability-split.html -->
+<section id="s8" class="slide" data-evidence="E018">
+  <h2 class="action-title">The Market Splits Strategy, Build, and Adoption Across Providers, so the Engagement Fails Wherever the Handoffs Sit</h2>
   <div class="rule"></div>
   <table class="cm">
     <thead>
       <tr>
         <th class="co">Capability</th>
-        <th>Big Consulting Firms</th>
-        <th>Tech / Dev Shops</th>
-        <th class="us">Builder-Operator</th>
+        <th>Strategy-Led Advisor</th>
+        <th>Build-Led Technology Partner</th>
+        <th class="us">Integrated Builder-Operator</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td class="co">Technical fluency</td>
-        <td><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.3"/><path d="M12 12 L12 1 A11 11 0 0 1 23 12 Z" fill="#16663F"/></svg></td>
-        <td><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.3"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
-        <td class="us"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.3"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
+        <td class="co">Business and EBITDA framing</td>
+        <td><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
+        <td><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/></svg></td>
+        <td class="us"><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
       </tr>
       <tr>
-        <td class="co">Business fluency</td>
-        <td><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.3"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
-        <td><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.3"/><path d="M12 12 L12 1 A11 11 0 0 1 23 12 Z" fill="#16663F"/></svg></td>
-        <td class="us"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.3"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
+        <td class="co">Technical build fluency</td>
+        <td><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/></svg></td>
+        <td><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
+        <td class="us"><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
       </tr>
       <tr>
-        <td class="co">Adoption discipline</td>
-        <td><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.3"/><path d="M12 12 L12 1 A11 11 0 0 1 23 12 Z" fill="#16663F"/></svg></td>
-        <td><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.3"/><path d="M12 12 L12 1 A11 11 0 0 1 23 12 Z" fill="#16663F"/></svg></td>
-        <td class="us"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.3"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
+        <td class="co">Workflow and operating-model redesign</td>
+        <td><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><path d="M12 1 A11 11 0 0 1 12 23 Z" fill="#16663F"/></svg></td>
+        <td><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><path d="M12 1 A11 11 0 0 1 12 23 Z" fill="#16663F"/></svg></td>
+        <td class="us"><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
+      </tr>
+      <tr>
+        <td class="co">Frontline adoption</td>
+        <td><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/></svg></td>
+        <td><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><path d="M12 1 A11 11 0 0 1 12 23 Z" fill="#16663F"/></svg></td>
+        <td class="us"><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
+      </tr>
+      <tr>
+        <td class="co">KPI baselining and measurement</td>
+        <td><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><path d="M12 1 A11 11 0 0 1 12 23 Z" fill="#16663F"/></svg></td>
+        <td><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/></svg></td>
+        <td class="us"><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
+      </tr>
+      <tr>
+        <td class="co">Governance and scale</td>
+        <td><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><path d="M12 1 A11 11 0 0 1 12 23 Z" fill="#16663F"/></svg></td>
+        <td><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><path d="M12 1 A11 11 0 0 1 12 23 Z" fill="#16663F"/></svg></td>
+        <td class="us"><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg></td>
       </tr>
     </tbody>
   </table>
   <div class="lg">
-    <span>Capability:</span>
-    <svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.3"/><path d="M12 12 L12 1 A11 11 0 0 1 23 12 Z" fill="#16663F"/></svg>
+    <span>Coverage:</span>
+    <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/></svg>
     <span>gap</span>
+    <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><path d="M12 1 A11 11 0 0 1 12 23 Z" fill="#16663F"/></svg>
+    <span>partial</span>
+    <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.7"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg>
+    <span>full</span>
     <span style="flex:1;border-top:1px dotted var(--hair)"></span>
-    <svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#103D2E" stroke-width="1.3"/><circle cx="12" cy="12" r="11" fill="#16663F"/></svg>
-    <span>strong</span>
   </div>
-  <div class="kicker"><b>Only one column clears the bar on all three capabilities</b> -- and it isn't a firm you'd hire off a pitch deck.</div>
-  <div class="source">Source: capability assessment against the three requirements in Section 6 (illustrative, not a numeric score).</div>
-  <div class="page">13</div><div class="section-tab">The Wedge</div>
+  <div class="kicker"><b>The engagement fails if strategy, build, adoption, and measurement sit with disconnected owners</b> -- only the integrated model carries full coverage on all six capabilities.</div>
+  <div class="source">Source: illustrative capability positioning, not independently researched provider assessment [S006].</div>
+  <div class="page">8</div><div class="section-tab">Why Execution Stalls</div>
 </section>
 
-<!-- S14: sections/03-the-wedge/15-data-table.html -->
-<section id="s14" class="slide">
-  <h2 class="action-title">Four Live Builds Prove the Builder-Operator Model End to End, From a 2-Hour Deck Agent to an Agency-Validated Automation Layer</h2>
+<!-- S9: sections/03-execution-model/9-operating-loop.html -->
+<section id="s9" class="slide">
+  <h2 class="action-title">One Governed Loop -- Prioritize, Baseline, Connect, Build, Adopt, Measure -- Converts AI Strategy Into Measured EBITDA</h2>
   <div class="rule"></div>
-  <div class="subtitle">Proof points behind the positioning, <span class="unit">by build</span></div>
-  <table class="tbl" style="margin-top:16px">
-    <thead><tr><th>Build</th><th>Engine</th><th>Result</th></tr></thead>
-    <tbody>
-      <tr>
-        <td>Knowledge-work agent for board-ready decks</td>
-        <td><span class="eng e1">Efficiency</span></td>
-        <td>Cut board-deck production from 1 week to 2 hours</td>
-      </tr>
-      <tr>
-        <td>Autonomous portfolio risk monitoring agent</td>
-        <td><span class="eng e2">Opportunity</span></td>
-        <td>Replaced periodic, reactive review with continuous, proactive risk surveillance</td>
-      </tr>
-      <tr>
-        <td>Product team agent running my own operations</td>
-        <td><span class="eng e1">Efficiency</span><span class="eng e2">First-client proof</span></td>
-        <td>Runs 24 hours of continuous skill, deliverable, and project refinement with no human in the loop</td>
-      </tr>
-      <tr>
-        <td>AI layer added to a client's automation, sold to an agency</td>
-        <td><span class="eng e1">Efficiency</span><span class="eng e2">Opportunity</span></td>
-        <td>Increased automation output and run speed, and added proactive monitoring on top of what had been reactive-only</td>
-      </tr>
-    </tbody>
-  </table>
-  <div class="kicker"><b>Four builds, four different clients (including myself)</b> -- same builder, same operator discipline.</div>
-  <div class="source">Source: direct engagement history across four live builds (Section 7 proof points).</div>
-  <div class="page">14</div>
-  <div class="section-tab">The Wedge</div>
-</section>
 
-<!-- S15: sections/03-the-wedge/16-manifesto.html -->
-<section id="s15" class="slide dark center">
-  <div class="logo">CS <span class="co">Ventures</span></div>
-  <div class="manifesto">
-    <div class="kicker">First-client proof</div>
-    <p class="big-statement">I <span class="g">built these systems</span> for my own business first, and they <span class="a">paid for themselves</span> before I ever sold one.</p>
-    <p class="standfirst">Every workflow in this deck ran inside my own operation until the numbers held up. Then an agency, whose job is evaluating exactly this kind of work, paid for it.</p>
-    <div class="byline">From <b>CS Ventures</b> -- built and run before it was ever sold</div>
+  <div class="loop-body">
+    <div class="loop">
+      <svg viewBox="0 0 1136 380" fill="none">
+        <defs>
+          <marker id="loopArrow" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan-strong)"/>
+          </marker>
+        </defs>
+        <g stroke="var(--cyan-strong)" stroke-width="2.5" fill="none" marker-end="url(#loopArrow)">
+          <path d="M568,93 Q699.25,84.75 749.9,143"/>
+          <path d="M749.9,143 Q830.5,193 749.9,243"/>
+          <path d="M749.9,243 Q699.25,301.25 568,293"/>
+          <path d="M568,293 Q436.75,301.25 386.1,243"/>
+          <path d="M386.1,243 Q305.5,193 386.1,143"/>
+          <path d="M386.1,143 Q436.75,84.75 568,93"/>
+        </g>
+        <g font-family="Georgia,serif" font-weight="700" font-size="21">
+          <g><circle cx="568" cy="93" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="568" y="101" text-anchor="middle" fill="var(--navy)">1</text></g>
+          <g><circle cx="749.9" cy="143" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="749.9" y="151" text-anchor="middle" fill="var(--navy)">2</text></g>
+          <g><circle cx="749.9" cy="243" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="749.9" y="251" text-anchor="middle" fill="var(--navy)">3</text></g>
+          <g><circle cx="568" cy="293" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="568" y="301" text-anchor="middle" fill="var(--navy)">4</text></g>
+          <g><circle cx="386.1" cy="243" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="386.1" y="251" text-anchor="middle" fill="var(--navy)">5</text></g>
+          <g><circle cx="386.1" cy="143" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="386.1" y="151" text-anchor="middle" fill="var(--navy)">6</text></g>
+        </g>
+      </svg>
+
+      <div class="node top" style="left:473px; top:2px;"><h4>Prioritize</h4><p>Select workflows on value, feasibility, and verifiability.</p></div>
+      <div class="node right" style="left:786px; top:117px;"><h4>Baseline</h4><p>Establish current cost, cycle time, quality, revenue, and risk.</p></div>
+      <div class="node right" style="left:786px; top:217px;"><h4>Connect</h4><p>Governed access to systems, knowledge, and trusted data.</p></div>
+      <div class="node bottom" style="left:473px; top:327px;"><h4>Build</h4><p>Encode the workflow, decision rules, tools, and human escalation.</p></div>
+      <div class="node left" style="left:160px; top:217px;"><h4>Adopt</h4><p>Embed in the tools and routines employees already use.</p></div>
+      <div class="node left" style="left:160px; top:117px;"><h4>Measure &amp; scale</h4><p>Compare with the baseline; expand only where the economics hold.</p></div>
+
+      <div class="loop-center"><div class="lc-eyebrow">The loop produces</div><div class="lc-label">Measured<br>EBITDA</div></div>
+    </div>
+
+    <div class="gov-rail">
+      <div class="gl"><div class="eyebrow">Governance rail</div><div class="gt">Spans every stage of the loop</div></div>
+      <div class="items">
+        <span>Permissions</span><i>&bull;</i>
+        <span>Audit logs</span><i>&bull;</i>
+        <span>Data controls</span><i>&bull;</i>
+        <span>Human approval thresholds</span><i>&bull;</i>
+        <span>Quality evaluation</span><i>&bull;</i>
+        <span>Cost monitoring</span>
+      </div>
+    </div>
   </div>
-  <div class="page">15</div>
+
+  <div class="source">Source: AI-to-EBITDA operating model [S006]</div>
+  <div class="page">9</div>
+  <div class="section-tab">The Execution Model</div>
 </section>
 
-<!-- S16: sections/04-the-offer/17-divider.html -->
-<section id="s16" class="slide dark center">
-  <div class="logo" style="position:absolute;top:60px;left:72px">CS Ventures</div>
-  <div class="eyebrow" style="color:var(--cyan);margin-bottom:14px;position:relative;z-index:1">Section D</div>
-  <h1 style="font-family:var(--serif);font-weight:700;font-size:64px;line-height:1.02;margin:0;position:relative;z-index:1">The Offer</h1>
+<!-- S10: sections/03-execution-model/10-diagnostic-deliverables.html -->
+<section id="s10" class="slide" data-evidence="E019">
+  <h2 class="action-title">A 30-60-Day Diagnostic Ships Eleven Concrete Deliverables and Ends in a Fundable 90-Day Roadmap</h2>
+  <div class="rule"></div>
+  <div class="subtitle">What the portfolio company receives from one 30&ndash;60-day engagement <span class="unit">-- ending in a fundable 90-day roadmap</span></div>
+
+  <div class="body">
+  <div class="fg">
+    <div class="feat">
+      <div class="ic" style="--c:var(--cyan);--cs:var(--cyan-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg></div>
+      <div><h3>Value map</h3><ul>
+        <li>Efficiency and opportunity value map</li>
+        <li>Prioritized use-case portfolio</li>
+      </ul></div>
+    </div>
+    <div class="feat">
+      <div class="ic" style="--c:var(--cyan);--cs:var(--cyan-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19h16"/><rect x="6" y="10" width="3" height="8"/><rect x="11" y="6" width="3" height="12"/><rect x="16" y="13" width="3" height="5"/></svg></div>
+      <div><h3>Baselines</h3><ul>
+        <li>Current-state KPI baselines</li>
+        <li>Workflow and adoption assessment</li>
+      </ul></div>
+    </div>
+    <div class="feat">
+      <div class="ic" style="--c:var(--cyan);--cs:var(--cyan-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8.5 12l2 2 4-4"/></svg></div>
+      <div><h3>Readiness</h3><ul>
+        <li>Data and integration readiness assessment</li>
+      </ul></div>
+    </div>
+    <div class="feat">
+      <div class="ic" style="--c:var(--cyan);--cs:var(--cyan-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.3 9.7c0-1.3 1.2-2.1 2.7-2.1s2.7.8 2.7 1.9c0 2.8-5.4 1.5-5.4 4.3 0 1.1 1.2 1.9 2.7 1.9s2.7-.7 2.7-2"/></svg></div>
+      <div><h3>Economics</h3><ul>
+        <li>Business case and return model</li>
+        <li>Build-versus-buy recommendations</li>
+      </ul></div>
+    </div>
+    <div class="feat">
+      <div class="ic" style="--c:var(--cyan);--cs:var(--cyan-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3.5l6.5 2.7v5.3c0 4.2-2.8 7-6.5 8.2-3.7-1.2-6.5-4-6.5-8.2V6.2z"/></svg></div>
+      <div><h3>Governance</h3><ul>
+        <li>Governance and risk requirements</li>
+      </ul></div>
+    </div>
+    <div class="feat">
+      <div class="ic" style="--c:var(--cyan);--cs:var(--cyan-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 20V5"/><path d="M5 6h11l-2.5 3.5L16 13H5"/></svg></div>
+      <div><h3>Build plan</h3><ul>
+        <li>Two quick-win build specifications</li>
+        <li>Two strategic redesign opportunities</li>
+        <li>90-day implementation roadmap</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="kicker"><b>The output is fundable, not conceptual</b> -- a business case, a governance sign-off, and two quick-win specifications ready to build in the next 90 days.</div>
+  </div>
+
+  <div class="source">Source: CS Ventures diagnostic scope, 30&ndash;60 days [S006]</div>
+  <div class="page">10</div>
+  <div class="section-tab">The Execution Model</div>
+</section>
+
+<!-- S11: sections/03-execution-model/11-engagement-path.html -->
+<section id="s11" class="slide" data-evidence="E019|E020">
+  <h2 class="action-title">Engagement Runs Diagnose, Then Build and Adopt, Then Scale, With Each Phase Gated on the Prior Phase's Measured Economics</h2>
+  <div class="rule"></div>
+
+  <div class="sw">
+    <div class="corner"></div>
+    <div class="ph"><div class="t">Phase 1 &middot; Diagnose</div><div class="d">30&ndash;60 days</div></div>
+    <div class="ph"><div class="t">Phase 2 &middot; Build &amp; Adopt</div><div class="d">Following the diagnostic</div></div>
+    <div class="ph"><div class="t">Phase 3 &middot; Scale</div><div class="d">Gated on proven economics</div></div>
+
+    <div class="lane first">What happens</div>
+    <div class="cell first"><ul>
+      <li>Identify and prioritize the highest-value efficiency and opportunity gains</li>
+      <li>Establish baselines and implementation requirements</li>
+    </ul></div>
+    <div class="cell first"><ul>
+      <li>Ship two quick wins and one or two strategic workflow redesigns</li>
+      <li>Embed them in real operating routines</li>
+      <li>Train users and measure results</li>
+    </ul></div>
+    <div class="cell first"><ul>
+      <li>Expand across functions, portfolio companies, or the fund</li>
+      <li>Standardize governance, KPIs, shared components, and board reporting</li>
+      <li>Pursue AI-enabled products and business building where appropriate</li>
+    </ul></div>
+
+    <div class="lane gatelane">Gate to next phase</div>
+    <div class="cell gate bridge"><p>Baselines and a business case earn the build.</p></div>
+    <div class="cell gate bridge"><p>Measured savings and adoption earn the scale-up.</p></div>
+    <div class="cell gate"><p>Expansion continues only where the unit economics hold.</p></div>
+  </div>
+
+  <div class="kicker"><b>No phase is assumed</b> -- each one earns the next on its own measured economics, from a 30&ndash;60-day diagnostic to fund-wide scale.</div>
+
+  <div class="source">Source: CS Ventures engagement model [S006]</div>
+  <div class="page">11</div>
+  <div class="section-tab">The Execution Model</div>
+</section>
+
+<!-- S12: sections/03-execution-model/12-close.html -->
+<section id="s12" class="slide" data-evidence="E020">
+  <h2 class="action-title">Turn AI Conviction Into a Measured EBITDA Lever by Selecting One Portfolio Company for a 30-60-Day Diagnostic</h2>
+  <div class="rule"></div>
+  <div class="kt">
+    <div class="kt-row"><div class="kt-n">1</div><div class="kt-b"><h4>PE conviction is high, but enterprise-scale execution remains rare.</h4><p>Most portfolio companies still run AI as scattered pilots rather than as a governed operating discipline connected to EBITDA.</p></div></div>
+    <div class="kt-row"><div class="kt-n">2</div><div class="kt-b"><h4>The opportunity spans margin protection and the growth and exit story.</h4><p>Efficiency gains protect margin today; opportunity gains build the capabilities that change how the growth story -- and the exit story -- get told.</p></div></div>
+    <div class="kt-row"><div class="kt-n">3</div><div class="kt-b"><h4>Capturing it takes one operating loop, not disconnected motions.</h4><p>Strategy, build, adoption, governance, and measurement have to run together -- prioritize, baseline, connect, build, adopt, measure and scale.</p></div></div>
+  </div>
+
+  <div class="cta-bar">
+    <div class="cta-label">Next step</div>
+    <div class="cta-steps">
+      <div class="cta-step"><span class="n">1</span><span class="txt">Select the portfolio company</span></div>
+      <div class="cta-step"><span class="n">2</span><span class="txt">Identify an executive sponsor</span></div>
+      <div class="cta-step"><span class="n">3</span><span class="txt">Schedule a data and workflow scoping session</span></div>
+    </div>
+  </div>
+
+  <div class="source">Source: CS Ventures engagement model [S006]</div>
+  <div class="page">12</div>
+  <div class="section-tab">The Execution Model</div>
+</section>
+
+<!-- S13: sections/04-appendix/13-divider.html -->
+<section id="s13" class="slide dark center">
+  <div class="logo" style="position:absolute;top:60px;left:72px">CS <span class="co">Ventures</span></div>
+  <div class="eyebrow" style="color:var(--cyan);margin-bottom:14px;position:relative;z-index:1">Appendix</div>
+  <h1 style="font-family:var(--serif);font-weight:700;font-size:58px;line-height:1.08;margin:0;position:relative;z-index:1;max-width:920px">Inside an At-Scale<br>AI Deployment</h1>
   <div style="width:56px;height:4px;background:var(--cyan);margin:24px 0"></div>
   <p style="font-size:20px;color:#c6d3dc;max-width:620px;margin:0;position:relative;z-index:1">
-    A right-sized engagement model converts this capability into a measured EBITDA lever, starting with a single-portco diagnostic.
+    What one company-reported deployment shows about the operating pattern behind the gains, and how a portfolio company can test it.
   </p>
   <div class="page" style="right:72px">#</div>
   <!-- section motif: outlined serif marker + flowline strands, echoing the cover -->
@@ -789,56 +907,205 @@ body.print .nav, body.print .hint, body.print .csv-bar{ display:none; }
   </svg>
 </section>
 
-<!-- S17: sections/04-the-offer/18-segment-cards.html -->
-<section id="s17" class="slide">
-  <h2 class="action-title">Five Engagement Models Span a 30-60-Day Diagnostic to a Fund-Wide AI Operating System</h2>
+<!-- S14: sections/04-appendix/14-outcomes.html -->
+<section id="s14" class="slide">
+  <h2 class="action-title">Replit Reports 2.9x Output per Engineer and 5.8x Total Code Contributed While Incident and Review-Latency Trends Stayed Flat</h2>
   <div class="rule"></div>
-  <div class="subtitle">Scope grows top to bottom -- from a single-portco diagnostic to a portfolio-wide operating system</div>
+  <div class="eyebrow">Replit self-reported, internal deployment across its own engineering organization</div>
 
-  <div class="ladder">
-    <div class="lrow hl">
-      <div class="ln">1</div>
-      <div class="lb"><h3>AI-to-EBITDA Diagnostic <b>(30&ndash;60 Days)</b></h3><p>Identify the highest-value efficiency and opportunity gains across one portco or the full portfolio.</p></div>
-      <div class="lrole">Entry point</div>
+  <div class="dash8" data-evidence="E008|E009|E010|E011|E013">
+    <div class="t8">
+      <div class="n">2.9<small>x</small></div>
+      <div class="l">Code output per engineer</div>
+      <div class="d">Consistent cohort, company-reported</div>
     </div>
-    <div class="lrow">
-      <div class="ln">2</div>
-      <div class="lb"><h3>Workflow Reshape Sprints</h3><p>Ship AI workflow systems built around the portco's real work: two quick wins, two strategic redesigns.</p></div>
-      <div class="lrole">Build &amp; adopt</div>
+    <div class="t8">
+      <div class="n">5.8<small>x</small></div>
+      <div class="l">Total code contributed</div>
+      <div class="d">Early January to late June, company-reported</div>
     </div>
-    <div class="lrow">
-      <div class="ln">3</div>
-      <div class="lb"><h3>User-Led AI Enablement &amp; Measurement</h3><p>Turn distributed AI usage by business users into a measured, function-level productivity gain.</p></div>
-      <div class="lrole">Measurement</div>
+    <div class="t8">
+      <div class="n">30<small>%</small></div>
+      <div class="l">Human PR review time saved</div>
+      <div class="d">Company-reported</div>
     </div>
-    <div class="lrow">
-      <div class="ln">4</div>
-      <div class="lb"><h3>Portfolio AI Operating System</h3><p>Stand up one repeatable, fund-wide AI value-creation model: governance, KPI standards, shared playbooks, and board reporting across every portco.</p></div>
-      <div class="lrole">Fund-wide</div>
+    <div class="t8">
+      <div class="n">60<small>%</small></div>
+      <div class="l">Faster resolution of the hardest support tickets</div>
+      <div class="d">Company-reported</div>
     </div>
-    <div class="lrow">
-      <div class="ln">5</div>
-      <div class="lb"><h3>AI Product &amp; Business-Building Strategy</h3><p>Move a portco beyond productivity into new AI-enabled products, revenue lines, and exit narrative.</p></div>
-      <div class="lrole">Strategic</div>
+    <div class="t8">
+      <div class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="4" y1="12" x2="20" y2="12"/></svg>Flat</div>
+      <div class="l">Review latency</div>
+      <div class="d">Held steady as output rose, company-reported</div>
+    </div>
+    <div class="t8">
+      <div class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="4" y1="12" x2="20" y2="12"/></svg>Flat</div>
+      <div class="l">Reversion and incident trends</div>
+      <div class="d">No increase in defects, company-reported</div>
+    </div>
+    <div class="t8">
+      <div class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5,8 12,16 19,8"/></svg>Down</div>
+      <div class="l">Mean time to mitigation</div>
+      <div class="d">Declined, company-reported</div>
+    </div>
+    <div class="t8">
+      <div class="n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5,16 12,8 19,16"/></svg>Up</div>
+      <div class="l">Project completion</div>
+      <div class="d">Increased, company-reported</div>
     </div>
   </div>
 
-  <div class="source">Source: CS Ventures service packaging model; diagnostic entry point scoped at 30&ndash;60 days.</div>
-  <div class="page">17</div><div class="section-tab">The Offer</div>
+  <div class="takeaway"><b>The output gain did not come with a quality trade-off:</b> review latency, defect trends, and incident trends all held or improved as the same cohort shipped more.</div>
+
+  <div class="source">Source: Replit, "The Self-Driving Company," July 16, 2026; company-reported figures, not third-party audited [S004]</div>
+  <div class="page">14</div>
+  <div class="section-tab">Appendix</div>
 </section>
 
-<!-- S18: sections/04-the-offer/19-key-takeaways.html -->
-<section id="s18" class="slide">
-  <h2 class="action-title">Turn AI From a Belief Into a Measured EBITDA Lever, Starting With a Single-Portco Diagnostic</h2>
+<!-- S15: sections/04-appendix/15-architecture.html -->
+<section id="s15" class="slide">
+  <h2 class="action-title">The Gain Came From a Governed Agent Operating System With Human Escalation, Not From a Standalone AI Tool</h2>
   <div class="rule"></div>
-  <div class="kt">
-    <div class="kt-row"><div class="kt-n">1</div><div class="kt-b"><h4>Conviction is high; execution is rare -- that gap is the opportunity.</h4><p>84% of PE funds expect AI to transform portfolio value, but only 7% have reached enterprise-scale deployment. The work ahead is translation, not persuasion.</p></div></div>
-    <div class="kt-row"><div class="kt-n">2</div><div class="kt-b"><h4>AI clears real return hurdles when built and deployed with discipline.</h4><p><b>54%-67%</b> of AI use cases report ROI above a 10% hurdle rate, and <b>95%</b> of PE funds say AI initiatives meet or exceed expectations. Source: FTI Consulting, 2026 Private Equity AI Radar.</p></div></div>
-    <div class="kt-row"><div class="kt-n">3</div><div class="kt-b"><h4>Builder-operator fluency is proven, not theoretical.</h4><p>Four live builds, from a 2-hour deck agent to an AI layer sold to an agency, show the same engagement can architect the system and get a business user to adopt it.</p></div></div>
+  <div class="subtitle">Reference architecture <span class="unit">reads top to bottom: the loop, its components, then the controls around it</span></div>
+
+  <div class="arch" data-evidence="E008">
+    <div class="layer flow" style="--c:var(--cat-1);--cs:var(--cat-1s)">
+      <div class="lh"><div class="nm">Operating loop</div><div class="sm">one cycle, repeated</div></div>
+      <div class="nodes">
+        <span class="node">Employee sets the outcome</span><span class="arrow">&rarr;</span>
+        <span class="node">Manager agent decomposes the work</span><span class="arrow">&rarr;</span>
+        <span class="node">Specialist agents act across systems</span><span class="arrow">&rarr;</span>
+        <span class="node">Outputs are evaluated</span><span class="arrow">&rarr;</span>
+        <span class="node">Exceptions escalate to people</span><span class="arrow">&rarr;</span>
+        <span class="node">Results improve the next cycle</span>
+      </div>
+    </div>
+    <div class="layer" style="--c:var(--cat-3);--cs:var(--cat-3s)">
+      <div class="lh"><div class="nm">Components</div><div class="sm">what the loop is built from</div></div>
+      <div class="nodes">
+        <span class="node">Manager agent capable of spawning multiple agents</span>
+        <span class="node">Verifiable agent loops</span>
+        <span class="node">Connections to operating systems and knowledge bases</span>
+        <span class="node">Remote and isolated execution infrastructure</span>
+        <span class="node">Function-specific skills and playbooks</span>
+        <span class="node">Trusted data and semantic definitions</span>
+        <span class="node">Human escalation for judgment and accountability</span>
+      </div>
+    </div>
+    <div class="layer controls" style="--c:var(--cyan)">
+      <div class="lh"><div class="nm" style="color:#4CC98A">Governance controls</div><div class="sm">the same rail generalized on the core loop</div></div>
+      <div class="nodes">
+        <span class="node">Access policies</span>
+        <span class="node">Token proxies</span>
+        <span class="node">Audit logging</span>
+        <span class="node">Zero-trust network</span>
+        <span class="node">Approval thresholds</span>
+        <span class="node">Security and cost controls</span>
+      </div>
+    </div>
   </div>
-  <div class="cta-bar"><span class="cta-label">Next step</span><span class="cta-ask">Propose a <b>single-portco AI-to-EBITDA diagnostic</b> (30&ndash;60 days) as the entry point -- scoped to identify and prioritize the highest-value efficiency and opportunity gains.</span></div>
-  <div class="source">Source: EY, "How AI is sustainably transforming value creation in private equity," 2026; FTI Consulting, "2026 Private Equity AI Radar" (200 PE decision makers surveyed, Dec 2025).</div>
-  <div class="page">18</div><div class="section-tab">The Offer</div>
+
+  <div class="source">Source: Replit, "The Self-Driving Company," July 16, 2026; company-reported [S004]</div>
+  <div class="page">15</div>
+  <div class="section-tab">Appendix</div>
+</section>
+
+<!-- S16: sections/04-appendix/16-adoption.html -->
+<section id="s16" class="slide">
+  <h2 class="action-title">Adoption Spread Because Agents Entered an Existing Slack Workflow and Used Trusted Company Data</h2>
+  <div class="rule"></div>
+
+  <div class="principles">
+    <div class="pr" style="--c:var(--cyan)"><div class="no">01</div><div><h3>Meet people where they work</h3><p>A Slack interface made the agent system visible and accessible to employees, not walled off in a separate tool.</p></div></div>
+    <div class="pr" style="--c:var(--cyan)"><div class="no">02</div><div><h3>Ask, then act</h3><p>Employees could ask questions and then have agents take the follow-up actions directly, in the same thread.</p></div></div>
+    <div class="pr" style="--c:var(--cyan)"><div class="no">03</div><div><h3>Wire in company systems</h3><p>Connections to internal systems made every output company-specific rather than generic.</p></div></div>
+    <div class="pr" style="--c:var(--cyan)"><div class="no">04</div><div><h3>Trust the data first</h3><p>A semantic layer identified which data and relationships were trustworthy before agents acted on them.</p></div></div>
+    <div class="pr" style="--c:var(--cyan)"><div class="no">05</div><div><h3>Let teams build their own skills</h3><p>Teams contributed their own skills and integrations, extending the system into their own workflows.</p></div></div>
+    <div class="pr" style="--c:var(--cyan)"><div class="no">06</div><div><h3>Keep a human in the loop</h3><p>Human escalation preserved judgment and accountability wherever an agent reached a limit.</p></div></div>
+    <div class="pr" style="--c:var(--cyan)"><div class="no">07</div><div><h3>Let wins recruit the next team</h3><p>Visible wins in one group pulled additional teams into the system on their own.</p></div></div>
+  </div>
+
+  <div class="source">Source: Replit, "The Self-Driving Company," July 16, 2026; company-reported [S004]</div>
+  <div class="page">16</div>
+  <div class="section-tab">Appendix</div>
+</section>
+
+<!-- S17: sections/04-appendix/17-translation.html -->
+<section id="s17" class="slide">
+  <h2 class="action-title">The Pattern Transfers Wherever Code Is Replaced by a Verifiable Business Work Product, Though the Magnitude Does Not</h2>
+  <div class="rule"></div>
+  <div class="subtitle">Same operating pattern, different function <span class="unit">a governed agent producing a verifiable work product, checked, then escalated on exception</span></div>
+
+  <table class="tbl2">
+    <colgroup><col style="width:14%"><col style="width:30%"><col style="width:28%"><col style="width:28%"></colgroup>
+    <thead><tr><th>Function</th><th>Example work product</th><th>Verification method</th><th>Primary economic KPI</th></tr></thead>
+    <tbody>
+      <tr><td class="fn">Finance</td><td>Reconciliation, collections prioritization, close package</td><td>Ledger checks and controller approval</td><td>Close time, DSO, finance cost</td></tr>
+      <tr><td class="fn">Customer service</td><td>Ticket investigation and proposed resolution</td><td>Policy checks and escalation rules</td><td>Cost per ticket, resolution time</td></tr>
+      <tr><td class="fn">Sales</td><td>Account research, next-best action, proposal</td><td>CRM evidence and manager approval</td><td>Rep capacity, conversion, retention</td></tr>
+      <tr><td class="fn">Procurement</td><td>Vendor comparison and contract intake</td><td>Policy, pricing, and legal thresholds</td><td>Spend avoided, cycle time</td></tr>
+      <tr><td class="fn">Field operations</td><td>Schedule, exception detection, work-order follow-up</td><td>SLA and supervisor checks</td><td>Utilization, rework, response time</td></tr>
+      <tr><td class="fn">Portfolio operations</td><td>Risk scan and management alert</td><td>Source citations and operating-partner review</td><td>Detection lead time, loss avoided</td></tr>
+    </tbody>
+  </table>
+
+  <div class="takeaway"><b>The transferable lesson is the operating pattern, not the magnitude of the gain:</b> a non-code function should expect a governed loop to work, not a 2.9x multiple.</div>
+
+  <div class="source">Source: pattern translation from Replit, "The Self-Driving Company," July 16, 2026 [S004]; function mapping per AI-to-EBITDA framework [S006]</div>
+  <div class="page">17</div>
+  <div class="section-tab">Appendix</div>
+</section>
+
+<!-- S18: sections/04-appendix/18-portco-plan.html -->
+<section id="s18" class="slide">
+  <h2 class="action-title">A Portfolio Company Can Test the Model in 90 Days on One High-Volume, Verifiable Workflow</h2>
+  <div class="rule"></div>
+
+  <div class="tl4" data-evidence="E019">
+    <div class="ph" style="--c:var(--cyan)">
+      <div class="days">Days 0&ndash;15</div>
+      <h4>Select and Baseline</h4>
+      <ul>
+        <li>Choose a high-volume workflow with a measurable output</li>
+        <li>Baseline cost, time, quality, revenue, and risk</li>
+        <li>Identify systems, data, owners, and approval requirements</li>
+      </ul>
+    </div>
+    <div class="ph" style="--c:var(--cyan-strong)">
+      <div class="days">Days 16&ndash;45</div>
+      <h4>Connect and Pilot</h4>
+      <ul>
+        <li>Connect the minimum required systems and knowledge</li>
+        <li>Encode the workflow, its standard operating procedure, quality tests, and escalation rules</li>
+        <li>Launch with a controlled user group</li>
+      </ul>
+    </div>
+    <div class="ph" style="--c:var(--callout)">
+      <div class="days">Days 46&ndash;75</div>
+      <h4>Measure and Harden</h4>
+      <ul>
+        <li>Measure economics, quality, adoption, and exception rates</li>
+        <li>Add permissions, logging, monitoring, and cost controls</li>
+        <li>Improve the workflow using observed failures</li>
+      </ul>
+    </div>
+    <div class="ph" style="--c:var(--navy)">
+      <div class="days">Days 76&ndash;90</div>
+      <h4>Scale Decision</h4>
+      <ul>
+        <li>Compare results with the baseline</li>
+        <li>Decide whether to scale, redesign, or stop</li>
+        <li>Document reusable components and rollout requirements</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="metrics"><b>Decision metrics:</b> hours eliminated or redeployed, cycle-time reduction, error-rate reduction, revenue captured or retained, risk detected earlier, adoption and override rates, and AI and infrastructure cost per completed work item. Prompt volume and tool-login counts are not value metrics.</div>
+
+  <div class="source">Source: CS Ventures 90-day portfolio-company pilot design [S006]</div>
+  <div class="page">18</div>
+  <div class="section-tab">Appendix</div>
 </section>
 </div>
 <div class="nav"><button id="prev">&larr; Prev</button><span id="pos"></span><button id="next">Next &rarr;</button></div>
@@ -855,7 +1122,7 @@ body.print .nav, body.print .hint, body.print .csv-bar{ display:none; }
     slides.forEach(function(s,i){ s.classList.toggle('active', i===cur); });
     document.getElementById('pos').textContent = (cur+1) + ' / ' + slides.length; }
   function fit(){ document.documentElement.style.setProperty('--k',
-    Math.min(innerWidth/1300, (innerHeight-76)/760)); }
+    Math.min(innerWidth/1300, innerHeight/760)); }
   document.getElementById('prev').onclick = function(){ show(cur-1); };
   document.getElementById('next').onclick = function(){ show(cur+1); };
   document.addEventListener('keydown', function(e){
