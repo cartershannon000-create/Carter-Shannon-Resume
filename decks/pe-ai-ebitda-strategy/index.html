@@ -275,41 +275,40 @@ body.print .nav, body.print .hint{ display:none; }
 #s8 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:13px 26px; font-size:14.5px; line-height:1.44; margin-top:18px; }
 #s8 .kicker b{ color:#4CC98A; }
 /* sections/03-execution-model/9-operating-loop.html */
-#s9 .rule{ flex:none; min-height:1px; }
-#s9 .loop-body{ flex:1; display:flex; flex-direction:column; }
-#s9 .loop-stage{ flex:1; display:flex; align-items:center; justify-content:center; }
-#s9 .loop{ position:relative; width:100%; height:390px; flex:none; }
+#s9 .loop-body{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:12px; }
+#s9 .rule{ margin:12px 0 10px; }
+#s9 .loop{ position:relative; width:100%; height:380px; }
 #s9 .loop svg{ position:absolute; inset:0; width:100%; height:100%; }
-#s9 .node{ position:absolute; width:190px; }
-#s9 .node h4{ margin:0 0 3px; font-size:13.5px; font-weight:700; color:var(--ink); }
-#s9 .node p{ margin:0; font-size:11.5px; line-height:1.38; color:#455049; }
-#s9 .node.top, #s9 .node.bottom{ text-align:center; }
-#s9 .node.right{ text-align:left; }
-#s9 .node.left{ text-align:right; }
-#s9 .gov-rail{ margin-top:14px; flex:none; background:var(--navy); border-radius:8px; padding:12px 26px;
-    display:flex; align-items:center; gap:26px; }
-#s9 .gov-rail .gl{ flex:none; }
-#s9 .gov-rail .gl .eyebrow{ color:#8FD4AE; margin-bottom:2px; }
-#s9 .gov-rail .gl .gt{ font-size:12px; color:#DCE8DE; max-width:150px; line-height:1.3; }
-#s9 .gov-rail .items{ flex:1; display:flex; align-items:center; justify-content:space-between; gap:10px; }
-#s9 .gov-rail .items span{ font-size:12.5px; font-weight:600; color:#fff; white-space:nowrap; }
-#s9 .gov-rail .items i{ color:#3E6E54; font-style:normal; }
-#s9 .loop-center{ position:absolute; left:568px; top:195px; transform:translate(-50%,-50%); width:140px; text-align:center; pointer-events:none; }
-#s9 .loop-center .lc-eyebrow{ font-size:9.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:3px; }
-#s9 .loop-center .lc-label{ font-family:var(--serif); font-weight:700; font-size:16px; line-height:1.15; color:var(--callout); }
+#s9 .node{ position:absolute; width:210px; }
+#s9 .node h4{ margin:0 0 3px; font-size:15px; font-weight:700; color:var(--ink); }
+#s9 .node p{ margin:0; font-size:12.5px; line-height:1.38; color:#4b564f; }
+#s9 .node.top, #s9 .node.bottom{ text-align:center; left:463px; }
+#s9 .node.right{ text-align:left; left:702px; }
+#s9 .node.left{ text-align:right; left:224px; }
+#s9 .loop-center{ position:absolute; left:568px; top:188px; transform:translate(-50%,-50%); width:150px; text-align:center; }
+#s9 .loop-center .lc-eyebrow{ font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+#s9 .loop-center .lc-label{ font-family:var(--serif); font-weight:700; font-size:19px; line-height:1.12; color:var(--callout); }
+#s9 .gov-rail{ background:var(--navy); border-radius:10px; padding:12px 28px; display:flex; align-items:center; gap:28px; }
+#s9 .gov-rail .gl{ flex:none; border-right:1px solid #2E5646; padding-right:24px; }
+#s9 .gov-rail .gl .eyebrow{ font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#8FD4AE; margin-bottom:3px; }
+#s9 .gov-rail .gl .gt{ font-size:12px; color:#DCE8DE; max-width:160px; line-height:1.32; }
+#s9 .gov-rail .items{ flex:1; display:flex; align-items:center; justify-content:space-between; }
+#s9 .gov-rail .items span{ font-size:13px; font-weight:600; color:#fff; white-space:nowrap; }
+#s9 .gov-rail .items i{ width:5px; height:5px; border-radius:50%; background:var(--cyan); flex:none; }
 /* sections/03-execution-model/10-diagnostic-deliverables.html */
 #s10 .body{ flex:1; display:flex; flex-direction:column; }
-#s10 .fg{ flex:1; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(2,1fr); gap:26px 32px; align-content:center; margin:16px 0 0; align-items:start; }
-#s10 .feat{ display:flex; gap:22px; align-items:flex-start; padding:6px; }
-#s10 .feat .ic{ width:84px; height:84px; border-radius:16px; flex:none; display:flex; align-items:center; justify-content:center;
-    background:var(--cs); color:var(--c); }
-#s10 .feat .ic svg{ width:42px; height:42px; }
-#s10 .feat h3{ margin:3px 0 9px; font-size:18px; line-height:1.25; font-weight:700; color:var(--ink); }
-#s10 .feat ul{ margin:0; padding:0; list-style:none; }
-#s10 .feat li{ position:relative; padding:0 0 8px 16px; font-size:14.5px; line-height:1.5; color:#3c4a42; }
-#s10 .feat li::before{ content:""; position:absolute; left:0; top:8px; width:6px; height:6px; border-radius:50%; background:var(--c); }
-#s10 .feat li:last-child{ padding-bottom:0; }
-#s10 .kicker{ flex:none; background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:16px 26px; font-size:14.5px; line-height:1.46; margin-bottom:38px; }
+#s10 .fg{ flex:1; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:1fr 1fr; gap:18px; margin:18px 0 16px; }
+#s10 .card{ border:1px solid var(--hair); border-radius:11px; background:#fff; padding:18px 20px;
+    display:flex; flex-direction:column; }
+#s10 .card .hd{ display:flex; align-items:center; gap:13px; margin-bottom:12px; }
+#s10 .card .ic{ width:44px; height:44px; border-radius:11px; flex:none; display:flex; align-items:center; justify-content:center;
+    background:var(--cyan-soft); color:var(--callout); }
+#s10 .card .ic svg{ width:24px; height:24px; }
+#s10 .card h3{ margin:0; font-size:16.5px; font-weight:700; color:var(--ink); }
+#s10 .card ul{ margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:8px; }
+#s10 .card li{ position:relative; padding-left:17px; font-size:13.5px; line-height:1.4; color:#3c4a42; }
+#s10 .card li::before{ content:""; position:absolute; left:0; top:7px; width:6px; height:6px; border-radius:50%; background:var(--cyan); }
+#s10 .kicker{ flex:none; background:var(--navy); border-left:8px solid var(--cyan); border-radius:8px; color:#fff; padding:15px 24px; font-size:14px; line-height:1.45; }
 #s10 .kicker b{ color:#4CC98A; }
 /* sections/03-execution-model/11-engagement-path.html */
 #s11 .sw{ display:grid; grid-template-columns:0.62fr 1fr 1fr 1fr; grid-template-rows:auto auto auto; gap:0 14px; margin-top:18px; overflow:visible; align-items:start; }
@@ -361,24 +360,43 @@ body.print .nav, body.print .hint{ display:none; }
 #s14 .takeaway{ background:var(--paper-2); border-left:6px solid var(--cyan); border-radius:4px; padding:10px 16px; font-size:12.5px; color:var(--ink); margin-top:14px; line-height:1.4; }
 #s14 .takeaway b{ color:var(--callout); }
 /* sections/04-appendix/15-architecture.html */
-#s15 .arch{ display:grid; grid-template-rows:1fr 1fr .82fr; gap:20px; margin-top:20px; flex:1; }
-#s15 .layer{ border:1px solid var(--hair); border-left:7px solid var(--c); border-radius:8px; padding:20px 20px; background:#fff; display:flex; flex-direction:column; justify-content:center; gap:4px; }
-#s15 .layer.controls{ background:var(--navy); border-color:#0C3327; }
-#s15 .lh{ display:flex; align-items:baseline; gap:9px; margin-bottom:14px; }
-#s15 .lh .nm{ font-size:12.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--c); }
-#s15 .lh .sm{ font-size:12px; color:var(--muted); }
-#s15 .layer.controls .lh .sm{ color:#B8CBBE; }
-#s15 .nodes{ display:flex; flex-wrap:wrap; gap:12px 8px; align-items:center; }
-#s15 .node{ font-size:11.5px; font-weight:600; line-height:1.3; color:var(--ink); background:var(--cs); border:1px solid var(--c); border-radius:7px; padding:7px 12px; }
-#s15 .layer.controls .node{ background:rgba(255,255,255,.08); border-color:var(--cyan); color:#fff; }
-#s15 .arrow{ color:var(--muted); font-size:15px; font-weight:600; padding:0 1px; }
-#s15 .layer.flow .node{ min-width:145px; text-align:center; }
+#s15 .arch{ display:flex; flex-direction:column; gap:14px; margin-top:16px; flex:1; }
+#s15 .tier{ display:grid; grid-template-columns:184px 1fr; border-radius:10px; overflow:hidden; border:1px solid var(--hair); }
+#s15 .t1{ flex:1; }
+#s15 .t2{ flex:1.5; }
+#s15 .t3{ flex:1; }
+#s15 .tier .rail{ padding:18px 20px; display:flex; flex-direction:column; justify-content:center; gap:5px; }
+#s15 .tier .rail .tnum{ font-family:var(--serif); font-weight:700; font-size:15px; opacity:.5; }
+#s15 .tier .rail .tname{ font-size:14px; font-weight:700; letter-spacing:.02em; line-height:1.15; }
+#s15 .tier .rail .tsub{ font-size:11.5px; line-height:1.35; }
+#s15 .tier .cells{ padding:16px 20px; display:grid; gap:10px; align-content:center; }
+#s15 .chip{ font-size:12.5px; font-weight:600; line-height:1.25; border-radius:7px; padding:9px 13px; display:flex; align-items:center; }
+#s15 .t1{ border-color:#BFD8C7; }
+#s15 .t1 .rail{ background:var(--cyan-soft); color:var(--callout); }
+#s15 .t1 .rail .tnum{ color:var(--callout); }
+#s15 .t1 .cells{ grid-template-columns:repeat(6,1fr); background:#fff; }
+#s15 .t1 .flowcell{ display:flex; align-items:center; gap:8px; }
+#s15 .t1 .chip{ flex:1; background:var(--cyan-soft); color:var(--ink); border:1px solid #BFD8C7; justify-content:center; text-align:center; min-height:52px; }
+#s15 .t1 .arr{ color:var(--cyan-strong); font-size:15px; font-weight:700; flex:none; }
+#s15 .t2{ border-color:#CBD8CC; }
+#s15 .t2 .rail{ background:#E4EDE3; color:var(--ink); }
+#s15 .t2 .cells{ display:flex; flex-wrap:wrap; justify-content:center; align-content:center; background:#fff; }
+#s15 .t2 .chip{ background:#EEF3EC; color:var(--ink); border:1px solid #D3DECF; }
+#s15 .t3{ border-color:#0C3327; }
+#s15 .t3 .rail{ background:#0C3327; color:#fff; }
+#s15 .t3 .rail .tname, #s15 .t3 .rail .tnum{ color:#fff; }
+#s15 .t3 .rail .tsub{ color:#B8CBBE; }
+#s15 .t3 .cells{ grid-template-columns:repeat(6,1fr); background:var(--navy); }
+#s15 .t3 .chip{ background:rgba(255,255,255,.06); color:#fff; border:1px solid var(--cyan); justify-content:center; text-align:center; }
 /* sections/04-appendix/16-adoption.html */
-#s16 .principles{ display:grid; grid-template-columns:repeat(4,1fr); gap:52px 32px; margin-top:20px; flex:1; align-content:center; }
-#s16 .pr{ display:grid; grid-template-columns:64px 1fr; gap:18px; align-content:start; align-items:start; padding:28px 0 0; border-top:2px solid var(--c); }
-#s16 .pr .no{ font-family:var(--serif); font-weight:700; font-size:52px; line-height:.85; color:var(--c); }
-#s16 .pr h3{ margin:0 0 8px; font-size:17px; font-weight:700; color:var(--ink); }
-#s16 .pr p{ margin:0; font-size:14.5px; line-height:1.55; color:#424d46; }
+#s16 .adopt{ flex:1; display:flex; flex-direction:column; gap:18px; margin-top:18px; }
+#s16 .arow{ flex:1; display:grid; gap:18px; }
+#s16 .arow.r1{ grid-template-columns:repeat(4,1fr); }
+#s16 .arow.r2{ grid-template-columns:repeat(3,1fr); }
+#s16 .pc{ border:1px solid var(--hair); border-radius:11px; background:#fff; padding:18px 20px; display:flex; flex-direction:column; }
+#s16 .pc .no{ font-family:var(--serif); font-weight:700; font-size:30px; line-height:.9; color:var(--cyan-strong); margin-bottom:11px; }
+#s16 .pc h3{ margin:0 0 6px; font-size:15px; font-weight:700; line-height:1.2; color:var(--ink); }
+#s16 .pc p{ margin:0; font-size:12.5px; line-height:1.46; color:#424d46; }
 /* sections/04-appendix/17-translation.html */
 #s17 .tbl2{ width:100%; border-collapse:collapse; font-size:12px; margin-top:14px; table-layout:fixed; }
 #s17 .tbl2 th{ text-align:left; font-weight:700; color:var(--ink); padding:10px 12px 11px; border-bottom:1px solid var(--ink); font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; }
@@ -714,51 +732,46 @@ body.print .nav, body.print .hint{ display:none; }
   <div class="rule"></div>
 
   <div class="loop-body">
-    <div class="loop-stage">
     <div class="loop">
-      <svg viewBox="0 0 1136 390" fill="none">
-        <defs>
-          <marker id="loopArrow" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
-            <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan-strong)"/>
-          </marker>
-        </defs>
-        <g stroke="var(--cyan-strong)" stroke-width="3" fill="none" marker-end="url(#loopArrow)">
-          <path d="M568,82 Q632,85 647.9,110.2"/>
-          <path d="M666,139 Q695,196 681.6,221.8"/>
-          <path d="M666,252 Q632,305.5 602,306.7"/>
-          <path d="M568,308 Q504.3,305.5 488.4,280.6"/>
-          <path d="M470,252 Q440.6,195.65 454.3,169.2"/>
-          <path d="M470,139 Q504.3,85.15 534,83.7"/>
+      <svg viewBox="0 0 1136 380" fill="none">
+        <circle cx="568" cy="188" r="110" fill="none" stroke="#AECBB8" stroke-width="2.5"/>
+        <circle cx="568" cy="188" r="66" fill="var(--paper)" stroke="#DCE8DE" stroke-width="1.5"/>
+        <g fill="var(--cyan-strong)">
+          <path d="M-5,-6 L7,0 L-5,6 Z" transform="translate(623,92.7) rotate(30)"/>
+          <path d="M-5,-6 L7,0 L-5,6 Z" transform="translate(678,188) rotate(90)"/>
+          <path d="M-5,-6 L7,0 L-5,6 Z" transform="translate(623,283.3) rotate(150)"/>
+          <path d="M-5,-6 L7,0 L-5,6 Z" transform="translate(513,283.3) rotate(210)"/>
+          <path d="M-5,-6 L7,0 L-5,6 Z" transform="translate(458,188) rotate(270)"/>
+          <path d="M-5,-6 L7,0 L-5,6 Z" transform="translate(513,92.7) rotate(330)"/>
         </g>
-        <g font-family="Georgia,serif" font-weight="700" font-size="21">
-          <g><circle cx="568" cy="82" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="568" y="90" text-anchor="middle" fill="var(--navy)">1</text></g>
-          <g><circle cx="666" cy="139" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="666" y="147" text-anchor="middle" fill="var(--navy)">2</text></g>
-          <g><circle cx="666" cy="252" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="666" y="260" text-anchor="middle" fill="var(--navy)">3</text></g>
-          <g><circle cx="568" cy="308" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="568" y="316" text-anchor="middle" fill="var(--navy)">4</text></g>
-          <g><circle cx="470" cy="252" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="470" y="260" text-anchor="middle" fill="var(--navy)">5</text></g>
-          <g><circle cx="470" cy="139" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="470" y="147" text-anchor="middle" fill="var(--navy)">6</text></g>
+        <g font-family="Georgia,serif" font-weight="700" font-size="21" fill="#fff" text-anchor="middle">
+          <g><circle cx="568" cy="78" r="26" fill="var(--callout)"/><text x="568" y="85.5">1</text></g>
+          <g><circle cx="663.3" cy="133" r="26" fill="var(--callout)"/><text x="663.3" y="140.5">2</text></g>
+          <g><circle cx="663.3" cy="243" r="26" fill="var(--callout)"/><text x="663.3" y="250.5">3</text></g>
+          <g><circle cx="568" cy="298" r="26" fill="var(--callout)"/><text x="568" y="305.5">4</text></g>
+          <g><circle cx="472.7" cy="243" r="26" fill="var(--callout)"/><text x="472.7" y="250.5">5</text></g>
+          <g><circle cx="472.7" cy="133" r="26" fill="var(--callout)"/><text x="472.7" y="140.5">6</text></g>
         </g>
       </svg>
 
-      <div class="node top" style="left:473px; top:0;"><h4>Prioritize</h4><p>Select workflows on value, feasibility, and verifiability.</p></div>
-      <div class="node right" style="left:706px; top:106px;"><h4>Baseline</h4><p>Establish current cost, cycle time, quality, revenue, and risk.</p></div>
-      <div class="node right" style="left:706px; top:219px;"><h4>Connect</h4><p>Governed access to systems, knowledge, and trusted data.</p></div>
-      <div class="node bottom" style="left:473px; top:340px;"><h4>Build</h4><p>Encode the workflow, decision rules, tools, and human escalation.</p></div>
-      <div class="node left" style="left:240px; top:219px;"><h4>Adopt</h4><p>Embed in the tools and routines employees already use.</p></div>
-      <div class="node left" style="left:240px; top:106px;"><h4>Measure &amp; scale</h4><p>Compare with the baseline; expand only where the economics hold.</p></div>
+      <div class="node top" style="top:0;"><h4>Prioritize</h4><p>Select workflows on value, feasibility, and verifiability.</p></div>
+      <div class="node right" style="top:109px;"><h4>Baseline</h4><p>Establish current cost, cycle time, quality, revenue, and risk.</p></div>
+      <div class="node right" style="top:219px;"><h4>Connect</h4><p>Governed access to systems, knowledge, and trusted data.</p></div>
+      <div class="node bottom" style="top:330px;"><h4>Build</h4><p>Encode the workflow, decision rules, tools, and human escalation.</p></div>
+      <div class="node left" style="top:219px;"><h4>Adopt</h4><p>Embed in the tools and routines employees already use.</p></div>
+      <div class="node left" style="top:109px;"><h4>Measure &amp; scale</h4><p>Compare with the baseline; expand only where the economics hold.</p></div>
 
       <div class="loop-center"><div class="lc-eyebrow">The loop produces</div><div class="lc-label">Measured<br>EBITDA</div></div>
-    </div>
     </div>
 
     <div class="gov-rail">
       <div class="gl"><div class="eyebrow">Governance rail</div><div class="gt">Spans every stage of the loop</div></div>
       <div class="items">
-        <span>Permissions</span><i>&bull;</i>
-        <span>Audit logs</span><i>&bull;</i>
-        <span>Data controls</span><i>&bull;</i>
-        <span>Human approval thresholds</span><i>&bull;</i>
-        <span>Quality evaluation</span><i>&bull;</i>
+        <span>Permissions</span><i></i>
+        <span>Audit logs</span><i></i>
+        <span>Data controls</span><i></i>
+        <span>Human approval thresholds</span><i></i>
+        <span>Quality evaluation</span><i></i>
         <span>Cost monitoring</span>
       </div>
     </div>
@@ -777,46 +790,46 @@ body.print .nav, body.print .hint{ display:none; }
 
   <div class="body">
   <div class="fg">
-    <div class="feat">
-      <div class="ic" style="--c:var(--cyan);--cs:var(--cyan-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg></div>
-      <div><h3>Value map</h3><ul>
+    <div class="card">
+      <div class="hd"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg></div><h3>Value map</h3></div>
+      <ul>
         <li>Efficiency and opportunity value map</li>
         <li>Prioritized use-case portfolio</li>
-      </ul></div>
+      </ul>
     </div>
-    <div class="feat">
-      <div class="ic" style="--c:var(--cyan);--cs:var(--cyan-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19h16"/><rect x="6" y="10" width="3" height="8"/><rect x="11" y="6" width="3" height="12"/><rect x="16" y="13" width="3" height="5"/></svg></div>
-      <div><h3>Baselines</h3><ul>
+    <div class="card">
+      <div class="hd"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19h16"/><rect x="6" y="10" width="3" height="8"/><rect x="11" y="6" width="3" height="12"/><rect x="16" y="13" width="3" height="5"/></svg></div><h3>Baselines</h3></div>
+      <ul>
         <li>Current-state KPI baselines</li>
         <li>Workflow and adoption assessment</li>
-      </ul></div>
+      </ul>
     </div>
-    <div class="feat">
-      <div class="ic" style="--c:var(--cyan);--cs:var(--cyan-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8.5 12l2 2 4-4"/></svg></div>
-      <div><h3>Readiness</h3><ul>
+    <div class="card">
+      <div class="hd"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8.5 12l2 2 4-4"/></svg></div><h3>Readiness</h3></div>
+      <ul>
         <li>Data and integration readiness assessment</li>
-      </ul></div>
+      </ul>
     </div>
-    <div class="feat">
-      <div class="ic" style="--c:var(--cyan);--cs:var(--cyan-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.3 9.7c0-1.3 1.2-2.1 2.7-2.1s2.7.8 2.7 1.9c0 2.8-5.4 1.5-5.4 4.3 0 1.1 1.2 1.9 2.7 1.9s2.7-.7 2.7-2"/></svg></div>
-      <div><h3>Economics</h3><ul>
+    <div class="card">
+      <div class="hd"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.3 9.7c0-1.3 1.2-2.1 2.7-2.1s2.7.8 2.7 1.9c0 2.8-5.4 1.5-5.4 4.3 0 1.1 1.2 1.9 2.7 1.9s2.7-.7 2.7-2"/></svg></div><h3>Economics</h3></div>
+      <ul>
         <li>Business case and return model</li>
         <li>Build-versus-buy recommendations</li>
-      </ul></div>
+      </ul>
     </div>
-    <div class="feat">
-      <div class="ic" style="--c:var(--cyan);--cs:var(--cyan-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3.5l6.5 2.7v5.3c0 4.2-2.8 7-6.5 8.2-3.7-1.2-6.5-4-6.5-8.2V6.2z"/></svg></div>
-      <div><h3>Governance</h3><ul>
+    <div class="card">
+      <div class="hd"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3.5l6.5 2.7v5.3c0 4.2-2.8 7-6.5 8.2-3.7-1.2-6.5-4-6.5-8.2V6.2z"/></svg></div><h3>Governance</h3></div>
+      <ul>
         <li>Governance and risk requirements</li>
-      </ul></div>
+      </ul>
     </div>
-    <div class="feat">
-      <div class="ic" style="--c:var(--cyan);--cs:var(--cyan-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 20V5"/><path d="M5 6h11l-2.5 3.5L16 13H5"/></svg></div>
-      <div><h3>Build plan</h3><ul>
+    <div class="card">
+      <div class="hd"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 20V5"/><path d="M5 6h11l-2.5 3.5L16 13H5"/></svg></div><h3>Build plan</h3></div>
+      <ul>
         <li>Two quick-win build specifications</li>
         <li>Two strategic redesign opportunities</li>
         <li>90-day implementation roadmap</li>
-      </ul></div>
+      </ul>
     </div>
   </div>
 
@@ -973,41 +986,43 @@ body.print .nav, body.print .hint{ display:none; }
 <section id="s15" class="slide">
   <h2 class="action-title">The Gain Came From a Governed Agent Operating System With Human Escalation, Not From a Standalone AI Tool</h2>
   <div class="rule"></div>
-  <div class="subtitle">Reference architecture <span class="unit">reads top to bottom: the loop, its components, then the controls around it</span></div>
+  <div class="subtitle">Reference architecture <span class="unit">the loop on top, the components it is built from, and the governance it rests on</span></div>
 
   <div class="arch" data-evidence="E008">
-    <div class="layer flow" style="--c:var(--cat-1);--cs:var(--cat-1s)">
-      <div class="lh"><div class="nm">Operating loop</div><div class="sm">one cycle, repeated</div></div>
-      <div class="nodes">
-        <span class="node">Employee sets the outcome</span><span class="arrow">&rarr;</span>
-        <span class="node">Manager agent decomposes the work</span><span class="arrow">&rarr;</span>
-        <span class="node">Specialist agents act across systems</span><span class="arrow">&rarr;</span>
-        <span class="node">Outputs are evaluated</span><span class="arrow">&rarr;</span>
-        <span class="node">Exceptions escalate to people</span><span class="arrow">&rarr;</span>
-        <span class="node">Results improve the next cycle</span>
+    <div class="tier t1">
+      <div class="rail"><div class="tnum">01</div><div class="tname">Operating loop</div><div class="tsub">one cycle, repeated</div></div>
+      <div class="cells">
+        <div class="flowcell"><span class="chip">Employee sets the outcome</span><span class="arr">&rarr;</span></div>
+        <div class="flowcell"><span class="chip">Manager agent decomposes the work</span><span class="arr">&rarr;</span></div>
+        <div class="flowcell"><span class="chip">Specialist agents act across systems</span><span class="arr">&rarr;</span></div>
+        <div class="flowcell"><span class="chip">Outputs are evaluated</span><span class="arr">&rarr;</span></div>
+        <div class="flowcell"><span class="chip">Exceptions escalate to people</span><span class="arr">&rarr;</span></div>
+        <div class="flowcell"><span class="chip">Results improve the next cycle</span></div>
       </div>
     </div>
-    <div class="layer" style="--c:var(--cat-3);--cs:var(--cat-3s)">
-      <div class="lh"><div class="nm">Components</div><div class="sm">what the loop is built from</div></div>
-      <div class="nodes">
-        <span class="node">Manager agent capable of spawning multiple agents</span>
-        <span class="node">Verifiable agent loops</span>
-        <span class="node">Connections to operating systems and knowledge bases</span>
-        <span class="node">Remote and isolated execution infrastructure</span>
-        <span class="node">Function-specific skills and playbooks</span>
-        <span class="node">Trusted data and semantic definitions</span>
-        <span class="node">Human escalation for judgment and accountability</span>
+
+    <div class="tier t2">
+      <div class="rail"><div class="tnum">02</div><div class="tname">Components</div><div class="tsub">what the loop is built from</div></div>
+      <div class="cells">
+        <span class="chip">Manager agent capable of spawning multiple agents</span>
+        <span class="chip">Verifiable agent loops</span>
+        <span class="chip">Connections to operating systems and knowledge bases</span>
+        <span class="chip">Remote and isolated execution infrastructure</span>
+        <span class="chip">Function-specific skills and playbooks</span>
+        <span class="chip">Trusted data and semantic definitions</span>
+        <span class="chip">Human escalation for judgment and accountability</span>
       </div>
     </div>
-    <div class="layer controls" style="--c:var(--cyan)">
-      <div class="lh"><div class="nm" style="color:#4CC98A">Governance controls</div><div class="sm">the same rail generalized on the core loop</div></div>
-      <div class="nodes">
-        <span class="node">Access policies</span>
-        <span class="node">Token proxies</span>
-        <span class="node">Audit logging</span>
-        <span class="node">Zero-trust network</span>
-        <span class="node">Approval thresholds</span>
-        <span class="node">Security and cost controls</span>
+
+    <div class="tier t3">
+      <div class="rail"><div class="tnum">03</div><div class="tname">Governance controls</div><div class="tsub">the rail generalized on the core loop</div></div>
+      <div class="cells">
+        <span class="chip">Access policies</span>
+        <span class="chip">Token proxies</span>
+        <span class="chip">Audit logging</span>
+        <span class="chip">Zero-trust network</span>
+        <span class="chip">Approval thresholds</span>
+        <span class="chip">Security and cost controls</span>
       </div>
     </div>
   </div>
@@ -1022,14 +1037,18 @@ body.print .nav, body.print .hint{ display:none; }
   <h2 class="action-title">Adoption Spread Because Agents Entered an Existing Slack Workflow and Used Trusted Company Data</h2>
   <div class="rule"></div>
 
-  <div class="principles">
-    <div class="pr" style="--c:var(--cyan)"><div class="no">01</div><div><h3>Meet people where they work</h3><p>A Slack interface made the agent system visible and accessible to employees, not walled off in a separate tool.</p></div></div>
-    <div class="pr" style="--c:var(--cyan)"><div class="no">02</div><div><h3>Ask, then act</h3><p>Employees could ask questions and then have agents take the follow-up actions directly, in the same thread.</p></div></div>
-    <div class="pr" style="--c:var(--cyan)"><div class="no">03</div><div><h3>Wire in company systems</h3><p>Connections to internal systems made every output company-specific rather than generic.</p></div></div>
-    <div class="pr" style="--c:var(--cyan)"><div class="no">04</div><div><h3>Trust the data first</h3><p>A semantic layer identified which data and relationships were trustworthy before agents acted on them.</p></div></div>
-    <div class="pr" style="--c:var(--cyan)"><div class="no">05</div><div><h3>Let teams build their own skills</h3><p>Teams contributed their own skills and integrations, extending the system into their own workflows.</p></div></div>
-    <div class="pr" style="--c:var(--cyan)"><div class="no">06</div><div><h3>Keep a human in the loop</h3><p>Human escalation preserved judgment and accountability wherever an agent reached a limit.</p></div></div>
-    <div class="pr" style="--c:var(--cyan)"><div class="no">07</div><div><h3>Let wins recruit the next team</h3><p>Visible wins in one group pulled additional teams into the system on their own.</p></div></div>
+  <div class="adopt">
+    <div class="arow r1">
+      <div class="pc"><div class="no">01</div><h3>Meet people where they work</h3><p>A Slack interface made the agent system visible and accessible to employees, not walled off in a separate tool.</p></div>
+      <div class="pc"><div class="no">02</div><h3>Ask, then act</h3><p>Employees could ask questions and then have agents take the follow-up actions directly, in the same thread.</p></div>
+      <div class="pc"><div class="no">03</div><h3>Wire in company systems</h3><p>Connections to internal systems made every output company-specific rather than generic.</p></div>
+      <div class="pc"><div class="no">04</div><h3>Trust the data first</h3><p>A semantic layer identified which data and relationships were trustworthy before agents acted on them.</p></div>
+    </div>
+    <div class="arow r2">
+      <div class="pc"><div class="no">05</div><h3>Let teams build their own skills</h3><p>Teams contributed their own skills and integrations, extending the system into their own workflows.</p></div>
+      <div class="pc"><div class="no">06</div><h3>Keep a human in the loop</h3><p>Human escalation preserved judgment and accountability wherever an agent reached a limit.</p></div>
+      <div class="pc"><div class="no">07</div><h3>Let wins recruit the next team</h3><p>Visible wins in one group pulled additional teams into the system on their own.</p></div>
+    </div>
   </div>
 
   <div class="source">Source: Replit, "The Self-Driving Company," July 16, 2026; company-reported [S004]</div>
