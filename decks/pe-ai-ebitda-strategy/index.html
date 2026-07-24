@@ -170,13 +170,13 @@ body.print .nav, body.print .hint{ display:none; }
 #s1.cover h1 .l1{ display:block; font-size:44px; }
 #s1.cover h1 .l2{ display:block; font-size:32px; margin-top:8px; color:#DCEBE1; }
 /* sections/00-front-matter/2-exec-summary.html */
-#s2 .es-grid{ display:grid; grid-template-columns:1fr 1fr 1fr 250px; gap:32px; margin-top:40px; align-items:stretch; flex:1; }
-#s2 .es-col{ display:flex; flex-direction:column; justify-content:center; }
+#s2 .es-grid{ display:grid; grid-template-columns:1fr 1fr 1fr 250px; gap:32px; margin-top:8px; align-items:stretch; flex:1; }
+#s2 .es-col{ display:flex; flex-direction:column; justify-content:flex-start; }
 #s2 .es-col .eyebrow{ font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--cyan-strong); margin:0 0 8px; }
 #s2 .es-col h3{ font-size:15px; font-weight:700; margin:0 0 10px; }
 #s2 .es-col p{ font-size:15px; line-height:1.75; color:#333; margin:0 0 10px; }
 #s2 .es-col b{ color:var(--callout); }
-#s2 .es-box{ background:var(--navy); color:#fff; border-radius:4px; padding:22px; display:flex; flex-direction:column; justify-content:center; gap:14px; }
+#s2 .es-box{ background:var(--navy); color:#fff; border-radius:4px; padding:32px 22px; display:flex; flex-direction:column; justify-content:flex-start; gap:14px; }
 #s2 .es-box h4{ font-size:14px; margin:0 0 4px; color:var(--cyan); }
 #s2 .es-box .big{ font-family:var(--serif); font-weight:700; font-size:32px; line-height:1; margin-bottom:4px; }
 #s2 .es-box .lbl{ font-size:13px; line-height:1.5; color:#c6d3dc; }
@@ -275,6 +275,7 @@ body.print .nav, body.print .hint{ display:none; }
 #s8 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:13px 26px; font-size:14.5px; line-height:1.44; margin-top:18px; }
 #s8 .kicker b{ color:#4CC98A; }
 /* sections/03-execution-model/9-operating-loop.html */
+#s9 .rule{ flex:none; min-height:1px; }
 #s9 .loop-body{ flex:1; display:flex; flex-direction:column; justify-content:flex-start; }
 #s9 .loop{ position:relative; width:100%; height:380px; margin-top:14px; }
 #s9 .loop svg{ position:absolute; inset:0; width:100%; height:100%; }
@@ -292,42 +293,42 @@ body.print .nav, body.print .hint{ display:none; }
 #s9 .gov-rail .items{ flex:1; display:flex; align-items:center; justify-content:space-between; gap:10px; }
 #s9 .gov-rail .items span{ font-size:12.5px; font-weight:600; color:#fff; white-space:nowrap; }
 #s9 .gov-rail .items i{ color:#3E6E54; font-style:normal; }
-#s9 .loop-center{ position:absolute; left:568px; top:193px; transform:translate(-50%,-50%); width:140px; text-align:center; pointer-events:none; }
+#s9 .loop-center{ position:absolute; left:568px; top:190px; transform:translate(-50%,-50%); width:140px; text-align:center; pointer-events:none; }
 #s9 .loop-center .lc-eyebrow{ font-size:9.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:3px; }
 #s9 .loop-center .lc-label{ font-family:var(--serif); font-weight:700; font-size:16px; line-height:1.15; color:var(--callout); }
 /* sections/03-execution-model/10-diagnostic-deliverables.html */
 #s10 .body{ flex:1; display:flex; flex-direction:column; }
-#s10 .fg{ display:grid; grid-template-columns:repeat(3,1fr); gap:34px 36px; margin-top:26px; }
-#s10 .feat{ display:flex; gap:18px; align-items:flex-start; }
-#s10 .feat .ic{ width:60px; height:60px; border-radius:13px; flex:none; display:flex; align-items:center; justify-content:center;
+#s10 .fg{ display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(2,auto); gap:50px 32px; margin-top:20px; align-items:start; }
+#s10 .feat{ display:flex; gap:22px; align-items:flex-start; padding:14px 6px 16px; }
+#s10 .feat .ic{ width:84px; height:84px; border-radius:16px; flex:none; display:flex; align-items:center; justify-content:center;
     background:var(--cs); color:var(--c); }
-#s10 .feat .ic svg{ width:32px; height:32px; }
-#s10 .feat h3{ margin:2px 0 7px; font-size:16px; font-weight:700; color:var(--ink); }
+#s10 .feat .ic svg{ width:42px; height:42px; }
+#s10 .feat h3{ margin:3px 0 9px; font-size:18px; line-height:1.25; font-weight:700; color:var(--ink); }
 #s10 .feat ul{ margin:0; padding:0; list-style:none; }
-#s10 .feat li{ position:relative; padding:0 0 6px 14px; font-size:13px; line-height:1.4; color:#3c4a42; }
-#s10 .feat li::before{ content:""; position:absolute; left:0; top:6px; width:5px; height:5px; border-radius:50%; background:var(--c); }
+#s10 .feat li{ position:relative; padding:0 0 8px 16px; font-size:14.5px; line-height:1.5; color:#3c4a42; }
+#s10 .feat li::before{ content:""; position:absolute; left:0; top:8px; width:6px; height:6px; border-radius:50%; background:var(--c); }
 #s10 .feat li:last-child{ padding-bottom:0; }
 #s10 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:16px 26px; font-size:14.5px; line-height:1.46; margin-top:auto; }
 #s10 .kicker b{ color:#4CC98A; }
 /* sections/03-execution-model/11-engagement-path.html */
-#s11 .sw{ display:grid; grid-template-columns:0.62fr 1fr 1fr 1fr; gap:0 14px; margin-top:20px; overflow:visible; }
-#s11 .ph{ background:var(--navy); color:#fff; border-radius:4px 4px 0 0; padding:11px 16px; }
-#s11 .ph .t{ font-weight:700; font-size:15px; }
-#s11 .ph .d{ font-size:11px; color:var(--cyan); letter-spacing:.03em; margin-top:2px; }
+#s11 .sw{ display:grid; grid-template-columns:0.62fr 1fr 1fr 1fr; grid-template-rows:auto auto auto; gap:0 14px; margin-top:18px; overflow:visible; align-items:start; }
+#s11 .ph{ background:var(--navy); color:#fff; border-radius:4px 4px 0 0; padding:15px 18px; }
+#s11 .ph .t{ font-weight:700; font-size:16px; line-height:1.25; }
+#s11 .ph .d{ font-size:11.5px; line-height:1.3; color:var(--cyan); letter-spacing:.03em; margin-top:3px; }
 #s11 .corner{ }
 #s11 .lane{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted);
-    display:flex; align-items:flex-start; padding:14px 12px 14px 0; border-top:1px solid var(--hair); }
-#s11 .cell{ position:relative; border-top:1px solid var(--hair); padding:13px 12px; overflow:visible; }
+    display:flex; align-items:flex-start; padding:20px 12px 20px 0; border-top:1px solid var(--hair); }
+#s11 .cell{ position:relative; border-top:1px solid var(--hair); padding:20px 14px; overflow:visible; }
 #s11 .cell ul{ margin:0; padding:0; list-style:none; }
-#s11 .cell li{ font-size:12.5px; color:#3c4a42; line-height:1.42; padding:0 0 7px 14px; position:relative; }
+#s11 .cell li{ font-size:13.5px; color:#3c4a42; line-height:1.5; padding:0 0 11px 16px; position:relative; }
 #s11 .cell li:last-child{ padding-bottom:0; }
-#s11 .cell li::before{ content:""; position:absolute; left:0; top:6px; width:6px; height:6px; border-radius:50%; background:var(--cyan); }
+#s11 .cell li::before{ content:""; position:absolute; left:0; top:7px; width:6px; height:6px; border-radius:50%; background:var(--cyan); }
 #s11 .lane.first, #s11 .cell.first{ border-top:none; }
-#s11 .cell.gate{ background:var(--cat-1s); border-radius:5px; border-top:none; margin-top:8px; padding:11px 14px; }
-#s11 .cell.gate p{ margin:0; font-size:12.5px; font-weight:600; color:var(--ink); line-height:1.38; }
+#s11 .cell.gate{ background:var(--cat-1s); border-radius:5px; border-top:none; margin-top:12px; padding:16px 16px; }
+#s11 .cell.gate p{ margin:0; font-size:13.5px; font-weight:600; color:var(--ink); line-height:1.45; }
 #s11 .cell.gate.bridge::after{ content:""; position:absolute; right:-13px; top:50%; transform:translateY(-50%);
     width:0; height:0; border-top:6px solid transparent; border-bottom:6px solid transparent; border-left:9px solid var(--cyan-strong); z-index:2; }
-#s11 .lane.gatelane{ align-items:center; padding-top:22px; }
+#s11 .lane.gatelane{ align-items:center; padding-top:29px; }
 #s11 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:13px 26px; font-size:14px; line-height:1.44; margin-top:auto; }
 #s11 .kicker b{ color:#4CC98A; }
 /* sections/03-execution-model/12-close.html */
@@ -359,8 +360,8 @@ body.print .nav, body.print .hint{ display:none; }
 #s14 .takeaway{ background:var(--paper-2); border-left:6px solid var(--cyan); border-radius:4px; padding:10px 16px; font-size:12.5px; color:var(--ink); margin-top:14px; line-height:1.4; }
 #s14 .takeaway b{ color:var(--callout); }
 /* sections/04-appendix/15-architecture.html */
-#s15 .arch{ display:flex; flex-direction:column; gap:11px; margin-top:14px; }
-#s15 .layer{ border:1px solid var(--hair); border-left:6px solid var(--c); border-radius:8px; padding:10px 18px 11px; background:#fff; }
+#s15 .arch{ display:grid; grid-template-rows:1.05fr 1fr .78fr; gap:16px; margin-top:14px; flex:1; }
+#s15 .layer{ border:1px solid var(--hair); border-left:6px solid var(--c); border-radius:8px; padding:10px 18px 11px; background:#fff; display:flex; flex-direction:column; justify-content:center; }
 #s15 .layer.controls{ background:var(--navy); border-color:#0C3327; }
 #s15 .lh{ display:flex; align-items:baseline; gap:8px; margin-bottom:7px; }
 #s15 .lh .nm{ font-size:11.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--c); }
@@ -372,25 +373,25 @@ body.print .nav, body.print .hint{ display:none; }
 #s15 .arrow{ color:var(--muted); font-size:15px; font-weight:600; padding:0 1px; }
 #s15 .layer.flow .node{ min-width:150px; text-align:center; }
 /* sections/04-appendix/16-adoption.html */
-#s16 .principles{ display:grid; grid-template-columns:repeat(4,1fr); gap:24px 28px; margin-top:20px; }
-#s16 .pr{ display:grid; grid-template-columns:48px 1fr; gap:14px; align-items:start; padding:13px 0; border-top:2px solid var(--c); }
-#s16 .pr .no{ font-family:var(--serif); font-weight:700; font-size:34px; line-height:.85; color:var(--c); }
-#s16 .pr h3{ margin:0 0 4px; font-size:14px; font-weight:700; color:var(--ink); }
-#s16 .pr p{ margin:0; font-size:12px; line-height:1.44; color:#424d46; }
+#s16 .principles{ display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(2,1fr); gap:34px 28px; margin-top:20px; flex:1; }
+#s16 .pr{ display:grid; grid-template-columns:52px 1fr; gap:16px; align-content:start; align-items:start; padding:24px 0 20px; border-top:2px solid var(--c); }
+#s16 .pr .no{ font-family:var(--serif); font-weight:700; font-size:38px; line-height:.85; color:var(--c); }
+#s16 .pr h3{ margin:0 0 6px; font-size:15px; font-weight:700; color:var(--ink); }
+#s16 .pr p{ margin:0; font-size:13px; line-height:1.55; color:#424d46; }
 /* sections/04-appendix/17-translation.html */
 #s17 .tbl2{ width:100%; border-collapse:collapse; font-size:12px; margin-top:14px; table-layout:fixed; }
-#s17 .tbl2 th{ text-align:left; font-weight:700; color:var(--ink); padding:7px 12px 8px; border-bottom:1px solid var(--ink); font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; }
-#s17 .tbl2 td{ padding:10px 12px; border-bottom:1px solid var(--hair); color:var(--ink); vertical-align:top; line-height:1.38; }
+#s17 .tbl2 th{ text-align:left; font-weight:700; color:var(--ink); padding:10px 12px 11px; border-bottom:1px solid var(--ink); font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; }
+#s17 .tbl2 td{ padding:18px 12px; border-bottom:1px solid var(--hair); color:var(--ink); vertical-align:top; line-height:1.38; }
 #s17 .tbl2 td.fn{ font-weight:700; }
-#s17 .takeaway{ background:var(--paper-2); border-left:6px solid var(--cyan); border-radius:4px; padding:10px 16px; font-size:12.5px; color:var(--ink); margin-top:12px; line-height:1.4; }
+#s17 .takeaway{ background:var(--paper-2); border-left:6px solid var(--cyan); border-radius:4px; padding:14px 16px; font-size:12.5px; color:var(--ink); margin-top:14px; line-height:1.4; }
 #s17 .takeaway b{ color:var(--callout); }
 /* sections/04-appendix/18-portco-plan.html */
 #s18 .tl4{ display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:1fr; gap:18px; margin-top:16px; flex:1; }
 #s18 .ph{ border:1px solid var(--hair); border-radius:8px; border-top:4px solid var(--c); padding:18px 18px 20px; display:flex; flex-direction:column; }
 #s18 .ph .days{ font-family:var(--serif); font-weight:700; font-size:19px; color:var(--callout); line-height:1; }
 #s18 .ph h4{ margin:5px 0 8px; font-size:13.5px; font-weight:700; color:var(--ink); }
-#s18 .ph ul{ list-style:none; margin:0; padding:0; }
-#s18 .ph li{ position:relative; padding:0 0 7px 14px; font-size:11.5px; line-height:1.4; color:#33413a; }
+#s18 .ph ul{ list-style:none; margin:0; padding:0; flex:1; display:flex; flex-direction:column; justify-content:space-evenly; }
+#s18 .ph li{ position:relative; padding:0 0 7px 14px; font-size:12px; line-height:1.45; color:#33413a; }
 #s18 .ph li:last-child{ padding-bottom:0; }
 #s18 .ph li::before{ content:""; position:absolute; left:0; top:6px; width:5px; height:5px; border-radius:50%; background:var(--c); }
 #s18 .metrics{ background:var(--paper-2); border-left:6px solid var(--cyan); border-radius:4px; padding:9px 16px; font-size:11px; color:var(--ink); margin-top:14px; line-height:1.42; }
@@ -431,7 +432,7 @@ body.print .nav, body.print .hint{ display:none; }
 
 <!-- S2: sections/00-front-matter/2-exec-summary.html -->
 <section id="s2" class="slide" data-evidence="E001|E002|E003|E004">
-  <h2 class="action-title">PE Conviction Sits at 84% While Enterprise-Scale Deployment Sits at 7%, so the Binding Constraint Is Operating Model, Not Belief</h2>
+  <h2 class="action-title">PE Conviction Sits at 84% While Enterprise-Scale Deployment Sits at&nbsp;7%, so the Binding Constraint Is Operating Model, Not Belief</h2>
   <div class="rule"></div>
   <div class="es-grid">
     <div class="es-col">
@@ -720,29 +721,29 @@ body.print .nav, body.print .hint{ display:none; }
           </marker>
         </defs>
         <g stroke="var(--cyan-strong)" stroke-width="2.5" fill="none" marker-end="url(#loopArrow)">
-          <path d="M568,93 Q699.25,84.75 749.9,143"/>
-          <path d="M749.9,143 Q830.5,193 749.9,243"/>
-          <path d="M749.9,243 Q699.25,301.25 568,293"/>
-          <path d="M568,293 Q436.75,301.25 386.1,243"/>
-          <path d="M386.1,243 Q305.5,193 386.1,143"/>
-          <path d="M386.1,143 Q436.75,84.75 568,93"/>
+          <path d="M568,75 Q794,75 890,130"/>
+          <path d="M890,130 Q970,190 890,250"/>
+          <path d="M890,250 Q794,305 568,305"/>
+          <path d="M568,305 Q342,305 246,250"/>
+          <path d="M246,250 Q166,190 246,130"/>
+          <path d="M246,130 Q342,75 568,75"/>
         </g>
         <g font-family="Georgia,serif" font-weight="700" font-size="21">
-          <g><circle cx="568" cy="93" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="568" y="101" text-anchor="middle" fill="var(--navy)">1</text></g>
-          <g><circle cx="749.9" cy="143" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="749.9" y="151" text-anchor="middle" fill="var(--navy)">2</text></g>
-          <g><circle cx="749.9" cy="243" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="749.9" y="251" text-anchor="middle" fill="var(--navy)">3</text></g>
-          <g><circle cx="568" cy="293" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="568" y="301" text-anchor="middle" fill="var(--navy)">4</text></g>
-          <g><circle cx="386.1" cy="243" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="386.1" y="251" text-anchor="middle" fill="var(--navy)">5</text></g>
-          <g><circle cx="386.1" cy="143" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="386.1" y="151" text-anchor="middle" fill="var(--navy)">6</text></g>
+          <g><circle cx="568" cy="75" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="568" y="83" text-anchor="middle" fill="var(--navy)">1</text></g>
+          <g><circle cx="890" cy="130" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="890" y="138" text-anchor="middle" fill="var(--navy)">2</text></g>
+          <g><circle cx="890" cy="250" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="890" y="258" text-anchor="middle" fill="var(--navy)">3</text></g>
+          <g><circle cx="568" cy="305" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="568" y="313" text-anchor="middle" fill="var(--navy)">4</text></g>
+          <g><circle cx="246" cy="250" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="246" y="258" text-anchor="middle" fill="var(--navy)">5</text></g>
+          <g><circle cx="246" cy="130" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="246" y="138" text-anchor="middle" fill="var(--navy)">6</text></g>
         </g>
       </svg>
 
-      <div class="node top" style="left:473px; top:2px;"><h4>Prioritize</h4><p>Select workflows on value, feasibility, and verifiability.</p></div>
-      <div class="node right" style="left:786px; top:117px;"><h4>Baseline</h4><p>Establish current cost, cycle time, quality, revenue, and risk.</p></div>
-      <div class="node right" style="left:786px; top:217px;"><h4>Connect</h4><p>Governed access to systems, knowledge, and trusted data.</p></div>
-      <div class="node bottom" style="left:473px; top:327px;"><h4>Build</h4><p>Encode the workflow, decision rules, tools, and human escalation.</p></div>
-      <div class="node left" style="left:160px; top:217px;"><h4>Adopt</h4><p>Embed in the tools and routines employees already use.</p></div>
-      <div class="node left" style="left:160px; top:117px;"><h4>Measure &amp; scale</h4><p>Compare with the baseline; expand only where the economics hold.</p></div>
+      <div class="node top" style="left:473px; top:0;"><h4>Prioritize</h4><p>Select workflows on value, feasibility, and verifiability.</p></div>
+      <div class="node right" style="left:930px; top:97px;"><h4>Baseline</h4><p>Establish current cost, cycle time, quality, revenue, and risk.</p></div>
+      <div class="node right" style="left:930px; top:217px;"><h4>Connect</h4><p>Governed access to systems, knowledge, and trusted data.</p></div>
+      <div class="node bottom" style="left:473px; top:338px;"><h4>Build</h4><p>Encode the workflow, decision rules, tools, and human escalation.</p></div>
+      <div class="node left" style="left:18px; top:217px;"><h4>Adopt</h4><p>Embed in the tools and routines employees already use.</p></div>
+      <div class="node left" style="left:18px; top:97px;"><h4>Measure &amp; scale</h4><p>Compare with the baseline; expand only where the economics hold.</p></div>
 
       <div class="loop-center"><div class="lc-eyebrow">The loop produces</div><div class="lc-label">Measured<br>EBITDA</div></div>
     </div>
