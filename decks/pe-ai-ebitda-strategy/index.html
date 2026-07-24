@@ -276,8 +276,9 @@ body.print .nav, body.print .hint{ display:none; }
 #s8 .kicker b{ color:#4CC98A; }
 /* sections/03-execution-model/9-operating-loop.html */
 #s9 .rule{ flex:none; min-height:1px; }
-#s9 .loop-body{ flex:1; display:flex; flex-direction:column; justify-content:flex-start; }
-#s9 .loop{ position:relative; width:100%; height:380px; margin-top:14px; }
+#s9 .loop-body{ flex:1; display:flex; flex-direction:column; }
+#s9 .loop-stage{ flex:1; display:flex; align-items:center; justify-content:center; }
+#s9 .loop{ position:relative; width:100%; height:390px; flex:none; }
 #s9 .loop svg{ position:absolute; inset:0; width:100%; height:100%; }
 #s9 .node{ position:absolute; width:190px; }
 #s9 .node h4{ margin:0 0 3px; font-size:13.5px; font-weight:700; color:var(--ink); }
@@ -285,7 +286,7 @@ body.print .nav, body.print .hint{ display:none; }
 #s9 .node.top, #s9 .node.bottom{ text-align:center; }
 #s9 .node.right{ text-align:left; }
 #s9 .node.left{ text-align:right; }
-#s9 .gov-rail{ margin-top:16px; background:var(--navy); border-radius:8px; padding:12px 26px;
+#s9 .gov-rail{ margin-top:14px; flex:none; background:var(--navy); border-radius:8px; padding:12px 26px;
     display:flex; align-items:center; gap:26px; }
 #s9 .gov-rail .gl{ flex:none; }
 #s9 .gov-rail .gl .eyebrow{ color:#8FD4AE; margin-bottom:2px; }
@@ -293,13 +294,13 @@ body.print .nav, body.print .hint{ display:none; }
 #s9 .gov-rail .items{ flex:1; display:flex; align-items:center; justify-content:space-between; gap:10px; }
 #s9 .gov-rail .items span{ font-size:12.5px; font-weight:600; color:#fff; white-space:nowrap; }
 #s9 .gov-rail .items i{ color:#3E6E54; font-style:normal; }
-#s9 .loop-center{ position:absolute; left:568px; top:190px; transform:translate(-50%,-50%); width:140px; text-align:center; pointer-events:none; }
+#s9 .loop-center{ position:absolute; left:568px; top:195px; transform:translate(-50%,-50%); width:140px; text-align:center; pointer-events:none; }
 #s9 .loop-center .lc-eyebrow{ font-size:9.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:3px; }
 #s9 .loop-center .lc-label{ font-family:var(--serif); font-weight:700; font-size:16px; line-height:1.15; color:var(--callout); }
 /* sections/03-execution-model/10-diagnostic-deliverables.html */
 #s10 .body{ flex:1; display:flex; flex-direction:column; }
-#s10 .fg{ display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(2,auto); gap:50px 32px; margin-top:20px; align-items:start; }
-#s10 .feat{ display:flex; gap:22px; align-items:flex-start; padding:14px 6px 16px; }
+#s10 .fg{ flex:1; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(2,1fr); gap:26px 32px; align-content:center; margin:16px 0 0; align-items:start; }
+#s10 .feat{ display:flex; gap:22px; align-items:flex-start; padding:6px; }
 #s10 .feat .ic{ width:84px; height:84px; border-radius:16px; flex:none; display:flex; align-items:center; justify-content:center;
     background:var(--cs); color:var(--c); }
 #s10 .feat .ic svg{ width:42px; height:42px; }
@@ -308,7 +309,7 @@ body.print .nav, body.print .hint{ display:none; }
 #s10 .feat li{ position:relative; padding:0 0 8px 16px; font-size:14.5px; line-height:1.5; color:#3c4a42; }
 #s10 .feat li::before{ content:""; position:absolute; left:0; top:8px; width:6px; height:6px; border-radius:50%; background:var(--c); }
 #s10 .feat li:last-child{ padding-bottom:0; }
-#s10 .kicker{ background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:16px 26px; font-size:14.5px; line-height:1.46; margin-top:auto; }
+#s10 .kicker{ flex:none; background:var(--navy); border-left:8px solid var(--cyan); border-radius:6px; color:#fff; padding:16px 26px; font-size:14.5px; line-height:1.46; margin-bottom:38px; }
 #s10 .kicker b{ color:#4CC98A; }
 /* sections/03-execution-model/11-engagement-path.html */
 #s11 .sw{ display:grid; grid-template-columns:0.62fr 1fr 1fr 1fr; grid-template-rows:auto auto auto; gap:0 14px; margin-top:18px; overflow:visible; align-items:start; }
@@ -360,24 +361,24 @@ body.print .nav, body.print .hint{ display:none; }
 #s14 .takeaway{ background:var(--paper-2); border-left:6px solid var(--cyan); border-radius:4px; padding:10px 16px; font-size:12.5px; color:var(--ink); margin-top:14px; line-height:1.4; }
 #s14 .takeaway b{ color:var(--callout); }
 /* sections/04-appendix/15-architecture.html */
-#s15 .arch{ display:grid; grid-template-rows:1.05fr 1fr .78fr; gap:16px; margin-top:14px; flex:1; }
-#s15 .layer{ border:1px solid var(--hair); border-left:6px solid var(--c); border-radius:8px; padding:10px 18px 11px; background:#fff; display:flex; flex-direction:column; justify-content:center; }
+#s15 .arch{ display:grid; grid-template-rows:1fr 1fr .82fr; gap:20px; margin-top:20px; flex:1; }
+#s15 .layer{ border:1px solid var(--hair); border-left:7px solid var(--c); border-radius:8px; padding:20px 20px; background:#fff; display:flex; flex-direction:column; justify-content:center; gap:4px; }
 #s15 .layer.controls{ background:var(--navy); border-color:#0C3327; }
-#s15 .lh{ display:flex; align-items:baseline; gap:8px; margin-bottom:7px; }
-#s15 .lh .nm{ font-size:11.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--c); }
-#s15 .lh .sm{ font-size:11px; color:var(--muted); }
+#s15 .lh{ display:flex; align-items:baseline; gap:9px; margin-bottom:14px; }
+#s15 .lh .nm{ font-size:12.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--c); }
+#s15 .lh .sm{ font-size:12px; color:var(--muted); }
 #s15 .layer.controls .lh .sm{ color:#B8CBBE; }
-#s15 .nodes{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-#s15 .node{ font-size:11px; font-weight:600; line-height:1.28; color:var(--ink); background:var(--cs); border:1px solid var(--c); border-radius:6px; padding:6px 11px; }
+#s15 .nodes{ display:flex; flex-wrap:wrap; gap:12px 8px; align-items:center; }
+#s15 .node{ font-size:11.5px; font-weight:600; line-height:1.3; color:var(--ink); background:var(--cs); border:1px solid var(--c); border-radius:7px; padding:7px 12px; }
 #s15 .layer.controls .node{ background:rgba(255,255,255,.08); border-color:var(--cyan); color:#fff; }
 #s15 .arrow{ color:var(--muted); font-size:15px; font-weight:600; padding:0 1px; }
-#s15 .layer.flow .node{ min-width:150px; text-align:center; }
+#s15 .layer.flow .node{ min-width:145px; text-align:center; }
 /* sections/04-appendix/16-adoption.html */
-#s16 .principles{ display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(2,1fr); gap:34px 28px; margin-top:20px; flex:1; }
-#s16 .pr{ display:grid; grid-template-columns:52px 1fr; gap:16px; align-content:start; align-items:start; padding:24px 0 20px; border-top:2px solid var(--c); }
-#s16 .pr .no{ font-family:var(--serif); font-weight:700; font-size:38px; line-height:.85; color:var(--c); }
-#s16 .pr h3{ margin:0 0 6px; font-size:15px; font-weight:700; color:var(--ink); }
-#s16 .pr p{ margin:0; font-size:13px; line-height:1.55; color:#424d46; }
+#s16 .principles{ display:grid; grid-template-columns:repeat(4,1fr); gap:52px 32px; margin-top:20px; flex:1; align-content:center; }
+#s16 .pr{ display:grid; grid-template-columns:64px 1fr; gap:18px; align-content:start; align-items:start; padding:28px 0 0; border-top:2px solid var(--c); }
+#s16 .pr .no{ font-family:var(--serif); font-weight:700; font-size:52px; line-height:.85; color:var(--c); }
+#s16 .pr h3{ margin:0 0 8px; font-size:17px; font-weight:700; color:var(--ink); }
+#s16 .pr p{ margin:0; font-size:14.5px; line-height:1.55; color:#424d46; }
 /* sections/04-appendix/17-translation.html */
 #s17 .tbl2{ width:100%; border-collapse:collapse; font-size:12px; margin-top:14px; table-layout:fixed; }
 #s17 .tbl2 th{ text-align:left; font-weight:700; color:var(--ink); padding:10px 12px 11px; border-bottom:1px solid var(--ink); font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; }
@@ -713,39 +714,41 @@ body.print .nav, body.print .hint{ display:none; }
   <div class="rule"></div>
 
   <div class="loop-body">
+    <div class="loop-stage">
     <div class="loop">
-      <svg viewBox="0 0 1136 380" fill="none">
+      <svg viewBox="0 0 1136 390" fill="none">
         <defs>
-          <marker id="loopArrow" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <marker id="loopArrow" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="var(--cyan-strong)"/>
           </marker>
         </defs>
-        <g stroke="var(--cyan-strong)" stroke-width="2.5" fill="none" marker-end="url(#loopArrow)">
-          <path d="M568,75 Q794,75 890,130"/>
-          <path d="M890,130 Q970,190 890,250"/>
-          <path d="M890,250 Q794,305 568,305"/>
-          <path d="M568,305 Q342,305 246,250"/>
-          <path d="M246,250 Q166,190 246,130"/>
-          <path d="M246,130 Q342,75 568,75"/>
+        <g stroke="var(--cyan-strong)" stroke-width="3" fill="none" marker-end="url(#loopArrow)">
+          <path d="M568,82 Q632,85 647.9,110.2"/>
+          <path d="M666,139 Q695,196 681.6,221.8"/>
+          <path d="M666,252 Q632,305.5 602,306.7"/>
+          <path d="M568,308 Q504.3,305.5 488.4,280.6"/>
+          <path d="M470,252 Q440.6,195.65 454.3,169.2"/>
+          <path d="M470,139 Q504.3,85.15 534,83.7"/>
         </g>
         <g font-family="Georgia,serif" font-weight="700" font-size="21">
-          <g><circle cx="568" cy="75" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="568" y="83" text-anchor="middle" fill="var(--navy)">1</text></g>
-          <g><circle cx="890" cy="130" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="890" y="138" text-anchor="middle" fill="var(--navy)">2</text></g>
-          <g><circle cx="890" cy="250" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="890" y="258" text-anchor="middle" fill="var(--navy)">3</text></g>
-          <g><circle cx="568" cy="305" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="568" y="313" text-anchor="middle" fill="var(--navy)">4</text></g>
-          <g><circle cx="246" cy="250" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="246" y="258" text-anchor="middle" fill="var(--navy)">5</text></g>
-          <g><circle cx="246" cy="130" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="246" y="138" text-anchor="middle" fill="var(--navy)">6</text></g>
+          <g><circle cx="568" cy="82" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="568" y="90" text-anchor="middle" fill="var(--navy)">1</text></g>
+          <g><circle cx="666" cy="139" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="666" y="147" text-anchor="middle" fill="var(--navy)">2</text></g>
+          <g><circle cx="666" cy="252" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="666" y="260" text-anchor="middle" fill="var(--navy)">3</text></g>
+          <g><circle cx="568" cy="308" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="568" y="316" text-anchor="middle" fill="var(--navy)">4</text></g>
+          <g><circle cx="470" cy="252" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="470" y="260" text-anchor="middle" fill="var(--navy)">5</text></g>
+          <g><circle cx="470" cy="139" r="28" fill="var(--paper)" stroke="var(--cyan)" stroke-width="2.5"/><text x="470" y="147" text-anchor="middle" fill="var(--navy)">6</text></g>
         </g>
       </svg>
 
       <div class="node top" style="left:473px; top:0;"><h4>Prioritize</h4><p>Select workflows on value, feasibility, and verifiability.</p></div>
-      <div class="node right" style="left:930px; top:97px;"><h4>Baseline</h4><p>Establish current cost, cycle time, quality, revenue, and risk.</p></div>
-      <div class="node right" style="left:930px; top:217px;"><h4>Connect</h4><p>Governed access to systems, knowledge, and trusted data.</p></div>
-      <div class="node bottom" style="left:473px; top:338px;"><h4>Build</h4><p>Encode the workflow, decision rules, tools, and human escalation.</p></div>
-      <div class="node left" style="left:18px; top:217px;"><h4>Adopt</h4><p>Embed in the tools and routines employees already use.</p></div>
-      <div class="node left" style="left:18px; top:97px;"><h4>Measure &amp; scale</h4><p>Compare with the baseline; expand only where the economics hold.</p></div>
+      <div class="node right" style="left:706px; top:106px;"><h4>Baseline</h4><p>Establish current cost, cycle time, quality, revenue, and risk.</p></div>
+      <div class="node right" style="left:706px; top:219px;"><h4>Connect</h4><p>Governed access to systems, knowledge, and trusted data.</p></div>
+      <div class="node bottom" style="left:473px; top:340px;"><h4>Build</h4><p>Encode the workflow, decision rules, tools, and human escalation.</p></div>
+      <div class="node left" style="left:240px; top:219px;"><h4>Adopt</h4><p>Embed in the tools and routines employees already use.</p></div>
+      <div class="node left" style="left:240px; top:106px;"><h4>Measure &amp; scale</h4><p>Compare with the baseline; expand only where the economics hold.</p></div>
 
       <div class="loop-center"><div class="lc-eyebrow">The loop produces</div><div class="lc-label">Measured<br>EBITDA</div></div>
+    </div>
     </div>
 
     <div class="gov-rail">
