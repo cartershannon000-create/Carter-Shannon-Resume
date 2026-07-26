@@ -3,8 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Report Summaries — CS Ventures</title>
-<meta name="description" content="Interactive summaries of reports, papers, and articles — searchable, with charts and sourced links.">
+<title>Report Summaries | CS Ventures</title>
+<meta name="description" content="Structured summaries of the reports, papers, and research CS Ventures works from: the argument, the numbers, and a link to the original source.">
+<meta property="og:title" content="Report Summaries | CS Ventures">
+<meta property="og:description" content="Structured summaries of the reports, papers, and research CS Ventures works from: the argument, the numbers, and a link to the original source.">
+<meta property="og:url" content="https://cs-ventures.us/report-summaries/">
+<link rel="canonical" href="https://cs-ventures.us/report-summaries/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/site.css">
 <link rel="stylesheet" href="/top-hero.css">
 <link rel="stylesheet" href="assets/rs.css">
@@ -18,21 +24,21 @@
 <section class="csv-top-hero">
   <div class="wrap">
     <p class="csv-top-hero__eyebrow">Report Summaries</p>
-    <h1>Every report worth reading, <em>summarized</em>.</h1>
-    <p class="csv-top-hero__lead">Drop a link or a document and get a concise, interactive summary — key points, charts, and the sourced original. Search it all, pin what matters, save the rest for later.</p>
+    <h1>The research behind the <em>recommendation</em>.</h1>
+    <p class="csv-top-hero__lead">Structured summaries of the reports, papers, and primary research CS Ventures works from. Each one keeps the argument, the numbers that support it, and a direct link to the original source, so a claim can be traced back to where it came from.</p>
   </div>
 </section>
 
 <main class="rs-portfolio wrap">
   <div class="rs-controls">
     <div class="rs-search-wrap">
-      <input id="rs-search" class="rs-search" type="search" placeholder="Search titles, sources, key points, tags…" autocomplete="off">
+      <input id="rs-search" class="rs-search" type="search" placeholder="Search titles, sources, findings, and tags" autocomplete="off" aria-label="Search report summaries">
     </div>
     <div class="rs-control-row">
       <div class="rs-filters">
         <button class="rs-filter rs-on" data-filter="all">All</button>
-        <button class="rs-filter" data-filter="pinned">📌 Pinned</button>
-        <button class="rs-filter" data-filter="saved">🔖 Saved</button>
+        <button class="rs-filter" data-filter="pinned">Pinned</button>
+        <button class="rs-filter" data-filter="saved">Saved</button>
       </div>
       <label class="rs-sort-wrap">Sort
         <select id="rs-sort" class="rs-sort">
@@ -47,8 +53,24 @@
   <div id="rs-grid" class="rs-grid" aria-live="polite"></div>
 </main>
 
-<footer class="rs-foot">
-  <div class="wrap"><a href="/">CS Ventures</a> · Report Summaries</div>
+<footer class="rs-site-foot">
+  <div class="wrap">
+    <div class="rs-foot-inner">
+      <div>
+        <div class="rs-foot-brand">CS Ventures</div>
+        <div class="rs-foot-tagline">Strategy, Products, and Growth.</div>
+      </div>
+      <div class="rs-foot-links">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/services/">Services</a>
+        <a href="/portfolio/">Portfolio</a>
+        <a href="/decks/">Decks</a>
+        <a href="mailto:info@cs-ventures.us">info@cs-ventures.us</a>
+      </div>
+    </div>
+    <div class="rs-foot-bottom">CS Ventures &copy; 2026</div>
+  </div>
 </footer>
 
 <script src="assets/rs.js"></script>

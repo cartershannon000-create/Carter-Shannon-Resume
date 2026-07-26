@@ -1,15 +1,15 @@
 {
-  "generated": "2026-07-26T14:23:18",
+  "generated": "2026-07-26T16:05:12",
   "count": 2,
   "reports": [
     {
       "slug": "pe-ai-ebitda",
       "title": "AI-to-EBITDA Strategy for PE-Backed SMB and Midmarket Companies",
-      "source_name": "CS Ventures Research",
-      "source_url": "file:///Users/cartershannon/Documents/Code/pe-ai-ebitda-research.md",
-      "source_type": "report",
+      "source_name": "CS Ventures",
+      "source_url": "https://cs-ventures.us/decks/pe-ai-ebitda-strategy/",
+      "source_type": "research brief",
       "date_processed": "2026-07-26",
-      "tldr": "PE firms don't have an AI awareness problem, they have an AI translation problem. This brief positions AI as a third value-creation lever alongside financial engineering and operational excellence, and lays out how to convert AI from scattered pilots and tool spend into measured EBITDA impact across portfolio companies through two engines, efficiency gains and opportunity gains, and a dual system-led plus user-led adoption model.",
+      "tldr": "Private equity does not have an AI awareness problem. It has a translation problem: 84% of funds expect AI to transform portfolio value, while only 7% of portfolio companies have reached enterprise-scale deployment. This brief positions AI as a third value-creation lever alongside financial engineering and operational excellence, and argues that the value splits into two engines. Efficiency gains protect and expand margin by doing today's work faster and cheaper. Opportunity gains open work that was previously uneconomic for an SMB or midmarket company, which is what moves the growth story and the exit multiple. Capturing either one requires a single governed loop running prioritization, baselining, system access, build, adoption, and measurement together, rather than a strategy deck without a build or a build without adoption.",
       "tags": [
         "private-equity",
         "ai",
@@ -19,14 +19,18 @@
       ],
       "reading_time_min": 12,
       "key_points": [
-        "AI is becoming a third PE value-creation lever alongside financial engineering and operational excellence.",
-        "Value comes from two engines: efficiency gains (do existing work faster/cheaper) and opportunity gains (open work that was previously uneconomic).",
-        "Adoption requires both system-led (SaaS-like workflow integration) and user-led (Excel-like personal productivity) AI.",
-        "Conviction is high but operationalization is low: 84% of PE funds expect significant AI impact, yet only 7% have enterprise-scale deployment.",
-        "AI in PE is not just cost takeout: 41% of initiatives target revenue growth versus 24% focused only on cost.",
-        "Useful modeling ranges: 63% of cost initiatives target 5-10% savings and 65% of revenue initiatives target 5-10% uplift."
+        "AI is becoming a third value-creation lever in private equity, alongside financial engineering and operational excellence.",
+        "Conviction is high and execution is rare, and the gap is an operating-model problem rather than a belief problem.",
+        "Value splits into two engines: efficiency gains that protect margin, and opportunity gains that change the growth and exit story.",
+        "Opportunity gains matter because AI gives a portfolio company enterprise-grade leverage before it has enterprise-grade scale.",
+        "Adoption requires both system-led and user-led AI, because each covers the other's weakness.",
+        "Efficiency improves EBITDA, but the multiple moves with maturity level, and that evidence is associative rather than causal.",
+        "Scaling stalls on people and process, not on tooling or budget.",
+        "The two providers PE defaults to each solve half the problem, so the engagement fails wherever the handoffs sit.",
+        "The modeling ranges are modest and defensible, which is what makes them usable in a value-creation plan.",
+        "Speed without validation is its own risk in a diligence context."
       ],
-      "chart_count": 3,
+      "chart_count": 4,
       "url": "reports/pe-ai-ebitda.html"
     },
     {
@@ -36,7 +40,7 @@
       "source_url": "https://www.mckinsey.com/capabilities/operations/our-insights/putting-ai-to-work-the-operational-excellence-imperative",
       "source_type": "report",
       "date_processed": "2026-07-26",
-      "tldr": "A McKinsey survey of 1,000 executives finds that AI pays off only when it moves beyond pilots and is embedded across the enterprise, and that operational excellence is the hidden accelerator that makes it stick. Companies that combine scaled AI with mature operating disciplines generate roughly double the profit margins and more than five times the three-year ROIC of peers. The takeaway: use operational excellence as the stabilizer and technology as the accelerant to build a durable performance loop.",
+      "tldr": "A June 2026 McKinsey survey of 1,000 senior and midlevel executives asks why AI investment so rarely shows up in financial results, and answers that operational excellence is the missing variable. Companies with AI embedded across multiple functions report nearly double the profit margins and more than five times the three-year ROIC of peers running AI in a few departments; companies with high operational-excellence maturity show a parallel uplift of more than triple the ROIC. The two reinforce each other, because mature operating disciplines create the conditions AI needs to scale, and scaled AI sharpens those disciplines further. The survey identifies correlation rather than causation, but the pattern is consistent enough across deployment, operations, productivity, and returns that the practical conclusion holds: treat operational excellence as the stabilizer and technology as the accelerant.",
       "tags": [
         "mckinsey",
         "ai",
@@ -47,14 +51,18 @@
       ],
       "reading_time_min": 11,
       "key_points": [
-        "AI conviction is near-universal but scaling is rare: almost 90% of organizations are at least experimenting with AI, yet only 7% have scaled it across the enterprise.",
-        "Enterprise-wide AI adoption is tied to dramatically better financials: nearly double the profit margins and more than 5x the three-year ROIC versus peers using AI in only a few departments.",
-        "Operational excellence delivers a parallel uplift \u2014 high-maturity companies earn comparable margins and more than triple the three-year ROIC of less-mature peers.",
-        "Productivity is the mechanism: AI delivers gains only when it moves beyond pilots into core operational processes across multiple functions.",
-        "Plant-level case studies show large, concrete gains once the operating backbone is strengthened first.",
-        "Leaders build the performance loop deliberately: start with a few high-value operational priorities, design early use cases for scale, build data/governance alongside the tech, embed capability where decisions are made, and sequence ambition to absorption capacity."
+        "The two standard responses to disruption, cost cutting and new technology, each fail on their own.",
+        "Enterprise-wide AI adoption travels with dramatically better financials.",
+        "Operational excellence produces a parallel uplift, which is the finding that reframes the AI question.",
+        "The relationship runs in both directions, forming a performance loop rather than a one-time uplift.",
+        "Productivity is the mechanism connecting AI and operational maturity to margin.",
+        "AI pays only when it moves past pilots into core operational processes.",
+        "The plant case studies share one sequence: strengthen the operating backbone, then scale the technology.",
+        "Among companies already using AI at scale, a small set of organizational capabilities separates the strong performers.",
+        "Midsize companies are squeezed in the middle.",
+        "Leaders build the loop deliberately, in five moves."
       ],
-      "chart_count": 3,
+      "chart_count": 4,
       "url": "reports/mckinsey-ai-roi-operational-excellence.html"
     }
   ]
