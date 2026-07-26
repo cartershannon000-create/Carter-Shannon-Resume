@@ -104,19 +104,13 @@
   </url>
 
   <url>
-    <loc>https://cs-ventures.us/report-summaries/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://cs-ventures.us/report-summaries/reports/pe-ai-ebitda.html</loc>
+    <loc>https://cs-ventures.us/report-summaries/reports/pe-ai-ebitda</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://cs-ventures.us/report-summaries/reports/mckinsey-ai-roi-operational-excellence.html</loc>
+    <loc>https://cs-ventures.us/report-summaries/reports/mckinsey-ai-roi-operational-excellence</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
