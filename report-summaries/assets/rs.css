@@ -8,9 +8,12 @@
 .rs-ico { width: 15px; height: 15px; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; fill: none; }
 .rs-ico-sm { width: 13px; height: 13px; }
 
-/* ── portfolio controls ── */
-.rs-portfolio { padding: 46px 32px 88px; }
-.rs-controls { margin-bottom: 30px; }
+/* ── portfolio controls ──
+   Note the selector: `.rs-body .wrap` above also matches <main class="rs-portfolio wrap">
+   and is more specific, so a bare `.rs-portfolio { padding: ... }` loses the shorthand
+   and the block ends up flush against the hero. Set the vertical padding longhand here. */
+.rs-body .rs-portfolio { padding-top: 54px; padding-bottom: 92px; }
+.rs-controls { margin-bottom: 34px; }
 .rs-search-wrap { position: relative; }
 .rs-search-wrap .rs-ico { position: absolute; left: 17px; top: 50%; margin-top: -7.5px; color: var(--muted); pointer-events: none; }
 .rs-search { width: 100%; padding: 15px 18px 15px 42px; font: 400 15px/1.4 var(--font-body); color: var(--ink);
@@ -25,10 +28,12 @@
 .rs-filter.rs-on { background: var(--green); color: #fff; border-color: var(--green); }
 .rs-sort-wrap { font: 600 11px/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 9px; }
 .rs-sort { padding: 8px 12px; font: 500 13px/1 var(--font-body); letter-spacing: 0; text-transform: none; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
-.rs-count { margin-top: 16px; font: 600 10.5px/1 var(--font-body); color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
+.rs-count { margin-top: 18px; font: 600 10.5px/1 var(--font-body); color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
 
 /* ── grid ── */
-.rs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 22px; }
+/* 380px min yields two columns at the 1120px cap instead of three narrow ones, so a
+   pair of cards fills the row cleanly and long serif titles stop wrapping to three lines. */
+.rs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 24px; align-items: start; }
 .rs-empty { grid-column: 1/-1; color: var(--muted); padding: 60px 0; text-align: center; font-size: 15px; }
 .rs-card { position: relative; background: var(--panel-strong); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 26px 22px;
   display: flex; flex-direction: column; gap: 13px; box-shadow: var(--shadow); transition: box-shadow .16s, transform .16s, border-color .16s; }
