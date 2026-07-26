@@ -48,17 +48,26 @@
     return Promise.resolve();
   }
 
-  /* ── charts: dependency-free inline SVG ──
-     One measure, one colour. A second colour appears only when a datum sets
-     `highlight: true` — never a different colour per bar. */
+  /* ── charts: dependency-free inline SVG, McKinsey exhibit conventions ──
+     One measure, one colour; a second colour appears only where a datum sets
+     `highlight: true`. Categories read horizontally so no label is ever rotated
+     or wrapped under a bar. Values sit at the end of the mark, the unit lives in
+     the subtitle, and the only rule on the plot is the baseline.
+
+     types: bar (horizontal, default) | column (vertical, ordered series)
+            stacked (100% share) | line (trend) */
   var GREEN = "#2e6b3f", ACCENT = "#9e7132";
-  var PIE_RAMP = ["#2e6b3f", "#56bb6e", "#9e7132", "#173d2b", "#7fae6a", "#c2a878"];
+  var SHARE_RAMP = ["#2e6b3f", "#7fae6a", "#c2a878", "#173d2b", "#56bb6e", "#9e7132"];
   function svgEl(name, attrs) {
     var e = document.createElementNS("http://www.w3.org/2000/svg", name);
     for (var k in attrs) e.setAttribute(k, attrs[k]);
     return e;
   }
-  function wrapLabel(svg, text, x, y, maxChars) {
+  function txt(svg, s, attrs) {
+    var t = svgEl("text", attrs); t.textContent = s; svg.appendChild(t); return t;
+  }
+  function fmt(v) { return v == null ? "" : String(v); }
+  function wrapLabel(svg, text, x, y, maxChars, anchor) {
     var words = String(text || "").split(/\s+/), lines = [], cur = "";
     words.forEach(function (w) {
       if ((cur + " " + w).trim().length > maxChars && cur) { lines.push(cur); cur = w; }
@@ -66,69 +75,115 @@
     });
     if (cur) lines.push(cur);
     lines.slice(0, 2).forEach(function (ln, i) {
-      var t = svgEl("text", { x: x, y: y + i * 12, class: "rs-svg-lbl", "text-anchor": "middle" });
-      t.textContent = ln; svg.appendChild(t);
+      txt(svg, ln, { x: x, y: y + i * 12, class: "rs-svg-lbl", "text-anchor": anchor || "middle" });
     });
   }
+
   function renderChart(host, ch) {
-    var data = ch.data || [], W = 460, H = 250, pad = 34, padB = 54;
+    var data = ch.data || [];
     if (!data.length) return;
     var type = ch.type || "bar";
-    var svg = svgEl("svg", { viewBox: "0 0 " + W + " " + H, class: "rs-svg", role: "img" });
-    if (ch.title) { var ttl = svgEl("title", {}); ttl.textContent = ch.title; svg.appendChild(ttl); }
+    var W = 460;
     var vals = data.map(function (d) { return +d.value || 0; });
     var max = Math.max.apply(null, vals.concat([0])) || 1;
     var min = Math.min.apply(null, vals.concat([0]));
     var range = (max - min) || 1;
-    if (type === "pie") {
-      var total = vals.reduce(function (a, b) { return a + b; }, 0) || 1, cx = 116, cy = H / 2, r = 88, ang = -Math.PI / 2;
+
+    if (type === "stacked") {
+      var total = vals.reduce(function (a, b) { return a + b; }, 0) || 1;
+      var H0 = 62 + data.length * 22, barY = 16, barH = 40, x0 = 0;
+      var svg0 = svgEl("svg", { viewBox: "0 0 " + W + " " + H0, class: "rs-svg", role: "img" });
       data.forEach(function (d, i) {
-        var frac = (+d.value || 0) / total, a2 = ang + frac * 2 * Math.PI;
-        var x1 = cx + r * Math.cos(ang), y1 = cy + r * Math.sin(ang);
-        var x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
-        var large = frac > 0.5 ? 1 : 0;
-        svg.appendChild(svgEl("path", {
-          d: "M" + cx + "," + cy + " L" + x1 + "," + y1 + " A" + r + "," + r + " 0 " + large + " 1 " + x2 + "," + y2 + " Z",
-          fill: PIE_RAMP[i % PIE_RAMP.length], stroke: "#f9f9f2", "stroke-width": 1.5
-        }));
-        ang = a2;
+        var w = (+d.value || 0) / total * W;
+        svg0.appendChild(svgEl("rect", { x: x0, y: barY, width: Math.max(w, 1), height: barH,
+          fill: SHARE_RAMP[i % SHARE_RAMP.length] }));
+        if (w > 34) {
+          txt(svg0, fmt(d.value), { x: x0 + w / 2, y: barY + barH / 2 + 5, class: "rs-svg-val-on",
+            "text-anchor": "middle" });
+        }
+        x0 += w;
       });
-      var lx = 232, ly = cy - (data.length - 1) * 11;
       data.forEach(function (d, i) {
-        svg.appendChild(svgEl("rect", { x: lx, y: ly + i * 22 - 9, width: 11, height: 11, rx: 2, fill: PIE_RAMP[i % PIE_RAMP.length] }));
-        var t = svgEl("text", { x: lx + 19, y: ly + i * 22, class: "rs-svg-lbl" });
-        t.textContent = (d.label || "") + "  " + (d.value != null ? d.value : "");
-        svg.appendChild(t);
+        var ly = barY + barH + 26 + i * 22;
+        svg0.appendChild(svgEl("rect", { x: 1, y: ly - 9, width: 11, height: 11, rx: 1,
+          fill: SHARE_RAMP[i % SHARE_RAMP.length] }));
+        txt(svg0, d.label || "", { x: 20, y: ly, class: "rs-svg-lbl" });
+        txt(svg0, fmt(d.value), { x: W - 1, y: ly, class: "rs-svg-val", "text-anchor": "end" });
       });
-    } else {
-      var iw = W - pad * 2, ih = H - pad - padB, zeroY = pad + ih * (max / range);
-      svg.appendChild(svgEl("line", { x1: pad, y1: zeroY, x2: W - pad, y2: zeroY, class: "rs-svg-axis" }));
+      host.appendChild(svg0);
+      return;
+    }
+
+    if (type === "column" || type === "line") {
+      var padT = 30, padB = 46, padX = 30, H = 236;
+      var iw = W - padX * 2, ih = H - padT - padB, zeroY = padT + ih * (max / range);
+      var svg = svgEl("svg", { viewBox: "0 0 " + W + " " + H, class: "rs-svg", role: "img" });
+      svg.appendChild(svgEl("line", { x1: padX, y1: zeroY, x2: W - padX, y2: zeroY, class: "rs-svg-axis" }));
       if (type === "line") {
         var step = iw / Math.max(data.length - 1, 1), pts = [];
         data.forEach(function (d, i) {
-          pts.push((pad + step * i) + "," + (pad + ih - ((+d.value || 0) - min) / range * ih));
+          pts.push((padX + step * i) + "," + (padT + ih - ((+d.value || 0) - min) / range * ih));
         });
-        svg.appendChild(svgEl("polyline", { points: pts.join(" "), fill: "none", stroke: GREEN, "stroke-width": 2.5, "stroke-linejoin": "round" }));
+        svg.appendChild(svgEl("polyline", { points: pts.join(" "), fill: "none", stroke: GREEN,
+          "stroke-width": 2.5, "stroke-linejoin": "round", "stroke-linecap": "round" }));
         data.forEach(function (d, i) {
-          var x = pad + step * i, y = pad + ih - ((+d.value || 0) - min) / range * ih;
+          var x = padX + step * i, y = padT + ih - ((+d.value || 0) - min) / range * ih;
           svg.appendChild(svgEl("circle", { cx: x, cy: y, r: 3.5, fill: d.highlight ? ACCENT : GREEN }));
-          var vt = svgEl("text", { x: x, y: y - 9, class: "rs-svg-val", "text-anchor": "middle" });
-          vt.textContent = d.value != null ? d.value : ""; svg.appendChild(vt);
-          wrapLabel(svg, d.label, x, H - 26, 12);
+          txt(svg, fmt(d.value), { x: x, y: y - 10, class: "rs-svg-val", "text-anchor": "middle" });
+          wrapLabel(svg, d.label, x, H - 22, 13);
         });
-      } else { // bar
-        var bw = iw / data.length * 0.56, gap = iw / data.length;
+      } else {
+        var gap = iw / data.length, bw = Math.min(gap * 0.5, 54);
         data.forEach(function (d, i) {
-          var v = +d.value || 0, x = pad + gap * i + (gap - bw) / 2;
+          var v = +d.value || 0, x = padX + gap * i + (gap - bw) / 2;
           var h = Math.abs(v) / range * ih, y = v >= 0 ? zeroY - h : zeroY;
-          svg.appendChild(svgEl("rect", { x: x, y: y, width: bw, height: Math.max(h, 1), rx: 1, fill: d.highlight ? ACCENT : GREEN }));
-          var vt = svgEl("text", { x: x + bw / 2, y: y - 7, class: "rs-svg-val", "text-anchor": "middle" });
-          vt.textContent = d.value != null ? d.value : ""; svg.appendChild(vt);
-          wrapLabel(svg, d.label, x + bw / 2, H - 28, Math.max(10, Math.floor(gap / 5.4)));
+          svg.appendChild(svgEl("rect", { x: x, y: y, width: bw, height: Math.max(h, 1),
+            fill: d.highlight ? ACCENT : GREEN }));
+          txt(svg, fmt(d.value), { x: x + bw / 2, y: y - 9, class: "rs-svg-val", "text-anchor": "middle" });
+          wrapLabel(svg, d.label, x + bw / 2, H - 22, Math.max(11, Math.floor(gap / 5)));
         });
       }
+      host.appendChild(svg);
+      return;
     }
-    host.appendChild(svg);
+
+    // horizontal bars (default). Labels are measured, not estimated, so the
+    // category gutter always fits the longest one instead of clipping it.
+    var rowH = 34, topPad = 6, valW = 44;
+    var Hb = topPad + data.length * rowH + 8;
+    var svgb = svgEl("svg", { viewBox: "0 0 " + W + " " + Hb, class: "rs-svg", role: "img" });
+    var labels = data.map(function (d, i) {
+      return txt(svgb, d.label || "", { x: 0, y: topPad + i * rowH + rowH / 2 + 4,
+        class: "rs-svg-lbl", "text-anchor": "end" });
+    });
+    host.appendChild(svgb); // must be in the document before text can be measured
+
+    var widest = 0;
+    labels.forEach(function (t) {
+      var w = 0;
+      try { w = t.getComputedTextLength(); } catch (e) { w = String(t.textContent).length * 5.9; }
+      widest = Math.max(widest, w);
+    });
+    // viewBox units: getComputedTextLength reports user units, which is what we want
+    var g = Math.min(Math.max(widest + 2, 60), W * 0.46);
+    var plotX = g + 12, plotW = W - plotX - valW;
+    var absMax = Math.max.apply(null, vals.map(Math.abs).concat([1]));
+
+    labels.forEach(function (t) {
+      t.setAttribute("x", g);
+      var w = 0;
+      try { w = t.getComputedTextLength(); } catch (e) {}
+      // a label longer than the gutter gets condensed rather than clipped
+      if (w > g) { t.setAttribute("textLength", g); t.setAttribute("lengthAdjust", "spacingAndGlyphs"); }
+    });
+    data.forEach(function (d, i) {
+      var v = +d.value || 0, cy = topPad + i * rowH + rowH / 2;
+      var w = Math.abs(v) / absMax * plotW;
+      svgb.appendChild(svgEl("rect", { x: plotX, y: cy - 9, width: Math.max(w, 1), height: 18,
+        fill: d.highlight ? ACCENT : GREEN }));
+      txt(svgb, fmt(d.value), { x: plotX + w + 8, y: cy + 4, class: "rs-svg-val" });
+    });
+    svgb.appendChild(svgEl("line", { x1: plotX, y1: topPad, x2: plotX, y2: Hb - 8, class: "rs-svg-axis" }));
   }
 
   /* ── report page ── */
@@ -179,10 +234,33 @@
       sync();
       save.addEventListener("click", function () { toggle(SAVE_KEY, slug); sync(); });
     }
-    // deep-link highlight
+    // expand / collapse all sections
+    var toggleAll = document.getElementById("rs-toggle-all");
+    if (toggleAll) {
+      var secs = function () { return Array.prototype.slice.call(document.querySelectorAll("details.rs-sec")); };
+      var syncAll = function () {
+        var anyOpen = secs().some(function (s) { return s.open; });
+        toggleAll.textContent = anyOpen ? "Collapse all" : "Expand all";
+        toggleAll.setAttribute("aria-expanded", anyOpen ? "true" : "false");
+      };
+      toggleAll.addEventListener("click", function () {
+        var open = !secs().some(function (s) { return s.open; });
+        secs().forEach(function (s) { s.open = open; });
+        syncAll();
+      });
+      secs().forEach(function (s) { s.addEventListener("toggle", syncAll); });
+      syncAll();
+    }
+    // deep-link highlight: open the target section if it is collapsed
     if (location.hash) {
       var tgt = document.getElementById(location.hash.slice(1));
-      if (tgt) { tgt.classList.add("rs-flash"); tgt.scrollIntoView({ behavior: "smooth", block: "center" }); }
+      if (tgt) {
+        if (tgt.tagName === "DETAILS") tgt.open = true;
+        var host = tgt.closest ? tgt.closest("details") : null;
+        if (host) host.open = true;
+        tgt.classList.add("rs-flash");
+        tgt.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }
     return true;
   }
