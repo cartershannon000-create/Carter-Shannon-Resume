@@ -1,0 +1,61 @@
+{
+  "generated": "2026-07-26T14:23:18",
+  "count": 2,
+  "reports": [
+    {
+      "slug": "pe-ai-ebitda",
+      "title": "AI-to-EBITDA Strategy for PE-Backed SMB and Midmarket Companies",
+      "source_name": "CS Ventures Research",
+      "source_url": "file:///Users/cartershannon/Documents/Code/pe-ai-ebitda-research.md",
+      "source_type": "report",
+      "date_processed": "2026-07-26",
+      "tldr": "PE firms don't have an AI awareness problem, they have an AI translation problem. This brief positions AI as a third value-creation lever alongside financial engineering and operational excellence, and lays out how to convert AI from scattered pilots and tool spend into measured EBITDA impact across portfolio companies through two engines, efficiency gains and opportunity gains, and a dual system-led plus user-led adoption model.",
+      "tags": [
+        "private-equity",
+        "ai",
+        "ebitda",
+        "value-creation",
+        "strategy"
+      ],
+      "reading_time_min": 12,
+      "key_points": [
+        "AI is becoming a third PE value-creation lever alongside financial engineering and operational excellence.",
+        "Value comes from two engines: efficiency gains (do existing work faster/cheaper) and opportunity gains (open work that was previously uneconomic).",
+        "Adoption requires both system-led (SaaS-like workflow integration) and user-led (Excel-like personal productivity) AI.",
+        "Conviction is high but operationalization is low: 84% of PE funds expect significant AI impact, yet only 7% have enterprise-scale deployment.",
+        "AI in PE is not just cost takeout: 41% of initiatives target revenue growth versus 24% focused only on cost.",
+        "Useful modeling ranges: 63% of cost initiatives target 5-10% savings and 65% of revenue initiatives target 5-10% uplift."
+      ],
+      "chart_count": 3,
+      "url": "reports/pe-ai-ebitda.html"
+    },
+    {
+      "slug": "mckinsey-ai-roi-operational-excellence",
+      "title": "Putting AI to Work: The Operational Excellence Imperative",
+      "source_name": "McKinsey & Company",
+      "source_url": "https://www.mckinsey.com/capabilities/operations/our-insights/putting-ai-to-work-the-operational-excellence-imperative",
+      "source_type": "report",
+      "date_processed": "2026-07-26",
+      "tldr": "A McKinsey survey of 1,000 executives finds that AI pays off only when it moves beyond pilots and is embedded across the enterprise, and that operational excellence is the hidden accelerator that makes it stick. Companies that combine scaled AI with mature operating disciplines generate roughly double the profit margins and more than five times the three-year ROIC of peers. The takeaway: use operational excellence as the stabilizer and technology as the accelerant to build a durable performance loop.",
+      "tags": [
+        "mckinsey",
+        "ai",
+        "operations",
+        "operational-excellence",
+        "agentic-ai",
+        "productivity"
+      ],
+      "reading_time_min": 11,
+      "key_points": [
+        "AI conviction is near-universal but scaling is rare: almost 90% of organizations are at least experimenting with AI, yet only 7% have scaled it across the enterprise.",
+        "Enterprise-wide AI adoption is tied to dramatically better financials: nearly double the profit margins and more than 5x the three-year ROIC versus peers using AI in only a few departments.",
+        "Operational excellence delivers a parallel uplift \u2014 high-maturity companies earn comparable margins and more than triple the three-year ROIC of less-mature peers.",
+        "Productivity is the mechanism: AI delivers gains only when it moves beyond pilots into core operational processes across multiple functions.",
+        "Plant-level case studies show large, concrete gains once the operating backbone is strengthened first.",
+        "Leaders build the performance loop deliberately: start with a few high-value operational priorities, design early use cases for scale, build data/governance alongside the tech, embed capability where decisions are made, and sequence ambition to absorption capacity."
+      ],
+      "chart_count": 3,
+      "url": "reports/mckinsey-ai-roi-operational-excellence.html"
+    }
+  ]
+}

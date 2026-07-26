@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Report Summaries — CS Ventures</title>
+<meta name="description" content="Interactive summaries of reports, papers, and articles — searchable, with charts and sourced links.">
+<link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/top-hero.css">
+<link rel="stylesheet" href="assets/rs.css">
+</head>
+<body class="rs-body">
+<header class="csv-bar">
+  <a class="csv-brand" href="/"><svg class="csv-mark" viewBox="0 0 205 155" aria-hidden="true" fill="currentColor"><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="150" x="4" y="108">C</text><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="125" x="78" y="129">S</text></svg>CS Ventures</a>
+  <nav class="csv-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/about/">About</a><a href="/services/">Services</a><a href="/portfolio/">Portfolio</a><a href="/report-summaries/" class="active">Reports</a></nav>
+</header>
+
+<section class="csv-top-hero">
+  <div class="wrap">
+    <p class="csv-top-hero__eyebrow">Report Summaries</p>
+    <h1>Every report worth reading, <em>summarized</em>.</h1>
+    <p class="csv-top-hero__lead">Drop a link or a document and get a concise, interactive summary — key points, charts, and the sourced original. Search it all, pin what matters, save the rest for later.</p>
+  </div>
+</section>
+
+<main class="rs-portfolio wrap">
+  <div class="rs-controls">
+    <div class="rs-search-wrap">
+      <input id="rs-search" class="rs-search" type="search" placeholder="Search titles, sources, key points, tags…" autocomplete="off">
+    </div>
+    <div class="rs-control-row">
+      <div class="rs-filters">
+        <button class="rs-filter rs-on" data-filter="all">All</button>
+        <button class="rs-filter" data-filter="pinned">📌 Pinned</button>
+        <button class="rs-filter" data-filter="saved">🔖 Saved</button>
+      </div>
+      <label class="rs-sort-wrap">Sort
+        <select id="rs-sort" class="rs-sort">
+          <option value="newest">Newest</option>
+          <option value="source">Source name</option>
+        </select>
+      </label>
+    </div>
+    <div id="rs-count" class="rs-count"></div>
+  </div>
+
+  <div id="rs-grid" class="rs-grid" aria-live="polite"></div>
+</main>
+
+<footer class="rs-foot">
+  <div class="wrap"><a href="/">CS Ventures</a> · Report Summaries</div>
+</footer>
+
+<script src="assets/rs.js"></script>
+</body>
+</html>
