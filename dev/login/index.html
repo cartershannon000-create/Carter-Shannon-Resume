@@ -7,6 +7,7 @@
   <title>CS Ventures · Control Plane</title>
   <link rel="stylesheet" href="dashboard.css">
   <link rel="stylesheet" href="metrics.css">
+  <link rel="stylesheet" href="omnisupply.css">
 </head>
 <body>
   <section id="login" class="auth-shell">
@@ -66,6 +67,7 @@
           <button class="active" type="button" data-app-link="home" aria-current="page">Home</button>
           <button type="button" data-app-link="client">Client Dashboard</button>
           <button type="button" data-app-link="system">System Dashboard</button>
+          <button type="button" data-app-link="omnisupply">OmniSupply</button>
         </nav>
         <nav class="tabs" aria-label="Dashboard sections" role="tablist" hidden>
           <button id="tab-overview" type="button" role="tab" aria-selected="false" aria-controls="panel-overview" data-dashboard="system" data-tab="overview">Overview</button>
@@ -78,6 +80,10 @@
           <button id="tab-usage" type="button" role="tab" aria-selected="false" aria-controls="panel-usage" data-dashboard="system" data-tab="usage">Usage</button>
           <button id="tab-approvals" type="button" role="tab" aria-selected="false" aria-controls="panel-approvals" data-dashboard="system" data-tab="approvals">Approvals <b id="approval-count">—</b></button>
           <button id="tab-system" type="button" role="tab" aria-selected="false" aria-controls="panel-system" data-dashboard="system" data-tab="system">System</button>
+          <button id="tab-scenario" type="button" role="tab" aria-selected="false" aria-controls="panel-scenario" data-dashboard="omnisupply" data-tab="scenario">Scenario</button>
+          <button id="tab-history" type="button" role="tab" aria-selected="false" aria-controls="panel-history" data-dashboard="omnisupply" data-tab="history">History <b id="history-count">—</b></button>
+          <button id="tab-company" type="button" role="tab" aria-selected="false" aria-controls="panel-company" data-dashboard="omnisupply" data-tab="company">Company <b class="badge-illustrative">Illustrative</b></button>
+          <button id="tab-questions" type="button" role="tab" aria-selected="false" aria-controls="panel-questions" data-dashboard="omnisupply" data-tab="questions">Questions</button>
         </nav>
       </div>
     </header>
@@ -92,6 +98,9 @@
           <button class="agent-card home-card clickable" type="button" data-app-link="system" aria-label="Open System Dashboard: Overview, Metrics, Work Queue, Agents, Usage, Approvals, and System">
             <span class="agent-icon">S</span><span class="home-card-title">System Dashboard</span><span class="home-card-detail">Overview, Metrics, Work Queue, Agents, Usage, Approvals, and System</span><strong>Open on Overview →</strong>
           </button>
+          <button class="agent-card home-card clickable" type="button" data-app-link="omnisupply" aria-label="Open OmniSupply: freight disruption exposure from public data">
+            <span class="agent-icon">O</span><span class="home-card-title">OmniSupply</span><span class="home-card-detail">Freight disruption exposure, sourced from public data</span><strong>Open on Scenario →</strong>
+          </button>
         </div>
       </section>
       <div id="loading" class="loading" hidden>Loading the operating view from Supabase…</div>
@@ -105,6 +114,10 @@
       <section id="panel-usage" class="tab-panel" role="tabpanel" aria-labelledby="tab-usage" data-panel="usage"></section>
       <section id="panel-approvals" class="tab-panel" role="tabpanel" aria-labelledby="tab-approvals" data-panel="approvals"></section>
       <section id="panel-system" class="tab-panel" role="tabpanel" aria-labelledby="tab-system" data-panel="system"></section>
+      <section id="panel-scenario" class="tab-panel" role="tabpanel" aria-labelledby="tab-scenario" data-panel="scenario"></section>
+      <section id="panel-history" class="tab-panel" role="tabpanel" aria-labelledby="tab-history" data-panel="history"></section>
+      <section id="panel-company" class="tab-panel" role="tabpanel" aria-labelledby="tab-company" data-panel="company"></section>
+      <section id="panel-questions" class="tab-panel" role="tabpanel" aria-labelledby="tab-questions" data-panel="questions"></section>
     </main>
     <div id="drill-backdrop"></div>
     <aside id="drill" data-layout="side" aria-label="Drill-down"><div id="drill-body"></div></aside>

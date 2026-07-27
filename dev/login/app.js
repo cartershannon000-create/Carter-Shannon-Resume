@@ -13,8 +13,9 @@ const dateOnly=v=>{if(!v)return 'Not available';const s=String(v).slice(0,10);co
 const duration=s=>{if(s==null)return '—';s=Number(s);if(s<90)return `${Math.round(s)}s`;if(s<5400)return `${(s/60).toFixed(0)} min`;if(s<172800)return `${(s/3600).toFixed(1)} h`;return `${(s/86400).toFixed(1)} d`};
 const PCOLOR={claude:'var(--green)',codex:'var(--blue)'};
 let state,officeState={clients:[],calendar:[]},agentGraph={agents:[],edges:[],recent_runs:[]};
-const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system']};
-const APP_DEFAULT={client:'clients',system:'overview'};
+let omniState={snapshot:null,freshness:{},sections:{},illustrative:[]};
+const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['scenario','history','company','questions']};
+const APP_DEFAULT={client:'clients',system:'overview',omnisupply:'scenario'};
 const LEGACY_TABS={clients:['client','clients'],money:['client','finances'],finances:['client','finances'],calendar:['client','calendar'],overview:['system','overview'],metrics:['system','metrics'],work:['system','work'],agents:['system','agents'],usage:['system','usage'],approvals:['system','approvals'],system:['system','system']};
 const DRILL_LAYOUT_KEY='cos.drillLayout',DRILL_LAYOUTS=new Set(['side','below','popout']);
 let drillLayout=(()=>{try{const saved=localStorage.getItem(DRILL_LAYOUT_KEY);return DRILL_LAYOUTS.has(saved)?saved:'side'}catch{return 'side'}})();
@@ -767,8 +768,171 @@ function renderApprovals(){
 function renderSystem(){const connected=state.control_plane.local_runner==='connected',runners=state.operations.runners||[],events=state.operations.events||[];$('[data-panel="system"]').innerHTML=pageHead('System architecture','The website controls authority. The database coordinates. The local computer executes.','Website ↔ Database ↔ Local')+`<div class="system-board"><svg class="system-svg" viewBox="0 0 1100 520" aria-hidden="true"><defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L7 3L0 6Z" fill="#2e6b3f"/></marker><marker id="b" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L7 3L0 6Z" fill="#477c9b"/></marker></defs><path d="M300 155C470 70 650 68 790 115" fill="none" stroke="#2e6b3f" stroke-width="2.5" marker-end="url(#a)"/><path d="M790 178C620 245 475 250 300 205" fill="none" stroke="#b87332" stroke-width="2.5"/><path d="M255 250C320 340 430 370 520 382" fill="none" stroke="#477c9b" stroke-width="2.5" marker-end="url(#b)"/></svg><div class="sys-node db"><small>Durable go-between</small><strong>Supabase Control Plane</strong><span>Typed jobs, approvals, leases, decisions, artifacts, usage, and outcomes.</span></div><div class="sys-node web"><small>Human authority</small><strong>CS Ventures Website</strong><span>Create work, approve plans, monitor progress, review evidence, authorize release.</span></div><div class="sys-node local"><small>Trusted execution</small><strong>Local CoS Runner</strong><span>Claims approved jobs and invokes Claude and Codex through local tools.</span></div><div class="system-note">× No direct website-to-laptop command channel</div></div><div class="grid-even"><article class="card"><div class="card-head"><div><h3>Current readiness</h3><p>Measured from the live control plane.</p></div></div><div class="readiness">${readyRow('✓','Website console','Authenticated dashboard is Supabase-backed','Operational','')}${readyRow('✓','Database control plane','Typed ledger and owner-gated APIs are deployed','Operational','')}${readyRow(connected?'✓':'○','Local runner',connected?'Heartbeat is current':`${runners.length} runner registered; latest heartbeat is stale`,connected?'Connected':'Offline',connected?'':'off')}</div></article><article class="card"><div class="card-head"><div><h3>Recent control-plane events</h3><p>Append-only transitions from the execution ledger.</p></div></div><div class="event-list">${events.length?events.slice(0,8).map(e=>`<div class="event-row"><time>${date(e.created_at)}</time> · ${esc(e.actor)} · <strong>${esc(e.event_type)}</strong>${e.prior_state?` · ${esc(e.prior_state)} → ${esc(e.new_state)}`:''}</div>`).join(''):'<div class="empty-state"><strong>No events yet</strong></div>'}</div></article></div>`}
 
 /* ── Navigation / interactivity ───────────────────────────────────── */
+/* ── OmniSupply ───────────────────────────────────────────────────────
+   Freight disruption exposure, precomputed by `sckg publish` and served by
+   cos.api_omnisupply_state().
+
+   Two rules from DEMO-BUILD.md are enforced here, not just observed:
+
+   1. No number renders without its provenance. `figureTile` always prints the
+      source, the as_of and the basis under the value. There is no branch that
+      draws a bare figure, so a panel cannot show an unattributed number even
+      if a query somehow returned one.
+
+   2. Real and synthetic never share a panel. The RPC returns them under
+      separate top-level keys (`sections` vs `illustrative`); the Company tab
+      reads only `illustrative` and every other tab reads only `sections`.
+      Nothing merges them. */
+const BASIS_LABEL={measured:'Measured',derived:'Derived',estimate:'Estimate',illustrative:'Illustrative'};
+const BASIS_HINT={
+  measured:'A published figure, or a straight sum, count or ratio of published figures.',
+  derived:'Computed from measured inputs by a documented method that involved a judgement call.',
+  estimate:'Rests on a parameter nobody published.',
+  illustrative:'Synthetic. Not a claim about the world.'
+};
+function basisChip(basis){const key=String(basis||'measured');return `<span class="basis-chip basis-${esc(key)}" title="${esc(BASIS_HINT[key]||'')}">${esc(BASIS_LABEL[key]||key)}</span>`}
+
+/* Units come off the catalog's Figure, so formatting is driven by data rather
+   than by a per-panel special case. */
+function figureValue(f){
+  const v=f.value,unit=String(f.unit||''),p=Number(f.precision||0);
+  if(v==null||v==='')return '—';
+  if(typeof v==='string')return esc(v);
+  const n=Number(v);
+  if(unit==='USD'||unit==='USD (2017)')return money(n);
+  if(unit==='%')return `${n.toFixed(p||1)}%`;
+  if(unit==='x')return `${n.toFixed(p||1)}×`;
+  if(unit==='sd'||unit==='pp')return n.toFixed(p||2);
+  if(Math.abs(n)>=1e6)return compact(n);
+  return number(p?Math.round(n*10**p)/10**p:Math.round(n));
+}
+function figureUnit(f){const unit=String(f.unit||'');return ['USD','USD (2017)','%','x',''].includes(unit)?'':unit}
+function figureTile(f){
+  return `<div class="omni-figure">
+    <small>${esc(f.label)}</small>
+    <strong>${figureValue(f)}${figureUnit(f)?`<em>${esc(figureUnit(f))}</em>`:''}</strong>
+    <span class="omni-prov">${basisChip(f.basis)}<span>${esc(f.source)} · as of ${esc(f.as_of)}</span></span>
+    ${f.method?`<span class="omni-method">${esc(f.method)}</span>`:''}
+  </div>`;
+}
+
+/* Rows are arbitrary objects from the catalog, so the table derives its own
+   headers. Anything nested renders as JSON rather than "[object Object]". */
+/* Years are numbers that must not be formatted as quantities: a thousands
+   separator turns 2022 into "2,022", which reads as a bug on a slide. Keyed on
+   the column name because the value alone cannot tell a year from a count. */
+const YEAR_KEY=/(^|_)year$|^year(_|$)/;
+function cellText(v,key=''){
+  if(v==null)return '—';
+  if(YEAR_KEY.test(key))return String(v);
+  if(Array.isArray(v))return v.join(', ');
+  if(typeof v==='object')return JSON.stringify(v);
+  if(typeof v==='number')return Math.abs(v)>=1e6?compact(v):number(Math.round(v*10)/10);
+  return String(v);
+}
+function headerText(k){return k.replace(/_/g,' ').replace(/\busd\b/gi,'USD').replace(/\bpct\b/gi,'%').replace(/^./,c=>c.toUpperCase())}
+function dataTable(rows,limit=8){
+  if(!rows||!rows.length)return '';
+  const keys=Object.keys(rows[0]).filter(k=>k!=='uid');
+  const shown=rows.slice(0,limit);
+  return `<table class="queue-table omni-table"><thead><tr>${keys.map(k=>`<th>${esc(headerText(k))}</th>`).join('')}</tr></thead>
+    <tbody>${shown.map(r=>`<tr>${keys.map(k=>`<td>${esc(cellText(r[k],k))}</td>`).join('')}</tr>`).join('')}</tbody></table>
+    ${rows.length>shown.length?`<p class="quiet omni-more">${number(rows.length-shown.length)} more rows — open for the full table</p>`:''}`;
+}
+
+function answerCard(a){
+  const illustrative=a.basis==='illustrative';
+  return `<article class="card omni-answer${illustrative?' omni-illustrative':''}" data-omni-answer="${esc(a.key)}">
+    <div class="card-head">
+      <div><h3>${esc(a.title)}</h3><p>${esc((a.sources||[]).join(' · '))}</p></div>
+      <div class="omni-head-meta">${basisChip(a.basis)}<span class="quiet">as of ${esc(a.as_of)}</span></div>
+    </div>
+    ${a.figures?.length?`<div class="omni-figures">${a.figures.map(figureTile).join('')}</div>`:''}
+    ${a.rows?.length?dataTable(a.rows):''}
+    ${a.note?`<div class="notice omni-note">${esc(a.note)}</div>`:''}
+  </article>`;
+}
+
+function omniAnswer(key){
+  const all=[...Object.values(omniState.sections||{}).flat(),...(omniState.illustrative||[])];
+  return all.find(a=>a.key===key)||null;
+}
+function openOmniDrill(key){
+  const a=omniAnswer(key);if(!a)return;
+  openDrill({
+    title:a.title,
+    subtitle:`${BASIS_LABEL[a.basis]||a.basis} · as of ${a.as_of} · ${(a.sources||[]).join(' · ')}`,
+    stats:(a.figures||[]).map(f=>({label:f.label,value:`${figureValue(f)}${figureUnit(f)?' '+figureUnit(f):''}`,sub:`${BASIS_LABEL[f.basis]||f.basis} · ${f.source}`})),
+    chart:a.rows?.length?`<div class="drill-table">${dataTable(a.rows,200)}</div>`:'',
+    note:a.note
+  });
+}
+
+function freshnessStrip(){
+  const f=omniState.freshness||{};const keys=Object.keys(f);
+  if(!keys.length)return '';
+  return `<article class="card omni-freshness"><div class="card-head"><div><h3>Data currency</h3>
+    <p>Every source carries the date of its own newest record, not the date this page loaded.</p></div></div>
+    <div class="omni-fresh-grid">${keys.map(k=>`<div><small>${esc(k)}</small><strong>${esc(f[k])}</strong></div>`).join('')}</div>
+    <div class="notice">This is a weather product built on freight data that is months lagged. The alert feed is current to the hour; T-100 runs to ${esc(f['T-100 domestic segment']||'—')} and County Business Patterns is a ${esc(f['County Business Patterns']||'—')} survey.</div>
+  </article>`;
+}
+
+function renderOmniScenario(){
+  const panel=$('[data-panel="scenario"]');if(!panel)return;
+  const snap=omniState.snapshot;
+  if(!snap){
+    panel.innerHTML=pageHead('OmniSupply','Freight disruption exposure from public data.','No snapshot')+
+      `<div class="empty-state"><strong>No snapshot published yet</strong><p>Run <code>sckg publish</code> from the SCKG repo to populate this dashboard.</p></div>`;
+    return;
+  }
+  const scenario=snap.producer?.scenario||{},graph=snap.graph_stats||{};
+  const sections=omniState.sections||{};
+  const answers=Object.values(sections).flat();
+  const byBasis=answers.reduce((acc,a)=>{acc[a.basis]=(acc[a.basis]||0)+1;return acc},{});
+  panel.innerHTML=pageHead('OmniSupply',esc(scenario.name||snap.note||'Disruption exposure'),`Snapshot ${esc(snap.snapshot_id)}`)+`
+  <div class="kpi-grid">
+    <article class="kpi"><div class="kpi-top">Sourced answers</div><strong>${number(snap.answer_count)}</strong><span>${number(byBasis.measured||0)} measured · ${number(byBasis.derived||0)} derived</span></article>
+    <article class="kpi"><div class="kpi-top">Illustrative panels <em class="delta">Synthetic</em></div><strong>${number(snap.illustrative_count)}</strong><span>Segregated in the Company tab</span></article>
+    <article class="kpi"><div class="kpi-top">Graph</div><strong>${compact(graph.nodes||0)}</strong><span>${compact(graph.relationships||0)} relationships</span></article>
+    <article class="kpi"><div class="kpi-top">Published</div><strong>${date(snap.published_at)}</strong><span>Precomputed — not live-queried</span></article>
+  </div>
+  ${scenario.mode==='replay'?`<div class="notice omni-replay"><strong>Replay.</strong> This is a recorded event (${esc(scenario.name||'')}) played back against the historical record, not a live alert.</div>`:''}
+  <section class="explain-section"><div class="section-label"><strong>How to read this</strong><span>Every number carries where it came from and how far it can be pushed</span></div>
+  <div class="explain-grid">
+    ${explainerCard('Measured','A published figure, or a straight sum, count or ratio of published ones. No modelling choice was made.','Source records','None — the figure is read, not computed','These are the numbers that can be quoted directly and checked against the publisher.')}
+    ${explainerCard('Derived','Computed from measured inputs by a documented method that involved a judgement call.','Measured inputs','The stated method','Reasonable people could choose a different baseline and get a different number, so the method travels with the figure.')}
+    ${explainerCard('Illustrative','Synthetic data, generated to show what connected operational systems would surface.','Nothing — it is invented','Nothing','Kept in its own tab and its own colour so it can never be mistaken for the sourced material.')}
+  </div></section>
+  ${freshnessStrip()}`;
+}
+
+function renderOmniSection(tab,title,detail){
+  const panel=$(`[data-panel="${tab}"]`);if(!panel)return;
+  const answers=(omniState.sections||{})[tab]||[];
+  panel.innerHTML=pageHead(title,detail,answers.length?`${answers.length} sourced answers`:'')+
+    (answers.length?answers.map(answerCard).join(''):`<div class="empty-state"><strong>Nothing published for this section</strong><p>Run <code>sckg publish</code> to populate it.</p></div>`);
+}
+
+function renderOmniCompany(){
+  const panel=$('[data-panel="company"]');if(!panel)return;
+  const answers=omniState.illustrative||[];
+  panel.innerHTML=pageHead('What we could show with your systems connected','Synthetic data on your real lane structure. Every figure on this tab is invented.','Illustrative only')+
+    `<div class="notice omni-illustrative-banner"><strong>Illustrative.</strong> Nothing on this tab is a claim about Ascent. The lanes are real and come from public T-100 filings; the shipments, customers, tails, dollars and percentages on them are generated. Contrast this with the History tab, which is entirely sourced.</div>`+
+    (answers.length?answers.map(answerCard).join(''):`<div class="empty-state"><strong>No illustrative panels published</strong></div>`);
+}
+
+function renderOmnisupply(){
+  renderOmniScenario();
+  renderOmniSection('history','Your operating record','What actually happened, entirely from public data.');
+  renderOmniCompany();
+  renderOmniSection('questions','What we cannot answer yet','The questions public data cannot reach, and who holds the answer.');
+  const count=$('#history-count');if(count)count.textContent=((omniState.sections||{}).history||[]).length||'—';
+}
+
 function bindNavigation(){
   $$('[data-app-link]').forEach(button=>button.onclick=()=>selectApp(button.dataset.appLink));
+  $$('[data-omni-answer]').forEach(el=>el.onclick=()=>openOmniDrill(el.dataset.omniAnswer));
   $$('[data-tab]').forEach(button=>button.onclick=()=>activate(button.dataset.tab));
   $$('[data-go]').forEach(button=>button.onclick=()=>activate(button.dataset.go));
   $$('[data-approval]').forEach(button=>button.onclick=()=>decideApproval(button.dataset.approval,button.dataset.decision==='true',button.closest('.approval-row')?.querySelector('[data-start-provider]')?.value||'claude'));
@@ -810,9 +974,21 @@ function render(){
   $('#loading').hidden=true;$('#updated-at').textContent=date(state.generated_at);$('#work-count').textContent=state.overview.active_work;$('#approval-count').textContent=state.overview.pending_review+state.overview.pending_approvals+releaseReadyWork().length;$('#metric-count').textContent=state.metrics.filter(m=>m.status==='needs_attention').length;
   const h1=$('.welcome h1');if(h1)h1.textContent=`${greeting()}, Carter.`;
   const connected=state.control_plane.local_runner==='connected';$('#runner-pill').classList.toggle('connected',connected);$('#runner-pill').innerHTML=`<i></i> ${connected?'Local runner connected':'Local runner offline'}`;
-  renderOverview();renderClients();renderFinances();renderCalendar();renderMetrics();renderWork();renderAgents();renderUsage();renderApprovals();renderSystem();bindNavigation();routeLocation(false);
+  renderOverview();renderClients();renderFinances();renderCalendar();renderMetrics();renderWork();renderAgents();renderUsage();renderApprovals();renderSystem();renderOmnisupply();bindNavigation();routeLocation(false);
 }
-async function load(){const[dashboard,quality,officeResult,agentGraphResult]=await Promise.all([sb.rpc('api_dashboard_state'),sb.rpc('api_quality_state'),sb.rpc('api_office_state'),sb.rpc('api_agent_graph')]);const{data:office,error:officeError}=officeResult,{data:agentGraphData,error:agentGraphError}=agentGraphResult;if(dashboard.error)throw dashboard.error;if(quality.error)throw quality.error;if(officeError)throw officeError;if(agentGraphError)throw agentGraphError;officeState=office||{clients:[],calendar:[]};agentGraph=agentGraphData||{agents:[],edges:[],recent_runs:[]};state={...dashboard.data,quality:quality.data||{reviews:[],contracts:[],skill_summary:{},skill_weekly:[]}};render()}
+async function load(){
+  const[dashboard,quality,officeResult,agentGraphResult,omniResult]=await Promise.all([sb.rpc('api_dashboard_state'),sb.rpc('api_quality_state'),sb.rpc('api_office_state'),sb.rpc('api_agent_graph'),sb.rpc('api_omnisupply_state')]);
+  const{data:office,error:officeError}=officeResult,{data:agentGraphData,error:agentGraphError}=agentGraphResult;
+  if(dashboard.error)throw dashboard.error;if(quality.error)throw quality.error;if(officeError)throw officeError;if(agentGraphError)throw agentGraphError;
+  officeState=office||{clients:[],calendar:[]};
+  agentGraph=agentGraphData||{agents:[],edges:[],recent_runs:[]};
+  // OmniSupply is a demo surface, not part of the operating console. A missing
+  // snapshot or a migration that has not run yet must degrade to an empty tab
+  // rather than take the whole dashboard down with it.
+  omniState=omniResult.error?{snapshot:null,freshness:{},sections:{},illustrative:[]}:(omniResult.data||{snapshot:null,freshness:{},sections:{},illustrative:[]});
+  state={...dashboard.data,quality:quality.data||{reviews:[],contracts:[],skill_summary:{},skill_weekly:[]}};
+  render();
+}
 async function decideApproval(id,approved,startProvider='claude'){const model=startProvider==='codex'?'Codex':'Claude';if(!confirm(`${approved?`Approve this plan and start with ${model}? Its job is queued for the runner immediately.`:'Reject this execution gate?'}`))return;const{error}=await sb.rpc('api_decide_approval',{p_approval_id:id,p_approved:approved,p_note:`Decided from CS Ventures control dashboard${approved?`; start model: ${model}`:''}`,p_start_provider:startProvider});if(error){alert(`Action failed: ${error.message}`);return}await load()}
 async function approveRelease(workId,title,button){if(!confirm(`Approve release for "${title||workId}"?\n\nThis records your acceptance and marks the work completed. It will not rerun an agent, merge a pull request, or deploy code.`))return;const original=button?.textContent;if(button){button.disabled=true;button.textContent='Approving…'}const{error}=await sb.rpc('api_release',{p_work_id:workId,p_note:'Release approved from CS Ventures control dashboard'});if(error){if(button){button.disabled=false;button.textContent=original}alert(`Release failed: ${error.message}`);return}await load()}
 async function decideRecommendation(id,action){const msg=action==='accept'?'Turn this recommendation into a work item? You will still approve its plan before anything runs.':'Dismiss this recommendation?';if(!confirm(msg))return;const{data,error}=await sb.rpc('api_decide_recommendation',{p_recommendation_id:id,p_action:action,p_note:'Decided from CS Ventures control dashboard'});if(error){alert(`Action failed: ${error.message}`);return}if(action==='accept'&&data?.work_id)console.log('created',data.work_id);await load()}
