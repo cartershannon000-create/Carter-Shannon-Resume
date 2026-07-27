@@ -878,61 +878,277 @@ function freshnessStrip(){
   </article>`;
 }
 
-function renderOmniScenario(){
-  const panel=$('[data-panel="scenario"]');if(!panel)return;
-  const snap=omniState.snapshot;
-  if(!snap){
-    panel.innerHTML=pageHead('OmniSupply','Freight disruption exposure from public data.','No snapshot')+
-      `<div class="empty-state"><strong>No snapshot published yet</strong><p>Run <code>sckg publish</code> from the SCKG repo to populate this dashboard.</p></div>`;
+/* ── Chats ─────────────────────────────────────────────────────────────
+   The primary surface. A question goes to cos.api_chat_send(), which enqueues
+   a job the local runner claims; the runner streams its steps into
+   cos.job_progress, which is the same feed the work queue's run view reads.
+   So a chat turn shows its working -- which catalog query it called, which
+   ad-hoc query it wrote -- rather than spinning until an answer appears. */
+let chatState={conversations:[]},chatThread=null,chatPoll={timer:null,jobId:null,seq:0},chatSending=false;
+
+function conversationList(){
+  const items=chatState.conversations||[];
+  if(!items.length)return '<div class="empty-state"><strong>No conversations yet</strong><p>Ask something to start one.</p></div>';
+  return `<div class="chat-list">${items.map(c=>`
+    <button type="button" class="chat-list-item${chatThread?.conversation?.conversation_id===c.conversation_id?' active':''}" data-conversation="${esc(c.conversation_id)}">
+      <strong>${esc(c.title||'Untitled')}</strong>
+      <small>${esc(c.opening_question||'')}</small>
+      <span>${date(c.last_message_at||c.updated_at)} · ${number(c.message_count)} messages</span>
+    </button>`).join('')}</div>`;
+}
+
+function messageBubble(m){
+  if(m.role==='user')return `<div class="chat-turn user"><div class="chat-bubble">${esc(m.content)}</div></div>`;
+  if(m.status==='pending'||m.status==='streaming')
+    return `<div class="chat-turn assistant"><div class="chat-bubble thinking" id="chat-thinking">
+      <span class="chat-dots"><i></i><i></i><i></i></span> Working through the data…
+      <div class="chat-steps" id="chat-steps"></div></div></div>`;
+  if(m.status==='failed')
+    return `<div class="chat-turn assistant"><div class="chat-bubble failed">
+      <strong>That question could not be answered.</strong>
+      <p>${esc(m.error||m.content||'')}</p></div></div>`;
+  const figures=m.figures||[];
+  return `<div class="chat-turn assistant"><div class="chat-bubble">
+    <div class="chat-answer">${esc(m.content).replace(/\n/g,'<br>')}</div>
+    ${figures.length?`<div class="omni-figures chat-figures">${figures.map(figureTile).join('')}</div>`:''}
+    <div class="chat-meta">${basisChip(m.basis)}${(m.citations||[]).map(c=>`<code>${esc(c)}</code>`).join('')}</div>
+  </div></div>`;
+}
+
+function renderChats(){
+  const panel=$('[data-panel="chats"]');if(!panel)return;
+  const messages=chatThread?.messages||[];
+  panel.innerHTML=pageHead('Chats','Ask about disruption exposure. Every number comes back with its source.',
+      `${(chatState.conversations||[]).length} conversations`)+`
+    <div class="chat-layout">
+      <aside class="chat-sidebar">
+        <button type="button" class="chat-new" id="chat-new">＋ New conversation</button>
+        ${conversationList()}
+      </aside>
+      <section class="chat-main">
+        ${chatThread?`<div class="chat-thread" id="chat-thread">${messages.map(messageBubble).join('')}</div>`
+          :`<div class="chat-empty">
+              <h3>What do you want to know?</h3>
+              <p>These run against the freight graph and eight years of public data.</p>
+              <div class="chat-suggestions">
+                ${['What happens to our top 5 lanes in a Texas ice storm?',
+                   'How exposed is Laredo compared with Detroit?',
+                   'Which past events most resemble a Gulf hurricane?',
+                   'What can you not tell me from public data?']
+                  .map(q=>`<button type="button" class="chat-suggestion" data-ask="${esc(q)}">${esc(q)}</button>`).join('')}
+              </div>
+            </div>`}
+        <form class="chat-composer" id="chat-composer">
+          <textarea id="chat-input" rows="2" placeholder="Ask about lanes, events, exposure, or what the data cannot answer…" ${chatSending?'disabled':''}></textarea>
+          <button type="submit" ${chatSending?'disabled':''}>${chatSending?'Sending…':'Ask'}</button>
+        </form>
+        <p class="chat-note">Answers are produced on the local runner. If it is offline, questions queue until it reconnects.</p>
+      </section>
+    </div>`;
+  const thread=$('#chat-thread');if(thread)thread.scrollTop=thread.scrollHeight;
+}
+
+async function openConversation(conversationId){
+  const{data,error}=await sb.rpc('api_chat_messages',{p_conversation_id:conversationId});
+  if(error){console.error(error);return}
+  chatThread=data;renderChats();bindNavigation();
+  const pending=(data.messages||[]).find(m=>m.status==='pending'||m.status==='streaming');
+  if(pending?.job_id)startChatPoll(pending.job_id,conversationId);
+}
+
+function stopChatPoll(){if(chatPoll.timer)clearTimeout(chatPoll.timer);chatPoll={timer:null,jobId:null,seq:0}}
+
+/* Reuses api_job_progress -- the runner's step log. A chat turn and a build
+   job stream through exactly the same table. */
+async function startChatPoll(jobId,conversationId){
+  stopChatPoll();chatPoll={timer:null,jobId,seq:0};
+  const tick=async()=>{
+    if(chatPoll.jobId!==jobId)return;
+    const{data,error}=await sb.rpc('api_job_progress',{p_work_id:null,p_after_seq:chatPoll.seq}).catch(()=>({data:null,error:true}));
+    if(!error&&data?.steps?.length){
+      chatPoll.seq=data.steps[data.steps.length-1].seq;
+      const box=$('#chat-steps');
+      if(box)box.innerHTML=data.steps.slice(-6).map(s=>`<div class="chat-step ${esc(s.kind)}"><span>${STEP_ICON[s.kind]||'·'}</span>${esc(s.label)}</div>`).join('');
+    }
+    const{data:thread}=await sb.rpc('api_chat_messages',{p_conversation_id:conversationId});
+    const last=(thread?.messages||[]).slice(-1)[0];
+    if(last&&last.status!=='pending'&&last.status!=='streaming'){
+      chatThread=thread;stopChatPoll();chatSending=false;
+      await refreshChatList();renderChats();bindNavigation();return;
+    }
+    chatPoll.timer=setTimeout(tick,2500);
+  };
+  tick();
+}
+
+async function refreshChatList(){
+  const{data}=await sb.rpc('api_chat_state');
+  chatState=data||{conversations:[]};
+  const badge=$('#chat-count');if(badge)badge.textContent=(chatState.conversations||[]).length||'—';
+}
+
+async function sendChat(text){
+  const question=(text||'').trim();if(!question||chatSending)return;
+  chatSending=true;renderChats();bindNavigation();
+  const{data,error}=await sb.rpc('api_chat_send',{
+    p_conversation_id:chatThread?.conversation?.conversation_id||null,
+    p_text:question,p_title:null});
+  if(error){chatSending=false;console.error(error);
+    alert(`Could not send: ${error.message}`);renderChats();bindNavigation();return}
+  await refreshChatList();
+  await openConversation(data.conversation_id);
+  startChatPoll(data.job_id,data.conversation_id);
+}
+
+/* ── Reports ───────────────────────────────────────────────────────────
+   A chat turn is ephemeral; a report is the durable artifact. Sections reuse
+   the answer renderer, so a report and a published snapshot look identical --
+   which they should, because they are the same shape. */
+let reportState={reports:[]},openReportId=null;
+
+function renderReports(){
+  const panel=$('[data-panel="reports"]');if(!panel)return;
+  const reports=reportState.reports||[];
+  const badge=$('#report-count');if(badge)badge.textContent=reports.length||'—';
+  if(!reports.length){
+    panel.innerHTML=pageHead('Reports','Findings consolidated into durable, citable artifacts.','')+
+      `<div class="empty-state"><strong>No reports yet</strong><p>Publish a snapshot with <code>sckg publish</code>, or consolidate a conversation.</p></div>`;
     return;
   }
-  const scenario=snap.producer?.scenario||{},graph=snap.graph_stats||{};
-  const sections=omniState.sections||{};
-  const answers=Object.values(sections).flat();
-  const byBasis=answers.reduce((acc,a)=>{acc[a.basis]=(acc[a.basis]||0)+1;return acc},{});
-  panel.innerHTML=pageHead('OmniSupply',esc(scenario.name||snap.note||'Disruption exposure'),`Snapshot ${esc(snap.snapshot_id)}`)+`
-  <div class="kpi-grid">
-    <article class="kpi"><div class="kpi-top">Sourced answers</div><strong>${number(snap.answer_count)}</strong><span>${number(byBasis.measured||0)} measured · ${number(byBasis.derived||0)} derived</span></article>
-    <article class="kpi"><div class="kpi-top">Illustrative panels <em class="delta">Synthetic</em></div><strong>${number(snap.illustrative_count)}</strong><span>Segregated in the Company tab</span></article>
-    <article class="kpi"><div class="kpi-top">Graph</div><strong>${compact(graph.nodes||0)}</strong><span>${compact(graph.relationships||0)} relationships</span></article>
-    <article class="kpi"><div class="kpi-top">Published</div><strong>${date(snap.published_at)}</strong><span>Precomputed — not live-queried</span></article>
-  </div>
-  ${scenario.mode==='replay'?`<div class="notice omni-replay"><strong>Replay.</strong> This is a recorded event (${esc(scenario.name||'')}) played back against the historical record, not a live alert.</div>`:''}
-  <section class="explain-section"><div class="section-label"><strong>How to read this</strong><span>Every number carries where it came from and how far it can be pushed</span></div>
-  <div class="explain-grid">
-    ${explainerCard('Measured','A published figure, or a straight sum, count or ratio of published ones. No modelling choice was made.','Source records','None — the figure is read, not computed','These are the numbers that can be quoted directly and checked against the publisher.')}
-    ${explainerCard('Derived','Computed from measured inputs by a documented method that involved a judgement call.','Measured inputs','The stated method','Reasonable people could choose a different baseline and get a different number, so the method travels with the figure.')}
-    ${explainerCard('Illustrative','Synthetic data, generated to show what connected operational systems would surface.','Nothing — it is invented','Nothing','Kept in its own tab and its own colour so it can never be mistaken for the sourced material.')}
-  </div></section>
-  ${freshnessStrip()}`;
+  const open=reports.find(r=>r.report_id===openReportId);
+  panel.innerHTML=pageHead('Reports','Findings consolidated into durable, citable artifacts.',`${reports.length} reports`)+
+    (open?`<button type="button" class="link-button report-back" id="report-back">← All reports</button>
+      <article class="card report-head">
+        <div class="card-head"><div><h3>${esc(open.title)}</h3><p>${esc(open.summary)}</p></div>
+        <div class="omni-head-meta">${basisChip(open.basis)}<span class="quiet">as of ${esc(open.as_of)}</span></div></div>
+      </article>
+      ${(open.sections||[]).map(answerCard).join('')}`
+    :`<div class="report-grid">${reports.map(r=>`
+        <button type="button" class="card report-card" data-report="${esc(r.report_id)}">
+          <div class="report-card-top">${basisChip(r.basis)}${r.pinned?'<span class="report-pin">Pinned</span>':''}</div>
+          <h3>${esc(r.title)}</h3><p>${esc(r.summary)}</p>
+          <span class="quiet">${number((r.sections||[]).length)} sections · as of ${esc(r.as_of)} · ${date(r.created_at)}</span>
+        </button>`).join('')}</div>
+       ${freshnessStrip()}`);
 }
 
-function renderOmniSection(tab,title,detail){
-  const panel=$(`[data-panel="${tab}"]`);if(!panel)return;
-  const answers=(omniState.sections||{})[tab]||[];
-  panel.innerHTML=pageHead(title,detail,answers.length?`${answers.length} sourced answers`:'')+
-    (answers.length?answers.map(answerCard).join(''):`<div class="empty-state"><strong>Nothing published for this section</strong><p>Run <code>sckg publish</code> to populate it.</p></div>`);
+/* ── Company Info ──────────────────────────────────────────────────────
+   Live ADS-B. Drawn as inline SVG on an equirectangular projection rather
+   than a tile map: no external tile host, no API key, nothing to fail on a
+   conference-room network, and it matches the house style already used for
+   the system diagram. */
+let fleetState={aircraft:[],trails:{},coverage:{}};
+
+const MAP_BOX={lamin:24,lamax:46,lomin:-108,lomax:-78};
+const MAP_W=1100,MAP_H=520;
+/* dx/dy nudge the label off the marker. Willow Run and Detroit Metro are 12
+   miles apart, so at this scale their labels sit on top of each other and read
+   as one word -- and they are exactly the pair the demo contrasts, charter
+   against scheduled, so neither can be dropped. */
+const AIRPORTS=[
+  {iata:'YIP',name:'Willow Run',lat:42.2408,lon:-83.5304,dx:9,dy:-4},
+  {iata:'DTW',name:'Detroit',lat:42.2124,lon:-83.3534,dx:9,dy:12},
+  {iata:'LRD',name:'Laredo',lat:27.5438,lon:-99.4616,dx:9,dy:4},
+  {iata:'ELP',name:'El Paso',lat:31.8072,lon:-106.3781,dx:9,dy:4},
+  {iata:'SDF',name:'Louisville',lat:38.1744,lon:-85.7360,dx:9,dy:4},
+  {iata:'IND',name:'Indianapolis',lat:39.7173,lon:-86.2944,dx:9,dy:4},
+];
+const project=(lat,lon)=>[
+  (lon-MAP_BOX.lomin)/(MAP_BOX.lomax-MAP_BOX.lomin)*MAP_W,
+  (MAP_BOX.lamax-lat)/(MAP_BOX.lamax-MAP_BOX.lamin)*MAP_H,
+];
+const inBox=(lat,lon)=>lat>=MAP_BOX.lamin&&lat<=MAP_BOX.lamax&&lon>=MAP_BOX.lomin&&lon<=MAP_BOX.lomax;
+
+function fleetMap(){
+  const aircraft=(fleetState.aircraft||[]).filter(a=>a.lat!=null&&a.lon!=null&&inBox(a.lat,a.lon));
+  const trails=fleetState.trails||{};
+  /* A graticule rather than a coastline. Inline US border paths would be
+     kilobytes of coordinates for decoration, and a tile map needs an external
+     host that a conference-room network may block. Degree lines give real
+     spatial reference and read as a chart, which is what this is. */
+  const grid=[];
+  for(let lat=Math.ceil(MAP_BOX.lamin/5)*5;lat<=MAP_BOX.lamax;lat+=5){
+    const[,y]=project(lat,MAP_BOX.lomin);
+    grid.push(`<line class="map-grid" x1="0" y1="${y.toFixed(1)}" x2="${MAP_W}" y2="${y.toFixed(1)}"/>`);
+    grid.push(`<text class="map-grid-label" x="6" y="${(y-5).toFixed(1)}">${lat}°N</text>`);
+  }
+  for(let lon=Math.ceil(MAP_BOX.lomin/5)*5;lon<=MAP_BOX.lomax;lon+=5){
+    const[x]=project(MAP_BOX.lamin,lon);
+    grid.push(`<line class="map-grid" x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${MAP_H}"/>`);
+    grid.push(`<text class="map-grid-label" x="${(x+4).toFixed(1)}" y="${MAP_H-6}">${Math.abs(lon)}°W</text>`);
+  }
+  return `<svg class="fleet-map" viewBox="0 0 ${MAP_W} ${MAP_H}" role="img" aria-label="Live aircraft positions">
+    <rect width="${MAP_W}" height="${MAP_H}" fill="#f4f6f5"/>
+    ${grid.join('')}
+    ${AIRPORTS.map(a=>{const[x,y]=project(a.lat,a.lon);return `
+      <g class="map-airport"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5"/>
+      <text x="${(x+a.dx).toFixed(1)}" y="${(y+a.dy).toFixed(1)}">${esc(a.iata)}</text></g>`}).join('')}
+    ${Object.entries(trails).map(([icao,points])=>{
+      const path=(points||[]).filter(p=>p.lat!=null&&inBox(p.lat,p.lon))
+        .map((p,i)=>{const[x,y]=project(p.lat,p.lon);return `${i?'L':'M'}${x.toFixed(1)} ${y.toFixed(1)}`}).join(' ');
+      return path?`<path class="map-trail" d="${path}"/>`:''}).join('')}
+    ${aircraft.map(a=>{const[x,y]=project(a.lat,a.lon);
+      return `<g class="map-aircraft${a.on_ground?' grounded':''}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${Number(a.heading_deg||0).toFixed(0)})">
+        <path d="M0 -7 L5 6 L0 3 L-5 6 Z"/></g>`}).join('')}
+  </svg>`;
 }
 
-function renderOmniCompany(){
+function renderCompany(){
   const panel=$('[data-panel="company"]');if(!panel)return;
-  const answers=omniState.illustrative||[];
-  panel.innerHTML=pageHead('What we could show with your systems connected','Synthetic data on your real lane structure. Every figure on this tab is invented.','Illustrative only')+
-    `<div class="notice omni-illustrative-banner"><strong>Illustrative.</strong> Nothing on this tab is a claim about Ascent. The lanes are real and come from public T-100 filings; the shipments, customers, tails, dollars and percentages on them are generated. Contrast this with the History tab, which is entirely sourced.</div>`+
-    (answers.length?answers.map(answerCard).join(''):`<div class="empty-state"><strong>No illustrative panels published</strong></div>`);
+  const aircraft=fleetState.aircraft||[],coverage=fleetState.coverage||{};
+  const airborne=aircraft.filter(a=>a.lat!=null&&!a.on_ground);
+  const roster=aircraft.some(a=>a.source==='faa_registry');
+  const provenance={source:coverage.source||'OpenSky Network ADS-B',
+    as_of:coverage.latest_fix_at?String(coverage.latest_fix_at).slice(0,16).replace('T',' '):'no fixes yet',
+    basis:'measured'};
+  const tile=(label,value,unit)=>figureTile({label,value,unit,precision:0,...provenance});
+
+  panel.innerHTML=pageHead('Company Info','Live aircraft positions from public ADS-B broadcasts.',
+      coverage.latest_fix_at?`Last fix ${date(coverage.latest_fix_at)}`:'')+`
+    ${roster?'':`<div class="notice fleet-mode"><strong>Market mode.</strong> No FAA registry roster is loaded, so this shows cargo operators identified by ADS-B callsign — real live traffic through your lanes, but not your own aircraft. Load the roster with <code>sckg fleet roster</code> once the registry has been pulled.</div>`}
+    <div class="omni-figures">
+      ${tile(roster?'Aircraft in fleet':'Cargo aircraft seen',coverage.aircraft_tracked||0,'aircraft')}
+      ${tile('Airborne now',airborne.length,'aircraft')}
+      ${tile('Seen in window',coverage.aircraft_seen||0,'aircraft')}
+    </div>
+    <article class="card fleet-card">
+      <div class="card-head"><div><h3>${roster?'Fleet position':'Cargo traffic in your lanes'}</h3>
+        <p>Detroit–Laredo corridor. Trails show the last two hours.</p></div>
+        <div class="omni-head-meta">${basisChip('measured')}<span class="quiet">ADS-B, live</span></div></div>
+      ${fleetMap()}
+      <p class="quiet fleet-caption">ADS-B is a broadcast: an aircraft transmits its own position. It gives location, altitude and heading — never what is on board, who booked it, or what it earned.</p>
+    </article>
+    <article class="card">
+      <div class="card-head"><div><h3>Aircraft</h3><p>Newest fix per airframe.</p></div></div>
+      ${aircraft.length?dataTable(aircraft.map(a=>({
+        tail:a.tail||'—',operator:a.operator,model:a.model||'—',callsign:a.callsign||'—',
+        altitude_m:a.altitude_m==null?'—':Math.round(a.altitude_m),
+        on_ground:a.on_ground?'yes':'no',seen_at:a.seen_at?String(a.seen_at).slice(0,16).replace('T',' '):'—',
+      })),12):'<div class="empty-state"><strong>No positions recorded</strong><p>Run <code>sckg fleet track</code>.</p></div>'}
+    </article>`;
 }
 
-function renderOmnisupply(){
-  renderOmniScenario();
-  renderOmniSection('history','Your operating record','What actually happened, entirely from public data.');
-  renderOmniCompany();
-  renderOmniSection('questions','What we cannot answer yet','The questions public data cannot reach, and who holds the answer.');
-  const count=$('#history-count');if(count)count.textContent=((omniState.sections||{}).history||[]).length||'—';
-}
-
+function renderOmnisupply(){renderChats();renderReports();renderCompany()}
 function bindNavigation(){
   $$('[data-app-link]').forEach(button=>button.onclick=()=>selectApp(button.dataset.appLink));
   $$('[data-omni-answer]').forEach(el=>el.onclick=()=>openOmniDrill(el.dataset.omniAnswer));
+  $$('[data-conversation]').forEach(el=>el.onclick=()=>openConversation(el.dataset.conversation));
+  $$('[data-ask]').forEach(el=>el.onclick=()=>sendChat(el.dataset.ask));
+  $$('[data-report]').forEach(el=>el.onclick=()=>{openReportId=el.dataset.report;renderReports();bindNavigation()});
+  const chatNew=$('#chat-new');
+  if(chatNew)chatNew.onclick=()=>{stopChatPoll();chatThread=null;chatSending=false;renderChats();bindNavigation()};
+  const reportBack=$('#report-back');
+  if(reportBack)reportBack.onclick=()=>{openReportId=null;renderReports();bindNavigation()};
+  const composer=$('#chat-composer');
+  if(composer){
+    composer.onsubmit=event=>{event.preventDefault();const box=$('#chat-input');const text=box.value;box.value='';sendChat(text)};
+    const box=$('#chat-input');
+    // Enter sends, Shift+Enter newlines -- the convention every chat UI uses,
+    // and the one people type without thinking about it.
+    if(box)box.onkeydown=event=>{
+      if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();composer.requestSubmit()}
+    };
+  }
   $$('[data-tab]').forEach(button=>button.onclick=()=>activate(button.dataset.tab));
   $$('[data-go]').forEach(button=>button.onclick=()=>activate(button.dataset.go));
   $$('[data-approval]').forEach(button=>button.onclick=()=>decideApproval(button.dataset.approval,button.dataset.decision==='true',button.closest('.approval-row')?.querySelector('[data-start-provider]')?.value||'claude'));
@@ -977,7 +1193,9 @@ function render(){
   renderOverview();renderClients();renderFinances();renderCalendar();renderMetrics();renderWork();renderAgents();renderUsage();renderApprovals();renderSystem();renderOmnisupply();bindNavigation();routeLocation(false);
 }
 async function load(){
-  const[dashboard,quality,officeResult,agentGraphResult,omniResult]=await Promise.all([sb.rpc('api_dashboard_state'),sb.rpc('api_quality_state'),sb.rpc('api_office_state'),sb.rpc('api_agent_graph'),sb.rpc('api_omnisupply_state')]);
+  const[dashboard,quality,officeResult,agentGraphResult,omniResult,chatResult,reportResult,fleetResult]=await Promise.all([
+    sb.rpc('api_dashboard_state'),sb.rpc('api_quality_state'),sb.rpc('api_office_state'),sb.rpc('api_agent_graph'),
+    sb.rpc('api_omnisupply_state'),sb.rpc('api_chat_state'),sb.rpc('api_reports_state'),sb.rpc('api_fleet_state',{p_trail_minutes:120})]);
   const{data:office,error:officeError}=officeResult,{data:agentGraphData,error:agentGraphError}=agentGraphResult;
   if(dashboard.error)throw dashboard.error;if(quality.error)throw quality.error;if(officeError)throw officeError;if(agentGraphError)throw agentGraphError;
   officeState=office||{clients:[],calendar:[]};
@@ -986,6 +1204,9 @@ async function load(){
   // snapshot or a migration that has not run yet must degrade to an empty tab
   // rather than take the whole dashboard down with it.
   omniState=omniResult.error?{snapshot:null,freshness:{},sections:{},illustrative:[]}:(omniResult.data||{snapshot:null,freshness:{},sections:{},illustrative:[]});
+  chatState=chatResult.error?{conversations:[]}:(chatResult.data||{conversations:[]});
+  reportState=reportResult.error?{reports:[]}:(reportResult.data||{reports:[]});
+  fleetState=fleetResult.error?{aircraft:[],trails:{},coverage:{}}:(fleetResult.data||{aircraft:[],trails:{},coverage:{}});
   state={...dashboard.data,quality:quality.data||{reviews:[],contracts:[],skill_summary:{},skill_weekly:[]}};
   render();
 }
