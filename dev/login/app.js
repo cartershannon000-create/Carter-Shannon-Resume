@@ -14,8 +14,13 @@ const duration=s=>{if(s==null)return '—';s=Number(s);if(s<90)return `${Math.ro
 const PCOLOR={claude:'var(--green)',codex:'var(--blue)'};
 let state,officeState={clients:[],calendar:[]},agentGraph={agents:[],edges:[],recent_runs:[]};
 let omniState={snapshot:null,freshness:{},sections:{},illustrative:[]};
-const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['scenario','history','company','questions']};
-const APP_DEFAULT={client:'clients',system:'overview',omnisupply:'scenario'};
+/* These must match the data-tab / data-panel attributes in index.html exactly.
+   activate() looks up [data-panel="<tab>"], so a name here that no longer
+   exists in the markup silently activates nothing and renders a blank page --
+   which is exactly what shipped when the OmniSupply panels were renamed and
+   this table was not. assertTabsMatchMarkup() below now fails loudly instead. */
+const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['chats','reports','company']};
+const APP_DEFAULT={client:'clients',system:'overview',omnisupply:'chats'};
 const LEGACY_TABS={clients:['client','clients'],money:['client','finances'],finances:['client','finances'],calendar:['client','calendar'],overview:['system','overview'],metrics:['system','metrics'],work:['system','work'],agents:['system','agents'],usage:['system','usage'],approvals:['system','approvals'],system:['system','system']};
 const DRILL_LAYOUT_KEY='cos.drillLayout',DRILL_LAYOUTS=new Set(['side','below','popout']);
 let drillLayout=(()=>{try{const saved=localStorage.getItem(DRILL_LAYOUT_KEY);return DRILL_LAYOUTS.has(saved)?saved:'side'}catch{return 'side'}})();
@@ -1170,6 +1175,24 @@ function bindNavigation(){
   bindCalendarControls();
   $('#drill-backdrop').onclick=closeDrill;
 }
+/* The routing table and the markup are two lists of the same names, kept in
+   sync by hand. When they drift, activate() finds no panel and the app renders
+   a blank page with working tabs -- a failure that looks like a data problem
+   and is not. This turns that into a console error naming both sides. */
+function assertTabsMatchMarkup(){
+  const routed=new Set(Object.values(APP_TABS).flat());
+  const panels=new Set($$('[data-panel]').map(el=>el.dataset.panel));
+  const buttons=new Set($$('[data-tab]').map(el=>el.dataset.tab));
+  const missingPanel=[...routed].filter(t=>!panels.has(t));
+  const missingButton=[...routed].filter(t=>!buttons.has(t));
+  const orphanPanel=[...panels].filter(t=>!routed.has(t));
+  if(missingPanel.length||missingButton.length||orphanPanel.length){
+    console.error('[routing] APP_TABS and the markup disagree.',
+      {routedWithNoPanel:missingPanel,routedWithNoButton:missingButton,panelNotRouted:orphanPanel});
+    return false;
+  }
+  return true;
+}
 function appForTab(tab){return Object.keys(APP_TABS).find(app=>APP_TABS[app].includes(tab))}
 function resolveRoute(value){
   const route=String(value||'');
@@ -1190,6 +1213,7 @@ function render(){
   $('#loading').hidden=true;$('#updated-at').textContent=date(state.generated_at);$('#work-count').textContent=state.overview.active_work;$('#approval-count').textContent=state.overview.pending_review+state.overview.pending_approvals+releaseReadyWork().length;$('#metric-count').textContent=state.metrics.filter(m=>m.status==='needs_attention').length;
   const h1=$('.welcome h1');if(h1)h1.textContent=`${greeting()}, Carter.`;
   const connected=state.control_plane.local_runner==='connected';$('#runner-pill').classList.toggle('connected',connected);$('#runner-pill').innerHTML=`<i></i> ${connected?'Local runner connected':'Local runner offline'}`;
+  assertTabsMatchMarkup();
   renderOverview();renderClients();renderFinances();renderCalendar();renderMetrics();renderWork();renderAgents();renderUsage();renderApprovals();renderSystem();renderOmnisupply();bindNavigation();routeLocation(false);
 }
 async function load(){
