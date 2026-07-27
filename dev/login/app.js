@@ -1102,25 +1102,29 @@ function renderCompany(){
   const panel=$('[data-panel="company"]');if(!panel)return;
   const aircraft=fleetState.aircraft||[],coverage=fleetState.coverage||{};
   const airborne=aircraft.filter(a=>a.lat!=null&&!a.on_ground);
-  const roster=aircraft.some(a=>a.source==='faa_registry');
-  const provenance={source:coverage.source||'OpenSky Network ADS-B',
+  const provenance={source:coverage.source||'airplanes.live ADS-B',
     as_of:coverage.latest_fix_at?String(coverage.latest_fix_at).slice(0,16).replace('T',' '):'no fixes yet',
     basis:'measured'};
   const tile=(label,value,unit)=>figureTile({label,value,unit,precision:0,...provenance});
 
-  panel.innerHTML=pageHead('Company Info','Live aircraft positions from public ADS-B broadcasts.',
+  /* An on-demand charter operator is on the ground most of the time. An empty
+     map reads as a broken feed, so the quiet case is stated rather than drawn. */
+  const quiet=!airborne.length;
+  panel.innerHTML=pageHead('Company Info','Live USA Jet aircraft positions from public ADS-B broadcasts.',
       coverage.latest_fix_at?`Last fix ${date(coverage.latest_fix_at)}`:'')+`
-    ${roster?'':`<div class="notice fleet-mode"><strong>Market mode.</strong> No FAA registry roster is loaded, so this shows cargo operators identified by ADS-B callsign — real live traffic through your lanes, but not your own aircraft. Load the roster with <code>sckg fleet roster</code> once the registry has been pulled.</div>`}
     <div class="omni-figures">
-      ${tile(roster?'Aircraft in fleet':'Cargo aircraft seen',coverage.aircraft_tracked||0,'aircraft')}
+      ${tile('Tails seen to date',coverage.aircraft_tracked||0,'aircraft')}
       ${tile('Airborne now',airborne.length,'aircraft')}
       ${tile('Seen in window',coverage.aircraft_seen||0,'aircraft')}
     </div>
     <article class="card fleet-card">
-      <div class="card-head"><div><h3>${roster?'Fleet position':'Cargo traffic in your lanes'}</h3>
-        <p>Detroit–Laredo corridor. Trails show the last two hours.</p></div>
+      <div class="card-head"><div><h3>Fleet position</h3>
+        <p>USA Jet (JUS). Detroit–Laredo corridor, trails show the last two hours.</p></div>
         <div class="omni-head-meta">${basisChip('measured')}<span class="quiet">ADS-B, live</span></div></div>
-      ${fleetMap()}
+      ${quiet?`<div class="fleet-quiet">
+          <strong>No USA Jet aircraft airborne right now.</strong>
+          <p>Expected for an on-demand charter fleet between trips — they fly when there is freight. Tails are recorded as they appear and matched by transponder address on later sweeps, so the fleet builds up over time.</p>
+        </div>`:fleetMap()}
       <p class="quiet fleet-caption">ADS-B is a broadcast: an aircraft transmits its own position. It gives location, altitude and heading — never what is on board, who booked it, or what it earned.</p>
     </article>
     <article class="card">
@@ -1129,7 +1133,7 @@ function renderCompany(){
         tail:a.tail||'—',operator:a.operator,model:a.model||'—',callsign:a.callsign||'—',
         altitude_m:a.altitude_m==null?'—':Math.round(a.altitude_m),
         on_ground:a.on_ground?'yes':'no',seen_at:a.seen_at?String(a.seen_at).slice(0,16).replace('T',' '):'—',
-      })),12):'<div class="empty-state"><strong>No positions recorded</strong><p>Run <code>sckg fleet track</code>.</p></div>'}
+      })),12):'<div class="empty-state"><strong>No USA Jet aircraft recorded yet</strong><p>Tails appear here as they fly. Run <code>sckg fleet track</code> on a schedule to accumulate the roster.</p></div>'}
     </article>`;
 }
 

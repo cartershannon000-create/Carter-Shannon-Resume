@@ -159,3 +159,6 @@
 }
 .map-grid{stroke:#e2e6e4;stroke-width:1}
 .map-grid-label{font:500 9px -apple-system,sans-serif;fill:#a6ada8}
+.fleet-quiet{margin-top:14px;padding:34px 22px;text-align:center;border:1px dashed #cfd4d1;border-radius:12px;background:#fbfcfb}
+.fleet-quiet strong{display:block;font-family:Georgia,serif;font-size:16px;margin-bottom:7px}
+.fleet-quiet p{margin:0 auto;max-width:520px;color:var(--muted);font-size:10px;line-height:1.55}
