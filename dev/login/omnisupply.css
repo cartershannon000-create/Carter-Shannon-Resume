@@ -164,57 +164,66 @@
 .fleet-quiet p{margin:0 auto;max-width:520px;color:var(--muted);font-size:10px;line-height:1.55}
 
 /* ── Thinking panel ──────────────────────────────────────────────────
-   Segmented from the answer bubbles: a turn in flight is its own object, not
-   a greyed-out message. Everything animates in CSS so a slow poll never
-   stutters the visualisation. */
-/* Specificity has to beat `.chat-turn.assistant .chat-bubble` (three classes),
-   which sets the light answer background. Two classes loses to three. */
+   Compact by design. The first version ran the full height of the panel and
+   pushed the conversation off screen, which is the opposite of what a loading
+   state should do -- it is context for the wait, not the subject of it. */
 .chat-turn.assistant .chat-bubble.working{background:var(--green-950);border-color:var(--green-800);
   color:#dbe7de;padding:0;overflow:hidden}
-.think{padding:15px 16px 13px}
+.think{padding:13px 14px 11px}
 .think-head{display:flex;align-items:center;gap:9px}
-.think-head strong{font-size:11px;color:#fff;letter-spacing:.01em}
+.think-head strong{font-size:11px;color:#fff}
 .think-head .chat-dots i{background:var(--bright)}
 .think-elapsed{margin-left:auto;font-size:9px;color:#7f9c8a;font-variant-numeric:tabular-nums}
+.think-toggle{appearance:none;border:1px solid #2f5f47;background:transparent;color:#9fbcab;
+  border-radius:7px;padding:3px 8px;font-size:8px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;cursor:pointer}
+.think-toggle:hover{border-color:var(--bright);color:#fff}
 .think-detail{margin:5px 0 0;font-size:9px;color:#93ac9d;line-height:1.5}
 
-.think-graph{width:100%;height:auto;margin:10px 0 4px;display:block}
-/* Base state: present but dormant. Nothing is hidden -- the whole graph is
-   always visible, which is the point of showing it. */
-.tg-edge line{stroke:#2c5442;stroke-width:1.2}
-.tg-edge .tg-pulse{stroke:var(--bright);stroke-width:2;opacity:0;
-  stroke-dasharray:14 260;stroke-linecap:round}
-.tg-node .tg-dot{fill:#1c4534;stroke:#37674f;stroke-width:1.5;transition:fill .5s,stroke .5s}
-.tg-node .tg-halo{fill:var(--bright);opacity:0;transition:opacity .5s}
-.tg-label{fill:#7f9c8a;font:600 9px -apple-system,sans-serif;text-anchor:middle;transition:fill .5s}
-.tg-count{fill:#5d7a68;font:500 8px -apple-system,sans-serif;text-anchor:middle}
+/* Collapsed by the toggle, or hidden automatically outside the graph phases.
+   max-height rather than display:none so it animates rather than jumping. */
+.think-graph-wrap{max-height:210px;opacity:1;overflow:hidden;
+  transition:max-height .45s ease,opacity .3s ease,margin .45s ease}
+.think[data-open="0"] .think-graph-wrap,
+.think[data-graph="0"] .think-graph-wrap{max-height:0;opacity:0;margin-bottom:-8px}
+.think[data-graph="0"] .think-toggle{opacity:.35;pointer-events:none}
 
-/* Already consulted this turn: dimly lit, so progress accumulates visibly. */
-.tg-node.seen .tg-dot{fill:#265a43;stroke:#4a8a67}
-.tg-node.seen .tg-label{fill:#9fbcab}
-.tg-edge.seen line:not(.tg-pulse){stroke:#3d7157}
+.think-graph{width:100%;aspect-ratio:640/100;height:auto;max-height:160px;margin:9px 0 3px;display:block;
+  border-radius:9px;background:#0a2a20}
 
-/* Active: the node pulses and its edges fire along their length. */
-.tg-node.lit .tg-dot{fill:var(--bright);stroke:#cdebd5;animation:tg-beat 1.5s ease-in-out infinite}
-.tg-node.lit .tg-halo{opacity:.16;animation:tg-halo 1.5s ease-in-out infinite}
-.tg-node.lit .tg-label{fill:#fff}
-.tg-edge.lit line:not(.tg-pulse){stroke:#4f9a72}
-.tg-edge.lit .tg-pulse{opacity:1;animation:tg-fire 1.5s linear infinite}
+/* Field: dormant dots drift continuously so the panel never looks frozen. */
+.tg-dot{fill:#24513c;transition:fill .6s,r .6s;animation:tg-drift var(--t,8s) ease-in-out var(--d,0s) infinite}
+.tg-spoke{stroke:#1d4433;stroke-width:.6;opacity:.5;transition:stroke .6s,opacity .6s}
+.tg-dot.seen{fill:#356e51}
+.tg-spoke.seen{stroke:#2b5f47;opacity:.65}
+.tg-dot.lit{fill:var(--bright);animation:tg-drift var(--t,8s) ease-in-out var(--d,0s) infinite,
+  tg-flash 1.9s ease-in-out var(--d,0s) infinite}
+.tg-spoke.lit{stroke:#5fae82;opacity:.9;stroke-dasharray:3 7;animation:tg-run 1.4s linear infinite}
 
-@keyframes tg-beat{0%,100%{r:var(--r,9px);opacity:1}50%{opacity:.72}}
-@keyframes tg-halo{0%,100%{opacity:.10}50%{opacity:.26}}
-@keyframes tg-fire{from{stroke-dashoffset:274}to{stroke-dashoffset:0}}
+.tg-hub-dot{fill:#2c6349;stroke:#4a8a67;stroke-width:1.5;transition:fill .5s,stroke .5s}
+.tg-hub-halo{fill:var(--bright);opacity:0;transition:opacity .5s}
+.tg-hub-label{fill:#7f9c8a;font:700 5.5px -apple-system,sans-serif;text-anchor:middle;transition:fill .5s}
+.tg-hub.seen .tg-hub-dot{fill:#3f7f5e;stroke:#6aa885}
+.tg-hub.seen .tg-hub-label{fill:#9fbcab}
+.tg-hub.lit .tg-hub-dot{fill:var(--bright);stroke:#e2f5e7}
+.tg-hub.lit .tg-hub-halo{opacity:.2;animation:tg-halo 1.9s ease-in-out infinite}
+.tg-hub.lit .tg-hub-label{fill:#fff}
+
+@keyframes tg-drift{0%,100%{transform:translate(0,0)}50%{transform:translate(1.6px,-1.4px)}}
+@keyframes tg-flash{0%,100%{opacity:.75}50%{opacity:1}}
+@keyframes tg-halo{0%,100%{opacity:.12}50%{opacity:.3}}
+@keyframes tg-run{to{stroke-dashoffset:-20}}
 
 .think-legend{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
-  padding-top:9px;border-top:1px solid #23503c;font-size:8px;color:#6f8c7b}
+  padding-top:7px;font-size:8px;color:#6f8c7b}
 .think-note{font-style:italic;color:#5d7a68}
-.think-steps{margin-top:10px}
+.think-steps{margin-top:9px}
 .think-steps-head{font-size:8px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
   color:#6f8c7b;margin-bottom:5px}
 .think .chat-step{color:#a8c3b3;font-size:9px}
 .think .chat-step span{color:var(--bright)}
 
 @media(prefers-reduced-motion:reduce){
-  .tg-node.lit .tg-dot,.tg-node.lit .tg-halo,.tg-edge.lit .tg-pulse{animation:none}
-  .tg-edge.lit .tg-pulse{opacity:.5}
+  .tg-dot,.tg-dot.lit,.tg-spoke.lit,.tg-hub.lit .tg-hub-halo{animation:none}
+  .tg-hub.lit .tg-hub-halo{opacity:.2}
 }
