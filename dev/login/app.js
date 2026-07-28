@@ -788,11 +788,12 @@ function renderSystem(){const connected=state.control_plane.local_runner==='conn
       separate top-level keys (`sections` vs `illustrative`); the Company tab
       reads only `illustrative` and every other tab reads only `sections`.
       Nothing merges them. */
-const BASIS_LABEL={measured:'Measured',derived:'Derived',estimate:'Estimate',illustrative:'Illustrative'};
+const BASIS_LABEL={measured:'Measured',derived:'Derived',estimate:'Estimate',unvetted:'Unvetted',illustrative:'Illustrative'};
 const BASIS_HINT={
   measured:'A published figure, or a straight sum, count or ratio of published figures.',
   derived:'Computed from measured inputs by a documented method that involved a judgement call.',
   estimate:'Rests on a parameter nobody published.',
+  unvetted:'A real query result that has not passed the reviewed catalog contract.',
   illustrative:'Synthetic. Not a claim about the world.'
 };
 function basisChip(basis){const key=String(basis||'measured');return `<span class="basis-chip basis-${esc(key)}" title="${esc(BASIS_HINT[key]||'')}">${esc(BASIS_LABEL[key]||key)}</span>`}
