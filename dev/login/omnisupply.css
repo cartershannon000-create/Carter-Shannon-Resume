@@ -162,3 +162,59 @@
 .fleet-quiet{margin-top:14px;padding:34px 22px;text-align:center;border:1px dashed #cfd4d1;border-radius:12px;background:#fbfcfb}
 .fleet-quiet strong{display:block;font-family:Georgia,serif;font-size:16px;margin-bottom:7px}
 .fleet-quiet p{margin:0 auto;max-width:520px;color:var(--muted);font-size:10px;line-height:1.55}
+
+/* ── Thinking panel ──────────────────────────────────────────────────
+   Segmented from the answer bubbles: a turn in flight is its own object, not
+   a greyed-out message. Everything animates in CSS so a slow poll never
+   stutters the visualisation. */
+/* Specificity has to beat `.chat-turn.assistant .chat-bubble` (three classes),
+   which sets the light answer background. Two classes loses to three. */
+.chat-turn.assistant .chat-bubble.working{background:var(--green-950);border-color:var(--green-800);
+  color:#dbe7de;padding:0;overflow:hidden}
+.think{padding:15px 16px 13px}
+.think-head{display:flex;align-items:center;gap:9px}
+.think-head strong{font-size:11px;color:#fff;letter-spacing:.01em}
+.think-head .chat-dots i{background:var(--bright)}
+.think-elapsed{margin-left:auto;font-size:9px;color:#7f9c8a;font-variant-numeric:tabular-nums}
+.think-detail{margin:5px 0 0;font-size:9px;color:#93ac9d;line-height:1.5}
+
+.think-graph{width:100%;height:auto;margin:10px 0 4px;display:block}
+/* Base state: present but dormant. Nothing is hidden -- the whole graph is
+   always visible, which is the point of showing it. */
+.tg-edge line{stroke:#2c5442;stroke-width:1.2}
+.tg-edge .tg-pulse{stroke:var(--bright);stroke-width:2;opacity:0;
+  stroke-dasharray:14 260;stroke-linecap:round}
+.tg-node .tg-dot{fill:#1c4534;stroke:#37674f;stroke-width:1.5;transition:fill .5s,stroke .5s}
+.tg-node .tg-halo{fill:var(--bright);opacity:0;transition:opacity .5s}
+.tg-label{fill:#7f9c8a;font:600 9px -apple-system,sans-serif;text-anchor:middle;transition:fill .5s}
+.tg-count{fill:#5d7a68;font:500 8px -apple-system,sans-serif;text-anchor:middle}
+
+/* Already consulted this turn: dimly lit, so progress accumulates visibly. */
+.tg-node.seen .tg-dot{fill:#265a43;stroke:#4a8a67}
+.tg-node.seen .tg-label{fill:#9fbcab}
+.tg-edge.seen line:not(.tg-pulse){stroke:#3d7157}
+
+/* Active: the node pulses and its edges fire along their length. */
+.tg-node.lit .tg-dot{fill:var(--bright);stroke:#cdebd5;animation:tg-beat 1.5s ease-in-out infinite}
+.tg-node.lit .tg-halo{opacity:.16;animation:tg-halo 1.5s ease-in-out infinite}
+.tg-node.lit .tg-label{fill:#fff}
+.tg-edge.lit line:not(.tg-pulse){stroke:#4f9a72}
+.tg-edge.lit .tg-pulse{opacity:1;animation:tg-fire 1.5s linear infinite}
+
+@keyframes tg-beat{0%,100%{r:var(--r,9px);opacity:1}50%{opacity:.72}}
+@keyframes tg-halo{0%,100%{opacity:.10}50%{opacity:.26}}
+@keyframes tg-fire{from{stroke-dashoffset:274}to{stroke-dashoffset:0}}
+
+.think-legend{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  padding-top:9px;border-top:1px solid #23503c;font-size:8px;color:#6f8c7b}
+.think-note{font-style:italic;color:#5d7a68}
+.think-steps{margin-top:10px}
+.think-steps-head{font-size:8px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  color:#6f8c7b;margin-bottom:5px}
+.think .chat-step{color:#a8c3b3;font-size:9px}
+.think .chat-step span{color:var(--bright)}
+
+@media(prefers-reduced-motion:reduce){
+  .tg-node.lit .tg-dot,.tg-node.lit .tg-halo,.tg-edge.lit .tg-pulse{animation:none}
+  .tg-edge.lit .tg-pulse{opacity:.5}
+}

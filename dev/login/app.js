@@ -883,6 +883,162 @@ function freshnessStrip(){
   </article>`;
 }
 
+/* ── The thinking panel ────────────────────────────────────────────────
+   A chat turn takes a minute or more: the runner has to reach Neo4j, read
+   parquet, and compose an answer. A spinner for that long reads as a hang, so
+   the wait is given its own segmented panel that shows what is being consulted.
+
+   WHAT IS REAL AND WHAT IS STYLISED, because the distinction matters even in a
+   loading state. The node labels, the relationship types and the counts are
+   read from `graph_stats` on the published snapshot -- they are the actual
+   contents of the graph. The *animation* is a paced sequence, not a trace of
+   the query engine: nothing here claims that IMPACTS was traversed at the
+   instant its edge lights up. Real runner steps stream in underneath as they
+   arrive, and those are labelled separately.
+
+   The composer stays enabled throughout. Polling lives outside the render, so
+   switching tabs or typing the next question does not interrupt a turn in
+   flight. */
+
+/* Positions are hand-placed rather than force-directed: a force layout jitters
+   on every re-render and the shape stops being recognisable. Coordinates sit
+   in a 640x300 viewBox. */
+const GRAPH_NODES=[
+  {id:'Region',       x:110,y:70,  phase:3},
+  {id:'County',       x:250,y:45,  phase:2},
+  {id:'Event',        x:395,y:40,  phase:2},
+  {id:'Airport',      x:180,y:160, phase:1},
+  {id:'Carrier',      x:60, y:200, phase:1},
+  {id:'Commodity',    x:320,y:135, phase:3},
+  {id:'Industry',     x:455,y:130, phase:4},
+  {id:'Site',         x:565,y:80,  phase:4},
+  {id:'BorderCrossing',x:300,y:245,phase:5},
+  {id:'RailRamp',     x:440,y:225, phase:5},
+  {id:'Port',         x:560,y:200, phase:5},
+  {id:'Mode',         x:170,y:265, phase:3},
+];
+const GRAPH_EDGES=[
+  {from:'Event',to:'County',           type:'IMPACTS',           phase:2},
+  {from:'Region',to:'County',          type:'CONTAINS',          phase:3},
+  {from:'Region',to:'Commodity',       type:'FLOW',              phase:3},
+  {from:'Airport',to:'Carrier',        type:'AIR_FREIGHT',       phase:1},
+  {from:'Carrier',to:'County',         type:'DOMICILED_IN',      phase:1},
+  {from:'Airport',to:'Region',         type:'SERVES',            phase:1},
+  {from:'County',to:'Industry',        type:'HAS_INDUSTRY',      phase:4},
+  {from:'Industry',to:'Commodity',     type:'PRODUCES',          phase:4},
+  {from:'Site',to:'Industry',          type:'IN_INDUSTRY',       phase:4},
+  {from:'County',to:'BorderCrossing',  type:'CONTAINS',          phase:5},
+  {from:'RailRamp',to:'Port',          type:'DRAY_REACH',        phase:5},
+  {from:'BorderCrossing',to:'RailRamp',type:'DRAY_REACH',        phase:5},
+  {from:'Commodity',to:'Mode',         type:'SHIPS_VIA',         phase:3},
+  {from:'Mode',to:'Airport',           type:'SUBSTITUTABLE_FOR', phase:3},
+];
+
+/* Phase 0 is "reading"; the rest name a layer of the graph. These correspond
+   to the catalog families the analyst actually draws on, so the sequence is a
+   fair description of the work even though its pacing is not measured. */
+const THINKING_PHASES=[
+  {label:'Reading the question',                    detail:'Working out which lanes, places and event families are in scope'},
+  {label:'Checking airline and carrier data',       detail:'T-100 segments, carrier networks and station-level freight'},
+  {label:'Checking weather and disruption events',  detail:'NOAA storm episodes and the counties each one covered'},
+  {label:'Tracing lane-level flows',                detail:'FAF5 origin-destination-commodity movement and modal substitution'},
+  {label:'Cross-referencing industrial exposure',   detail:'County Business Patterns establishments and employment in the footprint'},
+  {label:'Checking border and intermodal capacity', detail:'Land ports of entry, rail ramps and drayage reach'},
+  {label:'Composing the answer with sources',       detail:'Attaching source, as-of and basis to every figure'},
+];
+
+let thinking={timer:null,phase:0,jobId:null};
+
+function graphCount(label){
+  const stats=omniState.snapshot?.graph_stats||{};
+  const row=(stats.by_label||[]).find(r=>r.label===label);
+  return row?row.count:null;
+}
+function edgeCount(type){
+  const stats=omniState.snapshot?.graph_stats||{};
+  const row=(stats.by_type||[]).find(r=>r.type===type);
+  return row?row.count:null;
+}
+const nodeAt=id=>GRAPH_NODES.find(n=>n.id===id);
+
+function thinkingGraph(){
+  const nodes=GRAPH_NODES.map(n=>{
+    const count=graphCount(n.id);
+    // Radius carries real magnitude on a log scale: Site (58,569) should not
+    // be 7,000 times the area of Mode (8).
+    const r=count?Math.max(7,Math.min(17,5+Math.log10(count)*3)):8;
+    return `<g class="tg-node" data-phase="${n.phase}" transform="translate(${n.x} ${n.y})">
+      <circle class="tg-halo" r="${(r+9).toFixed(1)}"/>
+      <circle class="tg-dot" r="${r.toFixed(1)}"/>
+      <text class="tg-label" y="${(-r-7).toFixed(1)}">${esc(n.id)}</text>
+      ${count!=null?`<text class="tg-count" y="${(r+13).toFixed(1)}">${compact(count)}</text>`:''}
+    </g>`;
+  }).join('');
+  const edges=GRAPH_EDGES.map((e,i)=>{
+    const a=nodeAt(e.from),b=nodeAt(e.to);
+    if(!a||!b)return '';
+    const count=edgeCount(e.type);
+    return `<g class="tg-edge" data-phase="${e.phase}">
+      <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>
+      <line class="tg-pulse" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"
+            style="animation-delay:${(i*0.13).toFixed(2)}s"/>
+      <title>${esc(e.type)}${count!=null?` · ${number(count)} edges`:''}</title>
+    </g>`;
+  }).join('');
+  return `<svg class="think-graph" viewBox="0 0 640 300" role="img"
+    aria-label="Knowledge graph being consulted">${edges}${nodes}</svg>`;
+}
+
+function thinkingPanel(){
+  return `<div class="think" id="think">
+    <div class="think-head">
+      <span class="chat-dots"><i></i><i></i><i></i></span>
+      <strong id="think-label">${esc(THINKING_PHASES[0].label)}</strong>
+      <span class="think-elapsed" id="think-elapsed">0s</span>
+    </div>
+    <p class="think-detail" id="think-detail">${esc(THINKING_PHASES[0].detail)}</p>
+    ${thinkingGraph()}
+    <div class="think-legend">
+      <span>Graph: ${compact(omniState.snapshot?.graph_stats?.nodes||0)} nodes ·
+      ${compact(omniState.snapshot?.graph_stats?.relationships||0)} relationships</span>
+      <span class="think-note">Labels and counts are real; the sequence is paced, not traced.</span>
+    </div>
+    <div class="think-steps" id="chat-steps"></div>
+  </div>`;
+}
+
+function paintPhase(){
+  const box=$('#think');if(!box)return;
+  const phase=thinking.phase;
+  $('#think-label').textContent=THINKING_PHASES[phase].label;
+  $('#think-detail').textContent=THINKING_PHASES[phase].detail;
+  // Phase 0 dims everything; the last phase lights the whole graph.
+  const all=phase>=THINKING_PHASES.length-1;
+  $$('.tg-node,.tg-edge',box).forEach(el=>{
+    const p=Number(el.dataset.phase);
+    el.classList.toggle('lit',all||p===phase);
+    el.classList.toggle('seen',!all&&p<phase&&p>0);
+  });
+}
+
+function startThinking(jobId){
+  stopThinking();
+  thinking={timer:null,phase:0,jobId};
+  const started=Date.now();
+  paintPhase();
+  thinking.timer=setInterval(()=>{
+    const seconds=Math.round((Date.now()-started)/1000);
+    const elapsed=$('#think-elapsed');
+    if(!elapsed){stopThinking();return}
+    elapsed.textContent=`${seconds}s`;
+    // Hold on the last phase rather than looping: a turn that takes four
+    // minutes should not appear to start over.
+    const next=Math.min(Math.floor(seconds/7)+1,THINKING_PHASES.length-1);
+    if(next!==thinking.phase){thinking.phase=next;paintPhase()}
+  },1000);
+}
+function stopThinking(){if(thinking.timer)clearInterval(thinking.timer);thinking={timer:null,phase:0,jobId:null}}
+
 /* ── Chats ─────────────────────────────────────────────────────────────
    The primary surface. A question goes to cos.api_chat_send(), which enqueues
    a job the local runner claims; the runner streams its steps into
@@ -905,9 +1061,7 @@ function conversationList(){
 function messageBubble(m){
   if(m.role==='user')return `<div class="chat-turn user"><div class="chat-bubble">${esc(m.content)}</div></div>`;
   if(m.status==='pending'||m.status==='streaming')
-    return `<div class="chat-turn assistant"><div class="chat-bubble thinking" id="chat-thinking">
-      <span class="chat-dots"><i></i><i></i><i></i></span> Working through the data…
-      <div class="chat-steps" id="chat-steps"></div></div></div>`;
+    return `<div class="chat-turn assistant"><div class="chat-bubble working">${thinkingPanel()}</div></div>`;
   if(m.status==='failed')
     return `<div class="chat-turn assistant"><div class="chat-bubble failed">
       <strong>That question could not be answered.</strong>
@@ -944,8 +1098,8 @@ function renderChats(){
               </div>
             </div>`}
         <form class="chat-composer" id="chat-composer">
-          <textarea id="chat-input" rows="2" placeholder="Ask about lanes, events, exposure, or what the data cannot answer…" ${chatSending?'disabled':''}></textarea>
-          <button type="submit" ${chatSending?'disabled':''}>${chatSending?'Sending…':'Ask'}</button>
+          <textarea id="chat-input" rows="2" placeholder="Ask about lanes, events, exposure, or what the data cannot answer…"></textarea>
+          <button type="submit">Ask</button>
         </form>
         <p class="chat-note">Answers are produced on the local runner. If it is offline, questions queue until it reconnects.</p>
       </section>
@@ -961,26 +1115,33 @@ async function openConversation(conversationId){
   if(pending?.job_id)startChatPoll(pending.job_id,conversationId);
 }
 
-function stopChatPoll(){if(chatPoll.timer)clearTimeout(chatPoll.timer);chatPoll={timer:null,jobId:null,seq:0}}
+function stopChatPoll(){if(chatPoll.timer)clearTimeout(chatPoll.timer);chatPoll={timer:null,jobId:null,conversationId:null,seq:0}}
 
 /* Reuses api_job_progress -- the runner's step log. A chat turn and a build
    job stream through exactly the same table. */
 async function startChatPoll(jobId,conversationId){
-  stopChatPoll();chatPoll={timer:null,jobId,seq:0};
+  stopChatPoll();chatPoll={timer:null,jobId,conversationId,seq:0};
+  startThinking(jobId);
   const tick=async()=>{
     if(chatPoll.jobId!==jobId)return;
+    // Real runner steps stream in beneath the paced phases and are labelled
+    // as observed, not simulated.
     const{data,error}=await sb.rpc('api_job_progress',{p_work_id:null,p_after_seq:chatPoll.seq}).catch(()=>({data:null,error:true}));
     if(!error&&data?.steps?.length){
       chatPoll.seq=data.steps[data.steps.length-1].seq;
       const box=$('#chat-steps');
-      if(box)box.innerHTML=data.steps.slice(-6).map(s=>`<div class="chat-step ${esc(s.kind)}"><span>${STEP_ICON[s.kind]||'·'}</span>${esc(s.label)}</div>`).join('');
+      if(box)box.innerHTML=`<div class="think-steps-head">Runner steps</div>`+
+        data.steps.slice(-6).map(s=>`<div class="chat-step ${esc(s.kind)}"><span>${STEP_ICON[s.kind]||'·'}</span>${esc(s.label)}</div>`).join('');
     }
     const{data:thread}=await sb.rpc('api_chat_messages',{p_conversation_id:conversationId});
     const last=(thread?.messages||[]).slice(-1)[0];
     if(last&&last.status!=='pending'&&last.status!=='streaming'){
-      chatThread=thread;stopChatPoll();chatSending=false;
+      chatThread=thread;stopChatPoll();stopThinking();chatSending=false;
       await refreshChatList();renderChats();bindNavigation();return;
     }
+    // Deliberately does NOT re-render the panel: a re-render on every poll
+    // would blow away what is being typed in the composer and reset the
+    // animation. Only the thinking box is touched, above.
     chatPoll.timer=setTimeout(tick,2500);
   };
   tick();
@@ -1000,6 +1161,7 @@ async function sendChat(text){
     p_text:question,p_title:null});
   if(error){chatSending=false;console.error(error);
     alert(`Could not send: ${error.message}`);renderChats();bindNavigation();return}
+  chatSending=false;
   await refreshChatList();
   await openConversation(data.conversation_id);
   startChatPoll(data.job_id,data.conversation_id);
