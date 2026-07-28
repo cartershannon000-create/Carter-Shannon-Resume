@@ -65,7 +65,7 @@ class SiteInformationArchitectureTests(unittest.TestCase):
             r'id="panel-training".*?</section>', page, re.DOTALL
         ).group(0)
         self.assertIn("How to Build Your First App", block)
-        self.assertIn("AI-to-EBITDA Strategy", block)
+        self.assertIn("AI Driven Growth", block)
         self.assertIn("Process Automation for SMBs", block)
         agents = re.search(
             r'id="panel-agents".*?id="panel-apps"', page, re.DOTALL
@@ -115,14 +115,16 @@ class SiteInformationArchitectureTests(unittest.TestCase):
 
         css = (ROOT / "top-hero.css").read_text(encoding="utf-8")
         self.assertIn("min-height: 610px", css)
-        self.assertIn("linear-gradient(145deg", css)
+        self.assertIn("linear-gradient(180deg", css)
         self.assertIn("border-bottom: 1px", css)
 
-    def test_all_public_pages_use_the_four_link_navigation(self):
+    def test_all_site_shell_pages_use_the_core_navigation(self):
         public_pages = sorted(
             path
             for path in ROOT.rglob("*.html")
             if "dev" not in path.relative_to(ROOT).parts
+            and path.relative_to(ROOT)
+            != Path("decks/pe-ai-ebitda-strategy/index.html")
         )
         self.assertGreater(len(public_pages), 15)
         for path in public_pages:
@@ -132,7 +134,9 @@ class SiteInformationArchitectureTests(unittest.TestCase):
             )
             self.assertIsNotNone(match, path.relative_to(ROOT))
             nav = match.group(1)
-            self.assertIn(nav.count("<a "), (4, 5), path.relative_to(ROOT))
+            # Reports and login were added progressively. Every site shell
+            # still carries the four core links in the same order.
+            self.assertIn(nav.count("<a "), (5, 6), path.relative_to(ROOT))
             cursor = -1
             for href, label in EXPECTED_NAV:
                 position = nav.find(href)

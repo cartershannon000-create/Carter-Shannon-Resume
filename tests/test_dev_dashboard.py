@@ -11,6 +11,12 @@ PROGRESS_MIGRATION = ROOT / "supabase" / "migrations" / "20260713150000_job_prog
 START_PROVIDER_MIGRATION = ROOT / "supabase" / "migrations" / "20260714011441_selectable_start_provider.sql"
 QUALITY_MIGRATION = ROOT / "supabase" / "migrations" / "20260714191119_delivery_quality_gate.sql"
 QUALITY_SECURITY_MIGRATION = ROOT / "supabase" / "migrations" / "20260714233532_secure_quality_telemetry.sql"
+OMNISUPPLY_MIGRATION = ROOT / "supabase" / "migrations" / "20260727181952_omnisupply_tables_and_state_rpc.sql"
+OMNISUPPLY_SURFACES_MIGRATION = ROOT / "supabase" / "migrations" / "20260727201106_omnisupply_chat_reports_fleet.sql"
+OMNISUPPLY_RPCS_MIGRATION = ROOT / "supabase" / "migrations" / "20260727201151_omnisupply_chat_reports_fleet_rpcs.sql"
+FLEET_SWEEP_MIGRATION = ROOT / "supabase" / "migrations" / "20260728035347_fleet_sweep_in_database.sql"
+PUBLISH_CONTRACT_MIGRATION = ROOT / "supabase" / "migrations" / "20260728170000_omnisupply_publish_contract.sql"
+FLEET_SOURCE_MIGRATION = ROOT / "supabase" / "migrations" / "20260728171000_fleet_source_contract.sql"
 
 
 class DevDashboardTests(unittest.TestCase):
@@ -24,10 +30,27 @@ class DevDashboardTests(unittest.TestCase):
         cls.start_provider_sql = START_PROVIDER_MIGRATION.read_text(encoding="utf-8")
         cls.quality_sql = QUALITY_MIGRATION.read_text(encoding="utf-8")
         cls.quality_security_sql = QUALITY_SECURITY_MIGRATION.read_text(encoding="utf-8")
+        cls.omnisupply_sql = OMNISUPPLY_MIGRATION.read_text(encoding="utf-8")
+        cls.omnisupply_surfaces_sql = OMNISUPPLY_SURFACES_MIGRATION.read_text(encoding="utf-8")
+        cls.omnisupply_rpcs_sql = OMNISUPPLY_RPCS_MIGRATION.read_text(encoding="utf-8")
+        cls.fleet_sweep_sql = FLEET_SWEEP_MIGRATION.read_text(encoding="utf-8")
+        cls.publish_contract_sql = PUBLISH_CONTRACT_MIGRATION.read_text(encoding="utf-8")
+        cls.fleet_source_sql = FLEET_SOURCE_MIGRATION.read_text(encoding="utf-8")
 
-    def test_seven_operating_tabs_are_present(self):
+    def test_dashboard_tabs_are_grouped_by_application(self):
         tabs = re.findall(r'data-tab="([^"]+)"', self.html)
-        self.assertEqual(tabs, ["overview", "metrics", "work", "agents", "usage", "approvals", "system"])
+        self.assertEqual(
+            tabs,
+            [
+                "overview", "clients", "finances", "calendar", "metrics",
+                "work", "agents", "usage", "approvals", "system",
+                "chats", "reports", "company",
+            ],
+        )
+        self.assertIn(
+            "omnisupply:['chats','reports','company']",
+            self.js,
+        )
 
     def test_dashboard_reads_the_owner_gated_supabase_contract(self):
         self.assertIn("sb.rpc('api_dashboard_state')", self.js)
@@ -39,6 +62,94 @@ class DevDashboardTests(unittest.TestCase):
         self.assertIn("const esc=", self.js)
         self.assertIn("${esc(a.title||a.work_id)}", self.js)
         self.assertIn("${esc(task.objective)}", self.js)
+
+    def test_omnisupply_reads_all_four_owner_gated_surfaces(self):
+        for rpc in (
+            "api_omnisupply_state",
+            "api_chat_state",
+            "api_reports_state",
+            "api_fleet_state",
+        ):
+            self.assertIn(f"sb.rpc('{rpc}'", self.js)
+
+    def test_omnisupply_figures_always_render_provenance(self):
+        self.assertIn("${basisChip(f.basis)}", self.js)
+        self.assertIn("${esc(f.source)} · as of ${esc(f.as_of)}", self.js)
+        self.assertIn("unvetted:'Unvetted'", self.js)
+        self.assertIn("A real query result that has not passed", self.js)
+
+    def test_real_and_illustrative_answers_remain_separate(self):
+        self.assertIn("Object.values(omniState.sections||{}).flat()", self.js)
+        self.assertIn("...(omniState.illustrative||[])", self.js)
+        self.assertIn("const illustrative=a.basis==='illustrative'", self.js)
+
+    def test_omnisupply_database_contract_is_versioned_and_private(self):
+        for table in ("omnisupply_snapshots", "omnisupply_answers"):
+            self.assertIn(
+                f"alter table cos.{table} enable row level security",
+                self.omnisupply_sql,
+            )
+            self.assertIn(
+                f"revoke all on table cos.{table} from public, anon, authenticated",
+                self.omnisupply_sql,
+            )
+        for table in (
+            "chat_conversations",
+            "chat_messages",
+            "reports",
+            "fleet_aircraft",
+            "fleet_positions",
+        ):
+            self.assertIn(
+                f"alter table cos.{table} enable row level security",
+                self.omnisupply_surfaces_sql,
+            )
+            self.assertIn(
+                f"revoke all on table cos.{table} from public, anon, authenticated",
+                self.omnisupply_surfaces_sql,
+            )
+
+    def test_omnisupply_rpcs_are_owner_gated_and_explicitly_granted(self):
+        for rpc in (
+            "api_chat_state",
+            "api_chat_messages",
+            "api_chat_send",
+            "api_chat_archive",
+            "api_reports_state",
+            "api_fleet_state",
+        ):
+            self.assertIn(f"function cos.{rpc}", self.omnisupply_rpcs_sql)
+        self.assertEqual(
+            self.omnisupply_rpcs_sql.count(
+                "if not cos.is_owner() then raise exception 'forbidden'"
+            ),
+            6,
+        )
+        self.assertNotIn("to anon", self.omnisupply_rpcs_sql)
+
+    def test_fleet_sweep_is_server_scheduled_and_not_browser_callable(self):
+        self.assertIn("create or replace function cos.fleet_sweep", self.fleet_sweep_sql)
+        self.assertIn("'*/15 * * * *'", self.fleet_sweep_sql)
+        self.assertIn("'select cos.fleet_sweep();'", self.fleet_sweep_sql)
+        self.assertIn(
+            "from public, anon, authenticated",
+            self.fleet_sweep_sql,
+        )
+
+    def test_publish_contract_accepts_unvetted_without_opening_browser_tables(self):
+        self.assertIn("'unvetted'", self.publish_contract_sql)
+        self.assertIn("on schema cos to service_role", self.publish_contract_sql)
+        self.assertIn("to service_role", self.publish_contract_sql)
+        self.assertNotIn("to anon", self.publish_contract_sql)
+        self.assertNotIn("to authenticated", self.publish_contract_sql)
+
+    def test_fleet_position_and_roster_sources_are_not_conflated(self):
+        self.assertIn("'source', 'airplanes.live ADS-B'", self.fleet_source_sql)
+        self.assertIn(
+            "'roster_source', 'OpenSky aircraft registry'",
+            self.fleet_source_sql,
+        )
+        self.assertNotIn("'source', 'OpenSky Network ADS-B'", self.fleet_source_sql)
 
     def test_private_ledgers_have_rls_and_no_direct_browser_grants(self):
         for table in ("control_owners", "continuity_tasks", "continuity_checkpoints"):
