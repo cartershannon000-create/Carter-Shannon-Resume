@@ -1303,33 +1303,42 @@ function renderCompany(){
     basis:'measured'};
   const tile=(label,value,unit)=>figureTile({label,value,unit,precision:0,...provenance});
 
-  /* An on-demand charter operator is on the ground most of the time. An empty
-     map reads as a broken feed, so the quiet case is stated rather than drawn. */
-  const quiet=!airborne.length;
-  panel.innerHTML=pageHead('Company Info','Live USA Jet aircraft positions from public ADS-B broadcasts.',
+  /* An on-demand charter operator is on the ground most of the time, so the
+     roster -- not the map -- is what makes this tab useful. The fleet is known
+     from the OpenSky aircraft registry whether or not anything is flying; the
+     map appears when something is. */
+  const airborneIds=new Set(airborne.map(a=>a.icao24));
+  const seen=aircraft.filter(a=>a.seen_at);
+  panel.innerHTML=pageHead('Company Info','USA Jet fleet and live positions, from public registries and ADS-B broadcasts.',
       coverage.latest_fix_at?`Last fix ${date(coverage.latest_fix_at)}`:'')+`
     <div class="omni-figures">
-      ${tile('Tails seen to date',coverage.aircraft_tracked||0,'aircraft')}
+      ${tile('Aircraft in fleet',aircraft.length,'airframes')}
       ${tile('Airborne now',airborne.length,'aircraft')}
-      ${tile('Seen in window',coverage.aircraft_seen||0,'aircraft')}
+      ${tile('Seen on ADS-B',seen.length,'airframes')}
     </div>
     <article class="card fleet-card">
-      <div class="card-head"><div><h3>Fleet position</h3>
-        <p>USA Jet (JUS). Detroit–Laredo corridor, trails show the last two hours.</p></div>
+      <div class="card-head"><div><h3>${airborne.length?'Fleet position':'Fleet'}</h3>
+        <p>USA Jet (JUS). ${airborne.length?'Detroit–Laredo corridor, trails show the last two hours.':'Nothing airborne at the moment.'}</p></div>
         <div class="omni-head-meta">${basisChip('measured')}<span class="quiet">ADS-B, live</span></div></div>
-      ${quiet?`<div class="fleet-quiet">
+      ${airborne.length?fleetMap():`<div class="fleet-quiet">
           <strong>No USA Jet aircraft airborne right now.</strong>
-          <p>Expected for an on-demand charter fleet between trips — they fly when there is freight. Tails are recorded as they appear and matched by transponder address on later sweeps, so the fleet builds up over time.</p>
-        </div>`:fleetMap()}
+          <p>Expected for an on-demand charter fleet between trips — they fly when there is freight. The roster below comes from the aircraft registry, so it is complete whether or not anything is in the air; the map returns as soon as one is.</p>
+        </div>`}
       <p class="quiet fleet-caption">ADS-B is a broadcast: an aircraft transmits its own position. It gives location, altitude and heading — never what is on board, who booked it, or what it earned.</p>
     </article>
     <article class="card">
-      <div class="card-head"><div><h3>Aircraft</h3><p>Newest fix per airframe.</p></div></div>
-      ${aircraft.length?dataTable(aircraft.map(a=>({
-        tail:a.tail||'—',operator:a.operator,model:a.model||'—',callsign:a.callsign||'—',
+      <div class="card-head"><div><h3>Fleet roster</h3>
+        <p>Registered airframes, newest ADS-B fix where one exists.</p></div>
+        <div class="omni-head-meta">${basisChip('measured')}<span class="quiet">OpenSky aircraft registry</span></div></div>
+      ${aircraft.length?dataTable(aircraft.slice().sort((a,b)=>
+          (airborneIds.has(b.icao24)?1:0)-(airborneIds.has(a.icao24)?1:0)||
+          String(a.tail||'').localeCompare(String(b.tail||''))).map(a=>({
+        tail:a.tail||'—',type:a.model||'—',
+        status:airborneIds.has(a.icao24)?'airborne':(a.seen_at?'on ground':'not seen'),
+        callsign:a.callsign||'—',
         altitude_m:a.altitude_m==null?'—':Math.round(a.altitude_m),
-        on_ground:a.on_ground?'yes':'no',seen_at:a.seen_at?String(a.seen_at).slice(0,16).replace('T',' '):'—',
-      })),12):'<div class="empty-state"><strong>No USA Jet aircraft recorded yet</strong><p>Tails appear here as they fly. Run <code>sckg fleet track</code> on a schedule to accumulate the roster.</p></div>'}
+        last_fix:a.seen_at?String(a.seen_at).slice(0,16).replace('T',' '):'—',
+      })),20):'<div class="empty-state"><strong>No fleet loaded</strong><p>Run <code>sckg fleet registry</code> then <code>sckg fleet load-fleet</code>.</p></div>'}
     </article>`;
 }
 
