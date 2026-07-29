@@ -1,7 +1,35 @@
 {
-  "generated": "2026-07-26T16:56:35",
-  "count": 2,
+  "generated": "2026-07-29T14:11:17",
+  "count": 3,
   "reports": [
+    {
+      "slug": "excel-was-my-database-for-15-years-and-postgres-ended-that-in-a-weeken",
+      "title": "Excel Was My Database for 15 Years, and Postgres Ended That in a Weekend",
+      "source_name": "MakeUseOf",
+      "source_url": "https://www.makeuseof.com/excel-database-15-years-postgres-ended-in-weekend/",
+      "source_type": "website",
+      "date_processed": "2026-07-29",
+      "tldr": "The author used Excel as a de-facto database for 15 years across inventory, project tracking, and a homegrown CRM. The system eventually broke under its own weight -- cross-referencing three spreadsheets to answer a single question took an afternoon rather than 30 seconds. A weekend of containerized PostgreSQL setup and a small Python migration script replaced the brittle spreadsheet stack. PostgreSQL's schema constraints immediately caught data errors that Excel had been silently accumulating for years. The author still uses Excel for sharing data with non-technical collaborators but no longer treats it as a system of record.",
+      "tags": [
+        "databases",
+        "PostgreSQL",
+        "Excel",
+        "data management"
+      ],
+      "reading_time_min": 5,
+      "key_points": [
+        "Spreadsheet databases grow organically until they collapse under structural debt.",
+        "Excel's safety mechanisms are voluntary and easy to override, which makes them unreliable under deadline pressure.",
+        "The migration trigger was a single question that should have taken 30 seconds but took an afternoon.",
+        "PostgreSQL can be containerized and running in under 10 minutes using Docker Compose with a named volume.",
+        "Thinking in normalized tables during migration immediately revealed years of hidden data quality problems.",
+        "Database constraints caught multiple real data errors that Excel had silently stored for years.",
+        "Post-migration, scheduled backups and LLM-based natural-language querying replaced manual save habits.",
+        "Excel retains legitimate value for sharing data with non-SQL users but is not a system of record."
+      ],
+      "chart_count": 0,
+      "url": "reports/excel-was-my-database-for-15-years-and-postgres-ended-that-in-a-weeken.html"
+    },
     {
       "slug": "pe-ai-ebitda",
       "title": "AI-to-EBITDA Strategy for PE-Backed SMB and Midmarket Companies",

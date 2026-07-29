@@ -115,4 +115,10 @@
     <priority>0.7</priority>
   </url>
 
+  <url>
+    <loc>https://cs-ventures.us/report-summaries/reports/excel-was-my-database-for-15-years-and-postgres-ended-that-in-a-weeken</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
 </urlset>
