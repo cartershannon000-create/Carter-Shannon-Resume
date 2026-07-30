@@ -361,6 +361,11 @@ authorization_url_path = "/oauth/consent"
 # Allow dynamic client registration
 allow_dynamic_registration = false
 
+[functions.fleet-refresh]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/fleet-refresh/index.ts"
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.
