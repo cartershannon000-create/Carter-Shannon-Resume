@@ -1096,7 +1096,7 @@ function conversationList(){
 function messageBubble(m){
   if(m.role==='user')return `<div class="chat-turn user"><div class="chat-bubble">${esc(m.content)}</div></div>`;
   if(m.status==='pending'||m.status==='streaming')
-    return `<div class="chat-turn assistant"><div class="chat-bubble working">${m.provider?`<span class="chip">${esc(m.provider==='codex'?'Codex GPT-5.6 Sol':'Claude')}</span>`:''}${thinkingPanel()}</div></div>`;
+    return `<div class="chat-turn assistant"><div class="chat-bubble working">${chatModelChips(m)}${thinkingPanel()}</div></div>`;
   if(m.status==='failed')
     return `<div class="chat-turn assistant"><div class="chat-bubble failed">
       <strong>That question could not be answered.</strong>
@@ -1105,11 +1105,29 @@ function messageBubble(m){
   return `<div class="chat-turn assistant"><div class="chat-bubble">
     <div class="chat-answer">${esc(m.content).replace(/\n/g,'<br>')}</div>
     ${figures.length?`<div class="omni-figures chat-figures">${figures.map(figureTile).join('')}</div>`:''}
-    <div class="chat-meta">${basisChip(m.basis)}${m.provider?`<span class="chip">${esc(m.provider==='codex'?'Codex GPT-5.6 Sol':'Claude')}</span>`:''}${(m.citations||[]).map(c=>`<code>${esc(c)}</code>`).join('')}</div>
+    <div class="chat-meta">${basisChip(m.basis)}${chatModelChips(m)}${(m.citations||[]).map(c=>`<code>${esc(c)}</code>`).join('')}</div>
   </div></div>`;
 }
 
-let chatProvider='claude';
+const CHAT_MODELS=[
+  {value:'claude-opus-5',label:'Claude Opus 5',provider:'claude'},
+  {value:'claude-sonnet-5',label:'Claude Sonnet 5',provider:'claude'},
+  {value:'gpt-5.6-sol',label:'GPT-5.6 Sol',provider:'codex'},
+  {value:'gpt-5.6-terra',label:'GPT-5.6 Terra',provider:'codex'},
+  {value:'gpt-5.6-luna',label:'GPT-5.6 Luna',provider:'codex'},
+];
+const CHAT_EFFORTS=['low','medium','high','xhigh','max'];
+let chatModel='claude-opus-5',chatEffort='high';
+function selectedChatModel(){return CHAT_MODELS.find(item=>item.value===chatModel)||CHAT_MODELS[0]}
+function chatModelLabel(model,provider){
+  return CHAT_MODELS.find(item=>item.value===model)?.label||
+    (provider==='codex'?'Codex':'Claude');
+}
+function chatModelChips(message){
+  if(!message.provider&&!message.model)return '';
+  const effort=message.effort?`<span class="chip">${esc(message.effort)} effort</span>`:'';
+  return `<span class="chip">${esc(chatModelLabel(message.model,message.provider))}</span>${effort}`;
+}
 
 function renderChats(){
   const panel=$('[data-panel="chats"]');if(!panel)return;
@@ -1135,10 +1153,14 @@ function renderChats(){
               </div>
             </div>`}
         <form class="chat-composer" id="chat-composer">
-          <label class="chat-provider">Answer with
-            <select id="chat-provider" aria-label="Chat model">
-              <option value="claude"${chatProvider==='claude'?' selected':''}>Claude</option>
-              <option value="codex"${chatProvider==='codex'?' selected':''}>Codex GPT-5.6 Sol</option>
+          <label class="chat-provider">Model
+            <select id="chat-model" aria-label="Chat model">
+              ${CHAT_MODELS.map(item=>`<option value="${esc(item.value)}"${chatModel===item.value?' selected':''}>${esc(item.label)}</option>`).join('')}
+            </select>
+          </label>
+          <label class="chat-provider">Effort
+            <select id="chat-effort" aria-label="Thinking effort">
+              ${CHAT_EFFORTS.map(effort=>`<option value="${effort}"${chatEffort===effort?' selected':''}>${effort}</option>`).join('')}
             </select>
           </label>
           <textarea id="chat-input" rows="2" placeholder="Ask about lanes, events, exposure, or what the data cannot answer…"></textarea>
@@ -1205,17 +1227,25 @@ function missingProviderChatRpc(error){
 async function sendChat(text){
   const question=(text||'').trim();if(!question||chatSending)return;
   chatSending=true;renderChats();bindNavigation();
+  const selection=selectedChatModel();
   let{data,error}=await sb.rpc('api_chat_send',{
     p_conversation_id:chatThread?.conversation?.conversation_id||null,
-    p_text:question,p_title:null,p_provider:chatProvider});
+    p_text:question,p_title:null,p_provider:selection.provider,
+    p_model:selection.value,p_effort:chatEffort});
   if(error&&missingProviderChatRpc(error)){
-    if(chatProvider==='claude'){
-      ({data,error}=await sb.rpc('api_chat_send',{
+    ({data,error}=await sb.rpc('api_chat_send',{
+      p_conversation_id:chatThread?.conversation?.conversation_id||null,
+      p_text:question,p_title:null,p_provider:selection.provider
+    }));
+    if(error&&missingProviderChatRpc(error)){
+      if(selection.provider==='claude'){
+        ({data,error}=await sb.rpc('api_chat_send',{
         p_conversation_id:chatThread?.conversation?.conversation_id||null,
         p_text:question,p_title:null
-      }));
-    }else{
-      error={message:'Codex chat is not enabled in production yet. Apply the chat provider migration, then try again.'};
+        }));
+      }else{
+        error={message:'This model is not enabled in production yet. Apply the chat model migration, then try again.'};
+      }
     }
   }
   if(error){chatSending=false;console.error(error);
@@ -1398,8 +1428,9 @@ function bindNavigation(){
   const thinkToggle=$('#think-toggle');
   if(thinkToggle)thinkToggle.onclick=()=>setThinkOpen(!thinkOpen);
   const composer=$('#chat-composer');
-  const provider=$('#chat-provider');
-  if(provider)provider.onchange=()=>{chatProvider=provider.value};
+  const model=$('#chat-model'),effort=$('#chat-effort');
+  if(model)model.onchange=()=>{chatModel=model.value};
+  if(effort)effort.onchange=()=>{chatEffort=effort.value};
   const fleetRefresh=$('#fleet-refresh');
   if(fleetRefresh)fleetRefresh.onclick=async()=>{
     fleetRefresh.disabled=true;fleetRefresh.textContent='Refreshing…';
