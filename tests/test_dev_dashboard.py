@@ -17,6 +17,8 @@ OMNISUPPLY_RPCS_MIGRATION = ROOT / "supabase" / "migrations" / "20260727201151_o
 FLEET_SWEEP_MIGRATION = ROOT / "supabase" / "migrations" / "20260728035347_fleet_sweep_in_database.sql"
 PUBLISH_CONTRACT_MIGRATION = ROOT / "supabase" / "migrations" / "20260728170000_omnisupply_publish_contract.sql"
 FLEET_SOURCE_MIGRATION = ROOT / "supabase" / "migrations" / "20260728171000_fleet_source_contract.sql"
+FLEET_PROVENANCE_MIGRATION = ROOT / "supabase" / "migrations" / "20260728230000_fleet_position_provenance.sql"
+FLEET_HISTORY_MIGRATION = ROOT / "supabase" / "migrations" / "20260728231500_fleet_service_history.sql"
 
 
 class DevDashboardTests(unittest.TestCase):
@@ -36,6 +38,8 @@ class DevDashboardTests(unittest.TestCase):
         cls.fleet_sweep_sql = FLEET_SWEEP_MIGRATION.read_text(encoding="utf-8")
         cls.publish_contract_sql = PUBLISH_CONTRACT_MIGRATION.read_text(encoding="utf-8")
         cls.fleet_source_sql = FLEET_SOURCE_MIGRATION.read_text(encoding="utf-8")
+        cls.fleet_provenance_sql = FLEET_PROVENANCE_MIGRATION.read_text(encoding="utf-8")
+        cls.fleet_history_sql = FLEET_HISTORY_MIGRATION.read_text(encoding="utf-8")
 
     def test_dashboard_tabs_are_grouped_by_application(self):
         tabs = re.findall(r'data-tab="([^"]+)"', self.html)
@@ -127,6 +131,25 @@ class DevDashboardTests(unittest.TestCase):
         )
         self.assertNotIn("to anon", self.omnisupply_rpcs_sql)
 
+    def test_chat_provider_selector_is_durable_and_owner_gated(self):
+        migration = (
+            ROOT / "supabase" / "migrations"
+            / "20260730010000_chat_provider_selector.sql"
+        ).read_text()
+        self.assertIn("provider in ('claude', 'codex')", migration)
+        self.assertIn("'provider', v_provider", migration)
+        self.assertIn(
+            "if not cos.is_owner() then raise exception 'forbidden'",
+            migration,
+        )
+        self.assertIn("p_provider:chatProvider", self.js)
+        self.assertIn("Codex GPT-5.6 Sol", self.js)
+
+    def test_company_view_refreshes_active_fleet_on_demand(self):
+        self.assertIn("sb.functions.invoke('fleet-refresh'", self.js)
+        self.assertIn("if(tab==='company'&&state)refreshFleetOnView()", self.js)
+        self.assertIn('id="fleet-refresh"', self.js)
+
     def test_fleet_sweep_is_server_scheduled_and_not_browser_callable(self):
         self.assertIn("create or replace function cos.fleet_sweep", self.fleet_sweep_sql)
         self.assertIn("'*/15 * * * *'", self.fleet_sweep_sql)
@@ -150,6 +173,27 @@ class DevDashboardTests(unittest.TestCase):
             self.fleet_source_sql,
         )
         self.assertNotIn("'source', 'OpenSky Network ADS-B'", self.fleet_source_sql)
+
+    def test_seeded_fleet_locations_keep_row_level_provenance(self):
+        for column in ("source", "location_kind", "airport_icao", "source_url"):
+            self.assertIn(f"add column if not exists {column}", self.fleet_provenance_sql)
+        self.assertIn("p.source as position_source", self.fleet_provenance_sql)
+        self.assertIn("p.location_kind", self.fleet_provenance_sql)
+        self.assertIn("q.location_kind = 'adsb_fix'", self.fleet_provenance_sql)
+        self.assertIn("Grounded markers are the destination airport", self.js)
+        self.assertIn("position_source:a.position_source", self.js)
+
+    def test_retired_and_donor_airframes_are_history_not_current_fleet(self):
+        self.assertIn("service_status = 'retired'", self.fleet_history_sql)
+        self.assertIn("USA Jet sunset its DC-9 program", self.fleet_history_sql)
+        self.assertIn("where tail = 'N195US'", self.fleet_history_sql)
+        self.assertIn("service_status = 'parts_donor'", self.fleet_history_sql)
+        for tail in ("N912DL", "N915DE", "N917DL", "N959DL"):
+            self.assertIn(tail, self.fleet_history_sql)
+        self.assertIn("where f.active", self.fleet_history_sql)
+        self.assertIn("cos.fleet_inventory_metrics", self.fleet_history_sql)
+        self.assertIn("security_invoker = true", self.fleet_history_sql)
+        self.assertIn("Current-inventory airframes only", self.js)
 
     def test_private_ledgers_have_rls_and_no_direct_browser_grants(self):
         for table in ("control_owners", "continuity_tasks", "continuity_checkpoints"):

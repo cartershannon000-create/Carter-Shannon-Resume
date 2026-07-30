@@ -122,6 +122,8 @@
 .chat-suggestion:hover{border-color:var(--green);background:var(--mint)}
 
 .chat-composer{display:flex;gap:9px;padding:13px;border-top:1px solid var(--line);align-items:flex-end}
+.chat-provider{display:flex;flex-direction:column;gap:4px;color:var(--muted);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.chat-provider select{appearance:none;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font-family:inherit;font-size:10px;font-weight:600;padding:10px 28px 10px 10px}
 .chat-composer textarea{flex:1;resize:vertical;border:1px solid var(--line);border-radius:10px;
   padding:10px 12px;font:inherit;font-size:11px;line-height:1.5;min-height:44px;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif}

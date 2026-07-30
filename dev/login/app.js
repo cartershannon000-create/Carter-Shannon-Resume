@@ -1096,7 +1096,7 @@ function conversationList(){
 function messageBubble(m){
   if(m.role==='user')return `<div class="chat-turn user"><div class="chat-bubble">${esc(m.content)}</div></div>`;
   if(m.status==='pending'||m.status==='streaming')
-    return `<div class="chat-turn assistant"><div class="chat-bubble working">${thinkingPanel()}</div></div>`;
+    return `<div class="chat-turn assistant"><div class="chat-bubble working">${m.provider?`<span class="chip">${esc(m.provider==='codex'?'Codex GPT-5.6 Sol':'Claude')}</span>`:''}${thinkingPanel()}</div></div>`;
   if(m.status==='failed')
     return `<div class="chat-turn assistant"><div class="chat-bubble failed">
       <strong>That question could not be answered.</strong>
@@ -1105,9 +1105,11 @@ function messageBubble(m){
   return `<div class="chat-turn assistant"><div class="chat-bubble">
     <div class="chat-answer">${esc(m.content).replace(/\n/g,'<br>')}</div>
     ${figures.length?`<div class="omni-figures chat-figures">${figures.map(figureTile).join('')}</div>`:''}
-    <div class="chat-meta">${basisChip(m.basis)}${(m.citations||[]).map(c=>`<code>${esc(c)}</code>`).join('')}</div>
+    <div class="chat-meta">${basisChip(m.basis)}${m.provider?`<span class="chip">${esc(m.provider==='codex'?'Codex GPT-5.6 Sol':'Claude')}</span>`:''}${(m.citations||[]).map(c=>`<code>${esc(c)}</code>`).join('')}</div>
   </div></div>`;
 }
+
+let chatProvider='claude';
 
 function renderChats(){
   const panel=$('[data-panel="chats"]');if(!panel)return;
@@ -1133,6 +1135,12 @@ function renderChats(){
               </div>
             </div>`}
         <form class="chat-composer" id="chat-composer">
+          <label class="chat-provider">Answer with
+            <select id="chat-provider" aria-label="Chat model">
+              <option value="claude"${chatProvider==='claude'?' selected':''}>Claude</option>
+              <option value="codex"${chatProvider==='codex'?' selected':''}>Codex GPT-5.6 Sol</option>
+            </select>
+          </label>
           <textarea id="chat-input" rows="2" placeholder="Ask about lanes, events, exposure, or what the data cannot answer…"></textarea>
           <button type="submit">Ask</button>
         </form>
@@ -1193,7 +1201,7 @@ async function sendChat(text){
   chatSending=true;renderChats();bindNavigation();
   const{data,error}=await sb.rpc('api_chat_send',{
     p_conversation_id:chatThread?.conversation?.conversation_id||null,
-    p_text:question,p_title:null});
+    p_text:question,p_title:null,p_provider:chatProvider});
   if(error){chatSending=false;console.error(error);
     alert(`Could not send: ${error.message}`);renderChats();bindNavigation();return}
   chatSending=false;
@@ -1240,6 +1248,21 @@ function renderReports(){
    conference-room network, and it matches the house style already used for
    the system diagram. */
 let fleetState={aircraft:[],trails:{},coverage:{}};
+let fleetRefreshPromise=null;
+
+async function refreshFleetOnView(){
+  if(fleetRefreshPromise)return fleetRefreshPromise;
+  fleetRefreshPromise=(async()=>{
+    const{error}=await sb.functions.invoke('fleet-refresh',{
+      body:{reason:'dashboard_view'}
+    });
+    if(error)console.warn('Fleet refresh unavailable; showing last known state',error);
+    const{data:fleet,error:fleetError}=await sb.rpc('api_fleet_state',{p_trail_minutes:120});
+    if(!fleetError&&fleet)fleetState=fleet;
+    renderCompany();bindNavigation();
+  })().finally(()=>{fleetRefreshPromise=null});
+  return fleetRefreshPromise;
+}
 
 /* Lower-48 state outlines as [lon,lat] rings, keyed by state FIPS.
    Generated from the Census county shapefile in data/raw/census_county_shapes. */
@@ -1277,7 +1300,7 @@ function fleetMap(){
       return `${i?'L':'M'}${x.toFixed(1)} ${y.toFixed(1)}`}).join('')+'Z';
     return `<path class="map-land" d="${d}"/>`;
   }).join('');
-  return `<svg class="fleet-map" viewBox="0 0 ${MAP_W} ${MAP_H}" role="img" aria-label="Live aircraft positions">
+  return `<svg class="fleet-map" viewBox="0 0 ${MAP_W} ${MAP_H}" role="img" aria-label="Last-known aircraft positions">
     <rect width="${MAP_W}" height="${MAP_H}" class="map-sea"/>
     ${land}
     ${AIRPORTS.map(a=>{const[x,y]=project(a.lat,a.lon);return `
@@ -1297,43 +1320,46 @@ function renderCompany(){
   const panel=$('[data-panel="company"]');if(!panel)return;
   const aircraft=fleetState.aircraft||[],coverage=fleetState.coverage||{};
   const airborne=aircraft.filter(a=>a.lat!=null&&!a.on_ground);
+  const positioned=aircraft.filter(a=>a.lat!=null&&a.lon!=null);
   const provenance={source:coverage.source||'airplanes.live ADS-B',
     as_of:coverage.latest_fix_at?String(coverage.latest_fix_at).slice(0,16).replace('T',' '):'no fixes yet',
     basis:'measured'};
   const tile=(label,value,unit)=>figureTile({label,value,unit,precision:0,...provenance});
 
   /* An on-demand charter operator is on the ground most of the time, so the
-     roster -- not the map -- is what makes this tab useful. The fleet is known
-     from the OpenSky aircraft registry whether or not anything is flying; the
-     map appears when something is. */
+     roster -- not the map -- is what makes this tab useful. The API excludes
+     retired and donor airframes while retaining them in historical metrics. */
   const airborneIds=new Set(airborne.map(a=>a.icao24));
   const seen=aircraft.filter(a=>a.seen_at);
-  panel.innerHTML=pageHead('Company Info','USA Jet fleet and live positions, from public registries and ADS-B broadcasts.',
+  panel.innerHTML=pageHead('Company Info','USA Jet fleet and last-known positions, from public registries and flight tracking.',
       coverage.latest_fix_at?`Last fix ${date(coverage.latest_fix_at)}`:'')+`
     <div class="omni-figures">
-      ${tile('Aircraft in fleet',aircraft.length,'airframes')}
+      ${tile('Current inventory',aircraft.length,'airframes')}
       ${tile('Airborne now',airborne.length,'aircraft')}
-      ${tile('Seen on ADS-B',seen.length,'airframes')}
+      ${tile('Located publicly',seen.length,'airframes')}
     </div>
     <article class="card fleet-card">
-      <div class="card-head"><div><h3>${airborne.length?'Fleet position':'Fleet'}</h3>
-        <p>USA Jet (JUS). ${airborne.length?'Detroit–Laredo corridor, trails show the last two hours.':'Nothing airborne at the moment.'}</p></div>
-        <div class="omni-head-meta">${basisChip('measured')}<span class="quiet">ADS-B, live</span></div></div>
-      ${airborne.length?fleetMap():`<div class="fleet-quiet">
+      <div class="card-head"><div><h3>${positioned.length?'Fleet position':'Fleet'}</h3>
+        <p>USA Jet (JUS). ${airborne.length?'Live ADS-B in the Detroit–Laredo corridor; trails show the last two hours.':'Grounded markers are latest confirmed arrival airports.'}</p></div>
+        <div class="omni-head-meta">${basisChip('measured')}<span class="quiet">Public tracking, last known</span>
+          <button type="button" class="action-button" id="fleet-refresh">Refresh positions</button></div></div>
+      ${positioned.length?fleetMap():`<div class="fleet-quiet">
           <strong>No USA Jet aircraft airborne right now.</strong>
-          <p>Expected for an on-demand charter fleet between trips — they fly when there is freight. The roster below comes from the aircraft registry, so it is complete whether or not anything is in the air; the map returns as soon as one is.</p>
+          <p>Expected for an on-demand charter fleet between trips — they fly when there is freight. The current-inventory roster remains available whether or not anything is transmitting.</p>
         </div>`}
-      <p class="quiet fleet-caption">ADS-B is a broadcast: an aircraft transmits its own position. It gives location, altitude and heading — never what is on board, who booked it, or what it earned.</p>
+      <p class="quiet fleet-caption">Airborne points are live ADS-B observations. Grounded markers are the destination airport of the latest completed FlightAware leg, not a live ramp position; use the recorded age when judging confidence.</p>
     </article>
     <article class="card">
       <div class="card-head"><div><h3>Fleet roster</h3>
-        <p>Registered airframes, newest ADS-B fix where one exists.</p></div>
-        <div class="omni-head-meta">${basisChip('measured')}<span class="quiet">OpenSky aircraft registry</span></div></div>
+        <p>Current-inventory airframes only, with the newest public position or last confirmed arrival where one exists.</p></div>
+        <div class="omni-head-meta">${basisChip('measured')}<span class="quiet">Registry + service-status review</span></div></div>
       ${aircraft.length?dataTable(aircraft.slice().sort((a,b)=>
           (airborneIds.has(b.icao24)?1:0)-(airborneIds.has(a.icao24)?1:0)||
           String(a.tail||'').localeCompare(String(b.tail||''))).map(a=>({
         tail:a.tail||'—',type:a.model||'—',
-        status:airborneIds.has(a.icao24)?'airborne':(a.seen_at?'on ground':'not seen'),
+        status:airborneIds.has(a.icao24)?'airborne':(a.seen_at?'last known':'not seen'),
+        location:a.airport_icao||'—',
+        position_source:a.position_source||'—',
         callsign:a.callsign||'—',
         altitude_m:a.altitude_m==null?'—':Math.round(a.altitude_m),
         last_fix:a.seen_at?String(a.seen_at).slice(0,16).replace('T',' '):'—',
@@ -1355,6 +1381,13 @@ function bindNavigation(){
   const thinkToggle=$('#think-toggle');
   if(thinkToggle)thinkToggle.onclick=()=>setThinkOpen(!thinkOpen);
   const composer=$('#chat-composer');
+  const provider=$('#chat-provider');
+  if(provider)provider.onchange=()=>{chatProvider=provider.value};
+  const fleetRefresh=$('#fleet-refresh');
+  if(fleetRefresh)fleetRefresh.onclick=async()=>{
+    fleetRefresh.disabled=true;fleetRefresh.textContent='Refreshing…';
+    await refreshFleetOnView();
+  };
   if(composer){
     composer.onsubmit=event=>{event.preventDefault();const box=$('#chat-input');const text=box.value;box.value='';sendChat(text)};
     const box=$('#chat-input');
@@ -1415,7 +1448,7 @@ function resolveRoute(value){
 }
 function setActiveApp(app){$$('[data-app-link]').forEach(button=>{const active=button.dataset.appLink===app;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')})}
 function showHome(updateHash=true){closeCalendarDetail(false);closeDrill();document.body.classList.remove('calendar-active');$('#home').hidden=false;$('.tabs').hidden=true;$('#loading').hidden=true;$$('[data-tab]').forEach(button=>{button.classList.remove('active');button.setAttribute('aria-selected','false');button.tabIndex=-1});$$('[data-panel]').forEach(panel=>{panel.classList.remove('active');panel.hidden=true});setActiveApp('home');if(updateHash)history.replaceState(null,'','#home');window.scrollTo({top:0,behavior:'smooth'})}
-function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}if(tab!=='calendar')closeCalendarDetail(false);closeDrill();document.body.classList.toggle('calendar-active',tab==='calendar');$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===tab;panel.classList.toggle('active',active);panel.setAttribute('aria-hidden',String(!active));panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);window.scrollTo({top:0,behavior:'smooth'})}
+function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}if(tab!=='calendar')closeCalendarDetail(false);closeDrill();document.body.classList.toggle('calendar-active',tab==='calendar');$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===tab;panel.classList.toggle('active',active);panel.setAttribute('aria-hidden',String(!active));panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);window.scrollTo({top:0,behavior:'smooth'});if(tab==='company'&&state)refreshFleetOnView()}
 function selectApp(app){if(app==='home'){showHome();return}if(APP_DEFAULT[app])activate(APP_DEFAULT[app]);else showHome()}
 function routeLocation(updateHash=true){const route=resolveRoute(location.hash.slice(1));if(route.app==='home')showHome(updateHash);else activate(route.tab,updateHash)}
 function greeting(){const h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening'}
