@@ -20,6 +20,8 @@ FLEET_SOURCE_MIGRATION = ROOT / "supabase" / "migrations" / "20260728171000_flee
 FLEET_PROVENANCE_MIGRATION = ROOT / "supabase" / "migrations" / "20260728230000_fleet_position_provenance.sql"
 FLEET_HISTORY_MIGRATION = ROOT / "supabase" / "migrations" / "20260728231500_fleet_service_history.sql"
 CHAT_FAILURE_MIGRATION = ROOT / "supabase" / "migrations" / "20260730170000_chat_failure_visibility.sql"
+CHAT_MANAGEMENT_MIGRATION = ROOT / "supabase" / "migrations" / "20260730210000_chat_management_and_reports.sql"
+FLEET_ACTIVITY_MIGRATION = ROOT / "supabase" / "migrations" / "20260730230000_fleet_recent_activity_and_flightaware_sync.sql"
 
 
 class DevDashboardTests(unittest.TestCase):
@@ -42,6 +44,8 @@ class DevDashboardTests(unittest.TestCase):
         cls.fleet_provenance_sql = FLEET_PROVENANCE_MIGRATION.read_text(encoding="utf-8")
         cls.fleet_history_sql = FLEET_HISTORY_MIGRATION.read_text(encoding="utf-8")
         cls.chat_failure_sql = CHAT_FAILURE_MIGRATION.read_text(encoding="utf-8")
+        cls.chat_management_sql = CHAT_MANAGEMENT_MIGRATION.read_text(encoding="utf-8")
+        cls.fleet_activity_sql = FLEET_ACTIVITY_MIGRATION.read_text(encoding="utf-8")
 
     def test_dashboard_tabs_are_grouped_by_application(self):
         tabs = re.findall(r'data-tab="([^"]+)"', self.html)
@@ -175,6 +179,33 @@ class DevDashboardTests(unittest.TestCase):
         self.assertIn("if(tab==='company'&&state)refreshFleetOnView()", self.js)
         self.assertIn('id="fleet-refresh"', self.js)
 
+    def test_company_fleet_uses_recent_activity_and_local_time(self):
+        self.assertIn("interval '2 months'", self.fleet_activity_sql)
+        self.assertIn("as active_recent", self.fleet_activity_sql)
+        self.assertIn("interval '15 minutes'", self.fleet_activity_sql)
+        self.assertNotIn("where f.active", self.fleet_activity_sql)
+        self.assertIn("function isFleetActive(aircraft)", self.js)
+        self.assertIn("new Intl.DateTimeFormat(undefined", self.js)
+        self.assertIn("timeZoneName:'short'", self.js)
+        self.assertIn('id="fleet-show-history"', self.js)
+
+    def test_company_fleet_map_can_pan_zoom_and_fit_visible_aircraft(self):
+        self.assertIn("function fittedFleetView(", self.js)
+        self.assertIn("function bindFleetMapControls()", self.js)
+        self.assertIn("bindFleetMapControls();", self.js)
+        self.assertIn('data-fleet-zoom="in"', self.js)
+        self.assertIn("map.onpointermove", self.js)
+        self.assertIn("map.addEventListener('wheel'", self.js)
+
+    def test_reviewed_flightaware_arrivals_are_seeded_with_provenance(self):
+        for tail in ("N727US", "N831US", "N842US"):
+            self.assertIn(tail, self.fleet_activity_sql)
+            self.assertIn(
+                f"https://www.flightaware.com/live/flight/{tail}/history/",
+                self.fleet_activity_sql,
+            )
+        self.assertIn("'FlightAware', 'airport_last_arrival'", self.fleet_activity_sql)
+
     def test_fleet_sweep_is_server_scheduled_and_not_browser_callable(self):
         self.assertIn("create or replace function cos.fleet_sweep", self.fleet_sweep_sql)
         self.assertIn("'*/15 * * * *'", self.fleet_sweep_sql)
@@ -205,8 +236,8 @@ class DevDashboardTests(unittest.TestCase):
         self.assertIn("p.source as position_source", self.fleet_provenance_sql)
         self.assertIn("p.location_kind", self.fleet_provenance_sql)
         self.assertIn("q.location_kind = 'adsb_fix'", self.fleet_provenance_sql)
-        self.assertIn("Grounded markers are the destination airport", self.js)
-        self.assertIn("position_source:a.position_source", self.js)
+        self.assertIn("latest confirmed FlightAware arrival", self.js)
+        self.assertIn("a.position_source||a.status_source", self.js)
 
     def test_retired_and_donor_airframes_are_history_not_current_fleet(self):
         self.assertIn("service_status = 'retired'", self.fleet_history_sql)
@@ -218,7 +249,8 @@ class DevDashboardTests(unittest.TestCase):
         self.assertIn("where f.active", self.fleet_history_sql)
         self.assertIn("cos.fleet_inventory_metrics", self.fleet_history_sql)
         self.assertIn("security_invoker = true", self.fleet_history_sql)
-        self.assertIn("Current-inventory airframes only", self.js)
+        self.assertIn("Show historical tails", self.js)
+        self.assertIn("No flight evidence within 2 months", self.js)
 
     def test_private_ledgers_have_rls_and_no_direct_browser_grants(self):
         for table in ("control_owners", "continuity_tasks", "continuity_checkpoints"):
@@ -354,6 +386,48 @@ class DevDashboardTests(unittest.TestCase):
         )
         self.assertIn("sb.rpc('api_chat_job_progress'", self.js)
         self.assertIn("Technical details", self.js)
+
+    def test_chat_polling_has_one_owner_and_recovers_after_browser_interruptions(self):
+        send_chat = self.js[
+            self.js.index("async function sendChat(text)"):
+            self.js.index("/* ── Reports", self.js.index("async function sendChat(text)"))
+        ]
+        self.assertIn("await openConversation(data.conversation_id)", send_chat)
+        self.assertNotIn("startChatPoll(data.job_id", send_chat)
+        self.assertIn("chatPollIsActive(token,jobId,conversationId)", self.js)
+        self.assertIn("chatPoll.timer=setTimeout(tick,delay)", self.js)
+        self.assertIn("Connection interrupted — retrying automatically", self.js)
+        self.assertIn("window.addEventListener('focus',resumeChatPoll)", self.js)
+        self.assertIn("document.addEventListener('visibilitychange'", self.js)
+
+    def test_chat_management_is_searchable_reversible_and_owner_gated(self):
+        for rpc in (
+            "api_chat_set_archived",
+            "api_chat_delete",
+            "api_report_from_conversation",
+        ):
+            self.assertIn(f"function cos.{rpc}", self.chat_management_sql)
+            self.assertIn(f"sb.rpc('{rpc}'", self.js)
+        self.assertEqual(
+            self.chat_management_sql.count(
+                "if not cos.is_owner() then raise exception 'forbidden'"
+            ),
+            4,
+        )
+        self.assertIn("archived_conversations", self.chat_management_sql)
+        self.assertIn("a running conversation cannot be deleted", self.chat_management_sql)
+        self.assertIn("on delete set null", self.chat_management_sql.lower())
+        self.assertIn('id="chat-search"', self.js)
+        self.assertIn('data-chat-view="archived"', self.js)
+        self.assertIn("Generate report", self.js)
+
+    def test_conversation_report_generation_updates_instead_of_duplicating(self):
+        self.assertIn(
+            "where r.conversation_id = p_conversation_id",
+            self.chat_management_sql,
+        )
+        self.assertIn("update cos.reports", self.chat_management_sql)
+        self.assertIn("'section_count', jsonb_array_length(v_sections)", self.chat_management_sql)
 
 
 if __name__ == "__main__":

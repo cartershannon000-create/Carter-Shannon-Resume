@@ -1080,17 +1080,52 @@ function stopThinking(){if(thinking.timer)clearInterval(thinking.timer);thinking
    cos.job_progress, which is the same feed the work queue's run view reads.
    So a chat turn shows its working -- which catalog query it called, which
    ad-hoc query it wrote -- rather than spinning until an answer appears. */
-let chatState={conversations:[]},chatThread=null,chatPoll={timer:null,jobId:null,seq:0},chatSending=false;
+let chatState={conversations:[],archived_conversations:[]},chatThread=null,
+  chatPoll={timer:null,jobId:null,conversationId:null,seq:0,tick:null,inFlight:false,retryCount:0},
+  chatPollToken=0,chatSending=false,chatSearch='',chatView='active',
+  chatActionBusy=false,chatNotice=null;
 
 function conversationList(){
-  const items=chatState.conversations||[];
-  if(!items.length)return '<div class="empty-state"><strong>No conversations yet</strong><p>Ask something to start one.</p></div>';
+  const source=chatView==='archived'
+    ?(chatState.archived_conversations||[])
+    :(chatState.conversations||[]);
+  const query=chatSearch.trim().toLowerCase();
+  const items=query
+    ?source.filter(c=>[c.title,c.opening_question].some(value=>String(value||'').toLowerCase().includes(query)))
+    :source;
+  if(!source.length)return `<div class="chat-list-empty"><strong>${chatView==='archived'?'No archived conversations':'No conversations yet'}</strong><p>${chatView==='archived'?'Archived conversations will appear here.':'Ask something to start one.'}</p></div>`;
+  if(!items.length)return `<div class="chat-list-empty"><strong>No matches</strong><p>Try a different search.</p></div>`;
   return `<div class="chat-list">${items.map(c=>`
-    <button type="button" class="chat-list-item${chatThread?.conversation?.conversation_id===c.conversation_id?' active':''}" data-conversation="${esc(c.conversation_id)}">
-      <strong>${esc(c.title||'Untitled')}</strong>
-      <small>${esc(c.opening_question||'')}</small>
-      <span>${date(c.last_message_at||c.updated_at)} · ${number(c.message_count)} messages</span>
-    </button>`).join('')}</div>`;
+    <div class="chat-list-row${chatThread?.conversation?.conversation_id===c.conversation_id?' active':''}">
+      <button type="button" class="chat-list-item" data-conversation="${esc(c.conversation_id)}">
+        <strong>${esc(c.title||'Untitled')}</strong>
+        <small>${esc(c.opening_question||'')}</small>
+        <span>${date(c.last_message_at||c.updated_at)} · ${number(c.message_count)} messages</span>
+      </button>
+      <div class="chat-list-actions">
+        <button type="button" data-chat-archive="${esc(c.conversation_id)}" data-archived="${chatView==='archived'?'false':'true'}" title="${chatView==='archived'?'Restore':'Archive'} conversation" aria-label="${chatView==='archived'?'Restore':'Archive'} ${esc(c.title||'conversation')}">${chatView==='archived'?'↩':'⌑'}</button>
+        <button type="button" class="danger" data-chat-delete="${esc(c.conversation_id)}" title="Delete conversation" aria-label="Delete ${esc(c.title||'conversation')}">×</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function chatReportForConversation(conversationId){
+  return (reportState?.reports||[]).find(report=>report.conversation_id===conversationId)||null;
+}
+function chatThreadToolbar(){
+  const conversation=chatThread?.conversation;if(!conversation)return '';
+  const archived=Boolean(conversation.archived);
+  const completed=(chatThread.messages||[]).filter(message=>message.role==='assistant'&&message.status==='complete').length;
+  const report=chatReportForConversation(conversation.conversation_id);
+  return `<header class="chat-thread-toolbar">
+    <div><strong>${esc(conversation.title||'Untitled conversation')}</strong>
+      <small>${number(chatThread.messages?.length||0)} messages${archived?' · archived':''}</small></div>
+    <div class="chat-thread-actions">
+      <button type="button" class="primary" data-chat-report="${esc(conversation.conversation_id)}"${completed||report?'':' disabled'}>${report?'Update report':'Generate report'}</button>
+      <button type="button" data-chat-archive="${esc(conversation.conversation_id)}" data-archived="${archived?'false':'true'}">${archived?'Restore':'Archive'}</button>
+      <button type="button" class="danger" data-chat-delete="${esc(conversation.conversation_id)}">Delete</button>
+    </div>
+  </header>`;
 }
 
 function messageBubble(m){
@@ -1180,14 +1215,26 @@ function chatFailureCopy(message){
 function renderChats(){
   const panel=$('[data-panel="chats"]');if(!panel)return;
   const messages=chatThread?.messages||[];
+  const archived=Boolean(chatThread?.conversation?.archived);
+  const activeCount=(chatState.conversations||[]).length;
+  const archivedCount=(chatState.archived_conversations||[]).length;
   panel.innerHTML=pageHead('Chats','Ask about disruption exposure. Every number comes back with its source.',
-      `${(chatState.conversations||[]).length} conversations`)+`
+      `${activeCount} active · ${archivedCount} archived`)+`
     <div class="chat-layout">
       <aside class="chat-sidebar">
         <button type="button" class="chat-new" id="chat-new">＋ New conversation</button>
-        ${conversationList()}
+        <label class="chat-search"><span aria-hidden="true">⌕</span>
+          <input type="search" id="chat-search" value="${esc(chatSearch)}" placeholder="Search conversations" aria-label="Search conversations">
+        </label>
+        <div class="chat-list-tabs" role="tablist" aria-label="Conversation status">
+          <button type="button" data-chat-view="active" class="${chatView==='active'?'active':''}" aria-selected="${chatView==='active'}">Active <span>${number(activeCount)}</span></button>
+          <button type="button" data-chat-view="archived" class="${chatView==='archived'?'active':''}" aria-selected="${chatView==='archived'}">Archived <span>${number(archivedCount)}</span></button>
+        </div>
+        <div id="chat-list-results">${conversationList()}</div>
       </aside>
       <section class="chat-main">
+        ${chatThreadToolbar()}
+        ${chatNotice?`<div class="chat-notice ${esc(chatNotice.tone||'info')}"><span>${chatNotice.tone==='error'?'!':'✓'}</span><p>${esc(chatNotice.message)}</p><button type="button" id="chat-notice-close" aria-label="Dismiss">×</button></div>`:''}
         ${chatThread?`<div class="chat-thread" id="chat-thread">${messages.map(messageBubble).join('')}</div>`
           :`<div class="chat-empty">
               <h3>${esc(greeting())}, Carter.</h3>
@@ -1199,7 +1246,7 @@ function renderChats(){
             ${CHAT_USE_CASES.map((q,index)=>`<button type="button" class="chat-suggestion" data-ask="${esc(q)}"><span>${String(index+1).padStart(2,'0')}</span><strong>${esc(q)}</strong></button>`).join('')}
           </div>
         </div>`}
-        <form class="chat-composer" id="chat-composer">
+        ${archived?`<div class="chat-archived-note"><strong>This conversation is archived.</strong><span>Restore it to continue the thread.</span><button type="button" data-chat-archive="${esc(chatThread.conversation.conversation_id)}" data-archived="false">Restore conversation</button></div>`:`<form class="chat-composer" id="chat-composer">
           <textarea id="chat-input" rows="3" placeholder="Ask about lanes, events, exposure, or what the data cannot answer…"></textarea>
           <div class="chat-composer-bar">
             <div class="chat-composer-config">
@@ -1216,7 +1263,7 @@ function renderChats(){
             </div>
             <button type="submit" id="chat-submit" disabled aria-hidden="true">Ask <span aria-hidden="true">↑</span></button>
           </div>
-        </form>
+        </form>`}
         <p class="chat-note">Answers are produced on the local runner. If it is offline, questions queue until it reconnects.</p>
       </section>
     </div>`;
@@ -1224,50 +1271,197 @@ function renderChats(){
 }
 
 async function openConversation(conversationId){
+  if(chatPoll.conversationId&&chatPoll.conversationId!==conversationId)stopChatPoll();
   const{data,error}=await sb.rpc('api_chat_messages',{p_conversation_id:conversationId});
   if(error){console.error(error);return}
   chatThread=data;renderChats();bindNavigation();
-  const pending=(data.messages||[]).find(m=>m.status==='pending'||m.status==='streaming');
+  const pending=[...(data.messages||[])].reverse().find(m=>m.status==='pending'||m.status==='streaming');
   if(pending?.job_id)startChatPoll(pending.job_id,conversationId);
+  else if(chatPoll.conversationId===conversationId)stopChatPoll();
 }
 
-function stopChatPoll(){if(chatPoll.timer)clearTimeout(chatPoll.timer);chatPoll={timer:null,jobId:null,conversationId:null,seq:0}}
+function stopChatPoll(){
+  if(chatPoll.timer)clearTimeout(chatPoll.timer);
+  chatPollToken+=1;
+  chatPoll={timer:null,jobId:null,conversationId:null,seq:0,tick:null,inFlight:false,retryCount:0};
+}
+function chatPollIsActive(token,jobId,conversationId){
+  return token===chatPollToken&&chatPoll.jobId===jobId&&chatPoll.conversationId===conversationId;
+}
+function showChatPollRetry(error,label='Connection interrupted — retrying automatically'){
+  const box=$('#chat-steps');if(!box)return;
+  const detail=String(error?.message||error||'The latest update could not be loaded.');
+  box.innerHTML=`<div class="think-steps-head">Live status</div>
+    <div class="chat-step warning"><span>↻</span><div>${esc(label)}<small>${esc(detail)}</small></div></div>`;
+}
+function resumeChatPoll(){
+  if(document.visibilityState==='hidden')return;
+  if(chatPoll.jobId&&chatPoll.tick){
+    if(chatPoll.timer)clearTimeout(chatPoll.timer);
+    chatPoll.timer=null;
+    chatPoll.tick();
+    return;
+  }
+  const pending=[...(chatThread?.messages||[])].reverse().find(m=>m.status==='pending'||m.status==='streaming');
+  if(pending?.job_id&&chatThread?.conversation?.conversation_id)
+    startChatPoll(pending.job_id,chatThread.conversation.conversation_id);
+}
 
 /* Reads the exact chat job's rows from the runner's shared progress log. */
 async function startChatPoll(jobId,conversationId){
-  stopChatPoll();chatPoll={timer:null,jobId,conversationId,seq:0};
+  if(chatPoll.jobId===jobId&&chatPoll.conversationId===conversationId){
+    resumeChatPoll();return;
+  }
+  stopChatPoll();
+  const token=chatPollToken;
+  chatPoll={timer:null,jobId,conversationId,seq:0,tick:null,inFlight:false,retryCount:0};
   startThinking(jobId);
   const tick=async()=>{
-    if(chatPoll.jobId!==jobId)return;
-    // Real runner steps stream in beneath the paced phases and are labelled
-    // as observed, not simulated.
-    const{data,error}=await sb.rpc('api_chat_job_progress',{
-      p_job_id:jobId,p_after_seq:chatPoll.seq
-    }).catch(()=>({data:null,error:true}));
-    if(!error&&data?.steps?.length){
-      chatPoll.seq=data.steps[data.steps.length-1].seq;
-      const box=$('#chat-steps');
-      if(box)box.innerHTML=`<div class="think-steps-head">Runner steps</div>`+
-        data.steps.slice(-6).map(s=>`<div class="chat-step ${esc(s.kind)}"><span>${STEP_ICON[s.kind]||'·'}</span><div>${esc(s.label)}${s.detail?`<small>${esc(s.detail)}</small>`:''}</div></div>`).join('');
-    }
-    const{data:thread}=await sb.rpc('api_chat_messages',{p_conversation_id:conversationId});
-    const last=(thread?.messages||[]).slice(-1)[0];
-    if(last&&last.status!=='pending'&&last.status!=='streaming'){
-      chatThread=thread;stopChatPoll();stopThinking();chatSending=false;
-      await refreshChatList();renderChats();bindNavigation();return;
+    if(!chatPollIsActive(token,jobId,conversationId)||chatPoll.inFlight)return;
+    chatPoll.inFlight=true;
+    let delay=2500,progressError=null;
+    try{
+      // Real runner steps stream in beneath the paced phases and are labelled
+      // as observed, not simulated. Progress and message reads are independent:
+      // losing the optional step feed must never stop answer delivery.
+      try{
+        const result=await sb.rpc('api_chat_job_progress',{
+          p_job_id:jobId,p_after_seq:chatPoll.seq
+        });
+        if(!chatPollIsActive(token,jobId,conversationId))return;
+        progressError=result.error;
+        if(!result.error&&result.data?.steps?.length){
+          chatPoll.seq=result.data.steps[result.data.steps.length-1].seq;
+          const box=$('#chat-steps');
+          if(box)box.innerHTML=`<div class="think-steps-head">Runner steps</div>`+
+            result.data.steps.slice(-6).map(s=>`<div class="chat-step ${esc(s.kind)}"><span>${STEP_ICON[s.kind]||'·'}</span><div>${esc(s.label)}${s.detail?`<small>${esc(s.detail)}</small>`:''}</div></div>`).join('');
+        }
+      }catch(error){progressError=error}
+
+      const result=await sb.rpc('api_chat_messages',{p_conversation_id:conversationId});
+      if(!chatPollIsActive(token,jobId,conversationId))return;
+      if(result.error)throw result.error;
+      const thread=result.data,last=(thread?.messages||[]).slice(-1)[0];
+      chatPoll.retryCount=0;
+      if(last&&last.status!=='pending'&&last.status!=='streaming'){
+        chatThread=thread;stopChatPoll();stopThinking();chatSending=false;
+        // Paint the completed answer before refreshing the sidebar. A slow or
+        // failed list refresh must not hide a result already returned by the
+        // conversation RPC.
+        renderChats();bindNavigation();
+        try{await refreshChatList()}catch(error){console.error(error)}
+        if(chatThread?.conversation?.conversation_id===conversationId){
+          renderChats();bindNavigation();
+        }
+        return;
+      }
+      if(progressError)showChatPollRetry(
+        progressError,
+        'Progress details are reconnecting — answer tracking is still active',
+      );
+    }catch(error){
+      if(!chatPollIsActive(token,jobId,conversationId))return;
+      chatPoll.retryCount+=1;
+      delay=Math.min(10000,2500*(2**Math.min(chatPoll.retryCount,2)));
+      showChatPollRetry(error);
+      console.warn('Chat polling retry',error);
+    }finally{
+      if(chatPollIsActive(token,jobId,conversationId)){
+        chatPoll.inFlight=false;
+        if(chatPoll.timer)clearTimeout(chatPoll.timer);
+        chatPoll.timer=setTimeout(tick,delay);
+      }
     }
     // Deliberately does NOT re-render the panel: a re-render on every poll
     // would blow away what is being typed in the composer and reset the
     // animation. Only the thinking box is touched, above.
-    chatPoll.timer=setTimeout(tick,2500);
   };
+  chatPoll.tick=tick;
   tick();
 }
 
 async function refreshChatList(){
   const{data}=await sb.rpc('api_chat_state');
-  chatState=data||{conversations:[]};
+  chatState=data||{conversations:[],archived_conversations:[]};
   const badge=$('#chat-count');if(badge)badge.textContent=(chatState.conversations||[]).length||'—';
+}
+
+function chatConversationRecord(conversationId){
+  return [...(chatState.conversations||[]),...(chatState.archived_conversations||[])]
+    .find(conversation=>conversation.conversation_id===conversationId)||
+    (chatThread?.conversation?.conversation_id===conversationId?chatThread.conversation:null);
+}
+async function setChatArchived(conversationId,archived,button){
+  if(chatActionBusy)return;
+  chatActionBusy=true;
+  const original=button?.textContent;
+  if(button){button.disabled=true;button.textContent=archived?'Archiving…':'Restoring…'}
+  const{error}=await sb.rpc('api_chat_set_archived',{
+    p_conversation_id:conversationId,p_archived:archived
+  });
+  chatActionBusy=false;
+  if(error){
+    chatNotice={tone:'error',message:`Could not ${archived?'archive':'restore'} the conversation: ${error.message}`};
+    if(button){button.disabled=false;button.textContent=original}
+    renderChats();bindNavigation();return;
+  }
+  const wasOpen=chatThread?.conversation?.conversation_id===conversationId;
+  if(wasOpen&&archived){stopChatPoll();stopThinking();chatThread=null;chatSending=false}
+  chatNotice={tone:'success',message:archived?'Conversation archived. You can restore it from Archived.':'Conversation restored.'};
+  await refreshChatList();
+  if(wasOpen&&!archived){
+    chatView='active';
+    await openConversation(conversationId);
+  }else{
+    renderChats();bindNavigation();
+  }
+}
+async function deleteChatConversation(conversationId,button){
+  if(chatActionBusy)return;
+  const conversation=chatConversationRecord(conversationId);
+  const title=conversation?.title||'this conversation';
+  if(!confirm(`Permanently delete “${title}”?\n\nThe conversation and its messages will be removed. Any generated report will remain available.`))return;
+  chatActionBusy=true;
+  const original=button?.textContent;
+  if(button){button.disabled=true;button.textContent='Deleting…'}
+  const{error}=await sb.rpc('api_chat_delete',{p_conversation_id:conversationId});
+  chatActionBusy=false;
+  if(error){
+    chatNotice={tone:'error',message:`Could not delete the conversation: ${error.message}`};
+    if(button){button.disabled=false;button.textContent=original}
+    renderChats();bindNavigation();return;
+  }
+  if(chatThread?.conversation?.conversation_id===conversationId){
+    stopChatPoll();stopThinking();chatThread=null;chatSending=false;
+  }
+  chatNotice={tone:'success',message:'Conversation deleted permanently. Existing reports were preserved.'};
+  await refreshChatList();
+  renderChats();bindNavigation();
+}
+async function generateConversationReport(conversationId,button){
+  if(chatActionBusy)return;
+  chatActionBusy=true;
+  const original=button?.textContent;
+  if(button){button.disabled=true;button.textContent='Generating…'}
+  const{data,error}=await sb.rpc('api_report_from_conversation',{
+    p_conversation_id:conversationId,p_title:null
+  });
+  if(error){
+    chatActionBusy=false;
+    chatNotice={tone:'error',message:`Could not generate the report: ${error.message}`};
+    if(button){button.disabled=false;button.textContent=original}
+    renderChats();bindNavigation();return;
+  }
+  const result=await sb.rpc('api_reports_state');
+  chatActionBusy=false;
+  if(result.error){
+    chatNotice={tone:'error',message:`The report was generated, but could not be opened: ${result.error.message}`};
+    renderChats();bindNavigation();return;
+  }
+  reportState=result.data||{reports:[]};
+  openReportId=data.report_id;
+  renderReports();renderChats();bindNavigation();
+  activate('reports');
 }
 
 function missingProviderChatRpc(error){
@@ -1306,7 +1500,6 @@ async function sendChat(text){
   chatSending=false;
   await refreshChatList();
   await openConversation(data.conversation_id);
-  startChatPoll(data.job_id,data.conversation_id);
 }
 
 /* ── Reports ───────────────────────────────────────────────────────────
@@ -1347,7 +1540,7 @@ function renderReports(){
    conference-room network, and it matches the house style already used for
    the system diagram. */
 let fleetState={aircraft:[],trails:{},coverage:{}};
-let fleetRefreshPromise=null;
+let fleetRefreshPromise=null,fleetShowHistoric=false,fleetMapView=null;
 
 async function refreshFleetOnView(){
   if(fleetRefreshPromise)return fleetRefreshPromise;
@@ -1357,7 +1550,7 @@ async function refreshFleetOnView(){
     });
     if(error)console.warn('Fleet refresh unavailable; showing last known state',error);
     const{data:fleet,error:fleetError}=await sb.rpc('api_fleet_state',{p_trail_minutes:120});
-    if(!fleetError&&fleet)fleetState=fleet;
+    if(!fleetError&&fleet){fleetState=fleet;fleetMapView=null}
     renderCompany();bindNavigation();
   })().finally(()=>{fleetRefreshPromise=null});
   return fleetRefreshPromise;
@@ -1366,7 +1559,7 @@ async function refreshFleetOnView(){
 /* Lower-48 state outlines as [lon,lat] rings, keyed by state FIPS.
    Generated from the Census county shapefile in data/raw/census_county_shapes. */
 const STATE_RINGS={"01":[[[-87.597,30.988],[-87.627,30.848],[-87.396,30.65],[-87.448,30.51],[-87.367,30.437],[-87.505,30.324],[-87.452,30.3],[-87.801,30.229],[-88.028,30.224],[-87.747,30.288],[-87.906,30.409],[-87.919,30.636],[-88.011,30.685],[-88.138,30.313],[-88.338,30.405],[-88.395,30.369],[-88.473,31.894],[-88.098,34.892],[-88.203,35.008],[-85.605,34.985],[-85.184,32.861],[-84.963,32.424],[-85.007,32.328],[-84.889,32.261],[-85.061,32.134],[-85.141,31.857],[-85.041,31.541],[-85.108,31.186],[-85.002,31.001],[-87.597,30.988]]],"05":[[[-91.128,33.034],[-94.043,33.019],[-94.043,33.552],[-94.184,33.595],[-94.382,33.544],[-94.472,33.603],[-94.431,35.392],[-94.618,36.499],[-90.152,36.498],[-90.064,36.303],[-90.378,35.996],[-89.733,36.001],[-89.644,35.89],[-89.743,35.911],[-89.774,35.868],[-89.696,35.821],[-89.958,35.727],[-89.851,35.65],[-89.957,35.591],[-89.909,35.514],[-90.038,35.55],[-90.003,35.43],[-90.054,35.389],[-90.101,35.478],[-90.169,35.422],[-90.079,35.381],[-90.169,35.279],[-90.065,35.139],[-90.167,35.124],[-90.207,35.026],[-90.297,35.038],[-90.241,34.919],[-90.307,34.846],[-90.439,34.825],[-90.481,34.881],[-90.448,34.739],[-90.544,34.792],[-90.572,34.713],[-90.463,34.684],[-90.532,34.627],[-90.57,34.693],[-90.586,34.409],[-90.669,34.313],[-90.676,34.371],[-90.764,34.364],[-90.738,34.289],[-90.832,34.277],[-90.847,34.206],[-90.936,34.238],[-90.808,34.162],[-90.959,34.135],[-90.871,34.081],[-90.988,34.019],[-90.966,33.965],[-91.086,34.006],[-91.01,33.932],[-91.07,33.845],[-90.988,33.785],[-91.149,33.731],[-91.031,33.679],[-91.231,33.677],[-91.129,33.608],[-91.233,33.563],[-91.183,33.499],[-91.235,33.439],[-91.168,33.498],[-91.118,33.458],[-91.208,33.402],[-91.058,33.447],[-91.142,33.349],[-91.106,33.242],[-91.044,33.275],[-91.086,33.137],[-91.202,33.123],[-91.128,33.034]]],"06":[[[-122.337,37.117],[-122.514,37.781],[-122.41,37.809],[-122.379,37.606],[-122.039,37.455],[-122.168,37.677],[-122.332,37.782],[-122.311,37.896],[-122.43,37.963],[-122.263,38.045],[-122.317,38.112],[-122.498,38.115],[-122.447,37.984],[-122.505,37.936],[-122.438,37.882],[-122.504,37.894],[-122.5,37.821],[-122.882,38.025],[-123.024,37.995],[-122.949,38.154],[-122.977,38.268],[-123.728,38.919],[-123.691,39.051],[-123.828,39.348],[-123.766,39.553],[-123.852,39.832],[-124.363,40.261],[-124.409,40.443],[-124.137,40.926],[-124.165,41.13],[-124.063,41.44],[-124.147,41.718],[-124.255,41.778],[-124.208,41.888],[-124.212,41.998],[-119.999,41.995],[-120.001,39.0],[-117.5,37.22],[-114.633,35.002],[-114.634,34.873],[-114.47,34.711],[-114.387,34.458],[-114.131,34.263],[-114.434,34.087],[-114.535,33.935],[-114.525,33.552],[-114.726,33.404],[-114.706,33.088],[-114.511,33.023],[-114.469,32.845],[-114.616,32.728],[-117.124,32.534],[-117.161,32.666],[-117.243,32.665],[-117.313,33.087],[-117.47,33.296],[-118.133,33.753],[-118.41,33.741],[-118.391,33.839],[-118.524,34.031],[-118.807,34.0],[-119.129,34.101],[-119.279,34.267],[-119.564,34.415],[-120.471,34.448],[-120.649,34.577],[-120.6,34.705],[-120.672,34.903],[-120.646,35.144],[-120.856,35.206],[-120.885,35.43],[-121.287,35.666],[-121.501,35.998],[-121.903,36.306],[-121.977,36.579],[-121.837,36.635],[-121.792,36.815],[-121.906,36.969],[-122.127,36.964],[-122.337,37.117]]],"08":[[[-102.042,36.993],[-109.045,36.999],[-109.05,41.001],[-102.052,41.002],[-102.042,36.993]]],"10":[[[-75.312,38.945],[-75.191,38.807],[-75.092,38.804],[-75.049,38.451],[-75.694,38.46],[-75.789,39.722],[-75.663,39.821],[-75.423,39.807],[-75.614,39.606],[-75.312,38.945]]],"12":[[[-83.077,29.255],[-83.638,29.886],[-84.024,30.103],[-84.262,30.104],[-84.342,29.97],[-84.438,29.988],[-84.349,29.897],[-84.522,29.914],[-84.888,29.722],[-84.871,29.797],[-84.993,29.715],[-85.352,29.667],[-85.375,29.692],[-85.398,29.743],[-85.417,29.82],[-85.412,29.86],[-85.361,29.679],[-85.303,29.809],[-85.405,29.938],[-86.189,30.334],[-86.713,30.395],[-87.518,30.28],[-87.367,30.44],[-87.448,30.51],[-87.407,30.675],[-87.635,30.866],[-87.599,30.997],[-85.002,31.001],[-84.865,30.712],[-82.215,30.569],[-82.162,30.358],[-82.037,30.378],[-82.045,30.728],[-81.95,30.828],[-81.426,30.7],[-81.456,30.513],[-81.254,29.777],[-80.966,29.148],[-80.574,28.585],[-80.525,28.459],[-80.604,28.355],[-80.572,28.112],[-80.031,26.796],[-80.153,25.672],[-80.203,25.748],[-80.305,25.616],[-80.305,25.388],[-80.398,25.277],[-80.417,25.199],[-80.253,25.338],[-80.385,25.121],[-80.566,24.957],[-80.658,24.897],[-80.433,25.108],[-80.443,25.192],[-80.519,25.223],[-80.652,25.193],[-80.634,25.176],[-80.674,25.138],[-80.809,25.184],[-81.084,25.116],[-81.141,25.157],[-81.122,25.376],[-81.29,25.688],[-81.605,25.892],[-81.685,25.847],[-81.883,26.403],[-81.998,26.533],[-82.106,26.484],[-82.184,26.695],[-82.082,26.654],[-82.054,26.94],[-82.183,26.936],[-82.146,26.783],[-82.262,26.717],[-82.692,27.437],[-82.746,27.539],[-82.641,27.526],[-82.392,27.846],[-82.462,27.939],[-82.472,27.823],[-82.534,27.833],[-82.544,27.956],[-82.687,28.03],[-82.726,27.936],[-82.588,27.819],[-82.737,27.613],[-82.852,27.886],[-82.786,28.048],[-82.822,28.054],[-82.834,28.064],[-82.836,28.092],[-82.783,28.053],[-82.799,28.185],[-82.664,28.45],[-82.655,28.68],[-82.739,28.825],[-82.689,28.906],[-82.814,29.163],[-83.053,29.127],[-83.077,29.255]],[[-81.802,24.563],[-81.722,24.607],[-81.754,24.654],[-81.444,24.813],[-81.297,24.655],[-81.506,24.655],[-81.802,24.563]]],"13":[[[-82.215,30.569],[-84.865,30.712],[-85.108,31.186],[-85.041,31.541],[-85.134,31.891],[-85.061,32.134],[-84.889,32.261],[-85.007,32.328],[-84.963,32.424],[-85.184,32.861],[-85.605,34.985],[-83.11,35.001],[-83.113,34.935],[-83.307,34.815],[-83.343,34.683],[-83.033,34.483],[-82.859,34.455],[-82.557,33.945],[-81.926,33.463],[-81.94,33.345],[-81.754,33.151],[-81.492,33.009],[-81.418,32.628],[-81.187,32.464],[-81.115,32.115],[-80.84,32.003],[-80.984,31.94],[-80.93,31.908],[-80.993,31.858],[-81.065,31.877],[-81.036,31.81],[-81.204,31.719],[-81.131,31.696],[-81.16,31.57],[-81.298,31.534],[-81.179,31.518],[-81.294,31.369],[-81.29,31.218],[-81.494,30.978],[-81.403,30.958],[-81.444,30.71],[-81.901,30.83],[-82.022,30.788],[-82.05,30.362],[-82.193,30.379],[-82.215,30.569]]],"16":[[[-117.026,42.0],[-117.032,43.834],[-116.936,43.987],[-116.977,44.085],[-116.896,44.171],[-117.217,44.288],[-117.225,44.482],[-117.062,44.727],[-116.852,44.888],[-116.848,45.023],[-116.464,45.616],[-116.547,45.751],[-116.86,45.907],[-116.982,46.085],[-116.922,46.168],[-117.063,46.353],[-117.032,48.999],[-116.049,49.001],[-116.049,47.977],[-115.723,47.695],[-115.689,47.594],[-115.756,47.548],[-115.63,47.48],[-115.759,47.424],[-115.32,47.257],[-114.925,46.919],[-114.895,46.802],[-114.785,46.78],[-114.767,46.697],[-114.665,46.739],[-114.605,46.636],[-114.321,46.648],[-114.471,46.266],[-114.444,46.169],[-114.527,46.146],[-114.387,45.888],[-114.566,45.773],[-114.495,45.703],[-114.565,45.558],[-114.33,45.46],[-113.935,45.694],[-113.807,45.603],[-113.834,45.521],[-113.767,45.521],[-113.692,45.263],[-113.452,45.059],[-113.455,44.865],[-113.342,44.785],[-113.132,44.773],[-113.005,44.454],[-112.855,44.36],[-112.78,44.485],[-112.387,44.448],[-112.286,44.569],[-111.468,44.539],[-111.516,44.644],[-111.385,44.755],[-111.049,44.474],[-111.047,42.002],[-117.026,42.0]]],"17":[[[-90.355,38.364],[-90.109,38.844],[-90.44,38.967],[-90.546,38.874],[-90.628,38.892],[-90.73,39.256],[-91.368,39.729],[-91.512,40.147],[-91.467,40.334],[-91.373,40.399],[-91.405,40.555],[-91.124,40.669],[-91.093,40.821],[-90.963,40.925],[-90.947,41.097],[-91.114,41.241],[-91.046,41.414],[-90.461,41.524],[-90.343,41.588],[-90.311,41.742],[-90.181,41.809],[-90.163,42.117],[-90.391,42.225],[-90.444,42.355],[-90.656,42.492],[-87.802,42.493],[-87.829,42.27],[-87.525,41.724],[-87.532,39.348],[-87.62,39.307],[-87.575,39.218],[-87.659,39.136],[-87.512,38.954],[-87.553,38.862],[-87.496,38.742],[-87.839,38.282],[-87.988,38.257],[-87.911,38.162],[-88.042,38.046],[-88.013,37.967],[-88.07,37.927],[-88.013,37.895],[-88.098,37.902],[-88.028,37.799],[-88.16,37.658],[-88.065,37.489],[-88.47,37.396],[-88.516,37.284],[-88.424,37.152],[-88.461,37.074],[-88.975,37.23],[-89.168,37.074],[-89.133,36.982],[-89.255,37.072],[-89.308,37.07],[-89.292,36.992],[-89.518,37.285],[-89.421,37.388],[-89.517,37.537],[-89.514,37.69],[-89.843,37.905],[-89.951,37.882],[-89.925,37.96],[-90.243,38.113],[-90.36,38.225],[-90.355,38.364]]],"18":[[[-86.815,37.999],[-87.034,37.906],[-87.111,37.782],[-87.59,37.975],[-87.615,37.832],[-87.679,37.903],[-87.892,37.928],[-87.949,37.772],[-88.092,37.822],[-88.026,37.833],[-88.098,37.902],[-88.013,37.895],[-88.07,37.927],[-88.013,37.967],[-88.042,38.046],[-87.957,38.086],[-88.017,38.097],[-87.911,38.162],[-87.988,38.257],[-87.839,38.282],[-87.496,38.742],[-87.553,38.862],[-87.512,38.954],[-87.659,39.136],[-87.575,39.218],[-87.62,39.307],[-87.532,39.348],[-87.524,41.708],[-87.299,41.619],[-86.825,41.76],[-84.806,41.76],[-84.82,39.105],[-84.897,39.057],[-84.83,38.969],[-84.877,38.909],[-84.785,38.88],[-84.813,38.786],[-85.173,38.688],[-85.436,38.728],[-85.422,38.533],[-85.604,38.441],[-85.684,38.295],[-85.829,38.277],[-85.926,38.022],[-86.038,37.96],[-86.267,38.057],[-86.273,38.141],[-86.358,38.199],[-86.324,38.138],[-86.463,38.119],[-86.507,37.931],[-86.626,37.847],[-86.815,37.999]]],"19":[[[-91.729,40.614],[-95.766,40.585],[-95.883,40.718],[-95.809,40.891],[-95.882,41.06],[-95.841,41.175],[-95.927,41.202],[-95.875,41.307],[-95.957,41.345],[-95.92,41.452],[-96.012,41.476],[-96.005,41.543],[-96.092,41.534],[-96.121,41.689],[-96.065,41.793],[-96.162,41.902],[-96.13,41.972],[-96.242,42.001],[-96.418,42.351],[-96.386,42.474],[-96.477,42.491],[-96.639,42.735],[-96.437,43.121],[-96.585,43.269],[-96.522,43.386],[-96.599,43.5],[-91.218,43.501],[-91.207,43.353],[-91.058,43.255],[-91.179,43.067],[-91.065,42.751],[-90.706,42.634],[-90.654,42.479],[-90.444,42.355],[-90.391,42.225],[-90.163,42.117],[-90.181,41.809],[-90.311,41.742],[-90.343,41.588],[-90.656,41.462],[-91.046,41.414],[-91.114,41.241],[-90.947,41.097],[-90.952,40.954],[-91.093,40.821],[-91.124,40.669],[-91.405,40.555],[-91.388,40.385],[-91.482,40.382],[-91.729,40.614]]],"04":[[[-111.075,31.332],[-114.814,32.494],[-114.809,32.617],[-114.702,32.746],[-114.539,32.75],[-114.469,32.845],[-114.511,33.023],[-114.706,33.088],[-114.672,33.258],[-114.731,33.302],[-114.725,33.405],[-114.525,33.552],[-114.535,33.935],[-114.416,34.108],[-114.131,34.263],[-114.387,34.458],[-114.47,34.711],[-114.635,34.875],[-114.647,35.102],[-114.569,35.183],[-114.679,35.499],[-114.712,35.806],[-114.662,35.871],[-114.755,36.085],[-114.409,36.147],[-114.242,36.015],[-114.146,36.027],[-114.044,36.193],[-114.051,37.0],[-109.045,36.999],[-109.05,31.333],[-111.075,31.332]]],"20":[[[-102.042,36.993],[-102.052,40.003],[-95.308,40.0],[-95.128,39.874],[-94.93,39.889],[-94.876,39.813],[-94.935,39.776],[-94.863,39.743],[-94.965,39.739],[-95.109,39.542],[-94.885,39.39],[-94.824,39.21],[-94.588,39.15],[-94.618,36.999],[-102.042,36.993]]],"21":[[[-89.378,36.608],[-89.237,36.567],[-89.159,36.666],[-89.2,36.734],[-89.119,36.76],[-89.179,36.831],[-89.099,36.961],[-89.181,37.046],[-89.03,37.211],[-88.461,37.074],[-88.477,37.387],[-88.068,37.486],[-88.159,37.662],[-88.028,37.799],[-87.907,37.808],[-87.905,37.925],[-87.679,37.903],[-87.646,37.826],[-87.596,37.975],[-87.511,37.906],[-87.413,37.945],[-87.111,37.782],[-87.034,37.906],[-86.82,37.999],[-86.638,37.843],[-86.507,37.931],[-86.463,38.119],[-86.324,38.138],[-86.358,38.199],[-86.267,38.057],[-86.038,37.96],[-85.926,38.022],[-85.829,38.277],[-85.684,38.295],[-85.604,38.441],[-85.422,38.533],[-85.436,38.728],[-85.173,38.688],[-84.813,38.786],[-84.785,38.88],[-84.877,38.909],[-84.83,38.969],[-84.897,39.057],[-84.751,39.147],[-84.62,39.073],[-84.45,39.118],[-84.305,39.006],[-84.213,38.806],[-83.873,38.762],[-83.671,38.627],[-83.521,38.703],[-83.294,38.597],[-82.879,38.751],[-82.844,38.591],[-82.604,38.46],[-82.575,38.264],[-82.645,38.165],[-82.464,37.983],[-82.502,37.933],[-82.312,37.765],[-82.304,37.676],[-82.175,37.648],[-82.133,37.553],[-81.965,37.543],[-82.351,37.267],[-82.722,37.12],[-82.879,36.89],[-83.073,36.855],[-83.136,36.743],[-83.691,36.583],[-88.071,36.678],[-88.053,36.497],[-89.417,36.499],[-89.378,36.608]]],"22":[[[-93.927,29.79],[-93.699,30.059],[-93.74,30.54],[-93.555,30.823],[-93.578,31.0],[-93.508,31.032],[-93.533,31.184],[-93.589,31.166],[-93.687,31.305],[-93.639,31.372],[-93.749,31.469],[-93.712,31.513],[-93.835,31.586],[-93.823,31.775],[-94.042,31.992],[-94.043,33.019],[-91.166,33.004],[-91.208,32.915],[-91.145,32.905],[-91.107,32.989],[-91.064,32.906],[-91.165,32.751],[-91.054,32.722],[-91.151,32.616],[-91.014,32.64],[-91.08,32.556],[-90.987,32.496],[-91.094,32.549],[-91.116,32.483],[-90.97,32.439],[-90.994,32.354],[-90.876,32.372],[-90.995,32.192],[-91.039,32.242],[-91.164,32.197],[-91.163,32.133],[-91.004,32.146],[-91.08,32.048],[-91.16,32.07],[-91.076,32.017],[-91.185,31.966],[-91.256,31.813],[-91.346,31.843],[-91.366,31.762],[-91.263,31.754],[-91.372,31.743],[-91.401,31.62],[-91.515,31.63],[-91.405,31.576],[-91.523,31.522],[-91.479,31.365],[-91.576,31.41],[-91.516,31.278],[-91.654,31.256],[-91.56,31.054],[-91.637,30.999],[-89.73,31.004],[-89.852,30.661],[-89.683,30.452],[-89.616,30.223],[-89.528,30.189],[-89.718,30.025],[-89.818,30.046],[-89.846,29.956],[-89.729,29.958],[-89.65,29.862],[-89.484,30.079],[-89.373,30.05],[-89.458,29.998],[-89.37,29.892],[-89.248,29.997],[-89.232,29.93],[-89.342,29.883],[-89.24,29.879],[-89.386,29.835],[-89.286,29.763],[-89.395,29.79],[-89.446,29.652],[-89.525,29.727],[-89.5,29.634],[-89.662,29.646],[-89.601,29.584],[-89.684,29.625],[-89.683,29.549],[-89.523,29.456],[-89.561,29.395],[-89.188,29.342],[-89.122,29.202],[-89.004,29.18],[-89.112,29.16],[-89.04,29.135],[-89.147,29.071],[-89.143,28.992],[-89.252,29.083],[-89.418,28.929],[-89.295,29.199],[-89.4,29.124],[-89.64,29.291],[-89.843,29.319],[-89.595,29.356],[-89.815,29.4],[-89.852,29.476],[-89.992,29.451],[-90.042,29.361],[-89.979,29.347],[-90.108,29.265],[-90.048,29.19],[-90.223,29.087],[-90.305,29.268],[-90.354,29.305],[-90.403,29.234],[-90.44,29.349],[-90.598,29.303],[-90.562,29.235],[-90.836,29.066],[-90.952,29.183],[-91.288,29.256],[-91.34,29.31],[-91.265,29.361],[-91.163,29.321],[-91.154,29.255],[-91.166,29.254],[-91.172,29.241],[-91.168,29.234],[-91.118,29.255],[-91.126,29.333],[-91.266,29.476],[-91.541,29.526],[-91.555,29.636],[-91.648,29.635],[-91.628,29.741],[-91.881,29.711],[-91.831,29.829],[-91.971,29.834],[-92.144,29.716],[-92.132,29.766],[-92.203,29.753],[-92.169,29.7],[-92.104,29.699],[-92.106,29.612],[-92.035,29.632],[-92.009,29.613],[-92.323,29.531],[-93.213,29.776],[-93.838,29.691],[-93.927,29.79]],[[-92.005,29.603],[-91.903,29.637],[-91.708,29.569],[-91.822,29.474],[-92.005,29.603]]],"23":[[[-70.379,43.507],[-70.333,43.446],[-70.554,43.322],[-70.59,43.165],[-70.704,43.06],[-70.827,43.127],[-70.81,43.225],[-70.986,43.38],[-71.084,45.305],[-70.952,45.339],[-70.857,45.229],[-70.798,45.427],[-70.635,45.384],[-70.723,45.513],[-70.259,45.891],[-70.318,46.019],[-70.237,46.145],[-70.293,46.192],[-70.191,46.35],[-70.057,46.415],[-69.997,46.695],[-69.224,47.46],[-69.043,47.427],[-69.05,47.256],[-68.9,47.178],[-68.379,47.288],[-68.355,47.357],[-68.155,47.325],[-67.791,47.068],[-67.75,45.918],[-67.818,45.694],[-67.43,45.584],[-67.416,45.502],[-67.504,45.489],[-67.419,45.377],[-67.489,45.281],[-67.346,45.126],[-67.284,45.192],[-67.158,45.161],[-66.951,44.815],[-67.189,44.646],[-67.273,44.664],[-67.246,44.626],[-67.326,44.657],[-67.299,44.706],[-67.395,44.695],[-67.368,44.625],[-67.543,44.627],[-67.565,44.532],[-67.688,44.537],[-67.713,44.494],[-67.755,44.547],[-67.848,44.563],[-67.899,44.396],[-68.027,44.483],[-67.959,44.399],[-68.023,44.408],[-68.049,44.331],[-68.121,44.479],[-68.211,44.52],[-68.366,44.435],[-68.338,44.422],[-68.247,44.433],[-68.174,44.345],[-68.317,44.294],[-68.334,44.221],[-68.431,44.299],[-68.354,44.401],[-68.393,44.435],[-68.431,44.397],[-68.425,44.498],[-68.462,44.379],[-68.48,44.454],[-68.565,44.399],[-68.523,44.228],[-68.624,44.302],[-68.739,44.333],[-68.827,44.312],[-68.778,44.485],[-68.806,44.524],[-68.875,44.43],[-68.998,44.426],[-68.95,44.34],[-69.124,43.979],[-69.274,43.914],[-69.268,43.944],[-69.325,43.971],[-69.375,43.925],[-69.362,43.994],[-69.438,43.976],[-69.503,43.838],[-69.639,43.848],[-69.656,43.781],[-69.677,43.927],[-69.722,43.782],[-69.837,43.7],[-69.873,43.778],[-70.045,43.737],[-69.945,43.86],[-70.019,43.859],[-70.194,43.769],[-70.251,43.685],[-70.201,43.561],[-70.379,43.507]]],"24":[[[-77.258,38.522],[-76.909,38.893],[-77.041,38.995],[-77.12,38.934],[-77.461,39.075],[-77.527,39.146],[-77.46,39.228],[-77.76,39.337],[-77.766,39.496],[-77.889,39.556],[-77.838,39.606],[-77.946,39.585],[-78.177,39.696],[-78.566,39.519],[-78.76,39.582],[-78.766,39.648],[-78.957,39.44],[-79.103,39.476],[-79.473,39.202],[-79.477,39.721],[-75.789,39.722],[-75.694,38.46],[-75.049,38.451],[-75.242,38.027],[-75.747,37.988],[-75.885,37.912],[-75.873,38.032],[-75.843,38.027],[-75.774,38.077],[-75.879,38.076],[-75.788,38.146],[-75.96,38.137],[-75.801,38.254],[-75.92,38.264],[-75.85,38.366],[-75.97,38.234],[-76.017,38.309],[-75.957,38.348],[-76.011,38.377],[-76.032,38.217],[-76.225,38.395],[-76.126,38.239],[-76.226,38.31],[-76.334,38.482],[-76.22,38.532],[-76.278,38.533],[-76.286,38.626],[-76.027,38.567],[-76.213,38.682],[-76.225,38.76],[-76.313,38.749],[-76.34,38.671],[-76.335,38.773],[-76.255,38.862],[-76.216,38.787],[-76.175,38.754],[-76.155,38.772],[-76.21,38.946],[-76.334,38.918],[-76.368,38.836],[-76.362,38.939],[-76.305,39.039],[-76.257,38.975],[-76.164,39.0],[-76.134,39.104],[-76.208,39.096],[-76.201,39.014],[-76.216,39.01],[-76.275,39.165],[-76.17,39.332],[-75.986,39.379],[-76.041,39.394],[-75.954,39.594],[-76.096,39.537],[-76.128,39.487],[-76.06,39.448],[-76.227,39.35],[-76.241,39.461],[-76.282,39.3],[-76.307,39.385],[-76.357,39.394],[-76.329,39.315],[-76.409,39.312],[-76.442,39.195],[-76.586,39.261],[-76.394,39.013],[-76.48,38.978],[-76.56,38.763],[-76.506,38.505],[-76.381,38.385],[-76.476,38.314],[-76.375,38.299],[-76.322,38.038],[-76.439,38.161],[-76.473,38.103],[-76.594,38.216],[-76.779,38.228],[-76.827,38.347],[-76.842,38.254],[-76.924,38.29],[-77.016,38.446],[-77.217,38.363],[-77.258,38.522]]],"25":[[[-71.328,41.781],[-71.381,42.019],[-72.817,41.998],[-73.508,42.086],[-73.265,42.746],[-71.294,42.697],[-70.903,42.887],[-70.817,42.872],[-70.776,42.691],[-70.591,42.64],[-70.875,42.544],[-70.836,42.49],[-70.983,42.424],[-70.953,42.344],[-71.051,42.373],[-71.039,42.285],[-70.766,42.255],[-70.598,42.005],[-70.651,42.046],[-70.71,42.0],[-70.539,41.927],[-70.494,41.774],[-70.428,41.748],[-70.296,41.734],[-70.274,41.724],[-70.396,41.728],[-70.357,41.703],[-70.251,41.707],[-70.008,41.801],[-70.096,42.033],[-70.245,42.064],[-70.083,42.055],[-69.969,41.912],[-69.93,41.692],[-70.004,41.541],[-70.014,41.672],[-70.657,41.515],[-70.618,41.701],[-70.719,41.736],[-70.716,41.675],[-70.822,41.655],[-70.855,41.582],[-70.93,41.613],[-70.929,41.54],[-71.038,41.481],[-71.121,41.497],[-71.133,41.66],[-71.328,41.781]],[[-70.812,41.356],[-70.604,41.482],[-70.446,41.396],[-70.776,41.301],[-70.812,41.356]]],"26":[[[-87.871,45.371],[-87.781,45.68],[-88.129,45.809],[-88.103,45.922],[-88.515,46.02],[-88.671,45.989],[-89.092,46.139],[-90.12,46.337],[-90.217,46.502],[-90.418,46.566],[-90.028,46.674],[-89.789,46.818],[-89.425,46.841],[-88.973,47.002],[-88.218,47.45],[-87.801,47.473],[-87.712,47.401],[-87.957,47.387],[-87.943,47.336],[-88.35,47.076],[-88.497,46.755],[-88.143,46.967],[-88.283,46.823],[-88.082,46.92],[-87.817,46.891],[-87.59,46.782],[-87.583,46.731],[-87.503,46.647],[-87.434,46.592],[-87.377,46.59],[-87.359,46.503],[-87.005,46.534],[-86.875,46.437],[-86.75,46.479],[-86.645,46.411],[-86.162,46.669],[-85.501,46.676],[-84.956,46.772],[-85.03,46.685],[-85.015,46.48],[-84.631,46.485],[-84.583,46.414],[-84.129,46.53],[-84.098,46.257],[-84.273,46.201],[-84.03,46.135],[-84.072,46.092],[-83.895,45.986],[-84.267,45.991],[-84.382,45.934],[-84.423,46.002],[-84.532,45.969],[-84.657,46.053],[-84.752,45.84],[-85.014,46.011],[-85.336,46.093],[-85.506,46.096],[-85.659,45.966],[-86.276,45.944],[-86.347,45.797],[-86.581,45.712],[-86.614,45.6],[-86.718,45.68],[-86.56,45.772],[-86.535,45.886],[-86.782,45.86],[-86.789,45.772],[-86.968,45.668],[-86.978,45.906],[-87.038,45.742],[-87.197,45.639],[-87.592,45.095],[-87.737,45.173],[-87.657,45.369],[-87.871,45.371]],[[-89.235,47.878],[-89.179,47.935],[-88.788,48.063],[-88.633,48.149],[-88.418,48.18],[-89.005,47.899],[-88.912,47.891],[-89.162,47.824],[-89.235,47.878]],[[-84.806,41.76],[-86.825,41.76],[-86.622,41.892],[-86.356,42.254],[-86.207,42.702],[-86.255,43.083],[-86.538,43.618],[-86.43,43.828],[-86.515,44.058],[-86.269,44.345],[-86.255,44.692],[-86.09,44.742],[-86.067,44.906],[-85.807,44.95],[-85.541,45.211],[-85.614,45.128],[-85.567,45.044],[-85.649,44.975],[-85.599,44.989],[-85.652,44.849],[-85.595,44.767],[-85.475,44.992],[-85.577,44.76],[-85.527,44.748],[-85.389,44.948],[-85.372,45.271],[-84.915,45.396],[-85.115,45.539],[-84.944,45.71],[-85.014,45.76],[-84.729,45.788],[-84.479,45.657],[-84.216,45.635],[-84.09,45.494],[-83.49,45.358],[-83.382,45.27],[-83.413,45.239],[-83.315,45.053],[-83.262,45.025],[-83.385,45.077],[-83.464,45.003],[-83.316,44.881],[-83.27,44.709],[-83.334,44.337],[-83.538,44.248],[-83.58,44.049],[-83.875,43.962],[-83.956,43.761],[-83.913,43.678],[-83.685,43.584],[-83.49,43.703],[-83.325,43.884],[-83.405,43.915],[-82.964,44.068],[-82.793,44.023],[-82.615,43.779],[-82.523,43.225],[-82.413,42.977],[-82.523,42.607],[-82.679,42.522],[-82.656,42.592],[-82.713,42.598],[-82.631,42.673],[-82.806,42.649],[-82.772,42.593],[-82.874,42.524],[-82.882,42.405],[-83.097,42.29],[-83.132,42.09],[-83.44,41.813],[-83.428,41.742],[-84.806,41.696],[-84.806,41.76]],[[-83.873,45.993],[-83.845,46.027],[-83.806,45.984],[-83.689,46.036],[-83.676,46.071],[-83.729,46.092],[-83.635,46.104],[-83.473,45.984],[-83.565,45.913],[-83.873,45.993]]],"27":[[[-91.218,43.501],[-96.453,43.5],[-96.453,45.298],[-96.693,45.417],[-96.858,45.606],[-96.583,45.82],[-96.555,46.084],[-96.6,46.33],[-96.798,46.629],[-96.753,46.925],[-96.84,47.007],[-96.851,47.598],[-97.147,48.143],[-97.127,48.52],[-97.175,48.562],[-97.09,48.685],[-97.234,48.998],[-95.154,48.999],[-95.153,49.384],[-94.957,49.37],[-94.816,49.321],[-94.645,48.744],[-93.844,48.63],[-93.794,48.516],[-93.468,48.546],[-93.255,48.643],[-92.955,48.631],[-92.635,48.543],[-92.713,48.463],[-92.456,48.414],[-92.369,48.22],[-92.27,48.248],[-92.262,48.355],[-92.055,48.359],[-91.958,48.233],[-91.559,48.108],[-91.567,48.044],[-91.266,48.079],[-90.885,48.246],[-90.752,48.091],[-90.136,48.112],[-89.897,47.988],[-89.494,48.005],[-89.625,47.995],[-90.777,47.606],[-92.094,46.788],[-92.015,46.706],[-92.117,46.749],[-92.207,46.652],[-92.291,46.668],[-92.294,46.074],[-92.708,45.895],[-92.869,45.718],[-92.884,45.575],[-92.77,45.567],[-92.647,45.442],[-92.762,45.287],[-92.807,44.75],[-92.548,44.568],[-92.336,44.554],[-92.232,44.445],[-91.97,44.366],[-91.875,44.201],[-91.433,43.997],[-91.244,43.775],[-91.218,43.501]]],"28":[[[-89.728,31.002],[-91.637,30.999],[-91.56,31.054],[-91.654,31.256],[-91.516,31.278],[-91.576,31.41],[-91.479,31.365],[-91.523,31.522],[-91.405,31.576],[-91.515,31.63],[-91.401,31.62],[-91.372,31.743],[-91.263,31.754],[-91.366,31.762],[-91.346,31.843],[-91.256,31.813],[-91.185,31.966],[-91.076,32.017],[-91.16,32.07],[-91.08,32.048],[-91.004,32.146],[-91.163,32.133],[-91.164,32.197],[-91.039,32.242],[-90.995,32.192],[-90.876,32.372],[-90.994,32.354],[-90.97,32.439],[-91.116,32.483],[-91.094,32.549],[-90.987,32.496],[-91.08,32.556],[-91.014,32.64],[-91.154,32.626],[-91.055,32.719],[-91.165,32.751],[-91.064,32.901],[-91.087,32.976],[-91.152,32.902],[-91.214,32.927],[-91.12,33.055],[-91.2,33.129],[-91.088,33.135],[-91.045,33.265],[-91.142,33.3],[-91.058,33.447],[-91.149,33.379],[-91.209,33.406],[-91.132,33.482],[-91.235,33.439],[-91.183,33.499],[-91.233,33.563],[-91.129,33.608],[-91.228,33.688],[-91.034,33.674],[-91.149,33.731],[-90.988,33.785],[-91.07,33.845],[-91.01,33.932],[-91.086,34.006],[-90.966,33.965],[-90.988,34.019],[-90.871,34.081],[-90.959,34.135],[-90.808,34.162],[-90.936,34.238],[-90.847,34.206],[-90.832,34.277],[-90.738,34.289],[-90.764,34.364],[-90.676,34.371],[-90.669,34.313],[-90.586,34.409],[-90.57,34.693],[-90.532,34.627],[-90.463,34.684],[-90.572,34.713],[-90.544,34.792],[-90.475,34.724],[-90.476,34.886],[-90.439,34.825],[-90.307,34.846],[-90.241,34.919],[-90.308,34.996],[-88.2,34.996],[-88.098,34.892],[-88.473,31.894],[-88.395,30.35],[-88.729,30.343],[-88.858,30.43],[-89.286,30.303],[-89.336,30.374],[-89.458,30.178],[-89.574,30.182],[-89.852,30.663],[-89.728,31.002]]],"29":[[[-90.152,36.498],[-94.618,36.499],[-94.588,39.15],[-94.824,39.21],[-94.885,39.39],[-95.109,39.542],[-94.965,39.739],[-94.863,39.743],[-94.935,39.776],[-94.876,39.813],[-94.93,39.889],[-95.128,39.874],[-95.407,40.033],[-95.478,40.243],[-95.657,40.311],[-95.656,40.547],[-95.757,40.526],[-95.766,40.585],[-91.729,40.614],[-91.419,40.378],[-91.51,40.128],[-91.37,39.733],[-90.73,39.256],[-90.663,38.927],[-90.567,38.869],[-90.406,38.963],[-90.109,38.844],[-90.368,38.34],[-90.354,38.214],[-89.925,37.96],[-89.951,37.882],[-89.843,37.905],[-89.517,37.693],[-89.517,37.537],[-89.421,37.388],[-89.518,37.285],[-89.384,37.046],[-89.279,36.989],[-89.308,37.068],[-89.255,37.072],[-89.099,36.961],[-89.217,36.576],[-89.366,36.625],[-89.464,36.457],[-89.479,36.568],[-89.567,36.564],[-89.51,36.374],[-89.62,36.323],[-89.535,36.253],[-89.704,36.243],[-89.592,36.144],[-89.707,36.001],[-90.378,35.996],[-90.064,36.303],[-90.152,36.498]]],"30":[[[-111.388,44.753],[-111.516,44.644],[-111.468,44.539],[-112.286,44.569],[-112.387,44.448],[-112.78,44.485],[-112.855,44.36],[-113.005,44.454],[-113.132,44.773],[-113.342,44.785],[-113.455,44.865],[-113.452,45.059],[-113.692,45.263],[-113.767,45.521],[-113.834,45.521],[-113.807,45.603],[-113.935,45.694],[-114.33,45.46],[-114.565,45.558],[-114.495,45.703],[-114.566,45.773],[-114.387,45.888],[-114.527,46.146],[-114.444,46.169],[-114.471,46.266],[-114.321,46.648],[-114.605,46.636],[-114.665,46.739],[-114.767,46.697],[-114.785,46.78],[-114.895,46.802],[-114.925,46.919],[-115.32,47.257],[-115.759,47.424],[-115.63,47.48],[-115.756,47.548],[-115.689,47.594],[-115.723,47.695],[-116.049,47.977],[-116.049,49.001],[-104.049,49.0],[-104.04,44.998],[-111.055,45.001],[-111.056,44.477],[-111.388,44.753]]],"31":[[[-102.052,40.003],[-102.052,41.002],[-104.053,41.001],[-104.053,43.001],[-98.499,42.999],[-98.035,42.764],[-97.845,42.868],[-97.232,42.851],[-96.691,42.656],[-96.611,42.506],[-96.386,42.474],[-96.418,42.351],[-96.329,42.255],[-96.348,42.167],[-96.241,41.999],[-96.13,41.972],[-96.162,41.902],[-96.065,41.796],[-96.121,41.689],[-96.092,41.534],[-96.0,41.539],[-96.012,41.476],[-95.92,41.452],[-95.957,41.345],[-95.875,41.307],[-95.927,41.202],[-95.841,41.175],[-95.882,41.06],[-95.809,40.891],[-95.885,40.721],[-95.75,40.607],[-95.763,40.528],[-95.656,40.547],[-95.657,40.311],[-95.478,40.243],[-95.414,40.038],[-95.308,40.0],[-102.052,40.003]]],"34":[[[-74.964,38.968],[-74.9,39.173],[-75.151,39.19],[-75.536,39.461],[-75.559,39.63],[-75.354,39.84],[-75.144,39.885],[-75.127,39.961],[-74.722,40.15],[-75.059,40.418],[-75.069,40.542],[-75.192,40.574],[-75.204,40.691],[-75.051,40.866],[-75.131,40.991],[-74.695,41.357],[-73.894,40.997],[-74.023,40.72],[-74.144,40.644],[-74.102,40.702],[-74.121,40.717],[-74.273,40.488],[-74.006,40.411],[-73.986,40.454],[-74.099,39.757],[-74.794,38.994],[-74.92,38.929],[-74.964,38.968]]],"36":[[[-75.36,41.999],[-79.761,41.999],[-79.762,42.27],[-79.149,42.554],[-79.047,42.691],[-78.853,42.784],[-78.919,42.947],[-79.02,42.995],[-78.999,43.056],[-79.074,43.078],[-79.07,43.262],[-78.486,43.375],[-77.76,43.341],[-77.54,43.235],[-76.784,43.312],[-76.418,43.521],[-76.21,43.56],[-76.213,43.754],[-76.297,43.856],[-76.203,43.851],[-76.059,43.986],[-76.2,43.968],[-76.119,44.034],[-76.202,44.079],[-76.281,43.961],[-76.295,44.058],[-76.371,44.1],[-76.313,44.199],[-75.913,44.368],[-75.283,44.849],[-74.827,45.016],[-73.343,45.011],[-73.39,44.618],[-73.294,44.441],[-73.438,44.045],[-73.351,43.772],[-73.431,43.588],[-73.306,43.628],[-73.242,43.535],[-73.265,42.746],[-73.508,42.086],[-73.551,41.295],[-73.483,41.213],[-73.728,41.101],[-73.656,40.98],[-73.818,40.864],[-73.814,40.826],[-73.756,40.766],[-73.731,40.865],[-73.649,40.829],[-73.633,40.903],[-73.469,40.866],[-73.485,40.946],[-73.358,40.893],[-73.402,40.954],[-73.228,40.906],[-73.118,40.977],[-72.636,40.982],[-72.279,41.159],[-72.339,41.115],[-72.276,41.037],[-72.16,41.054],[-72.102,40.992],[-71.856,41.071],[-73.055,40.666],[-73.941,40.544],[-73.879,40.575],[-74.042,40.626],[-74.0,40.664],[-73.894,40.997],[-74.696,41.357],[-74.738,41.431],[-74.983,41.481],[-75.116,41.845],[-75.261,41.864],[-75.36,41.999]]],"37":[[[-83.109,35.001],[-84.322,34.988],[-84.29,35.226],[-84.053,35.27],[-84.023,35.412],[-83.88,35.519],[-83.498,35.563],[-83.159,35.765],[-82.984,35.778],[-82.92,35.928],[-82.805,35.927],[-82.637,36.066],[-82.558,35.954],[-82.355,36.116],[-82.033,36.12],[-81.908,36.302],[-81.707,36.335],[-81.678,36.588],[-75.868,36.55],[-75.536,35.793],[-75.73,36.007],[-75.843,36.42],[-76.003,36.537],[-76.032,36.482],[-75.925,36.425],[-75.797,36.073],[-75.923,36.246],[-75.969,36.264],[-75.925,36.165],[-76.215,36.301],[-76.064,36.144],[-76.277,36.191],[-76.234,36.098],[-76.455,36.193],[-76.304,36.095],[-76.58,36.011],[-76.692,36.066],[-76.672,36.272],[-76.7,36.285],[-76.728,35.934],[-76.063,35.991],[-76.011,35.954],[-76.038,35.646],[-75.947,35.96],[-75.836,35.971],[-75.728,35.825],[-75.717,35.694],[-75.781,35.688],[-75.736,35.625],[-75.778,35.58],[-75.833,35.572],[-75.89,35.641],[-75.882,35.576],[-76.152,35.331],[-76.345,35.393],[-76.342,35.342],[-76.412,35.346],[-76.396,35.432],[-76.532,35.401],[-76.587,35.509],[-76.485,35.507],[-76.465,35.558],[-76.638,35.513],[-76.578,35.388],[-77.053,35.535],[-76.966,35.434],[-76.47,35.281],[-76.565,35.229],[-76.527,35.185],[-76.634,35.174],[-76.54,35.155],[-76.569,35.098],[-76.804,34.964],[-77.06,35.147],[-76.936,34.973],[-76.761,34.916],[-76.484,34.988],[-76.463,35.076],[-76.423,34.951],[-76.319,34.966],[-76.364,35.037],[-76.247,34.987],[-76.513,34.72],[-76.604,34.79],[-76.619,34.704],[-76.842,34.729],[-77.126,34.685],[-77.583,34.401],[-77.829,34.163],[-77.963,33.842],[-77.996,33.906],[-78.239,33.917],[-78.542,33.853],[-79.675,34.805],[-80.798,34.82],[-80.782,34.936],[-80.935,35.107],[-81.041,35.045],[-81.044,35.15],[-82.393,35.215],[-83.109,35.001]]],"38":[[[-104.045,45.945],[-104.049,49.0],[-97.229,49.001],[-97.09,48.685],[-97.175,48.562],[-97.127,48.52],[-97.147,48.143],[-96.851,47.598],[-96.84,47.007],[-96.753,46.925],[-96.798,46.629],[-96.6,46.33],[-96.555,46.084],[-96.564,45.935],[-104.045,45.945]]],"39":[[[-83.712,38.641],[-83.873,38.762],[-84.213,38.806],[-84.305,39.006],[-84.455,39.12],[-84.82,39.105],[-84.806,41.696],[-83.455,41.733],[-83.48,41.682],[-83.336,41.705],[-82.957,41.52],[-82.84,41.587],[-82.712,41.536],[-83.04,41.464],[-83.009,41.428],[-82.687,41.491],[-82.481,41.381],[-82.012,41.516],[-81.739,41.489],[-81.284,41.762],[-80.519,41.977],[-80.519,40.639],[-80.668,40.582],[-80.6,40.318],[-80.88,39.621],[-81.217,39.388],[-81.376,39.342],[-81.456,39.409],[-81.57,39.268],[-81.684,39.271],[-81.747,39.095],[-81.814,39.079],[-81.763,38.924],[-81.899,38.875],[-81.933,38.988],[-82.038,39.024],[-82.222,38.787],[-82.177,38.604],[-82.291,38.579],[-82.33,38.444],[-82.579,38.408],[-82.844,38.591],[-82.889,38.756],[-83.294,38.597],[-83.521,38.703],[-83.712,38.641]]],"45":[[[-79.887,32.683],[-80.472,32.497],[-80.453,32.322],[-80.633,32.257],[-80.753,32.307],[-80.669,32.217],[-80.89,32.038],[-81.115,32.115],[-81.187,32.464],[-81.418,32.628],[-81.492,33.009],[-81.754,33.151],[-81.94,33.345],[-81.926,33.463],[-82.557,33.945],[-82.859,34.455],[-83.033,34.483],[-83.341,34.681],[-83.307,34.815],[-83.113,34.935],[-83.11,35.001],[-82.393,35.215],[-81.044,35.15],[-81.041,35.045],[-80.935,35.107],[-80.782,34.936],[-80.798,34.82],[-79.675,34.805],[-78.547,33.856],[-78.957,33.621],[-79.135,33.404],[-79.192,33.173],[-79.362,33.009],[-79.532,33.035],[-79.618,32.953],[-79.581,32.906],[-79.726,32.806],[-79.923,32.782],[-79.887,32.683]]],"40":[[[-98.09,34.128],[-98.366,34.157],[-98.486,34.063],[-98.6,34.161],[-98.757,34.125],[-98.987,34.221],[-99.19,34.214],[-99.207,34.338],[-99.359,34.456],[-99.403,34.373],[-99.695,34.378],[-99.923,34.575],[-100.0,34.561],[-100.0,36.5],[-103.002,36.5],[-103.002,37.0],[-94.618,36.999],[-94.618,36.499],[-94.431,35.392],[-94.492,33.625],[-94.736,33.692],[-94.764,33.76],[-94.869,33.746],[-94.969,33.861],[-95.218,33.963],[-95.289,33.873],[-95.545,33.88],[-95.594,33.943],[-95.771,33.845],[-96.148,33.838],[-96.348,33.686],[-96.629,33.845],[-96.588,33.895],[-96.667,33.917],[-96.762,33.824],[-96.981,33.956],[-97.126,33.717],[-97.211,33.916],[-97.426,33.819],[-97.46,33.904],[-97.581,33.9],[-97.672,33.991],[-97.834,33.858],[-97.968,33.882],[-97.946,33.99],[-98.085,34.003],[-98.09,34.128]]],"41":[[[-117.026,42.0],[-124.291,42.044],[-124.354,42.104],[-124.361,42.181],[-124.414,42.252],[-124.412,42.307],[-124.433,42.324],[-124.401,42.627],[-124.566,42.836],[-124.447,43.032],[-124.403,43.306],[-124.232,43.562],[-124.15,43.911],[-124.074,44.798],[-123.958,45.278],[-124.008,45.337],[-123.937,45.656],[-123.994,45.946],[-123.929,46.042],[-124.013,46.237],[-123.855,46.157],[-123.501,46.271],[-123.371,46.146],[-123.116,46.185],[-122.814,45.961],[-122.764,45.657],[-122.295,45.544],[-121.811,45.707],[-121.338,45.705],[-121.168,45.606],[-120.635,45.746],[-120.404,45.699],[-119.601,45.92],[-118.941,46.001],[-116.916,45.995],[-116.783,45.825],[-116.547,45.751],[-116.464,45.616],[-116.848,45.023],[-116.852,44.888],[-117.062,44.727],[-117.243,44.397],[-117.198,44.274],[-116.976,44.243],[-116.894,44.16],[-116.977,44.085],[-116.936,43.987],[-117.033,43.83],[-117.026,42.0]]],"42":[[[-80.519,39.721],[-80.519,41.977],[-79.762,42.27],[-79.761,41.999],[-75.36,41.999],[-75.261,41.864],[-75.072,41.814],[-75.075,41.606],[-74.983,41.481],[-74.69,41.364],[-75.131,40.991],[-75.051,40.866],[-75.204,40.691],[-75.192,40.574],[-75.069,40.542],[-75.059,40.418],[-74.722,40.15],[-75.127,39.961],[-75.144,39.885],[-75.415,39.802],[-75.635,39.83],[-75.774,39.722],[-80.519,39.721]]],"46":[[[-98.499,42.999],[-104.053,43.001],[-104.045,45.945],[-96.564,45.935],[-96.583,45.82],[-96.858,45.606],[-96.693,45.417],[-96.453,45.298],[-96.453,43.5],[-96.599,43.5],[-96.603,43.45],[-96.522,43.386],[-96.569,43.232],[-96.477,43.222],[-96.437,43.121],[-96.639,42.735],[-96.446,42.491],[-96.626,42.514],[-96.698,42.659],[-97.307,42.868],[-97.845,42.868],[-98.017,42.762],[-98.499,42.999]]],"47":[[[-84.322,34.988],[-90.31,35.003],[-90.065,35.139],[-90.169,35.279],[-90.081,35.386],[-90.179,35.385],[-90.108,35.477],[-90.054,35.389],[-90.003,35.43],[-90.035,35.553],[-89.905,35.519],[-89.958,35.587],[-89.851,35.657],[-89.958,35.727],[-89.696,35.821],[-89.774,35.868],[-89.743,35.911],[-89.644,35.89],[-89.733,36.001],[-89.592,36.15],[-89.705,36.24],[-89.535,36.253],[-89.62,36.323],[-89.513,36.36],[-89.539,36.498],[-88.053,36.497],[-88.071,36.678],[-83.691,36.583],[-81.647,36.612],[-81.742,36.411],[-81.707,36.335],[-81.908,36.302],[-82.033,36.12],[-82.355,36.116],[-82.558,35.954],[-82.637,36.066],[-82.805,35.927],[-82.92,35.928],[-82.992,35.774],[-83.159,35.765],[-83.498,35.563],[-83.88,35.519],[-84.023,35.412],[-84.053,35.27],[-84.29,35.226],[-84.322,34.988]]],"48":[[[-101.401,29.77],[-102.116,29.792],[-102.315,29.88],[-102.388,29.761],[-102.674,29.745],[-102.884,29.348],[-102.868,29.223],[-102.996,29.178],[-103.115,28.985],[-103.283,28.977],[-103.784,29.265],[-104.038,29.32],[-104.509,29.633],[-104.683,29.929],[-104.706,30.235],[-104.86,30.39],[-104.923,30.604],[-105.4,30.853],[-105.954,31.365],[-106.207,31.466],[-106.381,31.732],[-106.646,31.896],[-106.618,32.0],[-103.064,32.001],[-103.042,36.5],[-100.0,36.5],[-100.0,34.561],[-99.923,34.575],[-99.695,34.378],[-99.403,34.373],[-99.37,34.459],[-99.207,34.338],[-99.19,34.214],[-98.987,34.221],[-98.757,34.125],[-98.6,34.161],[-98.486,34.063],[-98.366,34.157],[-98.109,34.154],[-98.088,34.005],[-97.946,33.99],[-97.968,33.882],[-97.834,33.858],[-97.672,33.991],[-97.581,33.9],[-97.46,33.904],[-97.426,33.819],[-97.211,33.916],[-97.126,33.717],[-96.981,33.956],[-96.762,33.824],[-96.667,33.917],[-96.588,33.895],[-96.629,33.845],[-96.348,33.686],[-96.148,33.838],[-95.771,33.845],[-95.594,33.943],[-95.545,33.88],[-95.289,33.873],[-95.218,33.963],[-94.861,33.742],[-94.449,33.643],[-94.386,33.545],[-94.184,33.595],[-94.043,33.552],[-94.042,31.992],[-93.823,31.775],[-93.835,31.586],[-93.712,31.513],[-93.749,31.469],[-93.639,31.372],[-93.687,31.305],[-93.589,31.166],[-93.533,31.184],[-93.508,31.032],[-93.578,31.0],[-93.555,30.823],[-93.74,30.54],[-93.699,30.059],[-93.928,29.81],[-93.838,29.679],[-94.096,29.661],[-94.779,29.361],[-94.471,29.557],[-94.779,29.53],[-94.689,29.693],[-94.726,29.795],[-94.901,29.658],[-94.943,29.698],[-95.017,29.707],[-95.021,29.552],[-94.909,29.497],[-94.952,29.468],[-94.864,29.371],[-95.042,29.207],[-95.157,29.195],[-95.124,29.071],[-95.384,28.87],[-96.342,28.419],[-96.443,28.318],[-96.813,28.094],[-97.046,27.84],[-96.88,28.131],[-96.441,28.343],[-96.416,28.414],[-96.665,28.31],[-96.706,28.405],[-96.815,28.475],[-96.765,28.413],[-96.86,28.413],[-96.785,28.23],[-96.913,28.12],[-96.967,28.123],[-96.918,28.269],[-96.98,28.125],[-97.017,28.203],[-97.223,28.077],[-97.122,28.021],[-97.025,28.113],[-97.075,27.919],[-97.08,27.976],[-97.201,27.821],[-97.225,27.827],[-97.221,27.85],[-97.264,27.881],[-97.517,27.871],[-97.379,27.836],[-97.368,27.742],[-97.344,27.724],[-97.253,27.698],[-97.244,27.689],[-97.414,27.322],[-97.508,27.275],[-97.544,27.284],[-97.481,27.34],[-97.494,27.391],[-97.613,27.285],[-97.709,27.386],[-97.655,27.305],[-97.74,27.268],[-97.423,27.262],[-97.446,26.609],[-97.281,26.281],[-97.313,26.12],[-97.196,26.047],[-97.15,26.064],[-97.147,25.953],[-97.348,25.931],[-97.373,25.84],[-97.522,25.886],[-97.663,26.038],[-98.194,26.053],[-98.443,26.224],[-98.669,26.236],[-98.807,26.369],[-99.085,26.399],[-99.269,26.843],[-99.446,27.023],[-99.442,27.25],[-99.538,27.316],[-99.512,27.568],[-99.877,27.797],[-99.932,27.981],[-100.291,28.275],[-100.334,28.499],[-100.5,28.662],[-100.675,29.1],[-101.06,29.459],[-101.255,29.52],[-101.25,29.624],[-101.306,29.578],[-101.401,29.77]],[[-97.279,26.565],[-97.398,26.868],[-97.362,27.359],[-97.121,27.785],[-97.135,27.825],[-97.057,27.842],[-97.357,27.241],[-97.371,26.911],[-97.279,26.565]]],"49":[[[-109.045,36.999],[-114.051,37.0],[-114.041,41.994],[-111.047,42.002],[-111.047,40.998],[-109.05,41.001],[-109.045,36.999]]],"51":[[[-75.868,36.55],[-83.675,36.601],[-83.136,36.743],[-83.073,36.855],[-82.879,36.89],[-82.722,37.12],[-82.351,37.267],[-81.968,37.538],[-81.926,37.357],[-81.678,37.201],[-81.362,37.338],[-81.225,37.235],[-80.901,37.315],[-80.86,37.43],[-80.77,37.372],[-80.309,37.503],[-80.329,37.564],[-80.221,37.628],[-80.296,37.692],[-80.257,37.756],[-79.789,38.269],[-79.649,38.592],[-79.477,38.457],[-79.283,38.418],[-78.998,38.847],[-78.869,38.763],[-78.404,39.167],[-78.347,39.466],[-77.828,39.132],[-77.73,39.316],[-77.567,39.306],[-77.458,39.225],[-77.52,39.121],[-77.041,38.871],[-77.043,38.719],[-77.13,38.635],[-77.236,38.66],[-77.317,38.384],[-77.24,38.331],[-77.042,38.4],[-77.056,38.317],[-76.962,38.214],[-76.612,38.149],[-76.555,38.025],[-76.237,37.889],[-76.34,37.656],[-76.28,37.615],[-76.469,37.696],[-76.51,37.642],[-76.929,38.069],[-76.927,37.982],[-76.549,37.621],[-76.298,37.56],[-76.36,37.519],[-76.256,37.453],[-76.276,37.311],[-76.413,37.418],[-76.47,37.371],[-76.355,37.272],[-76.509,37.239],[-76.387,37.228],[-76.412,37.161],[-76.299,37.13],[-76.304,37.001],[-76.341,37.015],[-76.425,36.966],[-76.65,37.221],[-76.947,37.228],[-76.737,37.146],[-76.687,37.197],[-76.663,37.046],[-76.489,36.96],[-76.492,36.881],[-76.355,36.923],[-76.371,36.834],[-76.302,36.85],[-76.326,36.963],[-75.996,36.922],[-75.868,36.55]],[[-76.013,37.279],[-75.924,37.602],[-75.795,37.727],[-75.816,37.789],[-75.733,37.786],[-75.673,37.847],[-75.757,37.902],[-75.624,37.994],[-75.242,38.027],[-75.359,37.865],[-75.406,37.899],[-75.527,37.789],[-75.835,37.175],[-75.97,37.117],[-76.013,37.279]]],"53":[[[-122.764,45.657],[-122.904,46.084],[-123.116,46.185],[-123.371,46.146],[-123.475,46.268],[-123.701,46.305],[-123.876,46.24],[-124.001,46.313],[-124.078,46.272],[-124.064,46.641],[-124.015,46.379],[-123.954,46.379],[-123.993,46.489],[-123.893,46.54],[-123.961,46.636],[-123.829,46.713],[-124.092,46.742],[-124.138,46.906],[-124.073,46.861],[-123.839,46.954],[-123.859,46.968],[-124.012,46.985],[-124.122,47.042],[-124.106,46.938],[-124.174,46.927],[-124.209,47.218],[-124.319,47.356],[-124.425,47.738],[-124.676,47.967],[-124.733,48.163],[-124.659,48.331],[-124.726,48.386],[-123.981,48.165],[-123.333,48.113],[-123.102,48.185],[-123.142,48.157],[-123.021,48.033],[-122.916,48.095],[-122.885,47.99],[-122.827,48.046],[-122.885,48.105],[-122.755,48.144],[-122.801,48.088],[-122.74,48.031],[-122.748,48.072],[-122.688,48.101],[-122.699,47.919],[-122.61,47.887],[-122.694,47.868],[-122.785,47.687],[-122.833,47.692],[-122.798,47.826],[-122.865,47.805],[-122.904,47.646],[-123.114,47.463],[-123.16,47.354],[-123.03,47.351],[-122.875,47.414],[-123.12,47.386],[-122.965,47.585],[-122.752,47.668],[-122.574,47.858],[-122.617,47.939],[-122.525,47.912],[-122.472,47.75],[-122.631,47.707],[-122.592,47.595],[-122.698,47.527],[-122.555,47.59],[-122.495,47.511],[-122.576,47.326],[-122.548,47.285],[-122.696,47.281],[-122.626,47.376],[-122.684,47.365],[-122.772,47.167],[-122.833,47.243],[-122.769,47.341],[-122.827,47.406],[-122.871,47.277],[-122.848,47.131],[-122.815,47.179],[-122.713,47.093],[-122.591,47.178],[-122.53,47.283],[-122.547,47.318],[-122.437,47.262],[-122.325,47.349],[-122.421,47.576],[-122.34,47.599],[-122.437,47.662],[-122.219,48.02],[-122.362,48.12],[-122.384,48.227],[-122.479,48.176],[-122.359,48.055],[-122.511,48.132],[-122.531,48.25],[-122.372,48.299],[-122.534,48.376],[-122.55,48.448],[-122.674,48.425],[-122.685,48.509],[-122.47,48.469],[-122.561,48.582],[-122.425,48.6],[-122.536,48.776],[-122.673,48.733],[-122.647,48.785],[-122.793,48.893],[-122.749,48.935],[-122.822,48.941],[-122.758,49.002],[-117.032,48.999],[-117.063,46.354],[-116.922,46.168],[-116.982,46.089],[-116.916,45.995],[-118.987,46.0],[-119.126,45.933],[-119.601,45.92],[-120.211,45.726],[-120.635,45.746],[-121.168,45.606],[-121.338,45.705],[-121.811,45.707],[-122.267,45.544],[-122.764,45.657]],[[-122.763,48.215],[-122.665,48.402],[-122.585,48.395],[-122.506,48.298],[-122.732,48.226],[-122.606,48.208],[-122.542,48.018],[-122.525,48.097],[-122.376,48.034],[-122.377,47.906],[-122.473,47.988],[-122.547,47.967],[-122.61,48.152],[-122.763,48.215]]],"54":[[[-81.98,37.485],[-81.926,37.514],[-82.133,37.553],[-82.175,37.648],[-82.304,37.676],[-82.312,37.765],[-82.502,37.933],[-82.464,37.983],[-82.645,38.165],[-82.575,38.264],[-82.596,38.418],[-82.33,38.444],[-82.291,38.579],[-82.177,38.604],[-82.222,38.787],[-82.038,39.024],[-81.933,38.988],[-81.899,38.875],[-81.763,38.924],[-81.814,39.079],[-81.747,39.095],[-81.684,39.271],[-81.57,39.268],[-81.456,39.409],[-81.376,39.342],[-81.217,39.388],[-80.88,39.621],[-80.6,40.318],[-80.627,40.62],[-80.519,40.639],[-80.519,39.721],[-79.477,39.721],[-79.487,39.206],[-79.103,39.476],[-78.957,39.44],[-78.766,39.648],[-78.689,39.546],[-78.471,39.516],[-78.395,39.584],[-78.43,39.623],[-78.265,39.619],[-78.171,39.696],[-77.946,39.585],[-77.838,39.606],[-77.866,39.518],[-77.766,39.496],[-77.803,39.437],[-77.72,39.321],[-77.828,39.132],[-78.347,39.466],[-78.404,39.167],[-78.869,38.763],[-78.998,38.847],[-79.283,38.418],[-79.477,38.457],[-79.649,38.592],[-79.789,38.269],[-80.296,37.692],[-80.221,37.628],[-80.329,37.564],[-80.3,37.508],[-80.465,37.426],[-80.511,37.482],[-80.77,37.372],[-80.86,37.43],[-80.901,37.315],[-81.225,37.235],[-81.362,37.338],[-81.678,37.201],[-81.854,37.288],[-81.98,37.485]]],"55":[[[-87.802,42.493],[-90.643,42.508],[-90.709,42.636],[-91.065,42.751],[-91.179,43.067],[-91.058,43.255],[-91.215,43.366],[-91.244,43.775],[-91.367,43.937],[-91.875,44.201],[-91.964,44.362],[-92.232,44.445],[-92.336,44.554],[-92.548,44.568],[-92.808,44.751],[-92.762,45.287],[-92.647,45.442],[-92.77,45.567],[-92.884,45.575],[-92.869,45.718],[-92.708,45.895],[-92.294,46.074],[-92.292,46.666],[-92.207,46.652],[-92.117,46.749],[-91.79,46.695],[-90.856,46.962],[-90.751,46.888],[-90.944,46.588],[-90.693,46.66],[-90.753,46.704],[-90.217,46.502],[-90.12,46.337],[-89.092,46.139],[-88.671,45.989],[-88.515,46.02],[-88.103,45.922],[-88.129,45.809],[-87.782,45.683],[-87.793,45.5],[-87.888,45.355],[-87.657,45.369],[-87.737,45.173],[-87.587,45.087],[-87.631,44.984],[-87.839,44.933],[-88.05,44.566],[-88.002,44.539],[-87.754,44.651],[-87.61,44.838],[-87.433,44.893],[-87.386,44.831],[-87.405,44.912],[-87.238,45.168],[-87.17,45.153],[-87.067,45.296],[-86.972,45.284],[-87.085,45.145],[-87.048,45.088],[-87.124,45.067],[-87.468,44.552],[-87.545,44.321],[-87.513,44.193],[-87.648,44.104],[-87.736,43.881],[-87.703,43.688],[-87.912,43.25],[-87.897,43.02],[-87.758,42.782],[-87.802,42.493]]],"56":[[[-111.047,40.998],[-111.055,45.001],[-104.058,44.998],[-104.053,41.001],[-111.047,40.998]]],"09":[[[-72.913,41.297],[-73.178,41.167],[-73.368,41.107],[-73.477,41.036],[-73.501,41.047],[-73.529,41.017],[-73.535,41.032],[-73.57,41.002],[-73.604,41.015],[-73.64,41.003],[-73.657,40.988],[-73.728,41.101],[-73.483,41.213],[-73.551,41.295],[-73.487,42.05],[-71.801,42.024],[-71.798,41.417],[-71.857,41.321],[-72.351,41.312],[-72.706,41.244],[-72.762,41.268],[-72.895,41.243],[-72.913,41.297]]],"35":[[[-109.05,31.333],[-109.045,36.999],[-103.002,37.0],[-103.064,32.001],[-106.618,32.0],[-106.636,31.866],[-106.528,31.783],[-108.208,31.784],[-108.209,31.333],[-109.05,31.333]]],"11":[[[-77.12,38.934],[-77.041,38.995],[-76.909,38.893],[-77.039,38.792],[-77.12,38.934]]],"44":[[[-71.852,41.325],[-71.798,41.417],[-71.799,42.008],[-71.381,42.019],[-71.382,41.893],[-71.238,41.666],[-71.301,41.65],[-71.391,41.784],[-71.357,41.717],[-71.45,41.686],[-71.404,41.589],[-71.481,41.36],[-71.852,41.325]],[[-71.24,41.476],[-71.317,41.478],[-71.272,41.624],[-71.133,41.66],[-71.121,41.497],[-71.194,41.456],[-71.218,41.626],[-71.24,41.476]]],"32":[[[-118.501,37.949],[-120.001,39.0],[-119.999,41.995],[-114.041,41.994],[-114.044,36.193],[-114.151,36.023],[-114.261,36.025],[-114.374,36.144],[-114.753,36.09],[-114.662,35.871],[-114.712,35.806],[-114.679,35.499],[-114.569,35.183],[-114.647,35.102],[-114.633,35.002],[-118.501,37.949]]],"33":[[[-72.554,42.86],[-72.444,43.006],[-72.38,43.574],[-72.032,44.079],[-72.065,44.277],[-71.577,44.503],[-71.535,44.587],[-71.632,44.752],[-71.495,44.904],[-71.541,44.985],[-71.465,45.014],[-71.505,45.051],[-71.398,45.204],[-71.443,45.238],[-71.284,45.302],[-71.148,45.239],[-71.084,45.305],[-70.988,43.39],[-70.712,43.044],[-70.817,42.872],[-71.031,42.859],[-71.294,42.697],[-72.459,42.727],[-72.554,42.86]]],"50":[[[-72.38,43.574],[-72.444,43.006],[-72.557,42.853],[-72.459,42.727],[-73.276,42.746],[-73.242,43.535],[-73.306,43.628],[-73.431,43.588],[-73.351,43.772],[-73.438,44.045],[-73.294,44.441],[-73.39,44.618],[-73.343,45.011],[-71.465,45.014],[-71.536,44.995],[-71.495,44.904],[-71.632,44.752],[-71.535,44.587],[-71.577,44.503],[-72.065,44.277],[-72.032,44.079],[-72.38,43.574]]]};
-const MAP_BOX={lamin:24,lamax:46,lomin:-108,lomax:-78};
+const MAP_BOX={lamin:24,lamax:50,lomin:-125,lomax:-66};
 const MAP_W=1100,MAP_H=520;
 /* dx/dy nudge the label off the marker. Willow Run and Detroit Metro are 12
    miles apart, so at this scale their labels sit on top of each other and read
@@ -1379,6 +1572,8 @@ const AIRPORTS=[
   {iata:'ELP',name:'El Paso',lat:31.8072,lon:-106.3781,dx:9,dy:4},
   {iata:'SDF',name:'Louisville',lat:38.1744,lon:-85.7360,dx:9,dy:4},
   {iata:'IND',name:'Indianapolis',lat:39.7173,lon:-86.2944,dx:9,dy:4},
+  {iata:'BQK',name:'Brunswick',lat:31.2590,lon:-81.4663,dx:9,dy:4},
+  {iata:'OSC',name:'Oscoda',lat:44.4515,lon:-83.3942,dx:9,dy:4},
 ];
 const project=(lat,lon)=>[
   (lon-MAP_BOX.lomin)/(MAP_BOX.lomax-MAP_BOX.lomin)*MAP_W,
@@ -1386,84 +1581,206 @@ const project=(lat,lon)=>[
 ];
 const inBox=(lat,lon)=>lat>=MAP_BOX.lamin&&lat<=MAP_BOX.lamax&&lon>=MAP_BOX.lomin&&lon<=MAP_BOX.lomax;
 
+function isFleetActive(aircraft){return aircraft.active_recent===true}
+function visibleFleet(){
+  const aircraft=fleetState.aircraft||[];
+  return fleetShowHistoric?aircraft:aircraft.filter(isFleetActive);
+}
+function localFleetTime(value){
+  if(!value)return 'No public flight found';
+  return new Intl.DateTimeFormat(undefined,{
+    year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',
+    timeZoneName:'short'
+  }).format(new Date(value));
+}
+function fleetStatus(aircraft){
+  if(aircraft.live_now&&!aircraft.on_ground)return 'Airborne now';
+  if(aircraft.live_now&&aircraft.on_ground)return 'On ground now';
+  if(aircraft.last_arrival_airport)return `Last arrived ${aircraft.last_arrival_airport}`;
+  if(aircraft.last_adsb_at)return 'Last observed in flight';
+  return aircraft.service_status==='retired'?'Retired':
+    aircraft.service_status==='parts_donor'?'Parts donor':'No recent public flight';
+}
+function clampFleetView(view){
+  const width=Math.min(MAP_W,Math.max(180,view.width));
+  const height=Math.min(MAP_H,Math.max(90,view.height));
+  return{
+    x:Math.min(MAP_W-width,Math.max(0,view.x)),
+    y:Math.min(MAP_H-height,Math.max(0,view.y)),
+    width,height
+  };
+}
+function fittedFleetView(aircraft=visibleFleet()){
+  const points=aircraft.filter(a=>a.lat!=null&&a.lon!=null&&inBox(a.lat,a.lon))
+    .map(a=>project(a.lat,a.lon));
+  if(!points.length)return{x:0,y:0,width:MAP_W,height:MAP_H};
+  const xs=points.map(point=>point[0]),ys=points.map(point=>point[1]);
+  let width=Math.max(330,Math.max(...xs)-Math.min(...xs)+150);
+  let height=Math.max(180,Math.max(...ys)-Math.min(...ys)+110);
+  const aspect=2;
+  if(width/height>aspect)height=width/aspect;
+  else width=height*aspect;
+  return clampFleetView({
+    x:(Math.min(...xs)+Math.max(...xs)-width)/2,
+    y:(Math.min(...ys)+Math.max(...ys)-height)/2,
+    width,height
+  });
+}
+function setFleetMapView(view){
+  fleetMapView=clampFleetView(view);
+  const map=$('#fleet-map');
+  if(map)map.setAttribute('viewBox',`${fleetMapView.x} ${fleetMapView.y} ${fleetMapView.width} ${fleetMapView.height}`);
+}
+function zoomFleetMap(factor,anchorX=.5,anchorY=.5){
+  const view=fleetMapView||fittedFleetView();
+  const width=view.width*factor,height=view.height*factor;
+  setFleetMapView({
+    x:view.x+(view.width-width)*anchorX,
+    y:view.y+(view.height-height)*anchorY,
+    width,height
+  });
+}
+
 function fleetMap(){
-  const aircraft=(fleetState.aircraft||[]).filter(a=>a.lat!=null&&a.lon!=null&&inBox(a.lat,a.lon));
+  const shown=visibleFleet();
+  const aircraft=shown.filter(a=>a.lat!=null&&a.lon!=null&&inBox(a.lat,a.lon));
   const trails=fleetState.trails||{};
+  if(!fleetMapView)fleetMapView=fittedFleetView(shown);
   /* Real coastlines and state borders, derived from the Census county
-     shapefile already on disk (cb_2023_us_county_500k) by dissolving counties
-     into states and simplifying to ~0.045 degrees, which is about one pixel at
-     this scale. No tile host, no API key, nothing to fail on a conference-room
-     network -- and no fabricated geography either. */
+     shapefile already on disk. The browser changes only the SVG viewBox, so
+     pan and zoom add no map vendor, API key, or new failure mode. */
   const land=Object.values(STATE_RINGS).flat().map(ring=>{
     const d=ring.map((pt,i)=>{const[x,y]=project(pt[1],pt[0]);
       return `${i?'L':'M'}${x.toFixed(1)} ${y.toFixed(1)}`}).join('')+'Z';
     return `<path class="map-land" d="${d}"/>`;
   }).join('');
-  return `<svg class="fleet-map" viewBox="0 0 ${MAP_W} ${MAP_H}" role="img" aria-label="Last-known aircraft positions">
-    <rect width="${MAP_W}" height="${MAP_H}" class="map-sea"/>
-    ${land}
-    ${AIRPORTS.map(a=>{const[x,y]=project(a.lat,a.lon);return `
-      <g class="map-airport"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5"/>
-      <text x="${(x+a.dx).toFixed(1)}" y="${(y+a.dy).toFixed(1)}">${esc(a.iata)}</text></g>`}).join('')}
-    ${Object.entries(trails).map(([icao,points])=>{
-      const path=(points||[]).filter(p=>p.lat!=null&&inBox(p.lat,p.lon))
-        .map((p,i)=>{const[x,y]=project(p.lat,p.lon);return `${i?'L':'M'}${x.toFixed(1)} ${y.toFixed(1)}`}).join(' ');
-      return path?`<path class="map-trail" d="${path}"/>`:''}).join('')}
-    ${aircraft.map(a=>{const[x,y]=project(a.lat,a.lon);
-      return `<g class="map-aircraft${a.on_ground?' grounded':''}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${Number(a.heading_deg||0).toFixed(0)})">
-        <path d="M0 -7 L5 6 L0 3 L-5 6 Z"/></g>`}).join('')}
-  </svg>`;
+  const activeIds=new Set(shown.map(a=>a.icao24));
+  const clusters=new Map();
+  const markers=aircraft.map(a=>{
+    const key=`${Number(a.lat).toFixed(2)},${Number(a.lon).toFixed(2)}`;
+    const index=clusters.get(key)||0;clusters.set(key,index+1);
+    const angle=index*2.4,radius=index?10+Math.floor(index/5)*6:0;
+    const[x0,y0]=project(a.lat,a.lon);
+    const x=x0+Math.cos(angle)*radius,y=y0+Math.sin(angle)*radius;
+    return `<g class="map-aircraft${a.on_ground?' grounded':''}${a.live_now?' live':''}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
+        <title>${esc(`${a.tail} · ${fleetStatus(a)} · ${localFleetTime(a.seen_at)}`)}</title>
+        <g transform="rotate(${Number(a.heading_deg||0).toFixed(0)})"><path d="M0 -7 L5 6 L0 3 L-5 6 Z"/></g>
+        <text x="8" y="-7">${esc(a.tail||a.callsign||'')}</text>
+      </g>`;
+  }).join('');
+  const view=fleetMapView;
+  return `<div class="fleet-map-shell">
+    <div class="fleet-map-controls" aria-label="Map controls">
+      <button type="button" data-fleet-zoom="in" aria-label="Zoom in">＋</button>
+      <button type="button" data-fleet-zoom="out" aria-label="Zoom out">−</button>
+      <button type="button" data-fleet-map-reset>Fit fleet</button>
+    </div>
+    <svg class="fleet-map" id="fleet-map" viewBox="${view.x} ${view.y} ${view.width} ${view.height}" role="img" aria-label="Movable map of last-known aircraft positions">
+      <rect width="${MAP_W}" height="${MAP_H}" class="map-sea"/>
+      ${land}
+      ${AIRPORTS.map(a=>{const[x,y]=project(a.lat,a.lon);return `
+        <g class="map-airport"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5"/>
+        <text x="${(x+a.dx).toFixed(1)}" y="${(y+a.dy).toFixed(1)}">${esc(a.iata)}</text></g>`}).join('')}
+      ${Object.entries(trails).filter(([icao])=>activeIds.has(icao)).map(([,points])=>{
+        const path=(points||[]).filter(p=>p.lat!=null&&inBox(p.lat,p.lon))
+          .map((p,i)=>{const[x,y]=project(p.lat,p.lon);return `${i?'L':'M'}${x.toFixed(1)} ${y.toFixed(1)}`}).join(' ');
+        return path?`<path class="map-trail" d="${path}"/>`:''}).join('')}
+      ${markers}
+    </svg>
+    <span class="fleet-map-hint">Drag to move · scroll or use +/− to zoom</span>
+  </div>`;
+}
+
+function fleetRosterTable(aircraft){
+  if(!aircraft.length)return '<div class="empty-state"><strong>No matching aircraft</strong></div>';
+  return `<div class="fleet-table-wrap"><table class="queue-table fleet-table">
+    <thead><tr><th>Tail</th><th>Aircraft</th><th>Operational status</th><th>Latest public activity</th><th>Evidence</th></tr></thead>
+    <tbody>${aircraft.map(a=>`<tr class="${isFleetActive(a)?'':'fleet-historic'}">
+      <td><a href="${esc(a.source_url||`https://www.flightaware.com/live/flight/${a.tail}`)}" target="_blank" rel="noopener"><strong>${esc(a.tail||'—')}</strong></a><small>${esc(a.callsign||'')}</small></td>
+      <td>${esc(a.model||'—')}<small>${esc(a.aircraft_family||'')}</small></td>
+      <td><span class="fleet-status ${a.live_now?'live':isFleetActive(a)?'active':'historic'}">${esc(fleetStatus(a))}</span><small>${isFleetActive(a)?'Flight evidence within 2 months':esc(a.status_note||'No flight evidence within 2 months')}</small></td>
+      <td>${esc(localFleetTime(a.latest_activity_at))}<small>${a.last_arrival_airport?`Last arrival ${esc(a.last_arrival_airport)}`:'No confirmed arrival airport'}</small></td>
+      <td>${a.source_url?`<a href="${esc(a.source_url)}" target="_blank" rel="noopener">Open FlightAware ↗</a>`:'No public flight link'}<small>${esc(a.position_source||a.status_source||a.roster_source||'Registry only')}</small></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
 }
 
 function renderCompany(){
   const panel=$('[data-panel="company"]');if(!panel)return;
   const aircraft=fleetState.aircraft||[],coverage=fleetState.coverage||{};
-  const airborne=aircraft.filter(a=>a.lat!=null&&!a.on_ground);
-  const positioned=aircraft.filter(a=>a.lat!=null&&a.lon!=null);
+  const active=aircraft.filter(isFleetActive),historical=aircraft.filter(a=>!isFleetActive(a));
+  const shown=visibleFleet();
+  const airborne=active.filter(a=>a.live_now&&!a.on_ground);
+  const positioned=shown.filter(a=>a.lat!=null&&a.lon!=null);
   const provenance={source:coverage.source||'airplanes.live ADS-B',
-    as_of:coverage.latest_fix_at?String(coverage.latest_fix_at).slice(0,16).replace('T',' '):'no fixes yet',
+    as_of:coverage.latest_fix_at?localFleetTime(coverage.latest_fix_at):'no fixes yet',
     basis:'measured'};
   const tile=(label,value,unit)=>figureTile({label,value,unit,precision:0,...provenance});
 
-  /* An on-demand charter operator is on the ground most of the time, so the
-     roster -- not the map -- is what makes this tab useful. The API excludes
-     retired and donor airframes while retaining them in historical metrics. */
-  const airborneIds=new Set(airborne.map(a=>a.icao24));
-  const seen=aircraft.filter(a=>a.seen_at);
-  panel.innerHTML=pageHead('Company Info','USA Jet fleet and last-known positions, from public registries and flight tracking.',
-      coverage.latest_fix_at?`Last fix ${date(coverage.latest_fix_at)}`:'')+`
+  panel.innerHTML=pageHead('Company Info','USA Jet fleet activity and last-known positions from public flight evidence.',
+      coverage.latest_fix_at?`Last fix ${localFleetTime(coverage.latest_fix_at)}`:'')+`
     <div class="omni-figures">
-      ${tile('Current inventory',aircraft.length,'airframes')}
+      ${tile('Active fleet',active.length,'airframes')}
       ${tile('Airborne now',airborne.length,'aircraft')}
-      ${tile('Located publicly',seen.length,'airframes')}
+      ${tile('Historical / inactive',historical.length,'airframes')}
     </div>
     <article class="card fleet-card">
       <div class="card-head"><div><h3>${positioned.length?'Fleet position':'Fleet'}</h3>
-        <p>USA Jet (JUS). ${airborne.length?'Live ADS-B in the Detroit–Laredo corridor; trails show the last two hours.':'Grounded markers are latest confirmed arrival airports.'}</p></div>
+        <p>USA Jet (JUS). The map fits the displayed fleet automatically; drag or zoom to inspect a cluster.</p></div>
         <div class="omni-head-meta">${basisChip('measured')}<span class="quiet">Public tracking, last known</span>
           <button type="button" class="action-button" id="fleet-refresh">Refresh positions</button></div></div>
       ${positioned.length?fleetMap():`<div class="fleet-quiet">
-          <strong>No USA Jet aircraft airborne right now.</strong>
-          <p>Expected for an on-demand charter fleet between trips — they fly when there is freight. The current-inventory roster remains available whether or not anything is transmitting.</p>
+          <strong>No public position is available for the displayed fleet.</strong>
+          <p>The roster remains available below. Active membership comes from flight evidence, not from whether an aircraft is transmitting at this moment.</p>
         </div>`}
-      <p class="quiet fleet-caption">Airborne points are live ADS-B observations. Grounded markers are the destination airport of the latest completed FlightAware leg, not a live ramp position; use the recorded age when judging confidence.</p>
+      <p class="quiet fleet-caption">A marker is “airborne now” only when its ADS-B fix is less than 15 minutes old. Otherwise the map uses the latest confirmed FlightAware arrival. Times are formatted in this computer’s local time zone.</p>
     </article>
     <article class="card">
       <div class="card-head"><div><h3>Fleet roster</h3>
-        <p>Current-inventory airframes only, with the newest public position or last confirmed arrival where one exists.</p></div>
-        <div class="omni-head-meta">${basisChip('measured')}<span class="quiet">Registry + service-status review</span></div></div>
-      ${aircraft.length?dataTable(aircraft.slice().sort((a,b)=>
-          (airborneIds.has(b.icao24)?1:0)-(airborneIds.has(a.icao24)?1:0)||
-          String(a.tail||'').localeCompare(String(b.tail||''))).map(a=>({
-        tail:a.tail||'—',type:a.model||'—',
-        status:airborneIds.has(a.icao24)?'airborne':(a.seen_at?'last known':'not seen'),
-        location:a.airport_icao||'—',
-        position_source:a.position_source||'—',
-        callsign:a.callsign||'—',
-        altitude_m:a.altitude_m==null?'—':Math.round(a.altitude_m),
-        last_fix:a.seen_at?String(a.seen_at).slice(0,16).replace('T',' '):'—',
-      })),20):'<div class="empty-state"><strong>No fleet loaded</strong><p>Run <code>sckg fleet registry</code> then <code>sckg fleet load-fleet</code>.</p></div>'}
+        <p>Active means at least one public flight observation in the preceding two months.</p></div>
+        <label class="fleet-history-toggle"><input type="checkbox" id="fleet-show-history"${fleetShowHistoric?' checked':''}><span>Show historical tails</span><small>${historical.length} hidden</small></label></div>
+      ${fleetRosterTable(shown.slice().sort((a,b)=>
+        Number(b.live_now)-Number(a.live_now)||
+        Number(b.active_recent)-Number(a.active_recent)||
+        String(a.tail||'').localeCompare(String(b.tail||''))))}
     </article>`;
+}
+
+function bindFleetMapControls(){
+  const history=$('#fleet-show-history');
+  if(history)history.onchange=()=>{
+    fleetShowHistoric=history.checked;fleetMapView=null;renderCompany();bindNavigation();
+  };
+  $$('[data-fleet-zoom]').forEach(button=>button.onclick=()=>zoomFleetMap(
+    button.dataset.fleetZoom==='in'?.72:1.38
+  ));
+  const reset=$('[data-fleet-map-reset]');
+  if(reset)reset.onclick=()=>setFleetMapView(fittedFleetView());
+  const map=$('#fleet-map');if(!map)return;
+  let drag=null;
+  map.onpointerdown=event=>{
+    if(event.button!==0)return;
+    drag={x:event.clientX,y:event.clientY,view:{...(fleetMapView||fittedFleetView())}};
+    map.setPointerCapture(event.pointerId);map.classList.add('dragging');
+  };
+  map.onpointermove=event=>{
+    if(!drag)return;
+    const rect=map.getBoundingClientRect();
+    setFleetMapView({
+      ...drag.view,
+      x:drag.view.x-(event.clientX-drag.x)*drag.view.width/rect.width,
+      y:drag.view.y-(event.clientY-drag.y)*drag.view.height/rect.height
+    });
+  };
+  const finish=()=>{drag=null;map.classList.remove('dragging')};
+  map.onpointerup=finish;map.onpointercancel=finish;
+  map.addEventListener('wheel',event=>{
+    event.preventDefault();
+    const rect=map.getBoundingClientRect();
+    zoomFleetMap(event.deltaY<0?.82:1.22,
+      (event.clientX-rect.left)/rect.width,
+      (event.clientY-rect.top)/rect.height);
+  },{passive:false});
 }
 
 function renderOmniSystem(){
@@ -1559,14 +1876,39 @@ function syncChatComposer(){
   submit.disabled=!hasText||chatSending;
   submit.setAttribute('aria-hidden',String(!hasText));
 }
+function bindChatConversationControls(scope=document){
+  $$('[data-conversation]',scope).forEach(el=>el.onclick=()=>openConversation(el.dataset.conversation));
+  $$('[data-chat-archive]',scope).forEach(button=>button.onclick=()=>setChatArchived(
+    button.dataset.chatArchive,button.dataset.archived==='true',button
+  ));
+  $$('[data-chat-delete]',scope).forEach(button=>button.onclick=()=>deleteChatConversation(
+    button.dataset.chatDelete,button
+  ));
+  $$('[data-chat-report]',scope).forEach(button=>button.onclick=()=>generateConversationReport(
+    button.dataset.chatReport,button
+  ));
+}
 function bindNavigation(){
   $$('[data-app-link]').forEach(button=>button.onclick=()=>selectApp(button.dataset.appLink));
   $$('[data-omni-answer]').forEach(el=>el.onclick=()=>openOmniDrill(el.dataset.omniAnswer));
-  $$('[data-conversation]').forEach(el=>el.onclick=()=>openConversation(el.dataset.conversation));
+  bindChatConversationControls();
   $$('[data-ask]').forEach(el=>el.onclick=()=>sendChat(el.dataset.ask));
   $$('[data-report]').forEach(el=>el.onclick=()=>{openReportId=el.dataset.report;renderReports();bindNavigation()});
   const chatNew=$('#chat-new');
-  if(chatNew)chatNew.onclick=()=>{stopChatPoll();chatThread=null;chatSending=false;renderChats();bindNavigation()};
+  if(chatNew)chatNew.onclick=()=>{stopChatPoll();chatThread=null;chatSending=false;chatView='active';chatSearch='';chatNotice=null;renderChats();bindNavigation()};
+  const chatSearchInput=$('#chat-search');
+  if(chatSearchInput)chatSearchInput.oninput=()=>{
+    chatSearch=chatSearchInput.value;
+    const results=$('#chat-list-results');if(!results)return;
+    results.innerHTML=conversationList();
+    bindChatConversationControls(results);
+  };
+  $$('[data-chat-view]').forEach(button=>button.onclick=()=>{
+    if(chatView===button.dataset.chatView)return;
+    chatView=button.dataset.chatView;chatSearch='';renderChats();bindNavigation();
+  });
+  const chatNoticeClose=$('#chat-notice-close');
+  if(chatNoticeClose)chatNoticeClose.onclick=()=>{chatNotice=null;renderChats();bindNavigation()};
   const reportBack=$('#report-back');
   if(reportBack)reportBack.onclick=()=>{openReportId=null;renderReports();bindNavigation()};
   const thinkToggle=$('#think-toggle');
@@ -1580,6 +1922,7 @@ function bindNavigation(){
     fleetRefresh.disabled=true;fleetRefresh.textContent='Refreshing…';
     await refreshFleetOnView();
   };
+  bindFleetMapControls();
   if(composer){
     composer.onsubmit=event=>{event.preventDefault();const box=$('#chat-input');const text=box.value;box.value='';sendChat(text)};
     const box=$('#chat-input');
@@ -1665,7 +2008,7 @@ async function load(){
   // snapshot or a migration that has not run yet must degrade to an empty tab
   // rather than take the whole dashboard down with it.
   omniState=omniResult.error?{snapshot:null,freshness:{},sections:{},illustrative:[]}:(omniResult.data||{snapshot:null,freshness:{},sections:{},illustrative:[]});
-  chatState=chatResult.error?{conversations:[]}:(chatResult.data||{conversations:[]});
+  chatState=chatResult.error?{conversations:[],archived_conversations:[]}:(chatResult.data||{conversations:[],archived_conversations:[]});
   reportState=reportResult.error?{reports:[]}:(reportResult.data||{reports:[]});
   fleetState=fleetResult.error?{aircraft:[],trails:{},coverage:{}}:(fleetResult.data||{aircraft:[],trails:{},coverage:{}});
   state={...dashboard.data,quality:quality.data||{reviews:[],contracts:[],skill_summary:{},skill_weekly:[]}};
@@ -1724,4 +2067,6 @@ $('#enrollCancel').addEventListener('click',async()=>{await sb.auth.signOut();sh
 $('#signout').addEventListener('click',async()=>{await sb.auth.signOut();showLogin()});
 $('#refresh').addEventListener('click',async()=>{const b=$('#refresh');b.textContent='Refreshing…';try{await load();b.textContent='Data refreshed'}catch(error){b.textContent='Refresh failed'}setTimeout(()=>b.textContent='Refresh data',1200)});
 window.addEventListener('hashchange',()=>{if(!$('#app').classList.contains('hidden'))routeLocation()});
+window.addEventListener('focus',resumeChatPoll);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')resumeChatPoll()});
 await routeAfterAuth();
