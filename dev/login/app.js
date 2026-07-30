@@ -1117,6 +1117,16 @@ const CHAT_MODELS=[
   {value:'gpt-5.6-luna',label:'GPT-5.6 Luna',provider:'codex'},
 ];
 const CHAT_EFFORTS=['low','medium','high','xhigh','max'];
+// Canonical Q1–Q6 wording from SCKG/DEMO-SCRIPT.md. These submit as-is so
+// rehearsal clicks exercise the same questions the verified answers cover.
+const CHAT_USE_CASES=[
+  'What happens to us in a Texas ice storm?',
+  "A big request comes from South Carolina. What's our exposure if we deploy there instead of holding the border?",
+  'Heavy rain / a hurricane hits Texas next week. Where do we put the planes to catch the demand from cross-border trucking delays?',
+  'How did we actually do against the market the last two years?',
+  'A winter system is coming through the Midwest. Which end of our network is actually exposed?',
+  'Two aircraft need a 3-month engine overhaul this year. Which months?',
+];
 let chatModel='gpt-5.6-sol',chatEffort='high';
 function selectedChatModel(){return CHAT_MODELS.find(item=>item.value===chatModel)||CHAT_MODELS[0]}
 function chatModelLabel(model,provider){
@@ -1142,30 +1152,33 @@ function renderChats(){
       <section class="chat-main">
         ${chatThread?`<div class="chat-thread" id="chat-thread">${messages.map(messageBubble).join('')}</div>`
           :`<div class="chat-empty">
-              <h3>What do you want to know?</h3>
-              <p>These run against the freight graph and eight years of public data.</p>
-              <div class="chat-suggestions">
-                ${['What happens to our top 5 lanes in a Texas ice storm?',
-                   'How exposed is Laredo compared with Detroit?',
-                   'Which past events most resemble a Gulf hurricane?',
-                   'What can you not tell me from public data?']
-                  .map(q=>`<button type="button" class="chat-suggestion" data-ask="${esc(q)}">${esc(q)}</button>`).join('')}
-              </div>
+              <h3>${esc(greeting())}, Carter.</h3>
+              <p>How can I help?</p>
             </div>`}
         <form class="chat-composer" id="chat-composer">
-          <label class="chat-provider">Model
-            <select id="chat-model" aria-label="Chat model">
-              ${CHAT_MODELS.map(item=>`<option value="${esc(item.value)}"${chatModel===item.value?' selected':''}>${esc(item.label)}</option>`).join('')}
-            </select>
-          </label>
-          <label class="chat-provider">Effort
-            <select id="chat-effort" aria-label="Thinking effort">
-              ${CHAT_EFFORTS.map(effort=>`<option value="${effort}"${chatEffort===effort?' selected':''}>${effort}</option>`).join('')}
-            </select>
-          </label>
-          <textarea id="chat-input" rows="2" placeholder="Ask about lanes, events, exposure, or what the data cannot answer…"></textarea>
-          <button type="submit">Ask</button>
+          <textarea id="chat-input" rows="3" placeholder="Ask about lanes, events, exposure, or what the data cannot answer…"></textarea>
+          <div class="chat-composer-bar">
+            <div class="chat-composer-config">
+              <label class="chat-provider">Model
+                <select id="chat-model" aria-label="Chat model">
+                  ${CHAT_MODELS.map(item=>`<option value="${esc(item.value)}"${chatModel===item.value?' selected':''}>${esc(item.label)}</option>`).join('')}
+                </select>
+              </label>
+              <label class="chat-provider">Effort
+                <select id="chat-effort" aria-label="Thinking effort">
+                  ${CHAT_EFFORTS.map(effort=>`<option value="${effort}"${chatEffort===effort?' selected':''}>${effort}</option>`).join('')}
+                </select>
+              </label>
+            </div>
+            <button type="submit" id="chat-submit" disabled aria-hidden="true">Ask <span aria-hidden="true">↑</span></button>
+          </div>
         </form>
+        ${chatThread?'':`<div class="chat-presets">
+          <p>Six operational questions</p>
+          <div class="chat-suggestions">
+            ${CHAT_USE_CASES.map((q,index)=>`<button type="button" class="chat-suggestion" data-ask="${esc(q)}"><span>${String(index+1).padStart(2,'0')}</span><strong>${esc(q)}</strong></button>`).join('')}
+          </div>
+        </div>`}
         <p class="chat-note">Answers are produced on the local runner. If it is offline, questions queue until it reconnects.</p>
       </section>
     </div>`;
@@ -1250,7 +1263,7 @@ async function sendChat(text){
   }
   if(error){chatSending=false;console.error(error);
     alert(`Could not send: ${error.message}`);renderChats();bindNavigation();
-    const box=$('#chat-input');if(box){box.value=question;box.focus()}return}
+    const box=$('#chat-input');if(box){box.value=question;box.focus();syncChatComposer()}return}
   chatSending=false;
   await refreshChatList();
   await openConversation(data.conversation_id);
@@ -1415,6 +1428,14 @@ function renderCompany(){
 }
 
 function renderOmnisupply(){renderChats();renderReports();renderCompany()}
+function syncChatComposer(){
+  const composer=$('#chat-composer'),box=$('#chat-input'),submit=$('#chat-submit');
+  if(!composer||!box||!submit)return;
+  const hasText=Boolean(box.value.trim());
+  composer.classList.toggle('has-text',hasText);
+  submit.disabled=!hasText||chatSending;
+  submit.setAttribute('aria-hidden',String(!hasText));
+}
 function bindNavigation(){
   $$('[data-app-link]').forEach(button=>button.onclick=()=>selectApp(button.dataset.appLink));
   $$('[data-omni-answer]').forEach(el=>el.onclick=()=>openOmniDrill(el.dataset.omniAnswer));
@@ -1444,6 +1465,8 @@ function bindNavigation(){
     if(box)box.onkeydown=event=>{
       if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();composer.requestSubmit()}
     };
+    if(box)box.oninput=syncChatComposer;
+    syncChatComposer();
   }
   $$('[data-tab]').forEach(button=>button.onclick=()=>activate(button.dataset.tab));
   $$('[data-go]').forEach(button=>button.onclick=()=>activate(button.dataset.go));
