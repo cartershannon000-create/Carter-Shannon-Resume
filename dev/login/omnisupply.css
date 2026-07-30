@@ -65,6 +65,80 @@
   .omni-head-meta{flex-wrap:wrap}
 }
 
+/* ── OmniSupply system map ───────────────────────────────────────── */
+.omni-system-map{position:relative;margin-top:14px;padding:22px;border:1px solid #c5d1ca;
+  border-radius:18px;background:
+  radial-gradient(circle at 15% 15%,rgba(68,140,94,.08),transparent 28%),
+  linear-gradient(145deg,#fbfdfb 0%,#f1f6f3 100%);box-shadow:var(--shadow);overflow:hidden}
+.omni-system-map:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.36;
+  background-image:linear-gradient(rgba(20,79,52,.06) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(20,79,52,.06) 1px,transparent 1px);background-size:28px 28px}
+.omni-system-status{position:relative;z-index:1;display:flex;justify-content:flex-end;gap:14px;
+  margin-bottom:18px;color:#53615a;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.omni-system-status span{display:flex;align-items:center;gap:6px}
+.omni-system-status i{width:7px;height:7px;border-radius:50%;background:#ad625d;box-shadow:0 0 0 3px rgba(173,98,93,.12)}
+.omni-system-status i.online{background:#3d9b60;box-shadow:0 0 0 3px rgba(61,155,96,.13)}
+.omni-architecture{position:relative;z-index:1;display:grid;grid-template-columns:minmax(180px,1fr) 90px minmax(180px,1fr) 90px minmax(180px,1fr);
+  gap:8px;align-items:center}
+.omni-system-node{position:relative;min-height:238px;padding:22px 18px 18px;border:1px solid #b9c9c0;
+  border-radius:16px;background:rgba(255,255,255,.93);box-shadow:0 12px 28px rgba(17,66,44,.08)}
+.omni-system-node.database{border-color:#80a890;background:linear-gradient(155deg,#fff,#edf6f0)}
+.omni-system-node.runner{border-color:#91adbd;background:linear-gradient(155deg,#fff,#eef5f8)}
+.omni-node-icon{display:grid;place-items:center;width:40px;height:40px;margin-bottom:17px;border-radius:12px;
+  background:#e4f0e8;color:var(--green);font:700 18px Georgia,serif}
+.omni-system-node.database .omni-node-icon{background:var(--green);color:#fff}
+.omni-system-node.runner .omni-node-icon{background:#dfeaf0;color:#315b72}
+.omni-system-node>small{display:block;color:#6f7b74;font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.omni-system-node h3{margin:5px 0 9px;font:700 21px Georgia,serif;color:#163d2c}
+.omni-system-node p{margin:0;color:#56615b;font-size:10px;line-height:1.55}
+.omni-node-chip{position:absolute;left:18px;bottom:17px;padding:4px 8px;border:1px solid #c8d8ce;
+  border-radius:999px;background:#f5faf7;color:#37634b;font-size:8px;font-weight:700}
+.omni-system-link{text-align:center;color:#5d6a63}
+.omni-system-link span,.omni-system-link small{display:block;font-size:8px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.omni-system-link b{display:block;margin:5px 0;color:#b46630;font-size:31px;line-height:1}
+.omni-system-link.execution b{color:#3f7898}
+.omni-process-strip{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  margin-top:22px;overflow:hidden;border:1px solid #c3d0c8;border-radius:13px;background:#c3d0c8}
+.omni-process-strip>div{display:flex;gap:10px;padding:14px;background:rgba(255,255,255,.94)}
+.omni-process-strip b{font:700 18px Georgia,serif;color:#b86b39}
+.omni-process-strip span{font-size:9px;line-height:1.45;color:#637068}
+.omni-process-strip strong{display:block;color:#193d2e;font-size:10px}
+.omni-boundary-note{position:relative;z-index:1;display:flex;gap:12px;align-items:center;margin-top:12px;
+  padding:11px 13px;border-left:3px solid #b86b39;background:rgba(255,248,241,.88);color:#755134}
+.omni-boundary-note strong{font-size:9px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.omni-boundary-note span{font-size:9px;line-height:1.45}
+.omni-enrichment{margin-top:14px;padding:20px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow)}
+.omni-enrichment-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:17px}
+.omni-enrichment-head small{color:#777f7a;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.omni-enrichment-head h3{margin:4px 0 0;font:700 19px Georgia,serif;color:#183d2d}
+.omni-enrichment-head>span{padding:5px 8px;border-radius:999px;background:#f4eee7;color:#875d3d;font-size:8px;font-weight:800;text-transform:uppercase}
+.omni-enrichment-flow{display:grid;grid-template-columns:1fr 38px 1fr 38px 1fr;align-items:stretch}
+.omni-enrichment-flow article{position:relative;padding:17px;border:1px solid #ccd6d0;border-radius:13px;background:#f9fbfa}
+.omni-enrichment-flow article.outcome{border-color:#7fa88d;background:#edf6f0}
+.omni-enrichment-number{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#173e2d;color:#fff;
+  font:700 12px Georgia,serif}
+.omni-enrichment-flow h4{margin:10px 0 6px;font-size:12px;color:#203e31}
+.omni-enrichment-flow p,.omni-enrichment-flow li{font-size:9px;line-height:1.45;color:#657068}
+.omni-enrichment-flow p{margin:0}
+.omni-enrichment-flow ul{margin:10px 0 0;padding-left:16px}
+.omni-enrichment-arrow{display:grid;place-items:center;color:#b86b39;font-size:24px}
+
+@media(max-width:980px){
+  .omni-architecture{grid-template-columns:1fr;gap:8px}
+  .omni-system-node{min-height:190px}
+  .omni-system-link{display:flex;align-items:center;justify-content:center;gap:8px}
+  .omni-system-link b{margin:0;transform:rotate(90deg)}
+  .omni-process-strip{grid-template-columns:1fr 1fr}
+  .omni-enrichment-flow{grid-template-columns:1fr}
+  .omni-enrichment-arrow{height:35px;transform:rotate(90deg)}
+}
+@media(max-width:600px){
+  .omni-system-map,.omni-enrichment{padding:14px}
+  .omni-system-status{justify-content:flex-start;flex-wrap:wrap}
+  .omni-process-strip{grid-template-columns:1fr}
+  .omni-boundary-note,.omni-enrichment-head{align-items:flex-start;flex-direction:column}
+}
+
 /* ── Chats ───────────────────────────────────────────────────────────
    Two columns: thread list, conversation. The composer is pinned under the
    thread rather than floating, because this lives inside a dashboard panel
