@@ -1097,10 +1097,18 @@ function messageBubble(m){
   if(m.role==='user')return `<div class="chat-turn user"><div class="chat-bubble">${esc(m.content)}</div></div>`;
   if(m.status==='pending'||m.status==='streaming')
     return `<div class="chat-turn assistant"><div class="chat-bubble working">${chatModelChips(m)}${thinkingPanel()}</div></div>`;
-  if(m.status==='failed')
+  if(m.status==='failed'){
+    const failure=chatFailureCopy(m);
     return `<div class="chat-turn assistant"><div class="chat-bubble failed">
-      <strong>That question could not be answered.</strong>
-      <p>${esc(m.error||m.content||'')}</p></div></div>`;
+      ${chatModelChips(m)}
+      <strong>${esc(failure.title)}</strong>
+      <p>${esc(failure.message)}</p>
+      <details class="chat-error-details">
+        <summary>Technical details</summary>
+        <code>${esc(m.error||m.failure_detail||'No additional detail was recorded.')}</code>
+        ${m.job_id?`<small>Job ${esc(m.job_id)}${m.job_state?` · ${esc(m.job_state)}`:''}</small>`:''}
+      </details></div></div>`;
+  }
   const figures=m.figures||[];
   return `<div class="chat-turn assistant"><div class="chat-bubble">
     <div class="chat-answer">${esc(m.content).replace(/\n/g,'<br>')}</div>
@@ -1137,6 +1145,36 @@ function chatModelChips(message){
   if(!message.provider&&!message.model)return '';
   const effort=message.effort?`<span class="chip">${esc(message.effort)} effort</span>`:'';
   return `<span class="chip">${esc(chatModelLabel(message.model,message.provider))}</span>${effort}`;
+}
+
+function chatFailureCopy(message){
+  const failures={
+    configuration:[
+      'The chat runner needs attention.',
+      'The selected model or runner configuration prevented this question from starting.',
+    ],
+    provider_exhausted:[
+      'The selected model is temporarily unavailable.',
+      'Its usage window was exhausted before an answer could be recorded.',
+    ],
+    execution_timeout:[
+      'The analysis took too long.',
+      'The runner reached its time limit before an answer could be recorded.',
+    ],
+    runner_error:[
+      'The analysis stopped unexpectedly.',
+      'The runner encountered an internal error. The details below identify the failed job.',
+    ],
+    execution_failed:[
+      'The model could not finish this answer.',
+      'The attempt ended before a validated answer reached the conversation.',
+    ],
+  };
+  const [title,messageText]=failures[message.failure_kind]||[
+    'That question could not be answered.',
+    'The attempt ended before a validated answer reached the conversation.',
+  ];
+  return{title,message:messageText};
 }
 
 function renderChats(){
@@ -1195,8 +1233,7 @@ async function openConversation(conversationId){
 
 function stopChatPoll(){if(chatPoll.timer)clearTimeout(chatPoll.timer);chatPoll={timer:null,jobId:null,conversationId:null,seq:0}}
 
-/* Reuses api_job_progress -- the runner's step log. A chat turn and a build
-   job stream through exactly the same table. */
+/* Reads the exact chat job's rows from the runner's shared progress log. */
 async function startChatPoll(jobId,conversationId){
   stopChatPoll();chatPoll={timer:null,jobId,conversationId,seq:0};
   startThinking(jobId);
@@ -1204,12 +1241,14 @@ async function startChatPoll(jobId,conversationId){
     if(chatPoll.jobId!==jobId)return;
     // Real runner steps stream in beneath the paced phases and are labelled
     // as observed, not simulated.
-    const{data,error}=await sb.rpc('api_job_progress',{p_work_id:null,p_after_seq:chatPoll.seq}).catch(()=>({data:null,error:true}));
+    const{data,error}=await sb.rpc('api_chat_job_progress',{
+      p_job_id:jobId,p_after_seq:chatPoll.seq
+    }).catch(()=>({data:null,error:true}));
     if(!error&&data?.steps?.length){
       chatPoll.seq=data.steps[data.steps.length-1].seq;
       const box=$('#chat-steps');
       if(box)box.innerHTML=`<div class="think-steps-head">Runner steps</div>`+
-        data.steps.slice(-6).map(s=>`<div class="chat-step ${esc(s.kind)}"><span>${STEP_ICON[s.kind]||'·'}</span>${esc(s.label)}</div>`).join('');
+        data.steps.slice(-6).map(s=>`<div class="chat-step ${esc(s.kind)}"><span>${STEP_ICON[s.kind]||'·'}</span><div>${esc(s.label)}${s.detail?`<small>${esc(s.detail)}</small>`:''}</div></div>`).join('');
     }
     const{data:thread}=await sb.rpc('api_chat_messages',{p_conversation_id:conversationId});
     const last=(thread?.messages||[]).slice(-1)[0];

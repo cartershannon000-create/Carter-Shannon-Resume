@@ -94,6 +94,10 @@
 .chat-turn.assistant .chat-bubble{background:#f6f8f7;border:1px solid var(--line);
   border-bottom-left-radius:5px;max-width:100%;width:100%}
 .chat-bubble.failed{background:#fdf4f3;border-color:#e4c4c2;color:#7d4442}
+.chat-error-details{margin-top:12px;padding-top:10px;border-top:1px solid #e4c4c2}
+.chat-error-details summary{cursor:pointer;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.chat-error-details code{display:block;margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:10px;line-height:1.45}
+.chat-error-details small{display:block;margin-top:8px;color:#8a6462;font-size:9px}
 .chat-answer{overflow-wrap:anywhere}
 .chat-figures{margin-top:13px}
 .chat-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:11px;
@@ -110,6 +114,8 @@
 .chat-steps{margin-top:10px;display:flex;flex-direction:column;gap:4px}
 .chat-step{font-size:9px;color:#6f7671;display:flex;gap:6px;align-items:baseline}
 .chat-step span{color:var(--green);flex-shrink:0}
+.chat-step div{min-width:0}
+.chat-step small{display:block;margin-top:2px;color:inherit;opacity:.76;overflow-wrap:anywhere}
 .chat-step.error{color:#9a514f}
 
 .chat-empty{text-align:center;padding:52px 28px 16px}
