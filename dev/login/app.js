@@ -1155,6 +1155,12 @@ function renderChats(){
               <h3>${esc(greeting())}, Carter.</h3>
               <p>How can I help?</p>
             </div>`}
+        ${chatThread?'':`<div class="chat-presets">
+          <p>Six operational questions</p>
+          <div class="chat-suggestions">
+            ${CHAT_USE_CASES.map((q,index)=>`<button type="button" class="chat-suggestion" data-ask="${esc(q)}"><span>${String(index+1).padStart(2,'0')}</span><strong>${esc(q)}</strong></button>`).join('')}
+          </div>
+        </div>`}
         <form class="chat-composer" id="chat-composer">
           <textarea id="chat-input" rows="3" placeholder="Ask about lanes, events, exposure, or what the data cannot answer…"></textarea>
           <div class="chat-composer-bar">
@@ -1173,12 +1179,6 @@ function renderChats(){
             <button type="submit" id="chat-submit" disabled aria-hidden="true">Ask <span aria-hidden="true">↑</span></button>
           </div>
         </form>
-        ${chatThread?'':`<div class="chat-presets">
-          <p>Six operational questions</p>
-          <div class="chat-suggestions">
-            ${CHAT_USE_CASES.map((q,index)=>`<button type="button" class="chat-suggestion" data-ask="${esc(q)}"><span>${String(index+1).padStart(2,'0')}</span><strong>${esc(q)}</strong></button>`).join('')}
-          </div>
-        </div>`}
         <p class="chat-note">Answers are produced on the local runner. If it is offline, questions queue until it reconnects.</p>
       </section>
     </div>`;
