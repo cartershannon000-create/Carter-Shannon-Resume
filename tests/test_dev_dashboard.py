@@ -19,6 +19,7 @@ PUBLISH_CONTRACT_MIGRATION = ROOT / "supabase" / "migrations" / "20260728170000_
 FLEET_SOURCE_MIGRATION = ROOT / "supabase" / "migrations" / "20260728171000_fleet_source_contract.sql"
 FLEET_PROVENANCE_MIGRATION = ROOT / "supabase" / "migrations" / "20260728230000_fleet_position_provenance.sql"
 FLEET_HISTORY_MIGRATION = ROOT / "supabase" / "migrations" / "20260728231500_fleet_service_history.sql"
+CHAT_FAILURE_MIGRATION = ROOT / "supabase" / "migrations" / "20260730170000_chat_failure_visibility.sql"
 
 
 class DevDashboardTests(unittest.TestCase):
@@ -40,6 +41,7 @@ class DevDashboardTests(unittest.TestCase):
         cls.fleet_source_sql = FLEET_SOURCE_MIGRATION.read_text(encoding="utf-8")
         cls.fleet_provenance_sql = FLEET_PROVENANCE_MIGRATION.read_text(encoding="utf-8")
         cls.fleet_history_sql = FLEET_HISTORY_MIGRATION.read_text(encoding="utf-8")
+        cls.chat_failure_sql = CHAT_FAILURE_MIGRATION.read_text(encoding="utf-8")
 
     def test_dashboard_tabs_are_grouped_by_application(self):
         tabs = re.findall(r'data-tab="([^"]+)"', self.html)
@@ -142,15 +144,15 @@ class DevDashboardTests(unittest.TestCase):
             "if not cos.is_owner() then raise exception 'forbidden'",
             migration,
         )
-        self.assertIn("p_provider:chatProvider", self.js)
-        self.assertIn("Codex GPT-5.6 Sol", self.js)
+        self.assertIn("p_provider:selection.provider", self.js)
+        self.assertIn("GPT-5.6 Sol", self.js)
         self.assertIn("missingProviderChatRpc(error)", self.js)
         self.assertIn(
-            "Codex chat is not enabled in production yet",
+            "This model is not enabled in production yet",
             self.js,
         )
         self.assertIn(
-            "p_text:question,p_title:null\n      }",
+            "p_text:question,p_title:null",
             self.js,
         )
 
@@ -320,6 +322,24 @@ class DevDashboardTests(unittest.TestCase):
         self.assertIn("if not cos.is_owner() then raise exception 'forbidden'", self.progress_sql)
         self.assertIn("revoke all on function cos.api_job_progress(text,integer) from public, anon", self.progress_sql)
         self.assertIn("grant execute on function cos.api_job_progress(text,integer) to authenticated", self.progress_sql)
+
+    def test_chat_failures_and_progress_are_job_specific_and_owner_gated(self):
+        self.assertIn("q.state = 'FAILED'", self.chat_failure_sql)
+        self.assertIn("'failure_kind', q.failure_kind", self.chat_failure_sql)
+        self.assertIn(
+            "function cos.api_chat_job_progress",
+            self.chat_failure_sql,
+        )
+        self.assertIn(
+            "if not cos.is_owner() then raise exception 'forbidden'",
+            self.chat_failure_sql,
+        )
+        self.assertIn(
+            "revoke all on function cos.api_chat_job_progress(text, integer)",
+            self.chat_failure_sql,
+        )
+        self.assertIn("sb.rpc('api_chat_job_progress'", self.js)
+        self.assertIn("Technical details", self.js)
 
 
 if __name__ == "__main__":
