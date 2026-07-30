@@ -54,13 +54,25 @@ class DevDashboardTests(unittest.TestCase):
             [
                 "overview", "clients", "finances", "calendar", "metrics",
                 "work", "agents", "usage", "approvals", "system",
-                "chats", "reports", "company", "omni-system",
+                "chats", "reports", "company", "simulations", "omni-system",
             ],
         )
         self.assertIn(
-            "omnisupply:['chats','reports','company','omni-system']",
+            "omnisupply:['chats','reports','company','simulations','omni-system']",
             self.js,
         )
+
+    def test_simulations_tab_is_an_explicit_browser_only_sandbox(self):
+        self.assertIn('data-tab="simulations">Simulations</button>', self.html)
+        self.assertIn('data-panel="simulations"', self.html)
+        self.assertIn("const SIM_DEMO_ONLY=true", self.js)
+        self.assertIn("function renderSimulations()", self.js)
+        self.assertIn("function simStart()", self.js)
+        self.assertIn("function simPause()", self.js)
+        self.assertIn("function simTick()", self.js)
+        self.assertIn("No live fleet, lane, weather, maintenance, revenue, cost, or Supabase data is used.", self.js)
+        self.assertIn("['YIP','LRD','ELP','SDF','MCI','GSP','GSO'", self.js)
+        self.assertNotIn("api_simulation_create", self.js)
 
     def test_omnisupply_system_map_preserves_the_whiteboard_flow(self):
         self.assertIn('data-tab="omni-system">System</button>', self.html)

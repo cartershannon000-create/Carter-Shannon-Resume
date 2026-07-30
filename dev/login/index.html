@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
   <link rel="stylesheet" href="dashboard.css">
   <link rel="stylesheet" href="metrics.css">
-  <link rel="stylesheet" href="omnisupply.css?v=20260730-confidence-labels">
+  <link rel="stylesheet" href="omnisupply.css?v=20260730-simulation-demo">
 </head>
 <body>
   <section id="login" class="auth-shell">
@@ -86,6 +86,7 @@
           <button id="tab-chats" type="button" role="tab" aria-selected="false" aria-controls="panel-chats" data-dashboard="omnisupply" data-tab="chats">Chats <b id="chat-count">—</b></button>
           <button id="tab-reports" type="button" role="tab" aria-selected="false" aria-controls="panel-reports" data-dashboard="omnisupply" data-tab="reports">Reports <b id="report-count">—</b></button>
           <button id="tab-company" type="button" role="tab" aria-selected="false" aria-controls="panel-company" data-dashboard="omnisupply" data-tab="company">Company Info</button>
+          <button id="tab-simulations" type="button" role="tab" aria-selected="false" aria-controls="panel-simulations" data-dashboard="omnisupply" data-tab="simulations">Simulations</button>
           <button id="tab-omni-system" type="button" role="tab" aria-selected="false" aria-controls="panel-omni-system" data-dashboard="omnisupply" data-tab="omni-system">System</button>
         </nav>
       </div>
@@ -120,6 +121,7 @@
       <section id="panel-chats" class="tab-panel" role="tabpanel" aria-labelledby="tab-chats" data-panel="chats"></section>
       <section id="panel-reports" class="tab-panel" role="tabpanel" aria-labelledby="tab-reports" data-panel="reports"></section>
       <section id="panel-company" class="tab-panel" role="tabpanel" aria-labelledby="tab-company" data-panel="company"></section>
+      <section id="panel-simulations" class="tab-panel" role="tabpanel" aria-labelledby="tab-simulations" data-panel="simulations"></section>
       <section id="panel-omni-system" class="tab-panel" role="tabpanel" aria-labelledby="tab-omni-system" data-panel="omni-system"></section>
     </main>
     <div id="drill-backdrop"></div>
@@ -128,6 +130,6 @@
     <aside id="calendar-detail" data-layout="popout" aria-label="Calendar item details" hidden><div id="calendar-detail-body"></div></aside>
   </div>
 
-  <script type="module" src="app.js?v=20260730-confidence-labels"></script>
+  <script type="module" src="app.js?v=20260730-simulation-demo"></script>
 </body>
 </html>

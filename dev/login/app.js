@@ -19,7 +19,7 @@ let omniState={snapshot:null,freshness:{},sections:{},illustrative:[]};
    exists in the markup silently activates nothing and renders a blank page --
    which is exactly what shipped when the OmniSupply panels were renamed and
    this table was not. assertTabsMatchMarkup() below now fails loudly instead. */
-const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['chats','reports','company','omni-system']};
+const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['chats','reports','company','simulations','omni-system']};
 const APP_DEFAULT={client:'clients',system:'overview',omnisupply:'chats'};
 const LEGACY_TABS={clients:['client','clients'],money:['client','finances'],finances:['client','finances'],calendar:['client','calendar'],overview:['system','overview'],metrics:['system','metrics'],work:['system','work'],agents:['system','agents'],usage:['system','usage'],approvals:['system','approvals'],system:['system','system']};
 const DRILL_LAYOUT_KEY='cos.drillLayout',DRILL_LAYOUTS=new Set(['side','below','popout']);
@@ -1899,7 +1899,389 @@ function renderOmniSystem(){
     </section>`;
 }
 
-function renderOmnisupply(){renderChats();renderReports();renderCompany();renderOmniSystem()}
+/* ── Placement Simulations ────────────────────────────────────────────
+   This is deliberately a browser-only UX sandbox. It does not read fleet,
+   lane, weather, revenue, cost, or maintenance data, and it does not write a
+   result to Supabase. The fake loop gives the future backend a stable visual
+   contract without letting synthetic activity leak into the sourced product. */
+const SIM_DEMO_ONLY=true;
+const SIM_NODES=[
+  {iata:'YIP',name:'Willow Run',lat:42.2408,lon:-83.5304},
+  {iata:'LRD',name:'Laredo',lat:27.5438,lon:-99.4616},
+  {iata:'ELP',name:'El Paso',lat:31.8072,lon:-106.3781},
+  {iata:'SDF',name:'Louisville',lat:38.1744,lon:-85.7360},
+  {iata:'MCI',name:'Kansas City',lat:39.2976,lon:-94.7139},
+  {iata:'GSP',name:'Greenville–Spartanburg',lat:34.8957,lon:-82.2189},
+  {iata:'GSO',name:'Piedmont Triad',lat:36.0978,lon:-79.9373},
+  {iata:'AFW',name:'Fort Worth Alliance',lat:32.9876,lon:-97.3188},
+  {iata:'IND',name:'Indianapolis',lat:39.7173,lon:-86.2944},
+  {iata:'IAG',name:'Niagara Falls',lat:43.1073,lon:-78.9462},
+  {iata:'CLE',name:'Cleveland',lat:41.4117,lon:-81.8498},
+  {iata:'MQY',name:'Smyrna',lat:36.0089,lon:-86.5201},
+];
+const SIM_TAILS=[
+  {id:'DEMO-01',type:'Falcon 20',start:'YIP'},
+  {id:'DEMO-02',type:'Falcon 20',start:'LRD'},
+  {id:'DEMO-03',type:'MD-83',start:'YIP'},
+  {id:'DEMO-04',type:'MD-88',start:'LRD'},
+  {id:'DEMO-05',type:'MD-88',start:'SDF'},
+  {id:'DEMO-06',type:'Boeing 727',start:'MCI'},
+];
+const SIM_NODE_MAP=new Map(SIM_NODES.map(node=>[node.iata,node]));
+const SIM_ROUTE=['YIP','LRD','ELP','SDF','MCI','GSP','GSO','AFW','IND','IAG','CLE','MQY'];
+const SIM_HOURS={day:24,week:168,month:720};
+const SIM_FRAMES={day:36,week:72,month:108};
+let simMapView=null,simTimer=null;
+let simState={
+  status:'ready',frame:0,events:[],
+  config:{
+    horizon:'week',runs:100,trips:8,zeroChance:15,strategy:'yip',
+    weather:true,maintenance:true,speed:2,
+    enabled:Object.fromEntries(SIM_TAILS.map(tail=>[tail.id,true])),
+    custom:Object.fromEntries(SIM_TAILS.map(tail=>[tail.id,tail.start])),
+  }
+};
+
+function simStrategyLabel(value=simState.config.strategy){
+  return {random:'Random placement',lrd:'LRD focused',yip:'YIP focused',custom:'Custom by aircraft'}[value]||value;
+}
+function simResetState(){
+  if(simTimer)clearInterval(simTimer);simTimer=null;
+  simState.status='ready';simState.frame=0;
+  simState.events=[{frame:0,kind:'system',text:'Synthetic scenario ready. No operational data loaded.'}];
+}
+function simRouteFor(index){
+  const strategy=simState.config.strategy,tail=SIM_TAILS[index];
+  if(strategy==='lrd'||strategy==='yip'){
+    const hub=strategy.toUpperCase();
+    const destinations=SIM_ROUTE.filter(code=>code!==hub);
+    const rotated=destinations.slice(index).concat(destinations.slice(0,index));
+    return rotated.slice(0,5).flatMap(code=>[hub,code]).concat(hub);
+  }
+  const start=strategy==='custom'?(simState.config.custom[tail.id]||tail.start):SIM_ROUTE[index%SIM_ROUTE.length];
+  const remaining=SIM_ROUTE.filter(code=>code!==start);
+  const shift=(index*2)%remaining.length;
+  return [start,...remaining.slice(shift),...remaining.slice(0,shift),start];
+}
+function simTailSnapshot(frame,index){
+  const tail=SIM_TAILS[index],route=simRouteFor(index),legFrames=7;
+  const shifted=Math.max(0,frame+index*2),leg=Math.floor(shifted/legFrames);
+  const phase=(shifted%legFrames)/legFrames;
+  const from=route[leg%route.length],to=route[(leg+1)%route.length];
+  const a=SIM_NODE_MAP.get(from),b=SIM_NODE_MAP.get(to);
+  const weather=simState.config.weather&&((frame+index*11)%61>=56);
+  const maintenance=simState.config.maintenance&&((frame+index*17)%83>=78);
+  let state,progress;
+  if(maintenance){state='MAINTENANCE';progress=0}
+  else if(weather){state='WEATHER HOLD';progress=0}
+  else if(phase<.7){state=leg%3===1?'DEADHEAD':'LOADED';progress=phase/.7}
+  else if(phase<.88){state='TURNAROUND';progress=1}
+  else{state='AVAILABLE';progress=1}
+  const eased=progress*progress*(3-2*progress);
+  const lat=maintenance||weather?a.lat:a.lat+(b.lat-a.lat)*eased;
+  const lon=maintenance||weather?a.lon:a.lon+(b.lon-a.lon)*eased;
+  const[x,y]=project(lat,lon);
+  const[ax,ay]=project(a.lat,a.lon),[bx,by]=project(b.lat,b.lon);
+  const heading=Math.atan2(by-ay,bx-ax)*180/Math.PI+90;
+  return{...tail,state,from,to,x,y,ax,ay,bx,by,heading};
+}
+function simEnabledTails(){
+  return SIM_TAILS.map((tail,index)=>({tail,index})).filter(({tail})=>simState.config.enabled[tail.id]);
+}
+function simMetrics(){
+  const total=SIM_FRAMES[simState.config.horizon],progress=total?simState.frame/total:0;
+  const days=SIM_HOURS[simState.config.horizon]/24;
+  const opportunities=Math.round(progress*days*simState.config.trips);
+  const policy={random:0,lrd:.03,yip:.07,custom:.05}[simState.config.strategy]||0;
+  const disruption=(simState.config.weather?.04:0)+(simState.config.maintenance?.025:0);
+  const served=Math.max(0,Math.min(opportunities,Math.round(opportunities*(.77+policy-disruption))));
+  const passed=Math.max(0,opportunities-served);
+  const empty=Math.max(8,Math.round(({random:18,lrd:34,yip:31,custom:23}[simState.config.strategy]||22)+(progress*5)));
+  const utilization=Math.min(96,Math.round(18+progress*61+policy*50));
+  const revenue=served?Math.round(49+progress*24+policy*80):0;
+  const cost=served?Math.round(40+progress*13+empty*.18):0;
+  return{progress,opportunities,served,passed,empty,utilization,revenue,cost,margin:revenue-cost};
+}
+function simClock(){
+  const metrics=simMetrics(),hours=Math.round(metrics.progress*SIM_HOURS[simState.config.horizon]);
+  const day=Math.floor(hours/24)+1,hour=hours%24;
+  return `Day ${day} · ${String(hour).padStart(2,'0')}:00`;
+}
+function simStatusLabel(){
+  return {ready:'Ready to run',running:'Simulation running',paused:'Stopped',complete:'Run complete'}[simState.status];
+}
+function simStatusClass(){return simState.status==='complete'?'complete':simState.status}
+function simLandMarkup(){
+  return Object.values(STATE_RINGS).flat().map(ring=>{
+    const d=ring.map((point,index)=>{const[x,y]=project(point[1],point[0]);
+      return `${index?'L':'M'}${x.toFixed(1)} ${y.toFixed(1)}`}).join('')+'Z';
+    return `<path class="map-land" d="${d}"/>`;
+  }).join('');
+}
+function fittedSimView(){
+  const points=SIM_NODES.map(node=>project(node.lat,node.lon));
+  const xs=points.map(point=>point[0]),ys=points.map(point=>point[1]);
+  let width=Math.max(...xs)-Math.min(...xs)+180,height=Math.max(...ys)-Math.min(...ys)+130;
+  const aspect=1.85;if(width/height>aspect)height=width/aspect;else width=height*aspect;
+  return clampFleetView({x:(Math.min(...xs)+Math.max(...xs)-width)/2,
+    y:(Math.min(...ys)+Math.max(...ys)-height)/2,width,height});
+}
+function setSimMapView(view){
+  simMapView=clampFleetView(view);
+  const map=$('#sim-map');if(map)map.setAttribute('viewBox',`${simMapView.x} ${simMapView.y} ${simMapView.width} ${simMapView.height}`);
+}
+function zoomSimMap(factor,anchorX=.5,anchorY=.5){
+  const view=simMapView||fittedSimView(),width=view.width*factor,height=view.height*factor;
+  setSimMapView({x:view.x+(view.width-width)*anchorX,y:view.y+(view.height-height)*anchorY,width,height});
+}
+function simMapMarkup(){
+  if(!simMapView)simMapView=fittedSimView();
+  const tails=simEnabledTails();
+  return `<div class="sim-map-shell">
+    <div class="fleet-map-controls" aria-label="Simulation map controls">
+      <button type="button" data-sim-zoom="in" aria-label="Zoom in">＋</button>
+      <button type="button" data-sim-zoom="out" aria-label="Zoom out">−</button>
+      <button type="button" data-sim-map-reset>Fit network</button>
+    </div>
+    <div class="sim-map-clock"><span id="sim-clock">${esc(simClock())}</span><strong id="sim-run-number">Run 1 of ${number(simState.config.runs)}</strong></div>
+    <svg class="fleet-map sim-map" id="sim-map" viewBox="${simMapView.x} ${simMapView.y} ${simMapView.width} ${simMapView.height}" role="img" aria-label="Synthetic aircraft placement replay">
+      <rect width="${MAP_W}" height="${MAP_H}" class="map-sea"/>
+      ${simLandMarkup()}
+      <g class="sim-route-layer">${tails.map(({tail})=>`<line data-sim-leg="${esc(tail.id)}" class="sim-active-leg"/>`).join('')}</g>
+      ${SIM_NODES.map(node=>{const[x,y]=project(node.lat,node.lon);return `<g class="sim-airport">
+        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6"/><text x="${(x+9).toFixed(1)}" y="${(y-7).toFixed(1)}">${esc(node.iata)}</text>
+        <title>${esc(`${node.iata} · ${node.name} · synthetic network node`)}</title></g>`}).join('')}
+      ${tails.map(({tail,index})=>{const snapshot=simTailSnapshot(simState.frame,index);return `
+        <g class="sim-aircraft" data-sim-tail="${esc(tail.id)}" transform="translate(${snapshot.x.toFixed(1)} ${snapshot.y.toFixed(1)})">
+          <title>${esc(`${tail.id} · synthetic demo aircraft`)}</title>
+          <g data-sim-plane="${esc(tail.id)}" transform="rotate(${snapshot.heading.toFixed(0)})"><path d="M0 -8 L5 7 L0 4 L-5 7 Z"/></g>
+          <text x="9" y="-8">${esc(tail.id)}</text>
+        </g>`}).join('')}
+    </svg>
+    <span class="fleet-map-hint">Drag to move · scroll or use +/− to zoom</span>
+  </div>`;
+}
+function simEventMarkup(){
+  return simState.events.slice().reverse().map((event,index)=>`<div class="sim-event ${esc(event.kind)}${index===0?' latest':''}">
+    <span>${event.kind==='weather'?'◌':event.kind==='maintenance'?'◇':event.kind==='served'?'↗':event.kind==='deadhead'?'↘':'·'}</span>
+    <div><strong>${esc(event.text)}</strong><small>${esc(simFrameTime(event.frame))}</small></div>
+  </div>`).join('');
+}
+function simFrameTime(frame){
+  const total=SIM_FRAMES[simState.config.horizon],hours=Math.round((frame/total)*SIM_HOURS[simState.config.horizon]);
+  return `Day ${Math.floor(hours/24)+1}, ${String(hours%24).padStart(2,'0')}:00`;
+}
+function simComparisonMarkup(){
+  const rows=[
+    {id:'random',score:61,served:72,empty:18},
+    {id:'lrd',score:67,served:77,empty:34},
+    {id:'yip',score:74,served:82,empty:31},
+    {id:'custom',score:70,served:80,empty:23},
+  ];
+  return rows.map(row=>`<div class="sim-compare-row${row.id===simState.config.strategy?' selected':''}">
+    <div><strong>${esc(simStrategyLabel(row.id))}</strong><span>${row.served}% served · ${row.empty}% empty leg</span></div>
+    <div class="sim-score-track"><i style="width:${row.score}%"></i></div><b>${row.score}</b>
+  </div>`).join('');
+}
+function simFleetMarkup(){
+  const custom=simState.config.strategy==='custom';
+  return `<div class="sim-fleet-list">${SIM_TAILS.map(tail=>`<div class="sim-fleet-row">
+    <label><input type="checkbox" data-sim-tail-enabled="${esc(tail.id)}"${simState.config.enabled[tail.id]?' checked':''}><span><strong>${esc(tail.id)}</strong><small>${esc(tail.type)} · placeholder</small></span></label>
+    <select data-sim-tail-start="${esc(tail.id)}"${custom?'':' disabled'} aria-label="Starting airport for ${esc(tail.id)}">
+      ${SIM_NODES.map(node=>`<option value="${esc(node.iata)}"${simState.config.custom[tail.id]===node.iata?' selected':''}>${esc(node.iata)}</option>`).join('')}
+    </select>
+  </div>`).join('')}</div>`;
+}
+function renderSimulations(){
+  const panel=$('[data-panel="simulations"]');if(!panel)return;
+  const config=simState.config,metrics=simMetrics();
+  panel.innerHTML=pageHead('Placement Simulations','Configure and replay a synthetic aircraft-placement scenario before the operating model is connected.','Front-end sandbox · nothing is saved')+`
+    <div class="sim-demo-banner">
+      <span>DEMO</span><div><strong>Synthetic UI sandbox</strong><p>Placeholder aircraft, routes, events, and index scores. No live fleet, lane, weather, maintenance, revenue, cost, or Supabase data is used.</p></div>
+    </div>
+    <article class="card sim-config-card">
+      <div class="card-head"><div><p class="sim-eyebrow">BUILD A SCENARIO</p><h3>Simulation setup</h3>
+        <p>Choose the controls the future engine will receive. Changes reset the current replay.</p></div>
+        <span class="sim-status ${simStatusClass()}" id="sim-status"><i></i>${esc(simStatusLabel())}</span></div>
+      <div class="sim-settings-grid">
+        <fieldset class="sim-field"><legend>Horizon</legend><div class="sim-segmented">
+          ${['day','week','month'].map(value=>`<button type="button" data-sim-horizon="${value}" class="${config.horizon===value?'active':''}">${value[0].toUpperCase()+value.slice(1)}</button>`).join('')}
+        </div></fieldset>
+        <label class="sim-field"><span>Simulation runs</span><select id="sim-runs" data-sim-config>
+          ${[25,100,500].map(value=>`<option value="${value}"${config.runs===value?' selected':''}>${value} ${value===25?'· quick':value===100?'· standard':'· deep'}</option>`).join('')}
+        </select></label>
+        <label class="sim-field sim-range"><span>Trips per day <output id="sim-trip-value">${config.trips}</output></span>
+          <input id="sim-trips" data-sim-config type="range" min="0" max="20" value="${config.trips}"><small>Synthetic · hard cap 20</small></label>
+        <label class="sim-field sim-range"><span>Zero-trip chance <output id="sim-zero-value">${config.zeroChance}%</output></span>
+          <input id="sim-zero" data-sim-config type="range" min="0" max="60" step="5" value="${config.zeroChance}"><small>Synthetic daily probability</small></label>
+      </div>
+      <fieldset class="sim-strategy"><legend>Placement strategy</legend><div class="sim-strategy-grid">
+        ${[
+          ['random','Random placement','Scatter aircraft across the demo network.'],
+          ['lrd','LRD focused','Return available aircraft toward Laredo.'],
+          ['yip','YIP focused','Return available aircraft toward Willow Run.'],
+          ['custom','Custom by aircraft','Choose a starting airport for each tail.'],
+        ].map(([id,title,detail])=>`<button type="button" data-sim-strategy="${id}" class="${config.strategy===id?'active':''}" aria-pressed="${config.strategy===id}">
+          <i></i><strong>${title}</strong><span>${detail}</span></button>`).join('')}
+      </div></fieldset>
+      <div class="sim-config-lower">
+        <div><div class="sim-section-label"><strong>Demo fleet</strong><span>${simEnabledTails().length} of ${SIM_TAILS.length} enabled</span></div>${simFleetMarkup()}</div>
+        <div><div class="sim-section-label"><strong>Synthetic disruptions</strong><span>UI behavior only</span></div>
+          <label class="sim-switch"><input id="sim-weather" data-sim-config type="checkbox"${config.weather?' checked':''}><span><i></i><strong>Routine weather</strong><small>Occasional demo holds and cancellations</small></span></label>
+          <label class="sim-switch"><input id="sim-maintenance" data-sim-config type="checkbox"${config.maintenance?' checked':''}><span><i></i><strong>Rare maintenance</strong><small>Temporary placeholder aircraft downtime</small></span></label>
+          <div class="sim-assumption-note"><strong>What is frozen for this demo</strong><p>The airport sequence, event timing, service decisions, and economics indexes are deterministic presentation fixtures.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="card sim-results-card">
+      <div class="sim-run-head"><div><p class="sim-eyebrow">LIVE REPLAY</p><h3>${esc(simStrategyLabel())}</h3><p>YIP → LRD → ELP → SDF → MCI → GSP → GSO and the wider placeholder network.</p></div>
+        <div class="sim-run-actions">
+          <label>Playback<select id="sim-speed"><option value="1"${config.speed===1?' selected':''}>1×</option><option value="2"${config.speed===2?' selected':''}>2×</option><option value="4"${config.speed===4?' selected':''}>4×</option></select></label>
+          <button type="button" class="sim-button primary" id="sim-start">${simState.status==='complete'?'Run again':'Run simulation'}</button>
+          <button type="button" class="sim-button" id="sim-pause"${simState.status==='ready'||simState.status==='complete'?' disabled':''}>${simState.status==='paused'?'Resume':'Stop'}</button>
+          <button type="button" class="sim-button quiet-button" id="sim-reset">Reset</button>
+        </div></div>
+      <div class="sim-kpis">
+        ${[
+          ['Served','sim-served',metrics.served,'trips'],
+          ['Passed','sim-passed',metrics.passed,'trips'],
+          ['Empty leg','sim-empty',metrics.empty,'%'],
+          ['Utilization','sim-utilization',metrics.utilization,'%'],
+          ['Revenue index','sim-revenue',metrics.revenue,'demo'],
+          ['Operating index','sim-cost',metrics.cost,'demo'],
+          ['Margin index','sim-margin',metrics.margin,'demo'],
+        ].map(([label,id,value,unit])=>`<div><small>${label}</small><strong id="${id}">${value}</strong><span>${unit}</span></div>`).join('')}
+      </div>
+      <div class="sim-replay-grid">
+        <div>${simMapMarkup()}
+          <div class="sim-timeline"><div class="sim-progress"><i id="sim-progress" style="width:${(metrics.progress*100).toFixed(1)}%"></i></div>
+            <input id="sim-scrub" type="range" min="0" max="${SIM_FRAMES[config.horizon]}" value="${simState.frame}" aria-label="Simulation replay position">
+            <div><span>Start</span><strong id="sim-timeline-label">${esc(simClock())}</strong><span>${config.horizon==='day'?'24 hours':config.horizon==='week'?'7 days':'30 days'}</span></div>
+          </div>
+        </div>
+        <aside class="sim-live-panel"><div class="sim-live-head"><div><strong>Event stream</strong><span>Most recent first</span></div><i class="${simState.status==='running'?'live':''}"></i></div>
+          <div class="sim-events" id="sim-events">${simEventMarkup()}</div>
+          <div class="sim-tail-status"><strong>Aircraft state</strong>
+            ${simEnabledTails().map(({tail,index})=>{const snapshot=simTailSnapshot(simState.frame,index);return `<div><span><i class="${snapshot.state.toLowerCase().replace(' ','-')}"></i>${esc(tail.id)}</span><b data-sim-tail-state="${esc(tail.id)}">${esc(snapshot.state)}</b></div>`}).join('')}
+          </div>
+        </aside>
+      </div>
+    </article>
+    <div class="sim-analysis-grid">
+      <article class="card"><div class="card-head"><div><h3>Strategy comparison</h3><p>Static demo scores show how a backend comparison will read.</p></div><span class="confidence-chip confidence-scenario">Scenario only</span></div>
+        <div class="sim-comparison">${simComparisonMarkup()}</div><p class="quiet sim-caption">All values are presentation fixtures, not operational findings.</p></article>
+      <article class="card"><div class="card-head"><div><h3>Result contract</h3><p>What the real engine will eventually replace.</p></div></div>
+        <dl class="sim-contract"><div><dt>Inputs</dt><dd>Frozen fleet, strategy, horizon, assumptions, and seeds</dd></div>
+          <div><dt>Outputs</dt><dd>Served, passed, utilization, empty legs, index margin, and replay</dd></div>
+          <div><dt>Comparison</dt><dd>Median and P10–P90 range over identical event tapes</dd></div>
+          <div><dt>Persistence</dt><dd>Not connected in this sandbox</dd></div></dl></article>
+    </div>`;
+  simUpdateDynamic();
+}
+function simAddEvent(frame){
+  const enabled=simEnabledTails();if(!enabled.length)return;
+  const entry=enabled[(Math.floor(frame/4)-1)%enabled.length],snapshot=simTailSnapshot(frame,entry.index);
+  let kind='served',text=`${entry.tail.id} accepted synthetic ${snapshot.from} → ${snapshot.to} trip`;
+  if(snapshot.state==='MAINTENANCE'){kind='maintenance';text=`${entry.tail.id} entered a synthetic maintenance hold`}
+  else if(snapshot.state==='WEATHER HOLD'){kind='weather';text=`Synthetic weather hold applied at ${snapshot.from}`}
+  else if(snapshot.state==='DEADHEAD'){kind='deadhead';text=`${entry.tail.id} repositioning empty ${snapshot.from} → ${snapshot.to}`}
+  simState.events.push({frame,kind,text});
+  if(simState.events.length>24)simState.events.shift();
+}
+function simUpdateDynamic(){
+  const panel=$('[data-panel="simulations"]');if(!panel)return;
+  const total=SIM_FRAMES[simState.config.horizon],metrics=simMetrics();
+  const put=(selector,value)=>{const el=$(selector,panel);if(el)el.textContent=value};
+  put('#sim-served',metrics.served);put('#sim-passed',metrics.passed);put('#sim-empty',metrics.empty);
+  put('#sim-utilization',metrics.utilization);put('#sim-revenue',metrics.revenue);put('#sim-cost',metrics.cost);put('#sim-margin',metrics.margin);
+  put('#sim-clock',simClock());put('#sim-timeline-label',simClock());
+  put('#sim-run-number',`Run ${Math.min(simState.config.runs,Math.floor(metrics.progress*simState.config.runs)+1)} of ${number(simState.config.runs)}`);
+  const status=$('#sim-status',panel);if(status){status.className=`sim-status ${simStatusClass()}`;status.innerHTML=`<i></i>${esc(simStatusLabel())}`}
+  const progress=$('#sim-progress',panel);if(progress)progress.style.width=`${metrics.progress*100}%`;
+  const scrub=$('#sim-scrub',panel);if(scrub){scrub.max=total;scrub.value=simState.frame}
+  simEnabledTails().forEach(({tail,index})=>{
+    const snapshot=simTailSnapshot(simState.frame,index),marker=$(`[data-sim-tail="${tail.id}"]`,panel);
+    if(marker){marker.setAttribute('transform',`translate(${snapshot.x.toFixed(1)} ${snapshot.y.toFixed(1)})`);
+      marker.className.baseVal=`sim-aircraft ${snapshot.state.toLowerCase().replace(' ','-')}`}
+    const plane=$(`[data-sim-plane="${tail.id}"]`,panel);if(plane)plane.setAttribute('transform',`rotate(${snapshot.heading.toFixed(0)})`);
+    const leg=$(`[data-sim-leg="${tail.id}"]`,panel);if(leg){leg.setAttribute('x1',snapshot.ax);leg.setAttribute('y1',snapshot.ay);leg.setAttribute('x2',snapshot.bx);leg.setAttribute('y2',snapshot.by)}
+    put(`[data-sim-tail-state="${tail.id}"]`,snapshot.state);
+  });
+  const events=$('#sim-events',panel);if(events)events.innerHTML=simEventMarkup();
+  const start=$('#sim-start',panel),pause=$('#sim-pause',panel);
+  if(start){start.disabled=simState.status==='running';start.textContent=simState.status==='complete'?'Run again':simState.status==='running'?'Simulation running':'Run simulation'}
+  if(pause){pause.disabled=simState.status==='ready'||simState.status==='complete';pause.textContent=simState.status==='paused'?'Resume':'Stop'}
+  $$('[data-sim-config], [data-sim-horizon], [data-sim-strategy], [data-sim-tail-enabled], [data-sim-tail-start]',panel)
+    .forEach(control=>control.disabled=simState.status==='running'||(control.matches('[data-sim-tail-start]')&&simState.config.strategy!=='custom'));
+}
+function simTick(){
+  const total=SIM_FRAMES[simState.config.horizon];
+  simState.frame=Math.min(total,simState.frame+1);
+  if(simState.frame%4===0)simAddEvent(simState.frame);
+  if(simState.frame>=total){
+    if(simTimer)clearInterval(simTimer);simTimer=null;simState.status='complete';
+    simState.events.push({frame:simState.frame,kind:'system',text:`Synthetic ${simStrategyLabel()} comparison complete`});
+  }
+  simUpdateDynamic();
+}
+function simStart(){
+  if(simState.status==='complete')simResetState();
+  if(!simEnabledTails().length)return;
+  if(simTimer)clearInterval(simTimer);
+  simState.status='running';
+  if(!simState.events.length)simState.events.push({frame:simState.frame,kind:'system',text:'Synthetic scenario started'});
+  else simState.events.push({frame:simState.frame,kind:'system',text:simState.frame?'Synthetic scenario resumed':'Synthetic scenario started'});
+  simTimer=setInterval(simTick,Math.max(120,760/simState.config.speed));
+  simUpdateDynamic();
+}
+function simPause(){
+  if(simState.status==='paused'){simStart();return}
+  if(simState.status!=='running')return;
+  if(simTimer)clearInterval(simTimer);simTimer=null;simState.status='paused';
+  simState.events.push({frame:simState.frame,kind:'system',text:'Replay stopped by user'});
+  simUpdateDynamic();
+}
+function simConfigChanged(){
+  simResetState();simMapView=null;renderSimulations();bindNavigation();
+}
+function bindSimulationMap(){
+  $$('[data-sim-zoom]').forEach(button=>button.onclick=()=>zoomSimMap(button.dataset.simZoom==='in'?.72:1.38));
+  const reset=$('[data-sim-map-reset]');if(reset)reset.onclick=()=>setSimMapView(fittedSimView());
+  const map=$('#sim-map');if(!map)return;
+  let drag=null;
+  map.onpointerdown=event=>{if(event.button!==0)return;drag={x:event.clientX,y:event.clientY,view:{...(simMapView||fittedSimView())}};
+    map.setPointerCapture(event.pointerId);map.classList.add('dragging')};
+  map.onpointermove=event=>{if(!drag)return;const rect=map.getBoundingClientRect();setSimMapView({...drag.view,
+    x:drag.view.x-(event.clientX-drag.x)*drag.view.width/rect.width,
+    y:drag.view.y-(event.clientY-drag.y)*drag.view.height/rect.height})};
+  const finish=()=>{drag=null;map.classList.remove('dragging')};map.onpointerup=finish;map.onpointercancel=finish;
+  map.addEventListener('wheel',event=>{event.preventDefault();const rect=map.getBoundingClientRect();
+    zoomSimMap(event.deltaY<0?.82:1.22,(event.clientX-rect.left)/rect.width,(event.clientY-rect.top)/rect.height)},{passive:false});
+}
+function bindSimulationControls(){
+  const panel=$('[data-panel="simulations"]');if(!panel)return;
+  $$('[data-sim-horizon]',panel).forEach(button=>button.onclick=()=>{simState.config.horizon=button.dataset.simHorizon;simConfigChanged()});
+  $$('[data-sim-strategy]',panel).forEach(button=>button.onclick=()=>{simState.config.strategy=button.dataset.simStrategy;simConfigChanged()});
+  const runs=$('#sim-runs',panel);if(runs)runs.onchange=()=>{simState.config.runs=Number(runs.value);simConfigChanged()};
+  const trips=$('#sim-trips',panel);if(trips)trips.oninput=()=>{simState.config.trips=Number(trips.value);putSimRange('#sim-trip-value',trips.value)};
+  if(trips)trips.onchange=simConfigChanged;
+  const zero=$('#sim-zero',panel);if(zero)zero.oninput=()=>{simState.config.zeroChance=Number(zero.value);putSimRange('#sim-zero-value',`${zero.value}%`)};
+  if(zero)zero.onchange=simConfigChanged;
+  const weather=$('#sim-weather',panel);if(weather)weather.onchange=()=>{simState.config.weather=weather.checked;simConfigChanged()};
+  const maintenance=$('#sim-maintenance',panel);if(maintenance)maintenance.onchange=()=>{simState.config.maintenance=maintenance.checked;simConfigChanged()};
+  $$('[data-sim-tail-enabled]',panel).forEach(input=>input.onchange=()=>{simState.config.enabled[input.dataset.simTailEnabled]=input.checked;simConfigChanged()});
+  $$('[data-sim-tail-start]',panel).forEach(select=>select.onchange=()=>{simState.config.custom[select.dataset.simTailStart]=select.value;simConfigChanged()});
+  const speed=$('#sim-speed',panel);if(speed)speed.onchange=()=>{simState.config.speed=Number(speed.value);if(simState.status==='running')simStart()};
+  const start=$('#sim-start',panel);if(start)start.onclick=simStart;
+  const pause=$('#sim-pause',panel);if(pause)pause.onclick=simPause;
+  const reset=$('#sim-reset',panel);if(reset)reset.onclick=()=>{simResetState();renderSimulations();bindNavigation()};
+  const scrub=$('#sim-scrub',panel);if(scrub)scrub.oninput=()=>{if(simState.status==='running')simPause();
+    simState.frame=Number(scrub.value);simState.status=simState.frame?simState.frame>=Number(scrub.max)?'complete':'paused':'ready';simUpdateDynamic()};
+  bindSimulationMap();
+}
+function putSimRange(selector,value){const output=$(selector);if(output)output.textContent=value}
+
+function renderOmnisupply(){renderChats();renderReports();renderCompany();renderSimulations();renderOmniSystem()}
 function syncChatComposer(){
   const composer=$('#chat-composer'),box=$('#chat-input'),submit=$('#chat-submit');
   if(!composer||!box||!submit)return;
@@ -1955,6 +2337,7 @@ function bindNavigation(){
     await refreshFleetOnView();
   };
   bindFleetMapControls();
+  bindSimulationControls();
   if(composer){
     composer.onsubmit=event=>{event.preventDefault();const box=$('#chat-input');const text=box.value;box.value='';sendChat(text)};
     const box=$('#chat-input');
@@ -2017,7 +2400,7 @@ function resolveRoute(value){
 }
 function setActiveApp(app){$$('[data-app-link]').forEach(button=>{const active=button.dataset.appLink===app;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')})}
 function showHome(updateHash=true){closeCalendarDetail(false);closeDrill();document.body.classList.remove('calendar-active');$('#home').hidden=false;$('.tabs').hidden=true;$('#loading').hidden=true;$$('[data-tab]').forEach(button=>{button.classList.remove('active');button.setAttribute('aria-selected','false');button.tabIndex=-1});$$('[data-panel]').forEach(panel=>{panel.classList.remove('active');panel.hidden=true});setActiveApp('home');if(updateHash)history.replaceState(null,'','#home');window.scrollTo({top:0,behavior:'smooth'})}
-function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}if(tab!=='calendar')closeCalendarDetail(false);closeDrill();document.body.classList.toggle('calendar-active',tab==='calendar');$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===tab;panel.classList.toggle('active',active);panel.setAttribute('aria-hidden',String(!active));panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);window.scrollTo({top:0,behavior:'smooth'});if(tab==='company'&&state)refreshFleetOnView()}
+function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}if(tab!=='calendar')closeCalendarDetail(false);closeDrill();document.body.classList.toggle('calendar-active',tab==='calendar');$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===tab;panel.classList.toggle('active',active);panel.setAttribute('aria-hidden',String(!active));panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);window.scrollTo({top:0,behavior:'smooth'});if(tab==='company'&&state)refreshFleetOnView();if(tab==='simulations')simUpdateDynamic()}
 function selectApp(app){if(app==='home'){showHome();return}if(APP_DEFAULT[app])activate(APP_DEFAULT[app]);else showHome()}
 function routeLocation(updateHash=true){const route=resolveRoute(location.hash.slice(1));if(route.app==='home')showHome(updateHash);else activate(route.tab,updateHash)}
 function greeting(){const h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening'}
