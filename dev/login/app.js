@@ -1117,7 +1117,7 @@ const CHAT_MODELS=[
   {value:'gpt-5.6-luna',label:'GPT-5.6 Luna',provider:'codex'},
 ];
 const CHAT_EFFORTS=['low','medium','high','xhigh','max'];
-let chatModel='claude-opus-5',chatEffort='high';
+let chatModel='gpt-5.6-sol',chatEffort='high';
 function selectedChatModel(){return CHAT_MODELS.find(item=>item.value===chatModel)||CHAT_MODELS[0]}
 function chatModelLabel(model,provider){
   return CHAT_MODELS.find(item=>item.value===model)?.label||
