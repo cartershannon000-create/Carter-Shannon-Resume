@@ -19,7 +19,7 @@ let omniState={snapshot:null,freshness:{},sections:{},illustrative:[]};
    exists in the markup silently activates nothing and renders a blank page --
    which is exactly what shipped when the OmniSupply panels were renamed and
    this table was not. assertTabsMatchMarkup() below now fails loudly instead. */
-const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['chats','reports','company']};
+const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['chats','reports','company','omni-system']};
 const APP_DEFAULT={client:'clients',system:'overview',omnisupply:'chats'};
 const LEGACY_TABS={clients:['client','clients'],money:['client','finances'],finances:['client','finances'],calendar:['client','calendar'],overview:['system','overview'],metrics:['system','metrics'],work:['system','work'],agents:['system','agents'],usage:['system','usage'],approvals:['system','approvals'],system:['system','system']};
 const DRILL_LAYOUT_KEY='cos.drillLayout',DRILL_LAYOUTS=new Set(['side','below','popout']);
@@ -1466,7 +1466,91 @@ function renderCompany(){
     </article>`;
 }
 
-function renderOmnisupply(){renderChats();renderReports();renderCompany()}
+function renderOmniSystem(){
+  const panel=$('[data-panel="omni-system"]');if(!panel)return;
+  const runnerConnected=state?.control_plane?.local_runner==='connected';
+  panel.innerHTML=pageHead(
+    'OmniSupply system',
+    'How a question becomes a sourced freight decision through the hosted control plane and local analysis runner.',
+    'Question → analysis → durable answer'
+  )+`
+    <section class="omni-system-map" aria-label="OmniSupply question and response architecture">
+      <div class="omni-system-status">
+        <span><i class="online"></i>Supabase live</span>
+        <span><i class="${runnerConnected?'online':'offline'}"></i>Local runner ${runnerConnected?'connected':'offline'}</span>
+      </div>
+      <div class="omni-architecture">
+        <article class="omni-system-node website">
+          <div class="omni-node-icon">Q</div>
+          <small>Human interface</small>
+          <h3>CS-Ventures.us</h3>
+          <p>Carter asks a freight question, chooses the model and effort, and watches the run.</p>
+          <span class="omni-node-chip">Authenticated dashboard</span>
+        </article>
+        <div class="omni-system-link request" aria-hidden="true">
+          <span>1 · question</span><b>⇄</b><small>4 · answer</small>
+        </div>
+        <article class="omni-system-node database">
+          <div class="omni-node-icon">D</div>
+          <small>Durable coordination</small>
+          <h3>Supabase</h3>
+          <p>Stores the conversation, typed job, progress, evidence, failure state, and final answer.</p>
+          <span class="omni-node-chip">Source of truth</span>
+        </article>
+        <div class="omni-system-link execution" aria-hidden="true">
+          <span>2 · approved job</span><b>⇄</b><small>3 · steps + result</small>
+        </div>
+        <article class="omni-system-node runner">
+          <div class="omni-node-icon">L</div>
+          <small>Trusted execution</small>
+          <h3>Local LLM runner</h3>
+          <p>Claims work on demand, invokes the selected model, queries SCKG, and validates provenance.</p>
+          <span class="omni-node-chip">${runnerConnected?'Ready for work':'Waiting for laptop'}</span>
+        </article>
+      </div>
+      <div class="omni-process-strip" aria-label="Four system steps">
+        <div><b>01</b><span><strong>Ask</strong>The website writes the question and model settings to Supabase.</span></div>
+        <div><b>02</b><span><strong>Trigger</strong>The local runner claims the durable job when the laptop is available.</span></div>
+        <div><b>03</b><span><strong>Analyze</strong>The model uses SCKG data and tools; live steps and issues stream back.</span></div>
+        <div><b>04</b><span><strong>Publish</strong>A validated answer—or a visible failure—is stored and shown in chat.</span></div>
+      </div>
+      <div class="omni-boundary-note">
+        <strong>Security boundary</strong>
+        <span>The browser never commands the laptop directly. Supabase is the durable, auditable handoff in both directions.</span>
+      </div>
+    </section>
+
+    <section class="omni-enrichment">
+      <div class="omni-enrichment-head">
+        <div><small>Model enrichment path</small><h3>From point-in-time answers to placement optimization</h3></div>
+        <span>Proposed analytical layer</span>
+      </div>
+      <div class="omni-enrichment-flow">
+        <article>
+          <div class="omni-enrichment-number">1</div>
+          <h4>Simulation environment</h4>
+          <p>Replay operating choices across one day, one week, or one month.</p>
+          <ul><li>Loaded and empty trips</li><li>Maintenance events</li><li>Weather and disruption events</li></ul>
+        </article>
+        <div class="omni-enrichment-arrow" aria-hidden="true">→</div>
+        <article>
+          <div class="omni-enrichment-number">2</div>
+          <h4>History + economics</h4>
+          <p>Blend peak-demand history with financial and operating constraints.</p>
+          <ul><li>Client and supplier response</li><li>Positioning cost</li><li>Service and revenue tradeoffs</li></ul>
+        </article>
+        <div class="omni-enrichment-arrow" aria-hidden="true">→</div>
+        <article class="outcome">
+          <div class="omni-enrichment-number">3</div>
+          <h4>Peak analysis</h4>
+          <p>Recommend aircraft placement with measurable business impact.</p>
+          <ul><li>Monthly reruns</li><li>Greater placement accuracy</li><li>Explicit ROI</li></ul>
+        </article>
+      </div>
+    </section>`;
+}
+
+function renderOmnisupply(){renderChats();renderReports();renderCompany();renderOmniSystem()}
 function syncChatComposer(){
   const composer=$('#chat-composer'),box=$('#chat-input'),submit=$('#chat-submit');
   if(!composer||!box||!submit)return;

@@ -50,13 +50,27 @@ class DevDashboardTests(unittest.TestCase):
             [
                 "overview", "clients", "finances", "calendar", "metrics",
                 "work", "agents", "usage", "approvals", "system",
-                "chats", "reports", "company",
+                "chats", "reports", "company", "omni-system",
             ],
         )
         self.assertIn(
-            "omnisupply:['chats','reports','company']",
+            "omnisupply:['chats','reports','company','omni-system']",
             self.js,
         )
+
+    def test_omnisupply_system_map_preserves_the_whiteboard_flow(self):
+        self.assertIn('data-tab="omni-system">System</button>', self.html)
+        self.assertIn('data-panel="omni-system"', self.html)
+        self.assertIn("function renderOmniSystem()", self.js)
+        for label in (
+            "CS-Ventures.us",
+            "Supabase",
+            "Local LLM runner",
+            "Simulation environment",
+            "Peak analysis",
+            "The browser never commands the laptop directly",
+        ):
+            self.assertIn(label, self.js)
 
     def test_dashboard_reads_the_owner_gated_supabase_contract(self):
         self.assertIn("sb.rpc('api_dashboard_state')", self.js)
