@@ -1391,18 +1391,32 @@ function chatConversationRecord(conversationId){
     .find(conversation=>conversation.conversation_id===conversationId)||
     (chatThread?.conversation?.conversation_id===conversationId?chatThread.conversation:null);
 }
+function setChatActionButtonBusy(button,label){
+  if(!button)return;
+  button.disabled=true;
+  button.setAttribute('aria-busy','true');
+  button.classList.add('busy');
+  button.textContent=button.closest('.chat-list-actions')?'…':label;
+}
+function resetChatActionButton(button,label){
+  if(!button)return;
+  button.disabled=false;
+  button.removeAttribute('aria-busy');
+  button.classList.remove('busy');
+  button.textContent=label;
+}
 async function setChatArchived(conversationId,archived,button){
   if(chatActionBusy)return;
   chatActionBusy=true;
   const original=button?.textContent;
-  if(button){button.disabled=true;button.textContent=archived?'Archiving…':'Restoring…'}
+  setChatActionButtonBusy(button,archived?'Archiving…':'Restoring…');
   const{error}=await sb.rpc('api_chat_set_archived',{
     p_conversation_id:conversationId,p_archived:archived
   });
   chatActionBusy=false;
   if(error){
     chatNotice={tone:'error',message:`Could not ${archived?'archive':'restore'} the conversation: ${error.message}`};
-    if(button){button.disabled=false;button.textContent=original}
+    resetChatActionButton(button,original);
     renderChats();bindNavigation();return;
   }
   const wasOpen=chatThread?.conversation?.conversation_id===conversationId;
@@ -1423,12 +1437,12 @@ async function deleteChatConversation(conversationId,button){
   if(!confirm(`Permanently delete “${title}”?\n\nThe conversation and its messages will be removed. Any generated report will remain available.`))return;
   chatActionBusy=true;
   const original=button?.textContent;
-  if(button){button.disabled=true;button.textContent='Deleting…'}
+  setChatActionButtonBusy(button,'Deleting…');
   const{error}=await sb.rpc('api_chat_delete',{p_conversation_id:conversationId});
   chatActionBusy=false;
   if(error){
     chatNotice={tone:'error',message:`Could not delete the conversation: ${error.message}`};
-    if(button){button.disabled=false;button.textContent=original}
+    resetChatActionButton(button,original);
     renderChats();bindNavigation();return;
   }
   if(chatThread?.conversation?.conversation_id===conversationId){

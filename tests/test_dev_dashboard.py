@@ -420,6 +420,8 @@ class DevDashboardTests(unittest.TestCase):
         self.assertIn('id="chat-search"', self.js)
         self.assertIn('data-chat-view="archived"', self.js)
         self.assertIn("Generate report", self.js)
+        self.assertIn("function setChatActionButtonBusy(button,label)", self.js)
+        self.assertIn("button.closest('.chat-list-actions')?'…':label", self.js)
 
     def test_conversation_report_generation_updates_instead_of_duplicating(self):
         self.assertIn(
