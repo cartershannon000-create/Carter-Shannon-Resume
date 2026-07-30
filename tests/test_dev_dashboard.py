@@ -97,10 +97,15 @@ class DevDashboardTests(unittest.TestCase):
             self.assertIn(f"sb.rpc('{rpc}'", self.js)
 
     def test_omnisupply_figures_always_render_provenance(self):
-        self.assertIn("${basisChip(f.basis)}", self.js)
+        self.assertIn("${confidenceChip(f.basis)}", self.js)
         self.assertIn("${esc(f.source)} · as of ${esc(f.as_of)}", self.js)
-        self.assertIn("unvetted:'Unvetted'", self.js)
-        self.assertIn("A real query result that has not passed", self.js)
+        self.assertIn("measured:'High confidence'", self.js)
+        self.assertIn("unvetted:'Moderate confidence'", self.js)
+        self.assertIn(
+            "a data-backed ad-hoc query that has not yet been reviewed",
+            self.js,
+        )
+        self.assertNotIn("unvetted:'Unvetted'", self.js)
 
     def test_real_and_illustrative_answers_remain_separate(self):
         self.assertIn("Object.values(omniState.sections||{}).flat()", self.js)

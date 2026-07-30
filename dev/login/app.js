@@ -788,15 +788,33 @@ function renderSystem(){const connected=state.control_plane.local_runner==='conn
       separate top-level keys (`sections` vs `illustrative`); the Company tab
       reads only `illustrative` and every other tab reads only `sections`.
       Nothing merges them. */
-const BASIS_LABEL={measured:'Measured',derived:'Derived',estimate:'Estimate',unvetted:'Unvetted',illustrative:'Illustrative'};
-const BASIS_HINT={
-  measured:'A published figure, or a straight sum, count or ratio of published figures.',
-  derived:'Computed from measured inputs by a documented method that involved a judgement call.',
-  estimate:'Rests on a parameter nobody published.',
-  unvetted:'A real query result that has not passed the reviewed catalog contract.',
-  illustrative:'Synthetic. Not a claim about the world.'
+const CONFIDENCE_LABEL={
+  measured:'High confidence',
+  derived:'Moderate confidence',
+  estimate:'Low confidence',
+  unvetted:'Moderate confidence',
+  illustrative:'Scenario only'
 };
-function basisChip(basis){const key=String(basis||'measured');return `<span class="basis-chip basis-${esc(key)}" title="${esc(BASIS_HINT[key]||'')}">${esc(BASIS_LABEL[key]||key)}</span>`}
+const CONFIDENCE_LEVEL={
+  measured:'high',derived:'moderate',estimate:'low',
+  unvetted:'moderate',illustrative:'scenario'
+};
+const CONFIDENCE_HINT={
+  measured:'High confidence — reviewed catalog result from published data or a straightforward aggregation.',
+  derived:'Moderate confidence — a documented method applied to measured inputs with a judgment call.',
+  estimate:'Low confidence — depends on an input that was not directly published.',
+  unvetted:'Moderate confidence — a data-backed ad-hoc query that has not yet been reviewed as a reusable catalog model.',
+  illustrative:'Scenario only — synthetic output for exploration, not a claim about the world.'
+};
+function confidenceLabel(basis){
+  const key=String(basis||'measured');
+  return CONFIDENCE_LABEL[key]||'Confidence unavailable';
+}
+function confidenceChip(basis){
+  const key=String(basis||'measured'),level=CONFIDENCE_LEVEL[key]||'low';
+  const label=confidenceLabel(key),hint=CONFIDENCE_HINT[key]||'Confidence has not been classified.';
+  return `<span class="confidence-chip confidence-${esc(level)}" data-basis="${esc(key)}" title="${esc(hint)}" aria-label="${esc(hint)}">${esc(label)}</span>`;
+}
 
 /* Units come off the catalog's Figure, so formatting is driven by data rather
    than by a per-panel special case. */
@@ -817,7 +835,7 @@ function figureTile(f){
   return `<div class="omni-figure">
     <small>${esc(f.label)}</small>
     <strong>${figureValue(f)}${figureUnit(f)?`<em>${esc(figureUnit(f))}</em>`:''}</strong>
-    <span class="omni-prov">${basisChip(f.basis)}<span>${esc(f.source)} · as of ${esc(f.as_of)}</span></span>
+    <span class="omni-prov">${confidenceChip(f.basis)}<span>${esc(f.source)} · as of ${esc(f.as_of)}</span></span>
     ${f.method?`<span class="omni-method">${esc(f.method)}</span>`:''}
   </div>`;
 }
@@ -851,7 +869,7 @@ function answerCard(a){
   return `<article class="card omni-answer${illustrative?' omni-illustrative':''}" data-omni-answer="${esc(a.key)}">
     <div class="card-head">
       <div><h3>${esc(a.title)}</h3><p>${esc((a.sources||[]).join(' · '))}</p></div>
-      <div class="omni-head-meta">${basisChip(a.basis)}<span class="quiet">as of ${esc(a.as_of)}</span></div>
+      <div class="omni-head-meta">${confidenceChip(a.basis)}<span class="quiet">as of ${esc(a.as_of)}</span></div>
     </div>
     ${a.figures?.length?`<div class="omni-figures">${a.figures.map(figureTile).join('')}</div>`:''}
     ${a.rows?.length?dataTable(a.rows):''}
@@ -867,8 +885,8 @@ function openOmniDrill(key){
   const a=omniAnswer(key);if(!a)return;
   openDrill({
     title:a.title,
-    subtitle:`${BASIS_LABEL[a.basis]||a.basis} · as of ${a.as_of} · ${(a.sources||[]).join(' · ')}`,
-    stats:(a.figures||[]).map(f=>({label:f.label,value:`${figureValue(f)}${figureUnit(f)?' '+figureUnit(f):''}`,sub:`${BASIS_LABEL[f.basis]||f.basis} · ${f.source}`})),
+    subtitle:`${confidenceLabel(a.basis)} · as of ${a.as_of} · ${(a.sources||[]).join(' · ')}`,
+    stats:(a.figures||[]).map(f=>({label:f.label,value:`${figureValue(f)}${figureUnit(f)?' '+figureUnit(f):''}`,sub:`${confidenceLabel(f.basis)} · ${f.source}`})),
     chart:a.rows?.length?`<div class="drill-table">${dataTable(a.rows,200)}</div>`:'',
     note:a.note
   });
@@ -1148,7 +1166,7 @@ function messageBubble(m){
   return `<div class="chat-turn assistant"><div class="chat-bubble">
     <div class="chat-answer">${esc(m.content).replace(/\n/g,'<br>')}</div>
     ${figures.length?`<div class="omni-figures chat-figures">${figures.map(figureTile).join('')}</div>`:''}
-    <div class="chat-meta">${basisChip(m.basis)}${chatModelChips(m)}${(m.citations||[]).map(c=>`<code>${esc(c)}</code>`).join('')}</div>
+    <div class="chat-meta">${confidenceChip(m.basis)}${chatModelChips(m)}${(m.citations||[]).map(c=>`<code>${esc(c)}</code>`).join('')}</div>
   </div></div>`;
 }
 
@@ -1536,12 +1554,12 @@ function renderReports(){
     (open?`<button type="button" class="link-button report-back" id="report-back">← All reports</button>
       <article class="card report-head">
         <div class="card-head"><div><h3>${esc(open.title)}</h3><p>${esc(open.summary)}</p></div>
-        <div class="omni-head-meta">${basisChip(open.basis)}<span class="quiet">as of ${esc(open.as_of)}</span></div></div>
+        <div class="omni-head-meta">${confidenceChip(open.basis)}<span class="quiet">as of ${esc(open.as_of)}</span></div></div>
       </article>
       ${(open.sections||[]).map(answerCard).join('')}`
     :`<div class="report-grid">${reports.map(r=>`
         <button type="button" class="card report-card" data-report="${esc(r.report_id)}">
-          <div class="report-card-top">${basisChip(r.basis)}${r.pinned?'<span class="report-pin">Pinned</span>':''}</div>
+          <div class="report-card-top">${confidenceChip(r.basis)}${r.pinned?'<span class="report-pin">Pinned</span>':''}</div>
           <h3>${esc(r.title)}</h3><p>${esc(r.summary)}</p>
           <span class="quiet">${number((r.sections||[]).length)} sections · as of ${esc(r.as_of)} · ${date(r.created_at)}</span>
         </button>`).join('')}</div>
@@ -1741,7 +1759,7 @@ function renderCompany(){
     <article class="card fleet-card">
       <div class="card-head"><div><h3>${positioned.length?'Fleet position':'Fleet'}</h3>
         <p>USA Jet (JUS). The map fits the displayed fleet automatically; drag or zoom to inspect a cluster.</p></div>
-        <div class="omni-head-meta">${basisChip('measured')}<span class="quiet">Public tracking, last known</span>
+        <div class="omni-head-meta">${confidenceChip('measured')}<span class="quiet">Public tracking, last known</span>
           <button type="button" class="action-button" id="fleet-refresh">Refresh positions</button></div></div>
       ${positioned.length?fleetMap():`<div class="fleet-quiet">
           <strong>No public position is available for the displayed fleet.</strong>
