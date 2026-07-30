@@ -144,6 +144,15 @@ class DevDashboardTests(unittest.TestCase):
         )
         self.assertIn("p_provider:chatProvider", self.js)
         self.assertIn("Codex GPT-5.6 Sol", self.js)
+        self.assertIn("missingProviderChatRpc(error)", self.js)
+        self.assertIn(
+            "Codex chat is not enabled in production yet",
+            self.js,
+        )
+        self.assertIn(
+            "p_text:question,p_title:null\n      }",
+            self.js,
+        )
 
     def test_company_view_refreshes_active_fleet_on_demand(self):
         self.assertIn("sb.functions.invoke('fleet-refresh'", self.js)

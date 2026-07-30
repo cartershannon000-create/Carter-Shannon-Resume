@@ -1196,14 +1196,31 @@ async function refreshChatList(){
   const badge=$('#chat-count');if(badge)badge.textContent=(chatState.conversations||[]).length||'—';
 }
 
+function missingProviderChatRpc(error){
+  const message=String(error?.message||'');
+  return error?.code==='PGRST202'||
+    message.includes('api_chat_send(p_conversation_id, p_provider');
+}
+
 async function sendChat(text){
   const question=(text||'').trim();if(!question||chatSending)return;
   chatSending=true;renderChats();bindNavigation();
-  const{data,error}=await sb.rpc('api_chat_send',{
+  let{data,error}=await sb.rpc('api_chat_send',{
     p_conversation_id:chatThread?.conversation?.conversation_id||null,
     p_text:question,p_title:null,p_provider:chatProvider});
+  if(error&&missingProviderChatRpc(error)){
+    if(chatProvider==='claude'){
+      ({data,error}=await sb.rpc('api_chat_send',{
+        p_conversation_id:chatThread?.conversation?.conversation_id||null,
+        p_text:question,p_title:null
+      }));
+    }else{
+      error={message:'Codex chat is not enabled in production yet. Apply the chat provider migration, then try again.'};
+    }
+  }
   if(error){chatSending=false;console.error(error);
-    alert(`Could not send: ${error.message}`);renderChats();bindNavigation();return}
+    alert(`Could not send: ${error.message}`);renderChats();bindNavigation();
+    const box=$('#chat-input');if(box){box.value=question;box.focus()}return}
   chatSending=false;
   await refreshChatList();
   await openConversation(data.conversation_id);
