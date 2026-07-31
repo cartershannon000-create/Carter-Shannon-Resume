@@ -1896,6 +1896,20 @@ function renderOmniSystem(){
           <ul><li>Monthly reruns</li><li>Greater placement accuracy</li><li>Explicit ROI</li></ul>
         </article>
       </div>
+    </section>
+
+    <section class="omni-film">
+      <div class="omni-film-head">
+        <div><small>Walkthrough</small><h3>Seventy-two seconds, end to end</h3>
+          <p>Every screen in the film is a capture of this app rendering live data. The figures,
+             the fleet positions and the graph counts are read off the running system.</p></div>
+        <span>72 seconds &middot; no sound required</span>
+      </div>
+      <video class="omni-film-video" src="/media/sckg-omnisupply-film.mp4"
+             poster="/media/sckg-omnisupply-film-poster.jpg" controls playsinline preload="none"
+             aria-label="A seventy-two second film of OmniSupply: asking a disruption question in chat, generating a report, reviewing the USA Jet fleet on the map, the knowledge graph and its provenance rules, running a placement simulation, and the resulting positioning recommendation."></video>
+      <p class="omni-film-note">The placement simulator is the product's synthetic sandbox and is
+         labelled as such on screen. Everything else is measured or derived public data.</p>
     </section>`;
 }
 

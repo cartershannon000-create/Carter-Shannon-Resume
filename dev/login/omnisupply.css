@@ -561,3 +561,18 @@
   .tg-dot,.tg-dot.lit,.tg-spoke.lit,.tg-hub.lit .tg-hub-halo,.sim-status.running i,.sim-live-head>i.live{animation:none}
   .tg-hub.lit .tg-hub-halo{opacity:.2}
 }
+
+/* Walkthrough film at the foot of the OmniSupply system tab. preload="none"
+   matters: the file is ~20MB and the tab is rendered on every load(), so an
+   eager preload would pull it down for anyone who never scrolls this far. */
+.omni-film{margin-top:14px;padding:20px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow)}
+.omni-film-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:15px}
+.omni-film-head small{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.omni-film-head h3{margin:5px 0 0}
+.omni-film-head p{margin:7px 0 0;max-width:62ch;font-size:10px;line-height:1.5;color:var(--muted)}
+.omni-film-head>span{flex:none;font-size:9px;color:var(--muted);white-space:nowrap}
+.omni-film-video{display:block;width:100%;border-radius:12px;background:#08261e;border:1px solid var(--line)}
+.omni-film-note{margin:11px 0 0;font-size:9px;line-height:1.45;color:var(--muted)}
+@media(max-width:650px){
+  .omni-film-head{flex-direction:column}.omni-film-head>span{white-space:normal}
+}
