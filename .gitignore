@@ -6,3 +6,6 @@
 !.env.example
 __pycache__/
 *.py[cod]
+
+# staged site build (see build-site.sh)
+dist/

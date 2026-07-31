@@ -5,8 +5,15 @@
   "observability": {
     "enabled": true
   },
+  // build-site.sh stages only the git-tracked site files into dist/.
+  // Pointing this at "." uploaded .git too, and a fresh CI clone's 31.3 MiB
+  // pack file exceeded the Workers 25 MiB per-asset limit — which silently
+  // broke every deploy from 891250a onward. See build-site.sh.
+  "build": {
+    "command": "bash ./build-site.sh"
+  },
   "assets": {
-    "directory": "."
+    "directory": "./dist"
   },
   "compatibility_flags": [
     "nodejs_compat"
