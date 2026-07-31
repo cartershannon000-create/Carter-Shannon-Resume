@@ -32,6 +32,12 @@
   </url>
 
   <url>
+    <loc>https://cs-ventures.us/omnisupply/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://cs-ventures.us/how-to-build-your-first-app/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OmniSupply | CS Ventures</title>
+<meta name="description" content="Fleet exposure and planning at your fingertips. Ask in plain English, get an answer with its sources, and run a hundred placement simulations before you commit an aircraft.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cs-ventures.us/omnisupply/">
+<meta property="og:title" content="OmniSupply | CS Ventures">
+<meta property="og:description" content="Fleet exposure and planning at your fingertips.">
+<meta property="og:image" content="https://cs-ventures.us/media/sckg-omnisupply-film-poster.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://cs-ventures.us/omnisupply/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "OmniSupply",
+  "url": "https://cs-ventures.us/omnisupply/",
+  "applicationCategory": "BusinessApplication",
+  "description": "Supply-chain exposure and fleet placement answered in plain English, on a knowledge graph of public freight, border, storm and flight records.",
+  "author": { "@type": "Organization", "name": "CS Ventures", "url": "https://cs-ventures.us" }
+}
+</script>
+<style>
+  :root{
+    --om-max:1160px;
+    --om-ease:cubic-bezier(.32,.72,0,1);
+    --om-dark:#08261e;
+    --om-bright:#88d397;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--font-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+  a{color:var(--green);text-decoration:none}
+  .wrap{max-width:var(--om-max);margin:0 auto;padding:0 32px}
+  h1,h2,h3,p,ul{margin-top:0}
+  :focus-visible{outline:2px solid var(--green);outline-offset:3px;border-radius:6px}
+
+  /* ── the pitch ── */
+  .pitch{background:var(--om-dark);color:var(--on-dark);padding:112px 0 96px;position:relative;overflow:hidden}
+  .pitch:before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(58% 48% at 22% 18%,rgba(136,211,151,.16) 0%,rgba(136,211,151,0) 72%);
+    pointer-events:none;
+  }
+  .pitch .wrap{position:relative}
+  .eyebrow{font:800 10.5px/1 var(--font-body);letter-spacing:.18em;text-transform:uppercase;color:var(--om-bright)}
+  .pitch h1{
+    font-family:var(--font-display);font-weight:700;
+    font-size:clamp(42px,6.2vw,80px);letter-spacing:-.045em;line-height:1;
+    margin:24px 0 26px;max-width:15ch;
+  }
+  .pitch h1 em{font-style:normal;color:var(--om-bright)}
+  .pitch .lead{
+    max-width:640px;color:rgba(240,240,232,.66);
+    font-size:clamp(17px,1.6vw,19px);line-height:1.7;margin:0;
+  }
+
+  /* ── the bullets: the whole argument, four lines ── */
+  .points{list-style:none;padding:0;margin:56px 0 0;display:grid;gap:0;max-width:920px}
+  .points li{
+    display:grid;grid-template-columns:44px 1fr;gap:22px;align-items:baseline;
+    padding:26px 0;border-top:1px solid rgba(255,255,255,.11);
+  }
+  .points li:last-child{border-bottom:1px solid rgba(255,255,255,.11)}
+  .points .n{font:800 11px/1.6 var(--font-body);letter-spacing:.14em;color:var(--om-bright)}
+  .points b{
+    display:block;font-family:var(--font-display);font-weight:700;
+    font-size:clamp(21px,2.4vw,27px);letter-spacing:-.028em;line-height:1.15;
+    color:var(--on-dark);margin-bottom:9px;
+  }
+  .points span{display:block;color:rgba(240,240,232,.6);font-size:15px;line-height:1.66;max-width:62ch}
+
+  /* ── the film ── */
+  .reel{padding:0 0 96px;background:var(--om-dark)}
+  .reel-frame{
+    position:relative;border-radius:18px;overflow:hidden;
+    background:#040f0b;border:1px solid rgba(136,211,151,.16);
+    box-shadow:0 60px 120px -40px rgba(0,0,0,.85);
+  }
+  .reel video{display:block;width:100%;aspect-ratio:16/9;background:#08261e}
+  .reel-cap{
+    display:flex;align-items:baseline;justify-content:space-between;gap:20px;flex-wrap:wrap;
+    margin-top:20px;color:rgba(240,240,232,.44);font-size:12.5px;line-height:1.6;
+  }
+  .reel-cap b{color:rgba(240,240,232,.82);font-weight:650}
+  .reel-note{max-width:64ch}
+
+  /* ── close ── */
+  .cta{padding:76px 0;background:#173d2b;color:#fff}
+  .cta-in{display:flex;align-items:center;justify-content:space-between;gap:36px}
+  .cta h2{font:750 clamp(28px,3.7vw,42px)/1.08 var(--font-display);letter-spacing:-.03em;margin:0;max-width:680px}
+  .cta p{color:#b4c7be;font-size:14px;margin:12px 0 0;max-width:650px}
+  .cta a{flex:none;display:inline-flex;align-items:center;padding:14px 22px;border-radius:999px;background:#fff;color:#173d2b;font:750 13px/1 var(--font-body)}
+
+  footer{background:var(--dark);padding:54px 0 42px}
+  .footer-inner{display:flex;justify-content:space-between;align-items:flex-start;gap:32px;flex-wrap:wrap}
+  .footer-brand{font:750 20px/1 var(--font-display);color:var(--on-dark)}
+  .footer-links{display:flex;flex-wrap:wrap}
+  .footer-links a{font:500 12px/1 var(--font-body);color:var(--on-dark-muted);padding:4px 0}
+  .footer-links a+a:before{content:"·";margin:0 12px;color:var(--on-dark-line)}
+  .footer-copy{margin-top:38px;padding-top:20px;border-top:1px solid var(--on-dark-line);font-size:11px;color:var(--on-dark-muted)}
+
+  @media(max-width:720px){
+    .wrap{padding:0 20px}
+    .pitch{padding:76px 0 68px}
+    .points{margin-top:42px}
+    .points li{grid-template-columns:1fr;gap:6px;padding:22px 0}
+    .cta-in{flex-direction:column;align-items:flex-start}
+    .cta a{width:100%;justify-content:center}
+  }
+  @media(max-width:600px){.csv-nav a:nth-child(2),.csv-nav a:nth-child(4){display:none}}
+</style>
+</head>
+<body>
+
+<div class="csv-bar">
+  <a class="csv-brand" href="/"><svg class="csv-mark" viewBox="0 0 205 155" aria-hidden="true" fill="currentColor"><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="150" font-weight="400" x="4" y="108">C</text><text font-family="Didot,'Bodoni Moda','Bodoni 72','Bodoni MT',Georgia,serif" font-size="125" font-weight="400" x="78" y="129">S</text></svg>CS Ventures</a>
+  <nav class="csv-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/about/">About</a><a href="/services/">Services</a><a href="/portfolio/" class="active">Portfolio</a><a href="/report-summaries/">Reports</a></nav>
+</div>
+
+<header class="pitch">
+  <div class="wrap">
+    <div class="eyebrow">CS Ventures &middot; OmniSupply</div>
+    <h1>Fleet exposure and planning at your <em>fingertips.</em></h1>
+    <p class="lead">A hurricane is five days out from Texas. You have twenty aircraft and an afternoon to decide where they go. Ask the question the way you would say it out loud — and get the answer, with the evidence behind it, before the meeting ends.</p>
+
+    <ul class="points">
+      <li>
+        <span class="n">01</span>
+        <div>
+          <b>Ask like a person.</b>
+          <span>No query language, no analyst queue. Type the question you actually have and the answer comes back in seconds, in the same English you asked it in.</span>
+        </div>
+      </li>
+      <li>
+        <span class="n">02</span>
+        <div>
+          <b>Every number brings its receipt.</b>
+          <span>Source, as-of date and confidence sit on the face of each figure. A number cannot render without them — that rule lives in the schema, not the style guide.</span>
+        </div>
+      </li>
+      <li>
+        <span class="n">03</span>
+        <div>
+          <b>Run the week before you live it.</b>
+          <span>Pick a placement strategy and watch a hundred simulated weeks play out. The strategies come back ranked, so you commit aircraft to the one that won.</span>
+        </div>
+      </li>
+      <li>
+        <span class="n">04</span>
+        <div>
+          <b>It keeps working after you close it.</b>
+          <span>Exposure reviews, competitive analysis and trip retrospectives arrive every month on their own — a new look at how you acted and where to improve.</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<section class="reel" aria-label="OmniSupply walkthrough film">
+  <div class="wrap">
+    <div class="reel-frame">
+      <video src="/media/sckg-omnisupply-film.mp4"
+             poster="/media/sckg-omnisupply-film-poster.jpg"
+             controls playsinline preload="metadata"></video>
+    </div>
+    <p class="reel-cap">
+      <b>79 seconds. Sound on.</b>
+      <span class="reel-note">Figures are read from public flight, freight, border-crossing and storm records. The placement simulator is a synthetic sandbox and says so on screen.</span>
+    </p>
+  </div>
+</section>
+
+<div class="cta">
+  <div class="wrap cta-in">
+    <div>
+      <h2>What would you ask it first?</h2>
+      <p>OmniSupply was built for an air-charter fleet. The same method fits any operation whose exposure is hiding in public records.</p>
+    </div>
+    <a href="mailto:info@cs-ventures.us">Start a conversation</a>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap"><div class="footer-inner"><div class="footer-brand">CS Ventures</div><div class="footer-links"><a href="/">Home</a><a href="/about/">About</a><a href="/portfolio/">Portfolio</a><a href="/decks/">Decks</a><a href="mailto:info@cs-ventures.us">info@cs-ventures.us</a></div></div><div class="footer-copy">CS Ventures &copy; 2026</div></div>
+</footer>
+
+</body>
+</html>
