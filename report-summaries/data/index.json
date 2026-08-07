@@ -1,7 +1,37 @@
 {
-  "generated": "2026-07-29T14:11:17",
-  "count": 3,
+  "generated": "2026-08-07T06:47:51",
+  "count": 4,
   "reports": [
+    {
+      "slug": "ais-impact-on-the-future-of-finance-deloitte-us",
+      "title": "AI's Impact on the Future of Finance",
+      "source_name": "Deloitte",
+      "source_url": "https://www.deloitte.com/us/en/what-we-do/capabilities/finance/articles/ai-future-of-finance.html",
+      "source_type": "website",
+      "date_processed": "2026-08-07",
+      "tldr": "Deloitte argues that AI is not changing what the finance function is accountable for but is fundamentally changing how it delivers on those obligations, compressing manual execution and elevating strategic capacity. The primary bottleneck is not strategic intent -- CFO awareness is near-universal -- but executional trust, operating model redesign, and governance maturity. The article outlines six transformation pillars (technology, data, operating model, talent, adoption, governance) and three finance roles (Finance for Finance, Finance for the Enterprise, Finance for the Market) as the organizing framework. The central caveat is that gains require sequenced investment: data foundations must precede AI models, and governance frameworks must be built before agentic deployment rather than after. All survey figures are self-reported from Deloitte's own Q4 2025 CFO Signals Survey and State of AI in the Enterprise report, so selection and response bias apply.",
+      "tags": [
+        "AI in finance",
+        "CFO strategy",
+        "finance transformation",
+        "agentic AI"
+      ],
+      "reading_time_min": 14,
+      "key_points": [
+        "The execution-adoption gap is the defining problem, not strategic awareness.",
+        "AI inverts the traditional distribution of finance effort.",
+        "Five converging forces are accelerating the mandate for finance transformation.",
+        "Finance's role expands into three distinct domains while core obligations remain unchanged.",
+        "Data readiness is the prerequisite that most organizations skip, and AI scales bad data rather than fixing it.",
+        "The governance gap is acute and widening as agentic AI deployment accelerates ahead of oversight frameworks.",
+        "Governance is 20% policy and 80% behavior, requiring cultural change rather than compliance frameworks alone.",
+        "Adoption fails because organizations spend 93% of AI budgets on technology and only 7% on workforce rewiring.",
+        "The 'finance athlete' replaces the siloed specialist as the target talent archetype.",
+        "Three transformation pathways (Collaborator, Technologist, Innovator) offer different risk-return trade-offs, with most organizations borrowing from all three."
+      ],
+      "chart_count": 3,
+      "url": "reports/ais-impact-on-the-future-of-finance-deloitte-us.html"
+    },
     {
       "slug": "excel-was-my-database-for-15-years-and-postgres-ended-that-in-a-weeken",
       "title": "Excel Was My Database for 15 Years, and Postgres Ended That in a Weekend",
