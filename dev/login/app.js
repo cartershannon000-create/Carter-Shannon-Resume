@@ -2533,7 +2533,12 @@ $('#enrollForm').addEventListener('submit',async event=>{event.preventDefault();
 $('#mfaCancel').addEventListener('click',async()=>{await sb.auth.signOut();showLogin()});
 $('#enrollCancel').addEventListener('click',async()=>{await sb.auth.signOut();showLogin()});
 $('#signout').addEventListener('click',async()=>{await sb.auth.signOut();showLogin()});
-$('#refresh').addEventListener('click',async()=>{const b=$('#refresh');b.textContent='Refreshing…';try{await load();b.textContent='Data refreshed'}catch(error){b.textContent='Refresh failed'}setTimeout(()=>b.textContent='Refresh data',1200)});
+/* load() covers the cos-backed dashboards only. The financials payload is fetched
+   separately and cached, so without the second call here "Refresh data" would leave the
+   Financials tab showing whatever it read when the page first opened -- stale numbers
+   with a button that claims it just refreshed them. Only refetch once it has been
+   loaded, so the cost is not paid by someone who never opens the tab. */
+$('#refresh').addEventListener('click',async()=>{const b=$('#refresh');b.textContent='Refreshing…';try{await Promise.all([load(),finPayload?loadFinancials(true):null]);b.textContent='Data refreshed'}catch(error){b.textContent='Refresh failed'}setTimeout(()=>b.textContent='Refresh data',1200)});
 window.addEventListener('hashchange',()=>{if(!$('#app').classList.contains('hidden'))routeLocation()});
 window.addEventListener('focus',resumeChatPoll);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')resumeChatPoll()});
