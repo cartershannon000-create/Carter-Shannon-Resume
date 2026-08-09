@@ -118,11 +118,12 @@ exposed-schemas requirement, which is a separate gate from these grants.
 
 ## Autonomous sync (added 2026-08-09)
 
-The sync runs **inside Postgres**, on a `pg_cron` schedule, so the dashboard stays
+The sync runs **inside Postgres**, triggered when the dashboard is opened, so it stays
 current whether or not this machine is on:
 
 ```
-pg_cron 'fin-plaid-sync'  every 6h
+open the Financials tab (or press Refresh)
+  -> fin.api_sync_plaid_on_view()   owner-gated, debounced 15 min (60s on Refresh)
   -> fin.sync_plaid()
        reads plaid_client_id / plaid_secret / plaid_token_<item> from Vault
        POST production.plaid.com/transactions/sync  (cursor paging, http extension)
@@ -152,14 +153,24 @@ of the macOS Keychain into Supabase Vault. Read the note at the top of that file
 those tokens can read your bank transactions and they will then live in Supabase, not
 only on this Mac. The Keychain copies are left in place, so it is reversible — delete the
 Vault secrets to undo it. Until they exist, the cron job fails every run and records why
-in `fin.plaid_items.last_error`.
+in `fin.plaid_items.last_error`, and the tab keeps rendering the last known state.
+
+### Why on view rather than on a schedule
+
+This data has exactly one consumer: a dashboard someone looks at. A cron job spends Plaid
+calls whether or not anyone is watching, and still serves data up to its interval stale at
+the moment they are. On view, nothing is fetched when nobody is looking, and what you see
+was fetched seconds ago. It also matches the console's existing `refreshFleetOnView`.
+
+The cached payload renders first and the sync runs behind it, so a slow bank never blocks
+the page. `fin.api_sync_plaid_on_view` carries its own `statement_timeout` of 55s because
+`authenticator` runs with 8s, which four banks paged over HTTP would exceed.
 
 ### Checking on it
 
 ```sql
 select institution, last_synced_at, last_error from fin.plaid_items order by institution;
-select * from cron.job_run_details where jobid =
-  (select jobid from cron.job where jobname = 'fin-plaid-sync') order by start_time desc limit 5;
+select fin.api_sync_plaid_on_view(1);   -- force a sync now, as the owner
 ```
 
 ### Categorisation

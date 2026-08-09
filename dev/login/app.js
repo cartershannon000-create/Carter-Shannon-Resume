@@ -2406,7 +2406,7 @@ function resolveRoute(value){
 }
 function setActiveApp(app){$$('[data-app-link]').forEach(button=>{const active=button.dataset.appLink===app;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')})}
 function showHome(updateHash=true){closeCalendarDetail(false);closeDrill();document.body.classList.remove('calendar-active');$('#home').hidden=false;$('.tabs').hidden=true;$('#loading').hidden=true;$$('[data-tab]').forEach(button=>{button.classList.remove('active');button.setAttribute('aria-selected','false');button.tabIndex=-1});$$('[data-panel]').forEach(panel=>{panel.classList.remove('active');panel.hidden=true});setActiveApp('home');if(updateHash)history.replaceState(null,'','#home');window.scrollTo({top:0,behavior:'smooth'})}
-function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}if(tab!=='calendar')closeCalendarDetail(false);closeDrill();document.body.classList.toggle('calendar-active',tab==='calendar');$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});const wantPanel=FIN_TABS[tab]?FIN_PANEL:tab;$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===wantPanel;panel.classList.toggle('active',active);panel.setAttribute('aria-hidden',String(!active));panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);window.scrollTo({top:0,behavior:'smooth'});if(tab==='company'&&state)refreshFleetOnView();if(tab==='simulations')simUpdateDynamic();if(FIN_TABS[tab]){loadFinancials();setFinTab(FIN_TABS[tab])}}
+function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}if(tab!=='calendar')closeCalendarDetail(false);closeDrill();document.body.classList.toggle('calendar-active',tab==='calendar');$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});const wantPanel=FIN_TABS[tab]?FIN_PANEL:tab;$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===wantPanel;panel.classList.toggle('active',active);panel.setAttribute('aria-hidden',String(!active));panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);window.scrollTo({top:0,behavior:'smooth'});if(tab==='company'&&state)refreshFleetOnView();if(tab==='simulations')simUpdateDynamic();if(FIN_TABS[tab]){loadFinancials().then(syncFinancialsOnView);setFinTab(FIN_TABS[tab])}}
 function selectApp(app){if(app==='home'){showHome();return}if(APP_DEFAULT[app])activate(APP_DEFAULT[app]);else showHome()}
 function routeLocation(updateHash=true){const route=resolveRoute(location.hash.slice(1));if(route.app==='home')showHome(updateHash);else activate(route.tab,updateHash)}
 /* Financials ------------------------------------------------------------------
@@ -2432,6 +2432,23 @@ function setFinTab(tab){finTab=tab;const frame=finFrame();if(!frame||!finFrameRe
 /* The frame may finish loading before or after this module runs, so readiness is taken
    from whichever of the two arrives first: its 'fin-ready' post, or the load event. */
 function bindFinFrame(){const frame=finFrame();if(!frame||frame.dataset.bound)return;frame.dataset.bound='1';frame.addEventListener('load',()=>{finFrameReady=true;postFinPayload()});if(frame.contentDocument?.readyState==='complete')finFrameReady=true}
+/* Pull from Plaid when the tab is opened rather than on a timer -- the same shape as
+   refreshFleetOnView(). The cached payload renders immediately and the sync happens
+   behind it, so a slow bank never blocks the page; the payload is re-read and re-posted
+   only if something actually changed. The debounce lives in the RPC, so re-opening the
+   tab or leaning on Refresh costs nothing. */
+let finSyncPromise=null;
+function syncFinancialsOnView(minIntervalSeconds=900){
+  if(finSyncPromise)return finSyncPromise;
+  finSyncPromise=(async()=>{
+    const{data,error}=await finSb.rpc('api_sync_plaid_on_view',{p_min_interval_seconds:minIntervalSeconds});
+    if(error){console.warn('Financials sync unavailable; showing last known state',error);return}
+    if(data&&data.ran)await loadFinancials(true);
+    else if(data&&data.error)console.warn('Financials sync reported',data.error);
+  })().catch(error=>console.warn('Financials sync failed',error))
+      .finally(()=>{finSyncPromise=null});
+  return finSyncPromise;
+}
 async function fetchFinancials(){
   const{data,error}=await finSb.rpc('api_financial_state');
   if(error)throw error;
@@ -2553,7 +2570,7 @@ $('#signout').addEventListener('click',async()=>{await sb.auth.signOut();showLog
    Financials tab showing whatever it read when the page first opened -- stale numbers
    with a button that claims it just refreshed them. Only refetch once it has been
    loaded, so the cost is not paid by someone who never opens the tab. */
-$('#refresh').addEventListener('click',async()=>{const b=$('#refresh');b.textContent='Refreshing…';try{await Promise.all([load(),finPayload?loadFinancials(true):null]);b.textContent='Data refreshed'}catch(error){b.textContent='Refresh failed'}setTimeout(()=>b.textContent='Refresh data',1200)});
+$('#refresh').addEventListener('click',async()=>{const b=$('#refresh');b.textContent='Refreshing…';try{await Promise.all([load(),finPayload?loadFinancials(true).then(()=>syncFinancialsOnView(60)):null]);b.textContent='Data refreshed'}catch(error){b.textContent='Refresh failed'}setTimeout(()=>b.textContent='Refresh data',1200)});
 window.addEventListener('hashchange',()=>{if(!$('#app').classList.contains('hidden'))routeLocation()});
 window.addEventListener('focus',resumeChatPoll);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')resumeChatPoll()});
