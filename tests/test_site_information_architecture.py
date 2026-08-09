@@ -123,6 +123,10 @@ class SiteInformationArchitectureTests(unittest.TestCase):
             path
             for path in ROOT.rglob("*.html")
             if "dev" not in path.relative_to(ROOT).parts
+            # dist/ is build-site.sh's staging copy of the same pages. Without this
+            # the suite passes on a clean tree and fails right after a build, because
+            # the exclusion below matches the source path but not its dist/ twin.
+            and "dist" not in path.relative_to(ROOT).parts
             and path.relative_to(ROOT)
             != Path("decks/pe-ai-ebitda-strategy/index.html")
         )
