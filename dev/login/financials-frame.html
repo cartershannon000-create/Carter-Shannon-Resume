@@ -249,6 +249,51 @@
       header { padding-top: 22px; }
       nav button { min-width: 92px; }
     }
+  
+    /* ---- CS Ventures brand integration --------------------------------------
+       Appended by fin_build_frame.py. The dashboard was designed to stand alone on
+       a warm cream ground; the control plane it now sits inside is cool grey and
+       white. Only design TOKENS are remapped here -- no layout, no chart geometry,
+       no selectors of its own -- so the rendering stays exactly what was validated
+       against the real payload, and a change to the console's palette is a change
+       to this block alone.
+
+       The green is already shared (#2e6b3f), which is why the two read as related
+       even before this; what clashed was the ground and the corner radius. */
+    :root {
+      --bg: #eff0f2;
+      --panel: #ffffff;
+      --panel-strong: #ffffff;
+      --ink: #161719;
+      --muted: #62666d;
+      --line: #dfe2e3;
+      --accent: #2e6b3f;
+      --accent-3: #2e6b3f;
+      --good: #2e6b3f;
+      --green-bright: #88d397;
+      --green-soft: #dcebdd;
+      --soft: #dcebdd;
+      --gold: #b87332;
+      --accent-2: #b87332;
+      --danger: #9a514f;
+      --radius: 15px;
+      --shadow-card: 0 16px 42px -35px rgba(18, 30, 25, .45);
+      --font-display: Georgia, "Times New Roman", serif;
+    }
+    body { background: var(--bg); }
+    /* The console supplies the page title and the greeting, so this header keeps
+       only the filters and stops competing with it. */
+    header {
+      background: transparent;
+      border-bottom: 1px solid var(--line);
+      padding: 4px clamp(18px, 4vw, 48px) 16px;
+    }
+    h1 { font-family: var(--font-display); font-size: clamp(19px, 2.2vw, 26px); }
+    .card, .kpi { border-radius: 15px; }
+    /* Tabs moved up into the console's own tab bar, which is what makes this feel
+       like a section of the site rather than a page embedded in one. The parent
+       drives the active tab over postMessage. */
+    #tabs { display: none; }
   </style>
 </head>
 <body>
@@ -1640,17 +1685,24 @@
     }
     // Driven by the control plane: stay blank until the parent posts a payload, and
     // re-init on every later payload so a category override refreshes every tab.
-    let finBooted = false;
+    let finBooted = false, pendingTab = null;
     window.addEventListener('message', event => {
       if (event.origin !== window.location.origin) return;
       const msg = event.data;
+      if (msg && msg.type === 'fin-set-tab' && msg.tab) {
+        if (finBooted) { activeTab = msg.tab; render(); }
+        else { pendingTab = msg.tab; }
+        return;
+      }
       if (!msg || msg.type !== 'fin-payload' || !msg.payload) return;
       DATA = msg.payload;
       categoryOverrides = {};
       const restoreTab = finBooted ? activeTab : null;
       document.getElementById('tabs').innerHTML = '';
       init();
-      if (restoreTab && DATA.accounts.includes(restoreTab)) { activeTab = restoreTab; render(); }
+      const wanted = pendingTab || restoreTab;
+      if (wanted && DATA.accounts.includes(wanted)) { activeTab = wanted; render(); }
+      pendingTab = null;
       finBooted = true;
       parent.postMessage({type: 'fin-height', height: document.documentElement.scrollHeight}, window.location.origin);
     });

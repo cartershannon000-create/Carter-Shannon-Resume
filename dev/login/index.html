@@ -89,7 +89,18 @@
           <button id="tab-company" type="button" role="tab" aria-selected="false" aria-controls="panel-company" data-dashboard="omnisupply" data-tab="company">Company Info</button>
           <button id="tab-simulations" type="button" role="tab" aria-selected="false" aria-controls="panel-simulations" data-dashboard="omnisupply" data-tab="simulations">Simulations</button>
           <button id="tab-omni-system" type="button" role="tab" aria-selected="false" aria-controls="panel-omni-system" data-dashboard="omnisupply" data-tab="omni-system">System</button>
-          <button id="tab-fin-dashboard" type="button" role="tab" aria-selected="false" aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="fin-dashboard">Dashboard</button>
+          <!-- All ten drive the one iframe panel below: activate() shows panel-fin-dashboard
+               for any financials tab and posts the frame's own tab name across. -->
+          <button id="tab-fin-overview" type="button" role="tab" aria-selected="false" aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="fin-overview">Overview</button>
+          <button id="tab-fin-monthly" type="button" role="tab" aria-selected="false" aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="fin-monthly">Monthly</button>
+          <button id="tab-fin-cashflow" type="button" role="tab" aria-selected="false" aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="fin-cashflow">Cash Flow</button>
+          <button id="tab-fin-analytics" type="button" role="tab" aria-selected="false" aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="fin-analytics">Analytics</button>
+          <button id="tab-fin-review" type="button" role="tab" aria-selected="false" aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="fin-review">Review</button>
+          <button id="tab-fin-amex" type="button" role="tab" aria-selected="false" aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="fin-amex">Amex</button>
+          <button id="tab-fin-capital-one" type="button" role="tab" aria-selected="false" aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="fin-capital-one">Capital One</button>
+          <button id="tab-fin-checking" type="button" role="tab" aria-selected="false" aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="fin-checking">Checking</button>
+          <button id="tab-fin-venmo" type="button" role="tab" aria-selected="false" aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="fin-venmo">Venmo</button>
+          <button id="tab-fin-wells-fargo" type="button" role="tab" aria-selected="false" aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="fin-wells-fargo">Wells Fargo</button>
         </nav>
       </div>
     </header>
@@ -144,6 +155,6 @@
     <aside id="calendar-detail" data-layout="popout" aria-label="Calendar item details" hidden><div id="calendar-detail-body"></div></aside>
   </div>
 
-  <script type="module" src="app.js?v=20260809-financials"></script>
+  <script type="module" src="app.js?v=20260809-fin-brand"></script>
 </body>
 </html>

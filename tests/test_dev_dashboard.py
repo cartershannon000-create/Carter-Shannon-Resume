@@ -58,14 +58,37 @@ class DevDashboardTests(unittest.TestCase):
                 "overview", "clients", "finances", "calendar", "metrics",
                 "work", "agents", "usage", "approvals", "system",
                 "chats", "reports", "company", "simulations", "omni-system",
-                "fin-dashboard",
+                "fin-overview", "fin-monthly", "fin-cashflow", "fin-analytics",
+                "fin-review", "fin-amex", "fin-capital-one", "fin-checking",
+                "fin-venmo", "fin-wells-fargo",
             ],
         )
         self.assertIn(
             "omnisupply:['chats','reports','company','simulations','omni-system']",
             self.js,
         )
-        self.assertIn("financials:['fin-dashboard']", self.js)
+        self.assertIn("financials:['fin-overview',", self.js)
+
+    def test_financials_tabs_all_drive_the_single_iframe_panel(self):
+        """Financials is the one app whose tabs do not each own a panel.
+
+        All ten switch content inside one iframe, so activate() has to resolve them to
+        panel-fin-dashboard and post the frame's own tab name across. If FIN_TABS and the
+        markup disagree the tab renders an empty frame, which looks like a data outage.
+        """
+        tabs = re.findall(r'data-tab="(fin-[a-z-]+)"', self.html)
+        keys = re.findall(r"'(fin-[a-z-]+)':'([^']+)'", self.js)
+        self.assertEqual(sorted(tabs), sorted(k for k, _ in keys))
+        # Every financials tab button points at the shared panel, and it exists once.
+        for tab in tabs:
+            self.assertIn(
+                f'aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="{tab}"',
+                self.html,
+            )
+        self.assertEqual(self.html.count('data-panel="fin-dashboard"'), 1)
+        # The frame labels must match the payload's `accounts` array exactly.
+        self.assertIn(("fin-cashflow", "Cash Flow"), keys)
+        self.assertIn(("fin-wells-fargo", "Wells Fargo"), keys)
 
     def test_fin_schema_keeps_service_role_out_by_grant_not_rls(self):
         """The agent runner authenticates as service_role, which carries BYPASSRLS.

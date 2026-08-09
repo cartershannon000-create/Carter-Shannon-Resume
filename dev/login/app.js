@@ -19,8 +19,14 @@ let omniState={snapshot:null,freshness:{},sections:{},illustrative:[]};
    exists in the markup silently activates nothing and renders a blank page --
    which is exactly what shipped when the OmniSupply panels were renamed and
    this table was not. assertTabsMatchMarkup() below now fails loudly instead. */
-const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['chats','reports','company','simulations','omni-system'],financials:['fin-dashboard']};
-const APP_DEFAULT={client:'clients',system:'overview',omnisupply:'chats',financials:'fin-dashboard'};
+const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['chats','reports','company','simulations','omni-system'],financials:['fin-overview','fin-monthly','fin-cashflow','fin-analytics','fin-review','fin-amex','fin-capital-one','fin-checking','fin-venmo','fin-wells-fargo']};
+const APP_DEFAULT={client:'clients',system:'overview',omnisupply:'chats',financials:'fin-overview'};
+/* Financials is the one app whose tabs do not each own a panel: all ten drive the same
+   iframe, so the tab name is posted into it instead. The values are the frame's own tab
+   labels, which come from the payload's `accounts` array -- change one and the frame
+   silently renders nothing, so they are kept together here rather than derived. */
+const FIN_TABS={'fin-overview':'Overview','fin-monthly':'Monthly','fin-cashflow':'Cash Flow','fin-analytics':'Analytics','fin-review':'Review','fin-amex':'Amex','fin-capital-one':'Capital One','fin-checking':'Checking','fin-venmo':'Venmo','fin-wells-fargo':'Wells Fargo'};
+const FIN_PANEL='fin-dashboard';
 const LEGACY_TABS={clients:['client','clients'],money:['client','finances'],finances:['client','finances'],calendar:['client','calendar'],overview:['system','overview'],metrics:['system','metrics'],work:['system','work'],agents:['system','agents'],usage:['system','usage'],approvals:['system','approvals'],system:['system','system']};
 const DRILL_LAYOUT_KEY='cos.drillLayout',DRILL_LAYOUTS=new Set(['side','below','popout']);
 let drillLayout=(()=>{try{const saved=localStorage.getItem(DRILL_LAYOUT_KEY);return DRILL_LAYOUTS.has(saved)?saved:'side'}catch{return 'side'}})();
@@ -2373,9 +2379,14 @@ function assertTabsMatchMarkup(){
   const routed=new Set(Object.values(APP_TABS).flat());
   const panels=new Set($$('[data-panel]').map(el=>el.dataset.panel));
   const buttons=new Set($$('[data-tab]').map(el=>el.dataset.tab));
-  const missingPanel=[...routed].filter(t=>!panels.has(t));
+  // Financials tabs deliberately share one panel -- they switch content inside the
+  // iframe rather than swapping sections -- so they are checked against FIN_TABS
+  // instead, and the panel they all point at must exist.
+  const finRouted=[...routed].filter(t=>FIN_TABS[t]);
+  if(finRouted.length&&!panels.has(FIN_PANEL))console.error('[routing] financials tabs have no panel',{expected:FIN_PANEL});
+  const missingPanel=[...routed].filter(t=>!panels.has(t)&&!FIN_TABS[t]);
   const missingButton=[...routed].filter(t=>!buttons.has(t));
-  const orphanPanel=[...panels].filter(t=>!routed.has(t));
+  const orphanPanel=[...panels].filter(t=>!routed.has(t)&&t!==FIN_PANEL);
   if(missingPanel.length||missingButton.length||orphanPanel.length){
     console.error('[routing] APP_TABS and the markup disagree.',
       {routedWithNoPanel:missingPanel,routedWithNoButton:missingButton,panelNotRouted:orphanPanel});
@@ -2395,7 +2406,7 @@ function resolveRoute(value){
 }
 function setActiveApp(app){$$('[data-app-link]').forEach(button=>{const active=button.dataset.appLink===app;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')})}
 function showHome(updateHash=true){closeCalendarDetail(false);closeDrill();document.body.classList.remove('calendar-active');$('#home').hidden=false;$('.tabs').hidden=true;$('#loading').hidden=true;$$('[data-tab]').forEach(button=>{button.classList.remove('active');button.setAttribute('aria-selected','false');button.tabIndex=-1});$$('[data-panel]').forEach(panel=>{panel.classList.remove('active');panel.hidden=true});setActiveApp('home');if(updateHash)history.replaceState(null,'','#home');window.scrollTo({top:0,behavior:'smooth'})}
-function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}if(tab!=='calendar')closeCalendarDetail(false);closeDrill();document.body.classList.toggle('calendar-active',tab==='calendar');$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===tab;panel.classList.toggle('active',active);panel.setAttribute('aria-hidden',String(!active));panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);window.scrollTo({top:0,behavior:'smooth'});if(tab==='company'&&state)refreshFleetOnView();if(tab==='simulations')simUpdateDynamic();if(tab==='fin-dashboard')loadFinancials()}
+function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}if(tab!=='calendar')closeCalendarDetail(false);closeDrill();document.body.classList.toggle('calendar-active',tab==='calendar');$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});const wantPanel=FIN_TABS[tab]?FIN_PANEL:tab;$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===wantPanel;panel.classList.toggle('active',active);panel.setAttribute('aria-hidden',String(!active));panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);window.scrollTo({top:0,behavior:'smooth'});if(tab==='company'&&state)refreshFleetOnView();if(tab==='simulations')simUpdateDynamic();if(FIN_TABS[tab]){loadFinancials();setFinTab(FIN_TABS[tab])}}
 function selectApp(app){if(app==='home'){showHome();return}if(APP_DEFAULT[app])activate(APP_DEFAULT[app]);else showHome()}
 function routeLocation(updateHash=true){const route=resolveRoute(location.hash.slice(1));if(route.app==='home')showHome(updateHash);else activate(route.tab,updateHash)}
 /* Financials ------------------------------------------------------------------
@@ -2413,7 +2424,11 @@ const finSb=sb.schema('fin');
 let finPayload=null,finLoading=null,finFrameReady=false;
 function finFrame(){return $('#fin-frame')}
 function finStatus(text,isError=false){const el=$('#fin-status');if(!el)return;el.hidden=!text;el.textContent=text||'';el.className=isError?'loading-error':'loading'}
-function postFinPayload(){const frame=finFrame();if(!frame||!finFrameReady||!finPayload)return;frame.contentWindow.postMessage({type:'fin-payload',payload:finPayload},location.origin);finStatus('')}
+function postFinPayload(){const frame=finFrame();if(!frame||!finFrameReady||!finPayload)return;frame.contentWindow.postMessage({type:'fin-payload',payload:finPayload},location.origin);finStatus('');if(finTab)setFinTab(finTab)}
+/* Remembered so the tab survives a refresh: the frame re-runs init() on every payload,
+   which resets it to Overview. */
+let finTab=null;
+function setFinTab(tab){finTab=tab;const frame=finFrame();if(!frame||!finFrameReady)return;frame.contentWindow.postMessage({type:'fin-set-tab',tab},location.origin)}
 /* The frame may finish loading before or after this module runs, so readiness is taken
    from whichever of the two arrives first: its 'fin-ready' post, or the load event. */
 function bindFinFrame(){const frame=finFrame();if(!frame||frame.dataset.bound)return;frame.dataset.bound='1';frame.addEventListener('load',()=>{finFrameReady=true;postFinPayload()});if(frame.contentDocument?.readyState==='complete')finFrameReady=true}
