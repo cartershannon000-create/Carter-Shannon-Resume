@@ -71,6 +71,7 @@
           <button type="button" data-app-link="client">Client Dashboard</button>
           <button type="button" data-app-link="system">System Dashboard</button>
           <button type="button" data-app-link="omnisupply">OmniSupply</button>
+          <button type="button" data-app-link="financials">Financials</button>
         </nav>
         <nav class="tabs" aria-label="Dashboard sections" role="tablist" hidden>
           <button id="tab-overview" type="button" role="tab" aria-selected="false" aria-controls="panel-overview" data-dashboard="system" data-tab="overview">Overview</button>
@@ -88,6 +89,7 @@
           <button id="tab-company" type="button" role="tab" aria-selected="false" aria-controls="panel-company" data-dashboard="omnisupply" data-tab="company">Company Info</button>
           <button id="tab-simulations" type="button" role="tab" aria-selected="false" aria-controls="panel-simulations" data-dashboard="omnisupply" data-tab="simulations">Simulations</button>
           <button id="tab-omni-system" type="button" role="tab" aria-selected="false" aria-controls="panel-omni-system" data-dashboard="omnisupply" data-tab="omni-system">System</button>
+          <button id="tab-fin-dashboard" type="button" role="tab" aria-selected="false" aria-controls="panel-fin-dashboard" data-dashboard="financials" data-tab="fin-dashboard">Dashboard</button>
         </nav>
       </div>
     </header>
@@ -104,6 +106,9 @@
           </button>
           <button class="agent-card home-card clickable" type="button" data-app-link="omnisupply" aria-label="Open OmniSupply: freight disruption exposure from public data">
             <span class="agent-icon">O</span><span class="home-card-title">OmniSupply</span><span class="home-card-detail">Freight disruption exposure, sourced from public data</span><strong>Open on Scenario →</strong>
+          </button>
+          <button class="agent-card home-card clickable" type="button" data-app-link="financials" aria-label="Open Financials: spend, cash flow, and monthly budget">
+            <span class="agent-icon">F</span><span class="home-card-title">Financials</span><span class="home-card-detail">Spend, cash flow, monthly budget, and transaction review</span><strong>Open dashboard →</strong>
           </button>
         </div>
       </section>
@@ -123,6 +128,15 @@
       <section id="panel-company" class="tab-panel" role="tabpanel" aria-labelledby="tab-company" data-panel="company"></section>
       <section id="panel-simulations" class="tab-panel" role="tabpanel" aria-labelledby="tab-simulations" data-panel="simulations"></section>
       <section id="panel-omni-system" class="tab-panel" role="tabpanel" aria-labelledby="tab-omni-system" data-panel="omni-system"></section>
+      <!-- The financials dashboard is the existing build_financial_dashboard.py UI,
+           generated verbatim by fin_build_frame.py. It runs in a same-origin iframe so
+           its `#app`/`#tabs` ids and its unscoped CSS cannot collide with this console.
+           app.js posts the payload in and handles category overrides posted back out. -->
+      <section id="panel-fin-dashboard" class="tab-panel" role="tabpanel" aria-labelledby="tab-fin-dashboard" data-panel="fin-dashboard">
+        <div id="fin-status" class="loading">Loading financials from Supabase…</div>
+        <iframe id="fin-frame" title="Financial dashboard" src="financials-frame.html"
+                style="width:100%;border:0;display:block;min-height:1200px;background:transparent"></iframe>
+      </section>
     </main>
     <div id="drill-backdrop"></div>
     <aside id="drill" data-layout="side" aria-label="Drill-down"><div id="drill-body"></div></aside>
@@ -130,6 +144,6 @@
     <aside id="calendar-detail" data-layout="popout" aria-label="Calendar item details" hidden><div id="calendar-detail-body"></div></aside>
   </div>
 
-  <script type="module" src="app.js?v=20260730-simulation-demo"></script>
+  <script type="module" src="app.js?v=20260809-financials"></script>
 </body>
 </html>

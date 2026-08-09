@@ -50,3 +50,40 @@ The upstream ADS-B feed remains disabled until both
 `AIRPLANES_LIVE_TERMS_REVIEWED=true` and `AIRPLANES_LIVE_API_BASE_URL` are set
 in the Supabase function environment after a terms/licensing review. Do not
 commit those values.
+
+## Financials (`fin` schema)
+
+Applied 2026-08-09 through the Supabase MCP. Local filenames match the live
+versions exactly, so these three add no new drift:
+
+- `20260809160558_fin_schema.sql`
+- `20260809160923_fin_read_helpers.sql`
+- `20260809161007_fin_insights_and_api.sql`
+
+`fin` holds personal financial data and is deliberately separate from `cos`.
+
+The runner authenticates as `service_role`, which has BYPASSRLS — so RLS does
+**not** keep it out of this data. Grants do. `service_role` is never granted
+USAGE on `fin` and never granted anything on its tables or functions, and the
+migration adds explicit revokes plus closed default privileges. Verify with:
+
+    select has_schema_privilege('service_role','fin','USAGE');   -- must be false
+
+Only `fin.api_financial_state()` and `fin.api_set_category()` are executable,
+by `authenticated` only, both gated on `cos.is_owner()`. The aggregation helpers
+(`summary`, `cashflow`, `insights`, `monthly_summary`, `complete_months`,
+`money0`) and the `v_transactions` view are granted to nobody and are reachable
+only from those two entry points.
+
+The `rls_enabled_no_policy` advisor notices on `fin.*` are expected and match
+the `cos` tables: RLS on with no policies, access via owner-gated RPC only.
+
+Ingest does not use `service_role` either. The `fin_ingest` role is created
+NOLOGIN so no credential lands in a committed file; set its password out of band
+and store it as a Supabase function secret.
+
+Still to port: `extend_monthly_summary_with_actuals()` and
+`reconcile_salary_rows()` from `build_financial_dashboard.py`. Until then
+`fin.monthly_summary()` serves stored values, so a Review override that moves a
+transaction into or out of `salary` will not move the Salary, Net Income,
+Margin, or Total Savings rows.

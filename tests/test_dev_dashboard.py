@@ -22,6 +22,9 @@ FLEET_HISTORY_MIGRATION = ROOT / "supabase" / "migrations" / "20260728231500_fle
 CHAT_FAILURE_MIGRATION = ROOT / "supabase" / "migrations" / "20260730170000_chat_failure_visibility.sql"
 CHAT_MANAGEMENT_MIGRATION = ROOT / "supabase" / "migrations" / "20260730210000_chat_management_and_reports.sql"
 FLEET_ACTIVITY_MIGRATION = ROOT / "supabase" / "migrations" / "20260730230000_fleet_recent_activity_and_flightaware_sync.sql"
+FIN_SCHEMA_MIGRATION = ROOT / "supabase" / "migrations" / "20260809160558_fin_schema.sql"
+FIN_API_MIGRATION = ROOT / "supabase" / "migrations" / "20260809161007_fin_insights_and_api.sql"
+FIN_FRAME = LOGIN / "financials-frame.html"
 
 
 class DevDashboardTests(unittest.TestCase):
@@ -55,12 +58,65 @@ class DevDashboardTests(unittest.TestCase):
                 "overview", "clients", "finances", "calendar", "metrics",
                 "work", "agents", "usage", "approvals", "system",
                 "chats", "reports", "company", "simulations", "omni-system",
+                "fin-dashboard",
             ],
         )
         self.assertIn(
             "omnisupply:['chats','reports','company','simulations','omni-system']",
             self.js,
         )
+        self.assertIn("financials:['fin-dashboard']", self.js)
+
+    def test_fin_schema_keeps_service_role_out_by_grant_not_rls(self):
+        """The agent runner authenticates as service_role, which carries BYPASSRLS.
+
+        RLS therefore cannot keep it out of the financial data -- only the absence of a
+        grant can. If a future migration ever hands service_role USAGE on `fin`, the
+        whole protection is gone with no other symptom, so it is pinned here.
+        """
+        sql = FIN_SCHEMA_MIGRATION.read_text(encoding="utf-8")
+        self.assertIn("revoke all on schema fin from public, anon, service_role;", sql)
+        self.assertIn("grant usage on schema fin to authenticated;", sql)
+        self.assertNotIn("grant usage on schema fin to service_role", sql)
+        for table in ("transactions", "category_overrides", "monthly_summary_rows", "plaid_items"):
+            self.assertIn(f"alter table fin.{table} enable row level security;", sql)
+        self.assertIn(
+            "revoke all on all tables in schema fin from public, anon, authenticated, service_role;",
+            sql,
+        )
+        # Anything added to `fin` later must start closed rather than inherit a grant.
+        self.assertIn("alter default privileges in schema fin", sql)
+        # Ingest gets its own identity, created without a password in the migration.
+        self.assertIn("create role fin_ingest nologin;", sql)
+
+    def test_fin_api_is_reachable_only_by_an_authenticated_owner(self):
+        sql = FIN_API_MIGRATION.read_text(encoding="utf-8")
+        for fn in ("api_financial_state()", "api_set_category(text, text, text)"):
+            self.assertIn(f"revoke all on function fin.{fn} from public, anon, service_role;", sql)
+            self.assertIn(f"grant execute on function fin.{fn} to authenticated;", sql)
+        self.assertEqual(sql.count("if not cos.is_owner() then"), 2)
+        # The aggregation helpers are internal; only the two api_ entry points are granted.
+        for helper in ("insights()", "monthly_summary()"):
+            self.assertIn(
+                f"revoke all on function fin.{helper} from public, anon, authenticated, service_role;",
+                sql,
+            )
+
+    def test_financials_frame_ships_without_any_transaction_data(self):
+        """The frame is a committed, publicly served asset; the payload arrives at
+        runtime over postMessage. An embedded payload would publish real transactions."""
+        self.assertTrue(FIN_FRAME.exists(), "run fin_build_frame.py to generate the frame")
+        frame = FIN_FRAME.read_text(encoding="utf-8")
+        self.assertIn("let DATA = {transactions:[]", frame)
+        self.assertNotIn("Plaid:", frame)
+        self.assertIn("overrideBackend = 'parent'", frame)
+        self.assertIn("fin-set-category", frame)
+        # The local-only captions must not survive into the hosted build. Only the
+        # user-visible strings matter here; two source comments still mention
+        # serve_dashboard.py, which is accurate for the local build of the same file.
+        self.assertNotIn("Remembered in this browser only", frame)
+        self.assertNotIn("<code>python3 serve_dashboard.py</code>", frame)
+        self.assertIn("Saved to <strong>Supabase</strong>", frame)
 
     def test_simulations_tab_is_an_explicit_browser_only_sandbox(self):
         self.assertIn('data-tab="simulations">Simulations</button>', self.html)
@@ -87,6 +143,16 @@ class DevDashboardTests(unittest.TestCase):
             "The browser never commands the laptop directly",
         ):
             self.assertIn(label, self.js)
+        for distinction in (
+            "Black</strong> Existing today",
+            "Blue</strong> New simulation idea",
+            "Orange</strong> New learning idea",
+            "What happens now",
+            "What should happen: simulate choices",
+            "What should happen later: learn from outcomes",
+            "THE CURRENT SYSTEM STAYS IN PLACE",
+        ):
+            self.assertIn(distinction, self.js)
 
     def test_dashboard_reads_the_owner_gated_supabase_contract(self):
         self.assertIn("sb.rpc('api_dashboard_state')", self.js)

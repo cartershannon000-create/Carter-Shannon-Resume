@@ -19,8 +19,8 @@ let omniState={snapshot:null,freshness:{},sections:{},illustrative:[]};
    exists in the markup silently activates nothing and renders a blank page --
    which is exactly what shipped when the OmniSupply panels were renamed and
    this table was not. assertTabsMatchMarkup() below now fails loudly instead. */
-const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['chats','reports','company','simulations','omni-system']};
-const APP_DEFAULT={client:'clients',system:'overview',omnisupply:'chats'};
+const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['chats','reports','company','simulations','omni-system'],financials:['fin-dashboard']};
+const APP_DEFAULT={client:'clients',system:'overview',omnisupply:'chats',financials:'fin-dashboard'};
 const LEGACY_TABS={clients:['client','clients'],money:['client','finances'],finances:['client','finances'],calendar:['client','calendar'],overview:['system','overview'],metrics:['system','metrics'],work:['system','work'],agents:['system','agents'],usage:['system','usage'],approvals:['system','approvals'],system:['system','system']};
 const DRILL_LAYOUT_KEY='cos.drillLayout',DRILL_LAYOUTS=new Set(['side','below','popout']);
 let drillLayout=(()=>{try{const saved=localStorage.getItem(DRILL_LAYOUT_KEY);return DRILL_LAYOUTS.has(saved)?saved:'side'}catch{return 'side'}})();
@@ -1819,82 +1819,63 @@ function renderOmniSystem(){
   const panel=$('[data-panel="omni-system"]');if(!panel)return;
   const runnerConnected=state?.control_plane?.local_runner==='connected';
   panel.innerHTML=pageHead(
-    'OmniSupply system',
-    'How a question becomes a sourced freight decision through the hosted control plane and local analysis runner.',
-    'Question → analysis → durable answer'
+    'How OmniSupply works now — and what changes next',
+    'Black is the operating path that exists today. Blue and orange are proposed additions for simulation and continuous placement learning.',
+    'Existing system + proposed loops'
   )+`
-    <section class="omni-system-map" aria-label="OmniSupply question and response architecture">
-      <div class="omni-system-status">
-        <span><i class="online"></i>Supabase live</span>
-        <span><i class="${runnerConnected?'online':'offline'}"></i>Local runner ${runnerConnected?'connected':'offline'}</span>
-      </div>
-      <div class="omni-architecture">
-        <article class="omni-system-node website">
-          <div class="omni-node-icon">Q</div>
-          <small>Human interface</small>
-          <h3>CS-Ventures.us</h3>
-          <p>Carter asks a freight question, chooses the model and effort, and watches the run.</p>
-          <span class="omni-node-chip">Authenticated dashboard</span>
-        </article>
-        <div class="omni-system-link request" aria-hidden="true">
-          <span>1 · question</span><b>⇄</b><small>4 · answer</small>
+    <section class="omni-system-map omni-system-compare" aria-label="Current OmniSupply system and proposed placement loops">
+      <div class="omni-system-topline">
+        <div class="omni-system-legend" aria-label="Diagram color key">
+          <span class="existing"><i></i><strong>Black</strong> Existing today</span>
+          <span class="simulation"><i></i><strong>Blue</strong> New simulation idea</span>
+          <span class="learning"><i></i><strong>Orange</strong> New learning idea</span>
         </div>
-        <article class="omni-system-node database">
-          <div class="omni-node-icon">D</div>
-          <small>Durable coordination</small>
-          <h3>Supabase</h3>
-          <p>Stores the conversation, typed job, progress, evidence, failure state, and final answer.</p>
-          <span class="omni-node-chip">Source of truth</span>
-        </article>
-        <div class="omni-system-link execution" aria-hidden="true">
-          <span>2 · approved job</span><b>⇄</b><small>3 · steps + result</small>
+        <div class="omni-system-status">
+          <span><i class="online"></i>Supabase live</span>
+          <span><i class="${runnerConnected?'online':'offline'}"></i>Local runner ${runnerConnected?'connected':'offline'}</span>
         </div>
-        <article class="omni-system-node runner">
-          <div class="omni-node-icon">L</div>
-          <small>Trusted execution</small>
-          <h3>Local LLM runner</h3>
-          <p>Claims work on demand, invokes the selected model, queries SCKG, and validates provenance.</p>
-          <span class="omni-node-chip">${runnerConnected?'Ready for work':'Waiting for laptop'}</span>
-        </article>
       </div>
-      <div class="omni-process-strip" aria-label="Four system steps">
-        <div><b>01</b><span><strong>Ask</strong>The website writes the question and model settings to Supabase.</span></div>
-        <div><b>02</b><span><strong>Trigger</strong>The local runner claims the durable job when the laptop is available.</span></div>
-        <div><b>03</b><span><strong>Analyze</strong>The model uses SCKG data and tools; live steps and issues stream back.</span></div>
-        <div><b>04</b><span><strong>Publish</strong>A validated answer—or a visible failure—is stored and shown in chat.</span></div>
-      </div>
-      <div class="omni-boundary-note">
-        <strong>Security boundary</strong>
-        <span>The browser never commands the laptop directly. Supabase is the durable, auditable handoff in both directions.</span>
-      </div>
-    </section>
 
-    <section class="omni-enrichment">
-      <div class="omni-enrichment-head">
-        <div><small>Model enrichment path</small><h3>From point-in-time answers to placement optimization</h3></div>
-        <span>Proposed analytical layer</span>
-      </div>
-      <div class="omni-enrichment-flow">
-        <article>
-          <div class="omni-enrichment-number">1</div>
-          <h4>Simulation environment</h4>
-          <p>Replay operating choices across one day, one week, or one month.</p>
-          <ul><li>Loaded and empty trips</li><li>Maintenance events</li><li>Weather and disruption events</li></ul>
-        </article>
-        <div class="omni-enrichment-arrow" aria-hidden="true">→</div>
-        <article>
-          <div class="omni-enrichment-number">2</div>
-          <h4>History + economics</h4>
-          <p>Blend peak-demand history with financial and operating constraints.</p>
-          <ul><li>Client and supplier response</li><li>Positioning cost</li><li>Service and revenue tradeoffs</li></ul>
-        </article>
-        <div class="omni-enrichment-arrow" aria-hidden="true">→</div>
-        <article class="outcome">
-          <div class="omni-enrichment-number">3</div>
-          <h4>Peak analysis</h4>
-          <p>Recommend aircraft placement with measurable business impact.</p>
-          <ul><li>Monthly reruns</li><li>Greater placement accuracy</li><li>Explicit ROI</li></ul>
-        </article>
+      <section class="omni-path existing" aria-labelledby="omni-existing-title">
+        <header><span>BLACK · EXISTING TODAY</span><div><h3 id="omni-existing-title">What happens now</h3><p>A question travels through the durable control plane, runs locally, and returns as a sourced answer.</p></div></header>
+        <div class="omni-path-flow existing-flow">
+          <article><b>1</b><small>Ask</small><strong>CS-Ventures.us</strong><p>Question, model, and effort are submitted.</p></article>
+          <div class="omni-path-arrow"><span>request</span><b>→</b></div>
+          <article><b>2</b><small>Coordinate</small><strong>Supabase</strong><p>Stores the chat, job, progress, errors, and result.</p></article>
+          <div class="omni-path-arrow"><span>leased job</span><b>→</b></div>
+          <article><b>3</b><small>Analyze</small><strong>Local LLM runner</strong><p>Selected model queries SCKG and validates evidence.</p></article>
+          <div class="omni-path-arrow return"><span>steps + answer</span><b>→</b></div>
+          <article><b>4</b><small>Publish</small><strong>Answer in chat</strong><p>Validated output or a visible failure returns through Supabase.</p></article>
+        </div>
+        <div class="omni-current-boundary"><strong>Current boundary</strong><span>The browser never commands the laptop directly. Supabase remains the durable handoff in both directions.</span></div>
+      </section>
+
+      <div class="omni-future-bridge"><span>THE CURRENT SYSTEM STAYS IN PLACE</span><b>Proposed additions branch from its stored context and results</b></div>
+
+      <div class="omni-future-grid">
+        <section class="omni-path simulation" aria-labelledby="omni-simulation-title">
+          <header><span>BLUE · NEW IDEA</span><div><h3 id="omni-simulation-title">What should happen: simulate choices</h3><p>Use a governed run to compare placement strategies before aircraft are moved.</p></div></header>
+          <div class="omni-future-flow">
+            <article><b>1</b><strong>Scenario setup</strong><p>Fleet starting points, horizon, runs, strategy, and explicit assumptions.</p></article>
+            <div class="omni-future-arrow">→</div>
+            <article><b>2</b><strong>Simulation environment</strong><p>Run the same synthetic trip and disruption tape across every strategy.</p></article>
+            <div class="omni-future-arrow">→</div>
+            <article><b>3</b><strong>Strategy comparison</strong><p>Show served, passed, empty legs, utilization, index margin, and replay.</p></article>
+          </div>
+          <div class="omni-path-result"><strong>Proposed output</strong><span>A scenario comparison—not a forecast or operating instruction.</span></div>
+        </section>
+
+        <section class="omni-path learning" aria-labelledby="omni-learning-title">
+          <header><span>ORANGE · NEW IDEA</span><div><h3 id="omni-learning-title">What should happen later: learn from outcomes</h3><p>Close the loop only when actual operating evidence becomes available.</p></div></header>
+          <div class="omni-future-flow">
+            <article><b>1</b><strong>Observed outcomes</strong><p>Completed and passed trips, actual timing, maintenance, and weather impacts.</p></article>
+            <div class="omni-future-arrow">→</div>
+            <article><b>2</b><strong>PEAK calibration</strong><p>Replace synthetic demand and timing assumptions with reviewed company data.</p></article>
+            <div class="omni-future-arrow">→</div>
+            <article><b>3</b><strong>Peak analysis</strong><p>Re-run placement options with a measured history and explain what changed.</p></article>
+          </div>
+          <div class="omni-path-result"><strong>Future output</strong><span>A better-calibrated recommendation with its uncertainty still visible.</span></div>
+        </section>
       </div>
     </section>
 
@@ -2414,9 +2395,67 @@ function resolveRoute(value){
 }
 function setActiveApp(app){$$('[data-app-link]').forEach(button=>{const active=button.dataset.appLink===app;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')})}
 function showHome(updateHash=true){closeCalendarDetail(false);closeDrill();document.body.classList.remove('calendar-active');$('#home').hidden=false;$('.tabs').hidden=true;$('#loading').hidden=true;$$('[data-tab]').forEach(button=>{button.classList.remove('active');button.setAttribute('aria-selected','false');button.tabIndex=-1});$$('[data-panel]').forEach(panel=>{panel.classList.remove('active');panel.hidden=true});setActiveApp('home');if(updateHash)history.replaceState(null,'','#home');window.scrollTo({top:0,behavior:'smooth'})}
-function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}if(tab!=='calendar')closeCalendarDetail(false);closeDrill();document.body.classList.toggle('calendar-active',tab==='calendar');$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===tab;panel.classList.toggle('active',active);panel.setAttribute('aria-hidden',String(!active));panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);window.scrollTo({top:0,behavior:'smooth'});if(tab==='company'&&state)refreshFleetOnView();if(tab==='simulations')simUpdateDynamic()}
+function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}if(tab!=='calendar')closeCalendarDetail(false);closeDrill();document.body.classList.toggle('calendar-active',tab==='calendar');$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===tab;panel.classList.toggle('active',active);panel.setAttribute('aria-hidden',String(!active));panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);window.scrollTo({top:0,behavior:'smooth'});if(tab==='company'&&state)refreshFleetOnView();if(tab==='simulations')simUpdateDynamic();if(tab==='fin-dashboard')loadFinancials()}
 function selectApp(app){if(app==='home'){showHome();return}if(APP_DEFAULT[app])activate(APP_DEFAULT[app]);else showHome()}
 function routeLocation(updateHash=true){const route=resolveRoute(location.hash.slice(1));if(route.app==='home')showHome(updateHash);else activate(route.tab,updateHash)}
+/* Financials ------------------------------------------------------------------
+   The dashboard is build_financial_dashboard.py's own UI, generated verbatim into
+   financials-frame.html by fin_build_frame.py and run in a same-origin iframe. That
+   keeps its `#app`/`#tabs` ids and its unscoped CSS from colliding with this console,
+   and means the rendering never drifts from the version already validated locally.
+
+   This side owns the Supabase client: it fetches the payload, posts it in, and turns
+   category overrides posted back out into fin.api_set_category() calls.
+
+   The payload carries every transaction, so it is fetched on first view of the tab
+   rather than inside load() -- the other three dashboards should not pay for it. */
+const finSb=sb.schema('fin');
+let finPayload=null,finLoading=null,finFrameReady=false;
+function finFrame(){return $('#fin-frame')}
+function finStatus(text,isError=false){const el=$('#fin-status');if(!el)return;el.hidden=!text;el.textContent=text||'';el.className=isError?'loading-error':'loading'}
+function postFinPayload(){const frame=finFrame();if(!frame||!finFrameReady||!finPayload)return;frame.contentWindow.postMessage({type:'fin-payload',payload:finPayload},location.origin);finStatus('')}
+/* The frame may finish loading before or after this module runs, so readiness is taken
+   from whichever of the two arrives first: its 'fin-ready' post, or the load event. */
+function bindFinFrame(){const frame=finFrame();if(!frame||frame.dataset.bound)return;frame.dataset.bound='1';frame.addEventListener('load',()=>{finFrameReady=true;postFinPayload()});if(frame.contentDocument?.readyState==='complete')finFrameReady=true}
+async function fetchFinancials(){
+  const{data,error}=await finSb.rpc('api_financial_state');
+  if(error)throw error;
+  if(!data)throw new Error('No financial data was returned.');
+  finPayload=data;postFinPayload();
+}
+function loadFinancials(force=false){
+  bindFinFrame();
+  if(finPayload&&!force){postFinPayload();return Promise.resolve()}
+  if(finLoading&&!force)return finLoading;
+  finStatus('Loading financials from Supabase…');
+  finLoading=fetchFinancials().catch(error=>{
+    // PostgREST can only route to `fin` if it is listed in the project's exposed
+    // schemas; without that the failure reads as a confusing 404 rather than a
+    // permission problem, so name the fix here.
+    const hint=/schema|404|not find|does not exist/i.test(error.message||'')
+      ?' Add "fin" to the exposed schemas in Supabase (Settings → API).':'';
+    finStatus(`Could not load financials: ${error.message}${hint}`,true);
+  }).finally(()=>{finLoading=null});
+  return finLoading;
+}
+async function setFinCategory(txId,category){
+  const{data,error}=await finSb.rpc('api_set_category',{p_tx_id:txId,p_category:category,p_note:'Set from CS Ventures control dashboard'});
+  if(error||data?.ok===false){alert(`Could not save the category: ${error?.message||data?.error||'unknown error'}`);return}
+  // Re-read rather than patching in place: an override moves the summary, the cash-flow
+  // bridge, and the insights, and every one of those is computed in the database.
+  await loadFinancials(true);
+}
+window.addEventListener('message',event=>{
+  if(event.origin!==location.origin)return;
+  const frame=finFrame();
+  if(!frame||event.source!==frame.contentWindow)return;
+  const msg=event.data;
+  if(!msg||typeof msg!=='object')return;
+  if(msg.type==='fin-ready'){finFrameReady=true;postFinPayload();return}
+  if(msg.type==='fin-height'){const h=Number(msg.height)||0;if(h>200)frame.style.minHeight=`${h+40}px`;return}
+  if(msg.type==='fin-set-category'&&typeof msg.txId==='string')setFinCategory(msg.txId,String(msg.category||''));
+});
+
 function greeting(){const h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening'}
 function render(){
   $('#loading').hidden=true;$('#updated-at').textContent=date(state.generated_at);$('#work-count').textContent=state.overview.active_work;$('#approval-count').textContent=state.overview.pending_review+state.overview.pending_approvals+releaseReadyWork().length;$('#metric-count').textContent=state.metrics.filter(m=>m.status==='needs_attention').length;
