@@ -10,7 +10,7 @@ import sqlite3
 from calendar import monthrange
 from collections import Counter, defaultdict
 from dataclasses import dataclass, asdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from statistics import mean
 from typing import Any
@@ -936,15 +936,24 @@ def forecast_merchant_label(tx: Transaction) -> tuple[int, str]:
 
 
 def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
-    """Forecast committed merchant charges separately from variable category spend."""
+    """Forecast committed charges and calendar-sensitive variable category spend."""
     today = date.today()
     current_month = month_key(today)
     day_of_month = today.day
     days_in_month = monthrange(today.year, today.month)[1]
+    month_end = date(today.year, today.month, days_in_month)
+    future_dates = [today + timedelta(days=offset) for offset in range(1, (month_end - today).days + 1)]
+    weekdays_remaining = sum(day.weekday() < 5 for day in future_dates)
+    weekend_days_remaining = len(future_dates) - weekdays_remaining
     expense_rows = [tx for tx in transactions if tx_is_expense(tx)]
     categories = sorted({tx.category for tx in expense_rows})
     complete_months = sorted({tx.month for tx in expense_rows if tx.month < current_month})
-    trailing_months = complete_months[-6:]
+    month_cursor = date(today.year, today.month, 1)
+    trailing_months = []
+    for _ in range(6):
+        month_cursor = (month_cursor - timedelta(days=1)).replace(day=1)
+        trailing_months.append(month_key(month_cursor))
+    trailing_months.reverse()
     # Keep detection and its residual variable history on one window. Otherwise an old
     # merchant alias (the prior rent recipient) survives removal and forecasts a second
     # copy of the same obligation even though the current alias is already committed.
@@ -1064,56 +1073,93 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
         variable_spent = sum(tx.cost for tx in current_variable[category])
         committed_remaining = committed_by_category[category]
 
-        profile: dict[int, float] = {}
         historical_totals: list[float] = []
-        remaining_today: list[float] = []
         months_with_any_spend = 0
-        if basis == "profile":
-            for month in forecast_months:
-                rows = historical[category].get(month, [])
-                final_total = sum(tx.cost for tx in rows)
-                cumulative = sum(tx.cost for tx in rows if int(tx.date[-2:]) <= day_of_month)
-                historical_totals.append(final_total)
-                remaining_today.append(final_total - cumulative)
-                months_with_any_spend += bool(rows)
+        weekday_values: list[float] = []
+        weekend_values: list[float] = []
+        for month in forecast_months:
+            rows = historical[category].get(month, [])
+            historical_totals.append(sum(tx.cost for tx in rows))
+            months_with_any_spend += bool(rows)
+            year, month_number = (int(part) for part in month.split("-"))
+            calendar_days = [date(year, month_number, day) for day in range(1, monthrange(year, month_number)[1] + 1)]
+            weekday_count = sum(day.weekday() < 5 for day in calendar_days)
+            weekend_count = len(calendar_days) - weekday_count
+            weekday_values.append(
+                sum(tx.cost for tx in rows if date.fromisoformat(tx.date).weekday() < 5) / weekday_count
+            )
+            weekend_values.append(
+                sum(tx.cost for tx in rows if date.fromisoformat(tx.date).weekday() >= 5) / weekend_count
+            )
 
-            # The chart retains the category's historical arrival shape, but the endpoint
-            # is the additive forecast below. Zero-total months cannot define a fraction
-            # and are omitted from this display-only timing profile.
-            profile_months = {
-                month: historical[category].get(month, [])
-                for month in forecast_months
-                if sum(tx.cost for tx in historical[category].get(month, [])) != 0
-            }
-            for day in range(1, days_in_month + 1):
-                fractions = []
-                for rows in profile_months.values():
-                    final_total = sum(tx.cost for tx in rows)
-                    cumulative = sum(tx.cost for tx in rows if int(tx.date[-2:]) <= day)
-                    fractions.append(cumulative / final_total)
-                profile[day] = _percentile(fractions, 0.5)
+        # Each observation is a month's day-type total divided by every matching
+        # calendar day in that month. Days without transactions therefore remain in the
+        # denominator instead of silently inflating sparse categories' rates.
+        weekday_rates = {p: _percentile(weekday_values, p) for p in (0.25, 0.5, 0.75)}
+        weekend_rates = {p: _percentile(weekend_values, p) for p in (0.25, 0.5, 0.75)}
+
+        # Seasonality needs more history than the six-month rate window. Each prior
+        # observation is compared with the trailing-twelve monthly average available at
+        # that point; incomplete trailing windows are not treated as twelve-month data.
+        category_variable_rows = [
+            tx for tx in expense_rows
+            if tx.category == category
+            and tx.month < current_month
+            and normalize_merchant(tx.description) not in committed_merchant_keys
+        ]
+        seasonal_factor = 1.0
+        seasonal_months_observed = 0
+        if category_variable_rows:
+            first_year, first_month = (int(part) for part in min(tx.month for tx in category_variable_rows).split("-"))
+            cursor = date(first_year, first_month, 1)
+            last_complete = date(today.year, today.month, 1) - timedelta(days=1)
+            monthly_variable: list[tuple[date, float]] = []
+            variable_by_month = defaultdict(float)
+            for tx in category_variable_rows:
+                variable_by_month[tx.month] += tx.cost
+            while cursor <= last_complete:
+                monthly_variable.append((cursor, variable_by_month[cursor.strftime("%Y-%m")]))
+                cursor = date(cursor.year + (cursor.month == 12), cursor.month % 12 + 1, 1)
+
+            history_months = len(monthly_variable)
+            seasonal_ratios = []
+            for index, (month_start, month_total) in enumerate(monthly_variable):
+                if month_start.month != today.month or index < 11:
+                    continue
+                trailing_average = mean(total for _, total in monthly_variable[index - 11:index + 1])
+                if trailing_average != 0:
+                    seasonal_ratios.append(month_total / trailing_average)
+            if history_months >= 12 and seasonal_ratios:
+                seasonal_months_observed = len(seasonal_ratios)
+                raw_factor = _percentile(seasonal_ratios, 0.5)
+                shrink = seasonal_months_observed / (seasonal_months_observed + 1)
+                seasonal_factor = min(max(1 + (raw_factor - 1) * shrink, 0.5), 2.0)
+
+        adjusted_weekday_rates = {p: rate * seasonal_factor for p, rate in weekday_rates.items()}
+        adjusted_weekend_rates = {p: rate * seasonal_factor for p, rate in weekend_rates.items()}
+        rate_remaining = {
+            p: adjusted_weekday_rates[p] * weekdays_remaining
+            + adjusted_weekend_rates[p] * weekend_days_remaining
+            for p in (0.25, 0.5, 0.75)
+        }
 
         if basis == "profile":
             typical_total = _percentile(historical_totals, 0.5)
-            remaining_25 = max(_percentile(remaining_today, 0.25), 0.0)
-            remaining_50 = max(_percentile(remaining_today, 0.5), 0.0)
-            remaining_75 = max(_percentile(remaining_today, 0.75), 0.0)
             regular = months_with_any_spend / months_of_history >= 0.8
             # The floor sees only variable history and variable current spend. Recognised
             # commitments have already been removed, so rent cannot enter both paths.
-            # The regular-category guard is only a fallback for a recurring charge the
-            # merchant detector missed: it fires when no variable activity has arrived,
-            # not after a category has already begun accruing normally.
             floor_remaining = (
                 max(typical_total - variable_spent, 0.0)
                 if regular and variable_spent == 0 and committed_remaining == 0
                 else 0.0
             )
-            variable_25 = max(remaining_25, floor_remaining * 0.9)
-            variable_50 = max(remaining_50, floor_remaining)
-            variable_75 = max(remaining_75, floor_remaining * 1.1)
+            # Adding weekday and weekend percentiles is deliberately conservative: the
+            # remaining days will not all land at their respective 75th percentiles.
+            variable_25 = max(rate_remaining[0.25], floor_remaining * 0.9)
+            variable_50 = max(rate_remaining[0.5], floor_remaining)
+            variable_75 = max(rate_remaining[0.75], floor_remaining * 1.1)
         else:
-            variable_25 = variable_50 = variable_75 = variable_spent / day_of_month * (days_in_month - day_of_month)
+            variable_25 = variable_50 = variable_75 = variable_spent / day_of_month * len(future_dates)
 
         variable_low = min(variable_25, variable_50, variable_75)
         variable_medium = variable_50
@@ -1143,14 +1189,20 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
             elif day == day_of_month:
                 projected = {"committed": spent, "low": spent, "medium": spent, "high": spent}
             else:
-                if basis == "profile":
-                    start = profile.get(day_of_month, 0.0)
-                    finish = profile.get(days_in_month, 1.0)
-                    remaining = finish - start
-                    progress = (profile.get(day, start) - start) / remaining if remaining > 0 else 1.0
-                else:
-                    progress = (day - day_of_month) / (days_in_month - day_of_month) if day_of_month < days_in_month else 1.0
-                progress = min(max(progress, 0.0), 1.0)
+                projection_dates = [today + timedelta(days=offset) for offset in range(1, day - day_of_month + 1)]
+                projected_weekdays = sum(projected_day.weekday() < 5 for projected_day in projection_dates)
+                projected_weekends = len(projection_dates) - projected_weekdays
+
+                def variable_to_day(percentile: float, endpoint: float) -> float:
+                    raw_endpoint = rate_remaining[percentile]
+                    raw_to_day = (
+                        adjusted_weekday_rates[percentile] * projected_weekdays
+                        + adjusted_weekend_rates[percentile] * projected_weekends
+                    )
+                    if raw_endpoint:
+                        return raw_to_day * endpoint / raw_endpoint
+                    return endpoint * len(projection_dates) / max(len(future_dates), 1)
+
                 committed_to_day = sum(
                     item["expected_amount"]
                     for item in committed_items
@@ -1160,9 +1212,9 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
                 )
                 projected = {
                     "committed": round(spent + committed_to_day, 2),
-                    "low": round(spent + committed_to_day + variable_low * progress, 2),
-                    "medium": round(spent + committed_to_day + variable_medium * progress, 2),
-                    "high": round(spent + committed_to_day + variable_high * progress, 2),
+                    "low": round(spent + committed_to_day + variable_to_day(0.25, variable_low), 2),
+                    "medium": round(spent + committed_to_day + variable_to_day(0.5, variable_medium), 2),
+                    "high": round(spent + committed_to_day + variable_to_day(0.75, variable_high), 2),
                 }
             cumulative_rows.append({"day": day, "actual": actual, **projected})
 
@@ -1177,6 +1229,10 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
             "variable_low": round(variable_low, 2),
             "variable_medium": round(variable_medium, 2),
             "variable_high": round(variable_high, 2),
+            "weekday_rate": round(adjusted_weekday_rates[0.5], 2),
+            "weekend_rate": round(adjusted_weekend_rates[0.5], 2),
+            "seasonal_factor": round(seasonal_factor, 4),
+            "seasonal_months_observed": seasonal_months_observed,
             "basis": basis,
             "months_of_history": months_of_history,
             "net_negative": net_negative,
@@ -1226,6 +1282,11 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
             "charged_so_far": round(sum(committed_charged_by_category.values()), 2),
             "variable_excluded_from_history": variable_excluded_from_history,
             "items": committed_items,
+        },
+        "calendar": {
+            "weekdays_remaining": weekdays_remaining,
+            "weekend_days_remaining": weekend_days_remaining,
+            "today_is_weekend": today.weekday() >= 5,
         },
         "categories": category_rows,
         "cumulative": total_cumulative,
@@ -3027,6 +3088,7 @@ def render_html(payload: dict[str, Any]) -> str:
       const forecast = DATA.forecast || {{total: {{}}, committed: {{items: []}}, categories: [], cumulative: []}};
       const categories = forecast.categories || [];
       const committed = forecast.committed || {{remaining: 0, charged_so_far: 0, items: []}};
+      const calendar = forecast.calendar || {{weekdays_remaining: 0, weekend_days_remaining: 0}};
       const committedItems = committed.items || [];
       const selected = forecastCategory === 'total'
         ? {{...forecast.total, label: 'Total', cumulative: forecast.cumulative || []}}
@@ -3037,6 +3099,13 @@ def render_html(payload: dict[str, Any]) -> str:
       ).join('');
       const profileCount = categories.filter(row => row.basis === 'profile').length;
       const chargedCount = committedItems.filter(item => item.status === 'charged').length;
+      const forecastMonth = new Date(`${{forecast.month || '2000-01'}}-01T12:00:00`).toLocaleString(undefined, {{month: 'long'}});
+      const seasonalInsight = row => {{
+        const factor = Number(row.seasonal_factor || 1);
+        if (factor >= 0.9 && factor <= 1.1) return '';
+        const direction = factor > 1 ? 'higher' : 'lower';
+        return `<div class="subtle">Typically ${{Math.round(Math.abs(factor - 1) * 100)}}% ${{direction}} in ${{esc(forecastMonth)}}</div>`;
+      }};
       app.innerHTML = `
         <section class="account-title">
           <div><h2>${{esc(forecast.month || 'Current month')}} Forecast</h2><div class="subtle">Spend to date plus fixed merchant commitments and variable spend historically still to come.</div></div>
@@ -3047,11 +3116,13 @@ def render_html(payload: dict[str, Any]) -> str:
           ${{kpi('Low', money(forecast.total.low), '25th-percentile category outcomes')}}
           ${{kpi('Medium', money(forecast.total.medium), 'Median category outcomes')}}
           ${{kpi('High', money(forecast.total.high), '75th-percentile category outcomes')}}
-          ${{kpi('Profile coverage', `${{profileCount}} / ${{categories.length}}`, 'Categories with 3+ historical months')}}
+          ${{kpi('Day-type coverage', `${{profileCount}} / ${{categories.length}}`, 'Categories with 3+ historical months')}}
         </section>
-        <section class="grid two" style="margin-top:16px">
+        <section class="grid kpis" style="margin-top:16px">
           ${{kpi('Committed remaining', money(committed.remaining), `${{committedItems.length}} recurring items · ${{chargedCount}} charged this month (${{money(committed.charged_so_far)}})`)}}
           ${{kpi('Variable remaining', money(forecast.total.variable_medium), `${{money(forecast.total.variable_low)}}–${{money(forecast.total.variable_high)}} low-high range`)}}
+          ${{kpi('Weekdays remaining', Number(calendar.weekdays_remaining || 0).toLocaleString(), 'Calendar days after today')}}
+          ${{kpi('Weekend days remaining', Number(calendar.weekend_days_remaining || 0).toLocaleString(), 'Saturdays and Sundays after today')}}
         </section>
         <section class="card" style="margin-top:16px">
           <h2>Committed Items</h2>
@@ -3066,9 +3137,9 @@ def render_html(payload: dict[str, Any]) -> str:
         </section>
         <section class="card" style="margin-top:16px">
           <h2>Category Forecasts</h2>
-          <div class="subtle" style="margin-bottom:8px">Profile rows add variable remaining-spend quartiles from the trailing six complete months. Run-rate rows have fewer than three complete months and do not imply the same precision.</div>
+          <div class="subtle" style="margin-bottom:8px">Day-type rows apply weekday and weekend daily-rate quartiles from the trailing six complete months. Run-rate rows have fewer than three complete months and do not imply the same precision.</div>
           <div class="table-wrap"><table><thead><tr><th>Category</th><th class="money">Spent</th><th class="money">Committed</th><th class="money">Variable median</th><th class="money">Low</th><th class="money">Medium</th><th class="money">High</th><th>Basis</th><th class="money">History</th></tr></thead><tbody>
-            ${{categories.map(row => `<tr><td>${{esc(row.label)}}${{row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}}</td><td class="money">${{exactMoney(row.spent)}}</td><td class="money">${{exactMoney(row.committed)}}</td><td class="money">${{exactMoney(row.variable_medium)}}</td><td class="money">${{exactMoney(row.low)}}</td><td class="money">${{exactMoney(row.medium)}}</td><td class="money">${{exactMoney(row.high)}}</td><td><span class="tag">${{row.basis === 'profile' ? 'Profile' : 'Run rate'}}</span></td><td class="money">${{row.months_of_history}}</td></tr>`).join('')}}
+            ${{categories.map(row => `<tr><td>${{esc(row.label)}}${{row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}}${{seasonalInsight(row)}}</td><td class="money">${{exactMoney(row.spent)}}</td><td class="money">${{exactMoney(row.committed)}}</td><td class="money">${{exactMoney(row.variable_medium)}}</td><td class="money">${{exactMoney(row.low)}}</td><td class="money">${{exactMoney(row.medium)}}</td><td class="money">${{exactMoney(row.high)}}</td><td><span class="tag">${{row.basis === 'profile' ? 'Day type' : 'Run rate'}}</span></td><td class="money">${{row.months_of_history}}</td></tr>`).join('')}}
           </tbody></table></div>
         </section>`;
       document.getElementById('forecastCategory').addEventListener('change', event => {{

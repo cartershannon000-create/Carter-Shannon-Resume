@@ -370,3 +370,231 @@ exclusion is not working.
 - the variable remainder alone is **below $2,700**
 - rent still appears exactly once, with category `variable_medium` of 0
 - band width still equals the variable band width
+
+---
+
+# ADDENDUM 4 — day-of-week rates and seasonality
+
+The variable model spreads remaining spend by day-of-month, which cannot see that four
+weekends left is a different month from two. Bars and food do not spend evenly across a
+week. Replace the day-of-month remainder with a **day-type rate model**, and apply a
+**damped seasonal factor**.
+
+Committed items are unaffected — a subscription bills on its date regardless of the day
+of the week. This addendum changes the VARIABLE half only.
+
+## 1. Day-type rates
+
+For each category, over history and with committed-merchant charges already excluded
+(Addendum 3), compute spend per calendar day bucketed by day type:
+
+- `weekend` — Saturday and Sunday
+- `weekday` — Monday to Friday
+
+Every day in the window counts, including days with no spend: a zero-spend Tuesday is
+evidence about Tuesdays. Computing the rate only over days that had transactions would
+inflate every rate badly.
+
+```
+weekday_rate(p) = percentile_cont(p) of per-weekday-day spend
+weekend_rate(p) = percentile_cont(p) of per-weekend-day spend
+```
+
+Remaining variable spend, for percentile p:
+
+```
+variable_remaining(p) = weekday_rate(p) * weekdays_remaining
+                      + weekend_rate(p) * weekend_days_remaining
+```
+
+`weekdays_remaining` and `weekend_days_remaining` count the days AFTER today through
+month end, computed from real calendar dates — not `days_remaining * 5/7`. Today itself
+is already partly spent and belongs to `spent`, so exclude it.
+
+Summing percentiles across day types is conservative: not every remaining day lands at
+the 75th percentile. State that in a comment rather than trying to convolve properly.
+
+## 2. Seasonality — damped, because the history is thin
+
+Bar spend genuinely rises in summer, but there is roughly one prior observation of each
+calendar month. A raw seasonal multiplier from a single August is noise, and applying it
+undamped would be worse than ignoring seasonality entirely.
+
+For each category with at least 12 months of history:
+
+```
+raw_factor = median over prior years of
+               (that calendar month's total) / (that year's trailing 12-month monthly average)
+
+n          = number of prior observations of this calendar month
+shrink     = n / (n + 1)                     -- 1 observation -> 0.5, 2 -> 0.67
+factor     = 1 + (raw_factor - 1) * shrink
+factor     = least(greatest(factor, 0.5), 2.0)     -- one odd month cannot triple a forecast
+```
+
+Categories with fewer than 12 months of history get `factor = 1.0`.
+
+Apply the factor to the day-type rates, not to the final total, so it interacts correctly
+with the weekend/weekday split.
+
+## 3. Payload additions
+
+Top level:
+
+```json
+"calendar": {"weekdays_remaining": 15, "weekend_days_remaining": 7, "today_is_weekend": false}
+```
+
+Per category:
+
+```json
+"weekday_rate": 12.40, "weekend_rate": 31.80,
+"seasonal_factor": 1.18, "seasonal_months_observed": 1
+```
+
+## 4. Chart
+
+The cumulative forecast path must step by day type: weekend days produce visibly steeper
+segments than weekdays. That is the whole point of the change and it should be legible in
+the line, not just in the total.
+
+## 5. UI
+
+On the Forecast tab, show `weekdays_remaining` and `weekend_days_remaining` alongside the
+committed and variable figures. Where a category has a seasonal factor materially away
+from 1.0 (below 0.9 or above 1.1), show it — "typically 18% higher in August" reads as
+insight; a silently adjusted number reads as a wrong number.
+
+## Verification — must hold on live data
+
+- `bar` and `food` weekend rates are HIGHER than their weekday rates. If they are not,
+  the buckets are inverted or the zero-spend days are being dropped.
+- `weekdays_remaining + weekend_days_remaining` equals the days left after today.
+- Every seasonal factor is within [0.5, 2.0], and categories with under 12 months of
+  history have exactly 1.0.
+- Total medium stays in **$3,600-$5,200** for August. A jump outside that means the
+  seasonal factor or the day counts are being applied twice.
+- Rent still appears once as committed, with zero variable.
+- `low <= medium <= high` for every category and the total.
+
+---
+
+# ADDENDUM 5 — closing the loop: score forecasts against what happened
+
+Everything so far is a model asserting a number with nothing checking it. `fin_parity.py`
+proves Python and SQL AGREE; it cannot tell you either is RIGHT. This addendum records
+what was predicted, scores it once the month closes, and feeds a bounded correction back
+in.
+
+**Honest expectation:** with one completed month this learns nothing, and the correction
+must be near zero. It becomes useful around three months and meaningful around six. Build
+it now so the record accumulates — not because it improves this month's number. Anything
+that claims to improve the forecast immediately is overfitting to a single observation.
+
+## 1. Record what was predicted
+
+```sql
+create table fin.forecast_snapshots (
+  month text not null,              -- the month being forecast, e.g. '2026-08'
+  day_of_month integer not null,    -- the day the prediction was made
+  category text not null,           -- '' means the month total
+  model_version text not null,      -- see below
+  spent numeric(14,2) not null,
+  committed numeric(14,2) not null,
+  low numeric(14,2) not null,
+  medium numeric(14,2) not null,
+  high numeric(14,2) not null,
+  taken_at timestamptz not null default now(),
+  primary key (month, day_of_month, category, model_version)
+);
+```
+
+A forecast made on day 5 and one made on day 25 are different predictions with different
+expected accuracy, so day_of_month is part of the key and scoring must bucket by it.
+Never overwrite: the primary key makes a second capture on the same day a no-op.
+
+`model_version` is a short constant in the migration, bumped whenever the model changes
+shape. Scoring reports per version; do NOT silently mix versions into one accuracy
+number, or a model change looks like a sudden improvement or regression.
+
+Capture with `fin.capture_forecast_snapshot()` — volatile, SECURITY DEFINER, called from
+`fin.api_sync_plaid_on_view()` after a successful sync, debounced to at most once per day.
+`fin.forecast()` is `stable` and cannot write, so it must not do this itself.
+
+## 2. Score once the month closes
+
+`fin.forecast_accuracy()` — for every month strictly before the current one, join each
+snapshot to that category's ACTUAL final total from `fin.v_transactions`:
+
+```
+error      = actual - medium
+pct_error  = (actual - medium) / nullif(abs(actual), 0)
+in_band    = actual between low and high
+```
+
+Return per category and per day_of_month bucket (1-10, 11-20, 21-end): sample count,
+median pct_error, and the in-band rate.
+
+Two different failures, and they need different fixes:
+
+- **bias** — median pct_error away from zero means the model is consistently over or
+  under. Correct the central estimate.
+- **calibration** — the 25th-75th band should contain the actual about **50%** of the
+  time. Much more means the bands are uselessly wide; much less means they are lying
+  about the uncertainty. Correct the band width, NOT the centre.
+
+## 3. Feed it back, bounded
+
+```
+n            = completed months observed for this category
+shrink       = n / (n + 3)          -- 1 month -> 0.25, 3 -> 0.5, 6 -> 0.67
+bias_factor  = 1 + median_pct_error * shrink
+bias_factor  = least(greatest(bias_factor, 0.7), 1.4)
+
+band_scale   = sqrt(target_coverage / greatest(observed_coverage, 0.1))
+band_scale   = least(greatest(band_scale, 0.6), 1.8)   -- target_coverage = 0.5
+```
+
+Apply `bias_factor` to the variable medium only — never to committed spend, which is
+known, and never to `spent`, which is history. Apply `band_scale` to the half-width
+around the corrected medium.
+
+Require **at least 2 completed months** before any correction applies at all; below that
+both factors are exactly 1.0. Record the factors in the payload so an odd forecast can
+always be traced to the correction that caused it.
+
+## 4. Payload
+
+```json
+"accuracy": {
+  "model_version": "daytype-1",
+  "months_scored": 3,
+  "total": {"median_pct_error": -0.04, "in_band_rate": 0.61},
+  "corrections_applied": false,
+  "by_category": [
+    {"category": "food", "median_pct_error": 0.12, "in_band_rate": 0.33,
+     "bias_factor": 1.03, "band_scale": 1.23, "months": 3}
+  ],
+  "last_month": {"month": "2026-07", "predicted_medium": 4100.00, "actual": 4238.11,
+                 "pct_error": 0.034, "in_band": true}
+}
+```
+
+## 5. UI
+
+A compact "How this forecast has been doing" block on the Forecast tab:
+
+- last completed month: predicted vs actual, and whether it landed in the band
+- months scored so far, and plainly stated when there are too few to correct anything
+- per-category accuracy in the existing table as a small column
+
+Do not present accuracy as a score out of ten or a grade. Show the numbers.
+
+## Verification
+
+- With fewer than 2 completed months, `corrections_applied` is false and every
+  `bias_factor` and `band_scale` is exactly 1.0
+- Capturing twice on the same day inserts one row
+- A snapshot is written for the total (category `''`) as well as per category
+- Scoring never includes the in-flight month
+- Forecast output with corrections disabled is identical to Addendum 4's output

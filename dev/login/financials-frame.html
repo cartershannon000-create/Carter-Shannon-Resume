@@ -1202,6 +1202,7 @@
       const forecast = DATA.forecast || {total: {}, committed: {items: []}, categories: [], cumulative: []};
       const categories = forecast.categories || [];
       const committed = forecast.committed || {remaining: 0, charged_so_far: 0, items: []};
+      const calendar = forecast.calendar || {weekdays_remaining: 0, weekend_days_remaining: 0};
       const committedItems = committed.items || [];
       const selected = forecastCategory === 'total'
         ? {...forecast.total, label: 'Total', cumulative: forecast.cumulative || []}
@@ -1212,6 +1213,13 @@
       ).join('');
       const profileCount = categories.filter(row => row.basis === 'profile').length;
       const chargedCount = committedItems.filter(item => item.status === 'charged').length;
+      const forecastMonth = new Date(`${forecast.month || '2000-01'}-01T12:00:00`).toLocaleString(undefined, {month: 'long'});
+      const seasonalInsight = row => {
+        const factor = Number(row.seasonal_factor || 1);
+        if (factor >= 0.9 && factor <= 1.1) return '';
+        const direction = factor > 1 ? 'higher' : 'lower';
+        return `<div class="subtle">Typically ${Math.round(Math.abs(factor - 1) * 100)}% ${direction} in ${esc(forecastMonth)}</div>`;
+      };
       app.innerHTML = `
         <section class="account-title">
           <div><h2>${esc(forecast.month || 'Current month')} Forecast</h2><div class="subtle">Spend to date plus fixed merchant commitments and variable spend historically still to come.</div></div>
@@ -1222,11 +1230,13 @@
           ${kpi('Low', money(forecast.total.low), '25th-percentile category outcomes')}
           ${kpi('Medium', money(forecast.total.medium), 'Median category outcomes')}
           ${kpi('High', money(forecast.total.high), '75th-percentile category outcomes')}
-          ${kpi('Profile coverage', `${profileCount} / ${categories.length}`, 'Categories with 3+ historical months')}
+          ${kpi('Day-type coverage', `${profileCount} / ${categories.length}`, 'Categories with 3+ historical months')}
         </section>
-        <section class="grid two" style="margin-top:16px">
+        <section class="grid kpis" style="margin-top:16px">
           ${kpi('Committed remaining', money(committed.remaining), `${committedItems.length} recurring items · ${chargedCount} charged this month (${money(committed.charged_so_far)})`)}
           ${kpi('Variable remaining', money(forecast.total.variable_medium), `${money(forecast.total.variable_low)}–${money(forecast.total.variable_high)} low-high range`)}
+          ${kpi('Weekdays remaining', Number(calendar.weekdays_remaining || 0).toLocaleString(), 'Calendar days after today')}
+          ${kpi('Weekend days remaining', Number(calendar.weekend_days_remaining || 0).toLocaleString(), 'Saturdays and Sundays after today')}
         </section>
         <section class="card" style="margin-top:16px">
           <h2>Committed Items</h2>
@@ -1241,9 +1251,9 @@
         </section>
         <section class="card" style="margin-top:16px">
           <h2>Category Forecasts</h2>
-          <div class="subtle" style="margin-bottom:8px">Profile rows add variable remaining-spend quartiles from the trailing six complete months. Run-rate rows have fewer than three complete months and do not imply the same precision.</div>
+          <div class="subtle" style="margin-bottom:8px">Day-type rows apply weekday and weekend daily-rate quartiles from the trailing six complete months. Run-rate rows have fewer than three complete months and do not imply the same precision.</div>
           <div class="table-wrap"><table><thead><tr><th>Category</th><th class="money">Spent</th><th class="money">Committed</th><th class="money">Variable median</th><th class="money">Low</th><th class="money">Medium</th><th class="money">High</th><th>Basis</th><th class="money">History</th></tr></thead><tbody>
-            ${categories.map(row => `<tr><td>${esc(row.label)}${row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}</td><td class="money">${exactMoney(row.spent)}</td><td class="money">${exactMoney(row.committed)}</td><td class="money">${exactMoney(row.variable_medium)}</td><td class="money">${exactMoney(row.low)}</td><td class="money">${exactMoney(row.medium)}</td><td class="money">${exactMoney(row.high)}</td><td><span class="tag">${row.basis === 'profile' ? 'Profile' : 'Run rate'}</span></td><td class="money">${row.months_of_history}</td></tr>`).join('')}
+            ${categories.map(row => `<tr><td>${esc(row.label)}${row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}${seasonalInsight(row)}</td><td class="money">${exactMoney(row.spent)}</td><td class="money">${exactMoney(row.committed)}</td><td class="money">${exactMoney(row.variable_medium)}</td><td class="money">${exactMoney(row.low)}</td><td class="money">${exactMoney(row.medium)}</td><td class="money">${exactMoney(row.high)}</td><td><span class="tag">${row.basis === 'profile' ? 'Day type' : 'Run rate'}</span></td><td class="money">${row.months_of_history}</td></tr>`).join('')}
           </tbody></table></div>
         </section>`;
       document.getElementById('forecastCategory').addEventListener('change', event => {
