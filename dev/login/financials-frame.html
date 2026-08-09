@@ -212,6 +212,10 @@
     .tag.control-high { background: #dcebd8; color: #245435; }
     .tag.control-medium { background: #efe7d7; color: #694b1e; }
     .tag.control-low { background: #e4e9ec; color: #3c5360; }
+    .tag.forecast-status-overdue { background: #f6dddd; color: #7c2828; }
+    .tag.forecast-status-due { background: #efe7d7; color: #694b1e; }
+    .tag.forecast-status-charged { background: #dcebd8; color: #245435; }
+    tr.forecast-overdue td { background: #fff4f2; }
     .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
     .control-card { display: grid; gap: 10px; }
     .control-bar { height: 8px; background: #edf0eb; border-radius: 999px; overflow: hidden; }
@@ -704,6 +708,7 @@
     function forecastChart(rows) {
       const series = [
         {key: 'actual', color: 'var(--accent)', label: 'Actual', width: 4},
+        {key: 'committed', color: 'var(--accent-3)', label: 'Committed path', width: 3, dash: '7 5'},
         {key: 'low', color: 'var(--muted)', label: 'Low', width: 3},
         {key: 'medium', color: 'var(--gold)', label: 'Medium', width: 3},
         {key: 'high', color: 'var(--danger)', label: 'High', width: 3},
@@ -727,7 +732,7 @@
           .filter(Boolean);
         if (!points.length) return '';
         const path = points.map((point, index) => `${index ? 'L' : 'M'}${point[0].toFixed(1)} ${point[1].toFixed(1)}`).join(' ');
-        return `<path d="${path}" fill="none" stroke="${item.color}" stroke-width="${item.width}" stroke-linecap="round" stroke-linejoin="round"></path>`;
+        return `<path d="${path}" fill="none" stroke="${item.color}" stroke-width="${item.width}" stroke-dasharray="${item.dash || ''}" stroke-linecap="round" stroke-linejoin="round"></path>`;
       }).join('');
       const dots = rows.map((row, index) => {
         const available = series.filter(item => row[item.key] != null);
@@ -1194,8 +1199,10 @@
     }
 
     function renderForecast() {
-      const forecast = DATA.forecast || {total: {}, categories: [], cumulative: []};
+      const forecast = DATA.forecast || {total: {}, committed: {items: []}, categories: [], cumulative: []};
       const categories = forecast.categories || [];
+      const committed = forecast.committed || {remaining: 0, charged_so_far: 0, items: []};
+      const committedItems = committed.items || [];
       const selected = forecastCategory === 'total'
         ? {...forecast.total, label: 'Total', cumulative: forecast.cumulative || []}
         : categories.find(row => row.category === forecastCategory);
@@ -1204,9 +1211,10 @@
         `<option value="${esc(row.category)}" ${row.category === forecastCategory ? 'selected' : ''}>${esc(row.label)}${row.net_negative ? ' — net of reimbursements' : ''}</option>`
       ).join('');
       const profileCount = categories.filter(row => row.basis === 'profile').length;
+      const chargedCount = committedItems.filter(item => item.status === 'charged').length;
       app.innerHTML = `
         <section class="account-title">
-          <div><h2>${esc(forecast.month || 'Current month')} Forecast</h2><div class="subtle">Spend to date plus the category-level amount historically still to come.</div></div>
+          <div><h2>${esc(forecast.month || 'Current month')} Forecast</h2><div class="subtle">Spend to date plus fixed merchant commitments and variable spend historically still to come.</div></div>
           <label>Chart category <select id="forecastCategory">${options}</select></label>
         </section>
         <section class="grid kpis">
@@ -1216,15 +1224,26 @@
           ${kpi('High', money(forecast.total.high), '75th-percentile category outcomes')}
           ${kpi('Profile coverage', `${profileCount} / ${categories.length}`, 'Categories with 3+ historical months')}
         </section>
+        <section class="grid two" style="margin-top:16px">
+          ${kpi('Committed remaining', money(committed.remaining), `${committedItems.length} recurring items · ${chargedCount} charged this month (${money(committed.charged_so_far)})`)}
+          ${kpi('Variable remaining', money(forecast.total.variable_medium), `${money(forecast.total.variable_low)}–${money(forecast.total.variable_high)} low-high range`)}
+        </section>
         <section class="card" style="margin-top:16px">
-          <div class="account-title"><div><h2>Cumulative ${esc(selected.label)} Spend</h2><div class="subtle">Actual through today; low, medium, and high paths continue from the same point.${selected.net_negative ? ' Values are net of reimbursements.' : ''}</div></div></div>
+          <h2>Committed Items</h2>
+          <div class="subtle" style="margin-bottom:8px">Recurring merchant charges detected from the trailing six complete months. Overdue items remain in the forecast until they arrive.</div>
+          ${committedItems.length ? `<div class="table-wrap"><table><thead><tr><th>Merchant</th><th class="money">Expected amount</th><th class="money">Expected day</th><th>Status</th></tr></thead><tbody>
+            ${committedItems.map(item => `<tr class="${item.status === 'overdue' ? 'forecast-overdue' : ''}"><td>${esc(item.merchant_label)}<div class="subtle">${esc(item.label)}</div></td><td class="money">${exactMoney(item.expected_amount)}</td><td class="money">Day ${item.expected_day}</td><td><span class="tag forecast-status-${esc(item.status)}">${esc(item.status)}</span></td></tr>`).join('')}
+          </tbody></table></div>` : '<div class="empty">No committed items detected.</div>'}
+        </section>
+        <section class="card" style="margin-top:16px">
+          <div class="account-title"><div><h2>Cumulative ${esc(selected.label)} Spend</h2><div class="subtle">Actual through today; the dashed committed path shows spend already spoken for, while the variable range drives the forecast width.${selected.net_negative ? ' Values are net of reimbursements.' : ''}</div></div></div>
           ${selected.cumulative?.length ? forecastChart(selected.cumulative) : '<div class="empty">No forecast series available.</div>'}
         </section>
         <section class="card" style="margin-top:16px">
           <h2>Category Forecasts</h2>
-          <div class="subtle" style="margin-bottom:8px">Profile rows add historical remaining-spend quartiles. Run-rate rows have fewer than three complete months and do not imply the same precision.</div>
-          <div class="table-wrap"><table><thead><tr><th>Category</th><th class="money">Spent</th><th class="money">Low</th><th class="money">Medium</th><th class="money">High</th><th>Basis</th><th class="money">History</th></tr></thead><tbody>
-            ${categories.map(row => `<tr><td>${esc(row.label)}${row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}</td><td class="money">${exactMoney(row.spent)}</td><td class="money">${exactMoney(row.low)}</td><td class="money">${exactMoney(row.medium)}</td><td class="money">${exactMoney(row.high)}</td><td><span class="tag">${row.basis === 'profile' ? 'Profile' : 'Run rate'}</span></td><td class="money">${row.months_of_history}</td></tr>`).join('')}
+          <div class="subtle" style="margin-bottom:8px">Profile rows add variable remaining-spend quartiles from the trailing six complete months. Run-rate rows have fewer than three complete months and do not imply the same precision.</div>
+          <div class="table-wrap"><table><thead><tr><th>Category</th><th class="money">Spent</th><th class="money">Committed</th><th class="money">Variable median</th><th class="money">Low</th><th class="money">Medium</th><th class="money">High</th><th>Basis</th><th class="money">History</th></tr></thead><tbody>
+            ${categories.map(row => `<tr><td>${esc(row.label)}${row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}</td><td class="money">${exactMoney(row.spent)}</td><td class="money">${exactMoney(row.committed)}</td><td class="money">${exactMoney(row.variable_medium)}</td><td class="money">${exactMoney(row.low)}</td><td class="money">${exactMoney(row.medium)}</td><td class="money">${exactMoney(row.high)}</td><td><span class="tag">${row.basis === 'profile' ? 'Profile' : 'Run rate'}</span></td><td class="money">${row.months_of_history}</td></tr>`).join('')}
           </tbody></table></div>
         </section>`;
       document.getElementById('forecastCategory').addEventListener('change', event => {

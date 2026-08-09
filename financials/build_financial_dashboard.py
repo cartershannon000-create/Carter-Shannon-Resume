@@ -905,8 +905,38 @@ def _percentile(values: list[float], fraction: float) -> float:
     return ordered[lower] + (ordered[upper] - ordered[lower]) * (position - lower)
 
 
+def normalize_merchant(description: str) -> str:
+    """Collapse volatile transaction descriptions to the merchant identity Insights uses."""
+    merchant = re.sub(r"[^a-z0-9 ]", "", description.lower())
+    merchant = re.sub(r"\b[0-9a-z]{5,}\b", "", merchant)
+    return " ".join(merchant.split()[:3])
+
+
+def forecast_merchant_label(tx: Transaction) -> tuple[int, str]:
+    """Return a display label without changing the recurring-charge grouping key."""
+    counterparty = clean_text(tx.counterparty)
+    if counterparty:
+        return (1, counterparty)
+
+    label = clean_text(tx.description)
+    label = re.sub(
+        r"^zelle\s+|\s+on\s+\d{1,2}/\d{1,2}\s+ref\b.*$",
+        "",
+        label,
+        flags=re.IGNORECASE,
+    )
+    label = re.sub(r"\b\d{3}[- ]\d{3}[- ]\d{4}\b", " ", label)
+    # Remove reference-like alphanumeric tokens and terminal digit runs, but retain the
+    # ordinary words that the grouping normaliser intentionally discards (for example,
+    # SPOTIFY). Counterparty labels win over all description fallbacks for a merchant.
+    label = re.sub(r"\b(?=[0-9a-z]*\d)[0-9a-z]{5,}\b", " ", label, flags=re.IGNORECASE)
+    label = re.sub(r"(?:\s+#?\d+)+\s*$", "", label)
+    label = clean_text(label).strip(" -–—*#:/")[:28].rstrip().title()
+    return (0, label)
+
+
 def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
-    """Forecast the current month by adding historically remaining category spend."""
+    """Forecast committed merchant charges separately from variable category spend."""
     today = date.today()
     current_month = month_key(today)
     day_of_month = today.day
@@ -914,29 +944,132 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
     expense_rows = [tx for tx in transactions if tx_is_expense(tx)]
     categories = sorted({tx.category for tx in expense_rows})
     complete_months = sorted({tx.month for tx in expense_rows if tx.month < current_month})
+    trailing_months = complete_months[-6:]
+    # Keep detection and its residual variable history on one window. Otherwise an old
+    # merchant alias (the prior rent recipient) survives removal and forecasts a second
+    # copy of the same obligation even though the current alias is already committed.
+    forecast_months = trailing_months or complete_months
 
+    labels = {
+        tx.category: tx.category_label or category_label(tx.category)
+        for tx in expense_rows
+    }
+    merchant_months: dict[tuple[str, str], dict[str, list[Transaction]]] = defaultdict(lambda: defaultdict(list))
+    merchant_label_counts: dict[str, Counter[tuple[int, str]]] = defaultdict(Counter)
+    for tx in expense_rows:
+        merchant = normalize_merchant(tx.description)
+        if tx.month in trailing_months and tx.cost > 0 and merchant:
+            merchant_months[(merchant, tx.category)][tx.month].append(tx)
+            priority, merchant_label = forecast_merchant_label(tx)
+            if merchant_label:
+                merchant_label_counts[merchant][(priority, merchant_label)] += 1
+
+    merchant_labels: dict[str, str] = {}
+    for merchant, counts in merchant_label_counts.items():
+        # Counterparty-derived candidates (priority 1) always beat description-derived
+        # candidates. Within that source, use the most frequent value and a stable text
+        # tie-break so row order cannot change the label.
+        merchant_labels[merchant] = min(
+            counts,
+            key=lambda candidate: (
+                -candidate[0], -counts[candidate], candidate[1].casefold(), candidate[1]
+            ),
+        )[1]
+
+    committed_definitions: list[dict[str, Any]] = []
+    trailing_count = len(trailing_months)
+    for (merchant, category), by_month in merchant_months.items():
+        months_seen = len(by_month)
+        if months_seen < 3 or not trailing_count or months_seen / trailing_count < 0.6:
+            continue
+        # A merchant may split one monthly obligation across multiple ledger rows (rent
+        # does this once). Treat the monthly sum as the observed charge so the small
+        # companion row cannot make an otherwise fixed obligation look volatile.
+        monthly_amounts = [sum(tx.cost for tx in rows) for rows in by_month.values()]
+        expected_amount = _percentile(monthly_amounts, 0.5)
+        average_amount = mean(monthly_amounts)
+        stddev = math.sqrt(mean([(amount - average_amount) ** 2 for amount in monthly_amounts]))
+        identical = max(monthly_amounts) - min(monthly_amounts) < 0.005
+        if not identical and (expected_amount <= 0 or stddev / expected_amount > 0.15):
+            continue
+        monthly_days = [
+            _percentile([float(int(tx.date[-2:])) for tx in rows], 0.5)
+            for rows in by_month.values()
+        ]
+        expected_day = min(days_in_month, int(math.floor(_percentile(monthly_days, 0.5) + 0.5)))
+        committed_definitions.append({
+            "merchant_key": merchant,
+            "merchant": merchant.title(),
+            "merchant_label": merchant_labels.get(merchant, merchant.title()),
+            "category": category,
+            "label": labels.get(category, category_label(category)),
+            "expected_amount": round(expected_amount, 2),
+            "expected_day": expected_day,
+            "months_seen": months_seen,
+        })
+
+    committed_keys = {
+        (item["merchant_key"], item["category"])
+        for item in committed_definitions
+    }
+    committed_merchant_keys = {item["merchant_key"] for item in committed_definitions}
     historical: dict[str, dict[str, list[Transaction]]] = defaultdict(lambda: defaultdict(list))
     current: dict[str, list[Transaction]] = defaultdict(list)
-    labels: dict[str, str] = {}
+    current_variable: dict[str, list[Transaction]] = defaultdict(list)
+    variable_excluded_from_history = 0
     for tx in expense_rows:
-        labels[tx.category] = tx.category_label or category_label(tx.category)
+        merchant_key = normalize_merchant(tx.description)
+        key = (merchant_key, tx.category)
         if tx.month < current_month:
-            historical[tx.category][tx.month].append(tx)
+            if merchant_key not in committed_merchant_keys:
+                historical[tx.category][tx.month].append(tx)
+            elif tx.month in forecast_months:
+                variable_excluded_from_history += 1
         elif tx.month == current_month and tx.date <= today.isoformat():
             current[tx.category].append(tx)
+            if merchant_key not in committed_merchant_keys:
+                current_variable[tx.category].append(tx)
+
+    current_committed: dict[tuple[str, str], list[Transaction]] = defaultdict(list)
+    for tx in expense_rows:
+        key = (normalize_merchant(tx.description), tx.category)
+        if tx.month == current_month and tx.date <= today.isoformat() and key in committed_keys:
+            current_committed[key].append(tx)
+
+    committed_items: list[dict[str, Any]] = []
+    committed_by_category: dict[str, float] = defaultdict(float)
+    committed_charged_by_category: dict[str, float] = defaultdict(float)
+    for definition in committed_definitions:
+        key = (definition["merchant_key"], definition["category"])
+        charged_rows = current_committed.get(key, [])
+        if charged_rows:
+            status = "charged"
+            charged_amount = sum(tx.cost for tx in charged_rows)
+            committed_charged_by_category[definition["category"]] += charged_amount
+        else:
+            status = "overdue" if definition["expected_day"] < day_of_month else "due"
+            committed_by_category[definition["category"]] += definition["expected_amount"]
+        committed_items.append({
+            key: value for key, value in definition.items() if key != "merchant_key"
+        } | {"status": status})
+
+    status_order = {"overdue": 0, "due": 1, "charged": 2}
+    committed_items.sort(key=lambda item: (status_order[item["status"]], item["expected_day"], item["merchant_label"]))
 
     category_rows: list[dict[str, Any]] = []
     for category in categories:
-        months_of_history = len(complete_months)
+        months_of_history = len(forecast_months)
         basis = "profile" if months_of_history >= 3 else "run_rate"
         spent = round(sum(tx.cost for tx in current[category]), 2)
+        variable_spent = sum(tx.cost for tx in current_variable[category])
+        committed_remaining = committed_by_category[category]
 
         profile: dict[int, float] = {}
         historical_totals: list[float] = []
         remaining_today: list[float] = []
         months_with_any_spend = 0
         if basis == "profile":
-            for month in complete_months:
+            for month in forecast_months:
                 rows = historical[category].get(month, [])
                 final_total = sum(tx.cost for tx in rows)
                 cumulative = sum(tx.cost for tx in rows if int(tx.date[-2:]) <= day_of_month)
@@ -949,7 +1082,7 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
             # and are omitted from this display-only timing profile.
             profile_months = {
                 month: historical[category].get(month, [])
-                for month in complete_months
+                for month in forecast_months
                 if sum(tx.cost for tx in historical[category].get(month, [])) != 0
             }
             for day in range(1, days_in_month + 1):
@@ -966,12 +1099,28 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
             remaining_50 = max(_percentile(remaining_today, 0.5), 0.0)
             remaining_75 = max(_percentile(remaining_today, 0.75), 0.0)
             regular = months_with_any_spend / months_of_history >= 0.8
-            floor_remaining = max(typical_total - spent, 0.0) if regular else 0.0
-            estimate_25 = spent + max(remaining_25, floor_remaining * 0.9)
-            estimate_50 = spent + max(remaining_50, floor_remaining)
-            estimate_75 = spent + max(remaining_75, floor_remaining * 1.1)
+            # The floor sees only variable history and variable current spend. Recognised
+            # commitments have already been removed, so rent cannot enter both paths.
+            # The regular-category guard is only a fallback for a recurring charge the
+            # merchant detector missed: it fires when no variable activity has arrived,
+            # not after a category has already begun accruing normally.
+            floor_remaining = (
+                max(typical_total - variable_spent, 0.0)
+                if regular and variable_spent == 0 and committed_remaining == 0
+                else 0.0
+            )
+            variable_25 = max(remaining_25, floor_remaining * 0.9)
+            variable_50 = max(remaining_50, floor_remaining)
+            variable_75 = max(remaining_75, floor_remaining * 1.1)
         else:
-            estimate_25 = estimate_50 = estimate_75 = spent / day_of_month * days_in_month
+            variable_25 = variable_50 = variable_75 = variable_spent / day_of_month * (days_in_month - day_of_month)
+
+        variable_low = min(variable_25, variable_50, variable_75)
+        variable_medium = variable_50
+        variable_high = max(variable_25, variable_50, variable_75)
+        estimate_25 = spent + committed_remaining + variable_low
+        estimate_50 = spent + committed_remaining + variable_medium
+        estimate_75 = spent + committed_remaining + variable_high
 
         # Keep the median estimate intact while clamping the outer bounds around it. This
         # protects the public low <= medium <= high contract if floor and percentile
@@ -990,9 +1139,9 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
             running += actual_by_day[day]
             actual = round(running, 2) if day <= day_of_month else None
             if day < day_of_month:
-                projected = {"low": None, "medium": None, "high": None}
+                projected = {"committed": None, "low": None, "medium": None, "high": None}
             elif day == day_of_month:
-                projected = {"low": spent, "medium": spent, "high": spent}
+                projected = {"committed": spent, "low": spent, "medium": spent, "high": spent}
             else:
                 if basis == "profile":
                     start = profile.get(day_of_month, 0.0)
@@ -1002,10 +1151,18 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
                 else:
                     progress = (day - day_of_month) / (days_in_month - day_of_month) if day_of_month < days_in_month else 1.0
                 progress = min(max(progress, 0.0), 1.0)
+                committed_to_day = sum(
+                    item["expected_amount"]
+                    for item in committed_items
+                    if item["category"] == category
+                    and item["status"] != "charged"
+                    and min(days_in_month, max(item["expected_day"], day_of_month + 1)) <= day
+                )
                 projected = {
-                    "low": round(spent + (low - spent) * progress, 2),
-                    "medium": round(spent + (medium - spent) * progress, 2),
-                    "high": round(spent + (high - spent) * progress, 2),
+                    "committed": round(spent + committed_to_day, 2),
+                    "low": round(spent + committed_to_day + variable_low * progress, 2),
+                    "medium": round(spent + committed_to_day + variable_medium * progress, 2),
+                    "high": round(spent + committed_to_day + variable_high * progress, 2),
                 }
             cumulative_rows.append({"day": day, "actual": actual, **projected})
 
@@ -1016,6 +1173,10 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
             "low": low,
             "medium": medium,
             "high": high,
+            "committed": round(committed_remaining, 2),
+            "variable_low": round(variable_low, 2),
+            "variable_medium": round(variable_medium, 2),
+            "variable_high": round(variable_high, 2),
             "basis": basis,
             "months_of_history": months_of_history,
             "net_negative": net_negative,
@@ -1040,6 +1201,7 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
         total_cumulative.append({
             "day": day,
             "actual": total_for("actual"),
+            "committed": total_for("committed"),
             "low": total_for("low"),
             "medium": total_for("medium"),
             "high": total_for("high"),
@@ -1054,7 +1216,16 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
             "low": total_low,
             "medium": total_medium,
             "high": total_high,
+            "variable_low": round(sum(row["variable_low"] for row in category_rows), 2),
+            "variable_medium": round(sum(row["variable_medium"] for row in category_rows), 2),
+            "variable_high": round(sum(row["variable_high"] for row in category_rows), 2),
             "basis": "profile" if any(row["basis"] == "profile" for row in category_rows) else "run_rate",
+        },
+        "committed": {
+            "remaining": round(sum(committed_by_category.values()), 2),
+            "charged_so_far": round(sum(committed_charged_by_category.values()), 2),
+            "variable_excluded_from_history": variable_excluded_from_history,
+            "items": committed_items,
         },
         "categories": category_rows,
         "cumulative": total_cumulative,
@@ -1496,9 +1667,7 @@ def build_insights(transactions: list[Transaction], summary: dict[str, Any]) -> 
     for tx in transactions:
         if not tx_is_expense(tx) or tx.cost <= 0:
             continue
-        merchant = re.sub(r"[^a-z0-9 ]", "", tx.description.lower())
-        merchant = re.sub(r"\b[0-9a-z]{5,}\b", "", merchant)
-        merchant = " ".join(merchant.split()[:3])
+        merchant = normalize_merchant(tx.description)
         if not merchant:
             continue
         groups[(merchant, round(tx.cost))].append(tx)
@@ -1917,6 +2086,10 @@ def render_html(payload: dict[str, Any]) -> str:
     .tag.control-high {{ background: #dcebd8; color: #245435; }}
     .tag.control-medium {{ background: #efe7d7; color: #694b1e; }}
     .tag.control-low {{ background: #e4e9ec; color: #3c5360; }}
+    .tag.forecast-status-overdue {{ background: #f6dddd; color: #7c2828; }}
+    .tag.forecast-status-due {{ background: #efe7d7; color: #694b1e; }}
+    .tag.forecast-status-charged {{ background: #dcebd8; color: #245435; }}
+    tr.forecast-overdue td {{ background: #fff4f2; }}
     .chip-row {{ display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }}
     .control-card {{ display: grid; gap: 10px; }}
     .control-bar {{ height: 8px; background: #edf0eb; border-radius: 999px; overflow: hidden; }}
@@ -2360,6 +2533,7 @@ def render_html(payload: dict[str, Any]) -> str:
     function forecastChart(rows) {{
       const series = [
         {{key: 'actual', color: 'var(--accent)', label: 'Actual', width: 4}},
+        {{key: 'committed', color: 'var(--accent-3)', label: 'Committed path', width: 3, dash: '7 5'}},
         {{key: 'low', color: 'var(--muted)', label: 'Low', width: 3}},
         {{key: 'medium', color: 'var(--gold)', label: 'Medium', width: 3}},
         {{key: 'high', color: 'var(--danger)', label: 'High', width: 3}},
@@ -2383,7 +2557,7 @@ def render_html(payload: dict[str, Any]) -> str:
           .filter(Boolean);
         if (!points.length) return '';
         const path = points.map((point, index) => `${{index ? 'L' : 'M'}}${{point[0].toFixed(1)}} ${{point[1].toFixed(1)}}`).join(' ');
-        return `<path d="${{path}}" fill="none" stroke="${{item.color}}" stroke-width="${{item.width}}" stroke-linecap="round" stroke-linejoin="round"></path>`;
+        return `<path d="${{path}}" fill="none" stroke="${{item.color}}" stroke-width="${{item.width}}" stroke-dasharray="${{item.dash || ''}}" stroke-linecap="round" stroke-linejoin="round"></path>`;
       }}).join('');
       const dots = rows.map((row, index) => {{
         const available = series.filter(item => row[item.key] != null);
@@ -2850,8 +3024,10 @@ def render_html(payload: dict[str, Any]) -> str:
     }}
 
     function renderForecast() {{
-      const forecast = DATA.forecast || {{total: {{}}, categories: [], cumulative: []}};
+      const forecast = DATA.forecast || {{total: {{}}, committed: {{items: []}}, categories: [], cumulative: []}};
       const categories = forecast.categories || [];
+      const committed = forecast.committed || {{remaining: 0, charged_so_far: 0, items: []}};
+      const committedItems = committed.items || [];
       const selected = forecastCategory === 'total'
         ? {{...forecast.total, label: 'Total', cumulative: forecast.cumulative || []}}
         : categories.find(row => row.category === forecastCategory);
@@ -2860,9 +3036,10 @@ def render_html(payload: dict[str, Any]) -> str:
         `<option value="${{esc(row.category)}}" ${{row.category === forecastCategory ? 'selected' : ''}}>${{esc(row.label)}}${{row.net_negative ? ' — net of reimbursements' : ''}}</option>`
       ).join('');
       const profileCount = categories.filter(row => row.basis === 'profile').length;
+      const chargedCount = committedItems.filter(item => item.status === 'charged').length;
       app.innerHTML = `
         <section class="account-title">
-          <div><h2>${{esc(forecast.month || 'Current month')}} Forecast</h2><div class="subtle">Spend to date plus the category-level amount historically still to come.</div></div>
+          <div><h2>${{esc(forecast.month || 'Current month')}} Forecast</h2><div class="subtle">Spend to date plus fixed merchant commitments and variable spend historically still to come.</div></div>
           <label>Chart category <select id="forecastCategory">${{options}}</select></label>
         </section>
         <section class="grid kpis">
@@ -2872,15 +3049,26 @@ def render_html(payload: dict[str, Any]) -> str:
           ${{kpi('High', money(forecast.total.high), '75th-percentile category outcomes')}}
           ${{kpi('Profile coverage', `${{profileCount}} / ${{categories.length}}`, 'Categories with 3+ historical months')}}
         </section>
+        <section class="grid two" style="margin-top:16px">
+          ${{kpi('Committed remaining', money(committed.remaining), `${{committedItems.length}} recurring items · ${{chargedCount}} charged this month (${{money(committed.charged_so_far)}})`)}}
+          ${{kpi('Variable remaining', money(forecast.total.variable_medium), `${{money(forecast.total.variable_low)}}–${{money(forecast.total.variable_high)}} low-high range`)}}
+        </section>
         <section class="card" style="margin-top:16px">
-          <div class="account-title"><div><h2>Cumulative ${{esc(selected.label)}} Spend</h2><div class="subtle">Actual through today; low, medium, and high paths continue from the same point.${{selected.net_negative ? ' Values are net of reimbursements.' : ''}}</div></div></div>
+          <h2>Committed Items</h2>
+          <div class="subtle" style="margin-bottom:8px">Recurring merchant charges detected from the trailing six complete months. Overdue items remain in the forecast until they arrive.</div>
+          ${{committedItems.length ? `<div class="table-wrap"><table><thead><tr><th>Merchant</th><th class="money">Expected amount</th><th class="money">Expected day</th><th>Status</th></tr></thead><tbody>
+            ${{committedItems.map(item => `<tr class="${{item.status === 'overdue' ? 'forecast-overdue' : ''}}"><td>${{esc(item.merchant_label)}}<div class="subtle">${{esc(item.label)}}</div></td><td class="money">${{exactMoney(item.expected_amount)}}</td><td class="money">Day ${{item.expected_day}}</td><td><span class="tag forecast-status-${{esc(item.status)}}">${{esc(item.status)}}</span></td></tr>`).join('')}}
+          </tbody></table></div>` : '<div class="empty">No committed items detected.</div>'}}
+        </section>
+        <section class="card" style="margin-top:16px">
+          <div class="account-title"><div><h2>Cumulative ${{esc(selected.label)}} Spend</h2><div class="subtle">Actual through today; the dashed committed path shows spend already spoken for, while the variable range drives the forecast width.${{selected.net_negative ? ' Values are net of reimbursements.' : ''}}</div></div></div>
           ${{selected.cumulative?.length ? forecastChart(selected.cumulative) : '<div class="empty">No forecast series available.</div>'}}
         </section>
         <section class="card" style="margin-top:16px">
           <h2>Category Forecasts</h2>
-          <div class="subtle" style="margin-bottom:8px">Profile rows add historical remaining-spend quartiles. Run-rate rows have fewer than three complete months and do not imply the same precision.</div>
-          <div class="table-wrap"><table><thead><tr><th>Category</th><th class="money">Spent</th><th class="money">Low</th><th class="money">Medium</th><th class="money">High</th><th>Basis</th><th class="money">History</th></tr></thead><tbody>
-            ${{categories.map(row => `<tr><td>${{esc(row.label)}}${{row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}}</td><td class="money">${{exactMoney(row.spent)}}</td><td class="money">${{exactMoney(row.low)}}</td><td class="money">${{exactMoney(row.medium)}}</td><td class="money">${{exactMoney(row.high)}}</td><td><span class="tag">${{row.basis === 'profile' ? 'Profile' : 'Run rate'}}</span></td><td class="money">${{row.months_of_history}}</td></tr>`).join('')}}
+          <div class="subtle" style="margin-bottom:8px">Profile rows add variable remaining-spend quartiles from the trailing six complete months. Run-rate rows have fewer than three complete months and do not imply the same precision.</div>
+          <div class="table-wrap"><table><thead><tr><th>Category</th><th class="money">Spent</th><th class="money">Committed</th><th class="money">Variable median</th><th class="money">Low</th><th class="money">Medium</th><th class="money">High</th><th>Basis</th><th class="money">History</th></tr></thead><tbody>
+            ${{categories.map(row => `<tr><td>${{esc(row.label)}}${{row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}}</td><td class="money">${{exactMoney(row.spent)}}</td><td class="money">${{exactMoney(row.committed)}}</td><td class="money">${{exactMoney(row.variable_medium)}}</td><td class="money">${{exactMoney(row.low)}}</td><td class="money">${{exactMoney(row.medium)}}</td><td class="money">${{exactMoney(row.high)}}</td><td><span class="tag">${{row.basis === 'profile' ? 'Profile' : 'Run rate'}}</span></td><td class="money">${{row.months_of_history}}</td></tr>`).join('')}}
           </tbody></table></div>
         </section>`;
       document.getElementById('forecastCategory').addEventListener('change', event => {{

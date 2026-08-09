@@ -197,3 +197,176 @@ taking absolutes. But a negative forecast reads as broken, so:
 
 Keep everything else in the original spec: the tab position, the chart, the category
 selector, the `basis` field, the wiring, and the constraints.
+
+---
+
+# ADDENDUM 2 — separate committed spend from variable spend
+
+The additive model works, but it treats every category as one undifferentiated pool. A
+Spotify subscription and a night at a bar are not the same kind of future spend: one is
+known to the cent and certain to arrive, the other is a distribution. Averaging them
+together widens the band around things that are not uncertain and hides the fact that
+some of next week's spend is already committed.
+
+Split the forecast into **committed** and **variable**, and show both.
+
+## Detecting committed spend
+
+Do this at the MERCHANT level, not the category level. `build_insights()` already
+normalises merchants for its recurring-charge detection — reuse that exact normalisation
+so the two features cannot disagree about what "the same merchant" means:
+
+```
+lower(description) -> strip [^a-z0-9 ] -> drop \m[0-9a-z]{5,}\M tokens -> first 3 words
+```
+
+A merchant+amount pair is **committed** when, over the trailing 6 complete months:
+
+- it appears in at least 3 distinct months, AND
+- it appears in at least 60% of those months, AND
+- the charge amount is stable: `stddev / median <= 0.15`, or the amounts are identical
+
+Store, per committed item: normalised merchant, category, `expected_amount` (median),
+`expected_day` (median day-of-month), and `months_seen`.
+
+Rent qualifies naturally under this rule, so the 80%-of-months category floor from the
+previous correction becomes redundant for anything the merchant rule catches. Keep the
+category floor only as a fallback for categories with committed spend the merchant rule
+missed, and do not let both fire for the same money — double-counting rent would be worse
+than the bug this replaces.
+
+## Forecasting with the split
+
+For the current month, for each committed item:
+
+- **already charged this month** — it is in `spent`; add nothing
+- **not yet charged** — add `expected_amount` to `committed_remaining`
+- if `expected_day < today` and it has not arrived, still count it, and mark
+  `"overdue": true`. It is late, not cancelled. That is the rent case generalised.
+
+Variable forecasting is the existing additive percentile model, but computed on history
+with committed-merchant charges REMOVED, so a subscription's certainty does not inflate
+the variable band.
+
+```
+medium = spent + committed_remaining + variable_medium
+low    = spent + committed_remaining + variable_low
+high   = spent + committed_remaining + variable_high
+```
+
+`committed_remaining` sits in all three bands unchanged — that is the point. It is not
+uncertain, so it must not widen the band.
+
+## Payload additions
+
+On the top-level object:
+
+```json
+"committed": {
+  "remaining": 1512.00,
+  "charged_so_far": 45.98,
+  "items": [
+    {"merchant": "Spotify Usa", "category": "spotify", "label": "Spotify",
+     "expected_amount": 11.99, "expected_day": 14, "months_seen": 6,
+     "status": "due"}
+  ]
+}
+```
+
+`status` is one of `charged` (already seen this month), `due` (expected later this
+month), `overdue` (expected day has passed and it has not arrived).
+
+Each category row gains `"committed": n` and `"variable_medium": n` so the table can show
+the split per category.
+
+## UI
+
+On the Forecast tab, above the chart:
+
+- two figures side by side — **Committed** (with a count of items) and **Variable**
+  (with its low-high range) — so the certain and uncertain parts of the month are legible
+  at a glance
+- a small table of committed items with merchant, expected amount, expected day, and
+  status; `overdue` rows visually marked
+
+In the cumulative chart, the committed portion should be visible as a distinct band or
+line rather than blended into the forecast lines, so the shape of "what is already
+spoken for" is readable.
+
+## Verification — must hold on live data
+
+- `rent` appears as a committed item at ~$1,470, status `overdue` (August's had not
+  arrived by the 9th), and is NOT also counted by the category floor
+- Known subscriptions appear as committed items with sane expected days
+- `committed_remaining + spent <= medium` and the band width equals the variable band
+  width — committed spend must not widen it
+- The total medium stays in the $3,500-$5,000 range for August; a large jump means
+  something is being double-counted
+
+---
+
+# ADDENDUM 3 — two defects in the committed/variable split
+
+Verified against live data. The split works — rent is caught once, at $1,470, and
+committed spend correctly does not widen the band. Two things are wrong.
+
+## Defect 1: merchant labels are unreadable
+
+The committed items currently render as:
+
+```
+To Phil S  $1470.00      Adw  $26.36      Ca  $16.86      36  $10.59
+```
+
+`Adw`, `Ca`, `36` are not merchants. Reusing `build_insights()`'s normaliser was my
+instruction and it was wrong for this: it drops every alphanumeric token of 5+ characters
+to strip order ids, which also deletes real merchant names — `SPOTIFY` is seven
+characters. That is harmless when the string is only ever a grouping key, which is all
+insights uses it for. Here it is shown to the user.
+
+**Separate the grouping key from the display label.**
+
+- **Grouping key** — keep exactly as it is. It works, and changing it would silently
+  regroup existing recurring detections.
+- **Display label** — a new field, `merchant_label`, resolved in this order:
+  1. the transaction's `counterparty` when non-empty (this is Plaid's `merchant_name`,
+     which is already clean: "Spotify", "Uber")
+  2. otherwise the description, whitespace-collapsed, with trailing digit runs and
+     obvious reference numbers removed, truncated to ~28 characters, title-cased
+  Pick the most common non-empty value across that merchant's charges, not the latest.
+
+The UI must show `merchant_label`. Keep `merchant` in the payload for debugging.
+
+Rent showing as "To Phil S" is correct and should stay — that is what the transaction
+says. Verify it renders as something recognisable, not as "To Phil S" becoming "".
+
+## Defect 2: the variable forecast is roughly 20% too high
+
+Total medium came out at **$5,096.34**. Recent complete months were $3,949, $4,231,
+$3,989 and $4,617. Worse, the variable remainder alone is **$2,890**, which is larger
+than a typical month's entire variable spend once rent is excluded (~$2,700) — and that
+is supposed to be what is LEFT after nine days, not the whole month.
+
+The likely cause is that committed charges are not being removed from the historical
+series the variable percentiles are computed from, so committed money is counted twice:
+once in `committed_remaining` and again inside the variable distribution.
+
+Removing them must happen **before** `final_total` and `cum_at_d` are computed, for every
+historical month, not subtracted from the result afterwards. A charge belongs to a
+committed merchant if its grouping key matches a currently-committed merchant, regardless
+of which month it falls in.
+
+Add an explicit guard so this cannot regress silently: expose
+`"variable_excluded_from_history": <count>` on the top-level `committed` object — the
+number of historical charges removed. If that is 0 while committed items exist, the
+exclusion is not working.
+
+## Verification — must hold on live data
+
+- committed items display recognisable names; no single-token labels like `Ca` or `36`
+- `variable_excluded_from_history` is well above 0
+- total medium lands in **$3,600–$5,000** (recent months $3,949–$4,617, with $674 spent
+  by day 9)
+- the variable remainder alone is **below $2,700**
+- rent still appears exactly once, with category `variable_medium` of 0
+- band width still equals the variable band width
