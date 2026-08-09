@@ -19,13 +19,13 @@ let omniState={snapshot:null,freshness:{},sections:{},illustrative:[]};
    exists in the markup silently activates nothing and renders a blank page --
    which is exactly what shipped when the OmniSupply panels were renamed and
    this table was not. assertTabsMatchMarkup() below now fails loudly instead. */
-const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['chats','reports','company','simulations','omni-system'],financials:['fin-overview','fin-monthly','fin-cashflow','fin-analytics','fin-review','fin-amex','fin-capital-one','fin-checking','fin-venmo','fin-wells-fargo']};
+const APP_TABS={client:['clients','finances','calendar'],system:['overview','metrics','work','agents','usage','approvals','system'],omnisupply:['chats','reports','company','simulations','omni-system'],financials:['fin-overview','fin-forecast','fin-monthly','fin-cashflow','fin-analytics','fin-review','fin-amex','fin-capital-one','fin-checking','fin-venmo','fin-wells-fargo']};
 const APP_DEFAULT={client:'clients',system:'overview',omnisupply:'chats',financials:'fin-overview'};
-/* Financials is the one app whose tabs do not each own a panel: all ten drive the same
+/* Financials is the one app whose tabs do not each own a panel: all eleven drive the same
    iframe, so the tab name is posted into it instead. The values are the frame's own tab
    labels, which come from the payload's `accounts` array -- change one and the frame
    silently renders nothing, so they are kept together here rather than derived. */
-const FIN_TABS={'fin-overview':'Overview','fin-monthly':'Monthly','fin-cashflow':'Cash Flow','fin-analytics':'Analytics','fin-review':'Review','fin-amex':'Amex','fin-capital-one':'Capital One','fin-checking':'Checking','fin-venmo':'Venmo','fin-wells-fargo':'Wells Fargo'};
+const FIN_TABS={'fin-overview':'Overview','fin-forecast':'Forecast','fin-monthly':'Monthly','fin-cashflow':'Cash Flow','fin-analytics':'Analytics','fin-review':'Review','fin-amex':'Amex','fin-capital-one':'Capital One','fin-checking':'Checking','fin-venmo':'Venmo','fin-wells-fargo':'Wells Fargo'};
 const FIN_PANEL='fin-dashboard';
 const LEGACY_TABS={clients:['client','clients'],money:['client','finances'],finances:['client','finances'],calendar:['client','calendar'],overview:['system','overview'],metrics:['system','metrics'],work:['system','work'],agents:['system','agents'],usage:['system','usage'],approvals:['system','approvals'],system:['system','system']};
 const DRILL_LAYOUT_KEY='cos.drillLayout',DRILL_LAYOUTS=new Set(['side','below','popout']);

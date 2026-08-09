@@ -7,6 +7,7 @@ import json
 import math
 import re
 import sqlite3
+from calendar import monthrange
 from collections import Counter, defaultdict
 from dataclasses import dataclass, asdict
 from datetime import date, datetime
@@ -891,6 +892,175 @@ def build_summary(transactions: list[Transaction]) -> dict[str, Any]:
     }
 
 
+def _percentile(values: list[float], fraction: float) -> float:
+    """Match PostgreSQL percentile_cont so the Python and SQL forecasts stay identical."""
+    ordered = sorted(values)
+    if not ordered:
+        return 0.0
+    position = (len(ordered) - 1) * fraction
+    lower = math.floor(position)
+    upper = math.ceil(position)
+    if lower == upper:
+        return ordered[lower]
+    return ordered[lower] + (ordered[upper] - ordered[lower]) * (position - lower)
+
+
+def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
+    """Forecast the current month by adding historically remaining category spend."""
+    today = date.today()
+    current_month = month_key(today)
+    day_of_month = today.day
+    days_in_month = monthrange(today.year, today.month)[1]
+    expense_rows = [tx for tx in transactions if tx_is_expense(tx)]
+    categories = sorted({tx.category for tx in expense_rows})
+    complete_months = sorted({tx.month for tx in expense_rows if tx.month < current_month})
+
+    historical: dict[str, dict[str, list[Transaction]]] = defaultdict(lambda: defaultdict(list))
+    current: dict[str, list[Transaction]] = defaultdict(list)
+    labels: dict[str, str] = {}
+    for tx in expense_rows:
+        labels[tx.category] = tx.category_label or category_label(tx.category)
+        if tx.month < current_month:
+            historical[tx.category][tx.month].append(tx)
+        elif tx.month == current_month and tx.date <= today.isoformat():
+            current[tx.category].append(tx)
+
+    category_rows: list[dict[str, Any]] = []
+    for category in categories:
+        months_of_history = len(complete_months)
+        basis = "profile" if months_of_history >= 3 else "run_rate"
+        spent = round(sum(tx.cost for tx in current[category]), 2)
+
+        profile: dict[int, float] = {}
+        historical_totals: list[float] = []
+        remaining_today: list[float] = []
+        months_with_any_spend = 0
+        if basis == "profile":
+            for month in complete_months:
+                rows = historical[category].get(month, [])
+                final_total = sum(tx.cost for tx in rows)
+                cumulative = sum(tx.cost for tx in rows if int(tx.date[-2:]) <= day_of_month)
+                historical_totals.append(final_total)
+                remaining_today.append(final_total - cumulative)
+                months_with_any_spend += bool(rows)
+
+            # The chart retains the category's historical arrival shape, but the endpoint
+            # is the additive forecast below. Zero-total months cannot define a fraction
+            # and are omitted from this display-only timing profile.
+            profile_months = {
+                month: historical[category].get(month, [])
+                for month in complete_months
+                if sum(tx.cost for tx in historical[category].get(month, [])) != 0
+            }
+            for day in range(1, days_in_month + 1):
+                fractions = []
+                for rows in profile_months.values():
+                    final_total = sum(tx.cost for tx in rows)
+                    cumulative = sum(tx.cost for tx in rows if int(tx.date[-2:]) <= day)
+                    fractions.append(cumulative / final_total)
+                profile[day] = _percentile(fractions, 0.5)
+
+        if basis == "profile":
+            typical_total = _percentile(historical_totals, 0.5)
+            remaining_25 = max(_percentile(remaining_today, 0.25), 0.0)
+            remaining_50 = max(_percentile(remaining_today, 0.5), 0.0)
+            remaining_75 = max(_percentile(remaining_today, 0.75), 0.0)
+            regular = months_with_any_spend / months_of_history >= 0.8
+            floor_remaining = max(typical_total - spent, 0.0) if regular else 0.0
+            estimate_25 = spent + max(remaining_25, floor_remaining * 0.9)
+            estimate_50 = spent + max(remaining_50, floor_remaining)
+            estimate_75 = spent + max(remaining_75, floor_remaining * 1.1)
+        else:
+            estimate_25 = estimate_50 = estimate_75 = spent / day_of_month * days_in_month
+
+        # Keep the median estimate intact while clamping the outer bounds around it. This
+        # protects the public low <= medium <= high contract if floor and percentile
+        # behavior ever cross for an unusual signed category.
+        low = round(min(estimate_25, estimate_50, estimate_75), 2)
+        medium = round(estimate_50, 2)
+        high = round(max(estimate_25, estimate_50, estimate_75), 2)
+        net_negative = spent < 0 or estimate_50 < 0
+
+        actual_by_day = defaultdict(float)
+        for tx in current[category]:
+            actual_by_day[int(tx.date[-2:])] += tx.cost
+        running = 0.0
+        cumulative_rows = []
+        for day in range(1, days_in_month + 1):
+            running += actual_by_day[day]
+            actual = round(running, 2) if day <= day_of_month else None
+            if day < day_of_month:
+                projected = {"low": None, "medium": None, "high": None}
+            elif day == day_of_month:
+                projected = {"low": spent, "medium": spent, "high": spent}
+            else:
+                if basis == "profile":
+                    start = profile.get(day_of_month, 0.0)
+                    finish = profile.get(days_in_month, 1.0)
+                    remaining = finish - start
+                    progress = (profile.get(day, start) - start) / remaining if remaining > 0 else 1.0
+                else:
+                    progress = (day - day_of_month) / (days_in_month - day_of_month) if day_of_month < days_in_month else 1.0
+                progress = min(max(progress, 0.0), 1.0)
+                projected = {
+                    "low": round(spent + (low - spent) * progress, 2),
+                    "medium": round(spent + (medium - spent) * progress, 2),
+                    "high": round(spent + (high - spent) * progress, 2),
+                }
+            cumulative_rows.append({"day": day, "actual": actual, **projected})
+
+        category_rows.append({
+            "category": category,
+            "label": labels.get(category, category_label(category)),
+            "spent": spent,
+            "low": low,
+            "medium": medium,
+            "high": high,
+            "basis": basis,
+            "months_of_history": months_of_history,
+            "net_negative": net_negative,
+            "cumulative": cumulative_rows,
+        })
+
+    category_rows.sort(key=lambda row: (-row["spent"], row["category"]))
+    total_spent = round(sum(row["spent"] for row in category_rows), 2)
+    total_low = round(sum(row["low"] for row in category_rows), 2)
+    total_medium = round(sum(row["medium"] for row in category_rows), 2)
+    total_high = round(sum(row["high"] for row in category_rows), 2)
+    total_cumulative = []
+    for day in range(1, days_in_month + 1):
+        def total_for(key: str) -> float | None:
+            values = [row["cumulative"][day - 1][key] for row in category_rows]
+            if not values:
+                if key == "actual":
+                    return 0.0 if day <= day_of_month else None
+                return 0.0 if day >= day_of_month else None
+            return None if all(value is None for value in values) else round(sum(value or 0 for value in values), 2)
+
+        total_cumulative.append({
+            "day": day,
+            "actual": total_for("actual"),
+            "low": total_for("low"),
+            "medium": total_for("medium"),
+            "high": total_for("high"),
+        })
+
+    return {
+        "month": current_month,
+        "day_of_month": day_of_month,
+        "days_in_month": days_in_month,
+        "total": {
+            "spent": total_spent,
+            "low": total_low,
+            "medium": total_medium,
+            "high": total_high,
+            "basis": "profile" if any(row["basis"] == "profile" for row in category_rows) else "run_rate",
+        },
+        "categories": category_rows,
+        "cumulative": total_cumulative,
+    }
+
+
 def parse_workbook_monthly_summary(wb: openpyxl.Workbook) -> dict[str, Any]:
     ws = wb["Monthly Summary"]
     header = [ws.cell(4, col).value for col in range(3, 18)]
@@ -1525,7 +1695,8 @@ def build_payload() -> dict[str, Any]:
         "workbook_monthly": db_workbook_monthly,
         "insights": build_insights(db_transactions, summary),
         "cashflow": build_cashflow(db_transactions),
-        "accounts": ["Overview", "Monthly", "Cash Flow", "Analytics", "Review"] + sorted({tx.account for tx in db_transactions}),
+        "forecast": build_forecast(db_transactions),
+        "accounts": ["Overview", "Forecast", "Monthly", "Cash Flow", "Analytics", "Review"] + sorted({tx.account for tx in db_transactions}),
     }
 
 
@@ -1818,6 +1989,7 @@ def render_html(payload: dict[str, Any]) -> str:
     const monthStart = document.getElementById('monthStart');
     const monthEnd = document.getElementById('monthEnd');
     let activeTab = 'Overview';
+    let forecastCategory = 'total';
     let analyticsCategory = null;
     let analyticsControlFilter = 'all';
     let monthlyRollupCat = null;  // Range Category Rollup: which bar is expanded
@@ -2182,6 +2354,52 @@ def render_html(payload: dict[str, Any]) -> str:
         ${{lines}}
         ${{dots}}
         ${{labels}}
+      </svg>`;
+    }}
+
+    function forecastChart(rows) {{
+      const series = [
+        {{key: 'actual', color: 'var(--accent)', label: 'Actual', width: 4}},
+        {{key: 'low', color: 'var(--muted)', label: 'Low', width: 3}},
+        {{key: 'medium', color: 'var(--gold)', label: 'Medium', width: 3}},
+        {{key: 'high', color: 'var(--danger)', label: 'High', width: 3}},
+      ];
+      const w = 920, h = 280, padL = 64, padR = 24, padTop = 16, padBot = 34;
+      const values = rows.flatMap(row => series.map(item => row[item.key]).filter(value => value != null).map(Number));
+      let min = Math.min(0, ...values), max = Math.max(0, ...values);
+      if (min === max) max = min + 100;
+      const span = max - min;
+      const xAt = i => padL + (rows.length <= 1 ? 0 : i * (w - padL - padR) / (rows.length - 1));
+      const yAt = value => padTop + (max - Number(value)) / span * (h - padBot - padTop);
+      const gridlines = Array.from({{length: 5}}, (_, index) => {{
+        const value = min + span * index / 4;
+        const y = yAt(value);
+        return `<line x1="${{padL}}" y1="${{y.toFixed(1)}}" x2="${{w - padR}}" y2="${{y.toFixed(1)}}" stroke="var(--line)" stroke-width="1"></line>
+          <text x="${{padL - 8}}" y="${{(y + 4).toFixed(1)}}" text-anchor="end" font-size="11" fill="var(--muted)">${{moneyShort(value)}}</text>`;
+      }}).join('');
+      const lines = series.map(item => {{
+        const points = rows
+          .map((row, index) => row[item.key] == null ? null : [xAt(index), yAt(row[item.key])])
+          .filter(Boolean);
+        if (!points.length) return '';
+        const path = points.map((point, index) => `${{index ? 'L' : 'M'}}${{point[0].toFixed(1)}} ${{point[1].toFixed(1)}}`).join(' ');
+        return `<path d="${{path}}" fill="none" stroke="${{item.color}}" stroke-width="${{item.width}}" stroke-linecap="round" stroke-linejoin="round"></path>`;
+      }}).join('');
+      const dots = rows.map((row, index) => {{
+        const available = series.filter(item => row[item.key] != null);
+        if (!available.length) return '';
+        const tip = `Day ${{row.day}}<br>` + available.map(item => `${{tipText(item.label)}}: ${{money(row[item.key])}}`).join('<br>');
+        return available.map(item => `<g class="ptg"><circle class="pt" cx="${{xAt(index).toFixed(1)}}" cy="${{yAt(row[item.key]).toFixed(1)}}" r="3" fill="${{item.color}}"></circle><circle cx="${{xAt(index).toFixed(1)}}" cy="${{yAt(row[item.key]).toFixed(1)}}" r="10" fill="transparent" data-tip="${{tip}}"></circle></g>`).join('');
+      }}).join('');
+      const today = Number(DATA.forecast?.day_of_month || 0);
+      const labels = rows.map((row, index) =>
+        (row.day === 1 || row.day === today || row.day === rows.at(-1)?.day || row.day % 5 === 0)
+          ? `<text x="${{xAt(index)}}" y="${{h - 12}}" text-anchor="middle" font-size="10" fill="var(--muted)">${{row.day}}</text>`
+          : ''
+      ).join('');
+      const legend = `<div class="legend">${{series.map(item => `<span class="legend-item"><span class="legend-dot" style="background:${{item.color}}"></span>${{esc(item.label)}}</span>`).join('')}}</div>`;
+      return `${{legend}}<svg class="chart" viewBox="0 0 ${{w}} ${{h}}" role="img" aria-label="Cumulative spend forecast by day of month">
+        ${{gridlines}}${{lines}}${{dots}}${{labels}}
       </svg>`;
     }}
 
@@ -2629,6 +2847,46 @@ def render_html(payload: dict[str, Any]) -> str:
           <div class="card"><h2>Accounts</h2>${{bars(accountRollup(rows), 'expense', 8, null)}}</div>
           <div class="card"><h2>Recent Transactions</h2>${{txTable(filtered().slice(0, 20))}}</div>
         </section>`;
+    }}
+
+    function renderForecast() {{
+      const forecast = DATA.forecast || {{total: {{}}, categories: [], cumulative: []}};
+      const categories = forecast.categories || [];
+      const selected = forecastCategory === 'total'
+        ? {{...forecast.total, label: 'Total', cumulative: forecast.cumulative || []}}
+        : categories.find(row => row.category === forecastCategory);
+      if (!selected) {{ forecastCategory = 'total'; return renderForecast(); }}
+      const options = `<option value="total">Total spend</option>` + categories.map(row =>
+        `<option value="${{esc(row.category)}}" ${{row.category === forecastCategory ? 'selected' : ''}}>${{esc(row.label)}}${{row.net_negative ? ' — net of reimbursements' : ''}}</option>`
+      ).join('');
+      const profileCount = categories.filter(row => row.basis === 'profile').length;
+      app.innerHTML = `
+        <section class="account-title">
+          <div><h2>${{esc(forecast.month || 'Current month')}} Forecast</h2><div class="subtle">Spend to date plus the category-level amount historically still to come.</div></div>
+          <label>Chart category <select id="forecastCategory">${{options}}</select></label>
+        </section>
+        <section class="grid kpis">
+          ${{kpi('Spent to date', money(forecast.total.spent), `Through day ${{forecast.day_of_month || 0}} of ${{forecast.days_in_month || 0}}`)}}
+          ${{kpi('Low', money(forecast.total.low), '25th-percentile category outcomes')}}
+          ${{kpi('Medium', money(forecast.total.medium), 'Median category outcomes')}}
+          ${{kpi('High', money(forecast.total.high), '75th-percentile category outcomes')}}
+          ${{kpi('Profile coverage', `${{profileCount}} / ${{categories.length}}`, 'Categories with 3+ historical months')}}
+        </section>
+        <section class="card" style="margin-top:16px">
+          <div class="account-title"><div><h2>Cumulative ${{esc(selected.label)}} Spend</h2><div class="subtle">Actual through today; low, medium, and high paths continue from the same point.${{selected.net_negative ? ' Values are net of reimbursements.' : ''}}</div></div></div>
+          ${{selected.cumulative?.length ? forecastChart(selected.cumulative) : '<div class="empty">No forecast series available.</div>'}}
+        </section>
+        <section class="card" style="margin-top:16px">
+          <h2>Category Forecasts</h2>
+          <div class="subtle" style="margin-bottom:8px">Profile rows add historical remaining-spend quartiles. Run-rate rows have fewer than three complete months and do not imply the same precision.</div>
+          <div class="table-wrap"><table><thead><tr><th>Category</th><th class="money">Spent</th><th class="money">Low</th><th class="money">Medium</th><th class="money">High</th><th>Basis</th><th class="money">History</th></tr></thead><tbody>
+            ${{categories.map(row => `<tr><td>${{esc(row.label)}}${{row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}}</td><td class="money">${{exactMoney(row.spent)}}</td><td class="money">${{exactMoney(row.low)}}</td><td class="money">${{exactMoney(row.medium)}}</td><td class="money">${{exactMoney(row.high)}}</td><td><span class="tag">${{row.basis === 'profile' ? 'Profile' : 'Run rate'}}</span></td><td class="money">${{row.months_of_history}}</td></tr>`).join('')}}
+          </tbody></table></div>
+        </section>`;
+      document.getElementById('forecastCategory').addEventListener('change', event => {{
+        forecastCategory = event.target.value;
+        renderForecast();
+      }});
     }}
 
     function renderMonthly() {{
@@ -3105,6 +3363,7 @@ def render_html(payload: dict[str, Any]) -> str:
       [...tabs.children].forEach(btn => btn.classList.toggle('active', btn.dataset.tab === activeTab));
       if (activeTab === 'Cash Flow') return renderCashflow();
       if (activeTab === 'Overview') return renderOverview();
+      if (activeTab === 'Forecast') return renderForecast();
       if (activeTab === 'Monthly') return renderMonthly();
       if (activeTab === 'Analytics') return renderAnalytics();
       if (activeTab === 'Review') return renderReview();

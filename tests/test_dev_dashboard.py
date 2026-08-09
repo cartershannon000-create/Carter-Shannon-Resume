@@ -58,7 +58,7 @@ class DevDashboardTests(unittest.TestCase):
                 "overview", "clients", "finances", "calendar", "metrics",
                 "work", "agents", "usage", "approvals", "system",
                 "chats", "reports", "company", "simulations", "omni-system",
-                "fin-overview", "fin-monthly", "fin-cashflow", "fin-analytics",
+                "fin-overview", "fin-forecast", "fin-monthly", "fin-cashflow", "fin-analytics",
                 "fin-review", "fin-amex", "fin-capital-one", "fin-checking",
                 "fin-venmo", "fin-wells-fargo",
             ],
@@ -72,7 +72,7 @@ class DevDashboardTests(unittest.TestCase):
     def test_financials_tabs_all_drive_the_single_iframe_panel(self):
         """Financials is the one app whose tabs do not each own a panel.
 
-        All ten switch content inside one iframe, so activate() has to resolve them to
+        All eleven switch content inside one iframe, so activate() has to resolve them to
         panel-fin-dashboard and post the frame's own tab name across. If FIN_TABS and the
         markup disagree the tab renders an empty frame, which looks like a data outage.
         """

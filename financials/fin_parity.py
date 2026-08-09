@@ -22,11 +22,14 @@ from __future__ import annotations
 import sys
 from decimal import Decimal
 
+from pathlib import Path
+
 import psycopg
 
 import build_financial_dashboard as bfd
 from fin_env import load_db_url
 
+DB_PATH = Path(__file__).with_name("financials.sqlite")
 TOLERANCE = 0.0  # exact match required; these are rounded to cents on both sides
 
 
@@ -75,9 +78,35 @@ def fetch_sql(url: str) -> dict:
     }
 
 
+def pull_overrides(url: str) -> int:
+    """Copy Review-tab decisions down from Supabase before comparing.
+
+    Category overrides are now made in the hosted dashboard, so Supabase is their source
+    of truth and the local database only learns of them here. Without this the harness
+    reports a mismatch for every category the owner has corrected since the last run --
+    which looks like a porting bug and is really just the two stores disagreeing about
+    something only one of them was told.
+    """
+    import sqlite3
+    with psycopg.connect(url) as conn, conn.cursor() as cur:
+        cur.execute("select tx_id, category, note from fin.category_overrides")
+        rows = cur.fetchall()
+    sq = sqlite3.connect(DB_PATH)
+    try:
+        sq.executemany(
+            "INSERT INTO category_overrides (tx_id, category, note) VALUES (?,?,?) "
+            "ON CONFLICT(tx_id) DO UPDATE SET category=excluded.category, note=excluded.note",
+            rows)
+        sq.commit()
+    finally:
+        sq.close()
+    return len(rows)
+
+
 def main() -> None:
     url = load_db_url()
 
+    print(f"pulled {pull_overrides(url)} category overrides down from Supabase")
     print("building the Python payload ...")
     py = bfd.build_payload()
     print("reading the SQL payload ...")
