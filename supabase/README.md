@@ -87,3 +87,32 @@ Still to port: `extend_monthly_summary_with_actuals()` and
 `fin.monthly_summary()` serves stored values, so a Review override that moves a
 transaction into or out of `salary` will not move the Salary, Net Income,
 Margin, or Total Savings rows.
+
+### Exposed schemas
+
+PostgREST will only route to `fin` if the schema is on its allowlist. This is
+separate from database grants -- both must pass. Check the live value with:
+
+    select s.setconfig from pg_db_role_setting s
+    join pg_roles r on r.oid = s.setrole where r.rolname = 'authenticator';
+
+It must contain `fin`:
+
+    pgrst.db_schemas = public, graphql_public, audit, cos, fin
+
+On 2026-08-09 the dashboard's Exposed Schemas control did not persist the
+change -- Postgres still held the list without `fin`, so every Financials RPC
+returned `PGRST106 Invalid schema: fin`. It was set directly instead:
+
+    alter role authenticator set pgrst.db_schemas = 'public, graphql_public, audit, cos, fin';
+    notify pgrst, 'reload config';
+    notify pgrst, 'reload schema';
+
+Both notifies are needed: the first reloads the schema allowlist, the second
+rebuilds the function cache (without it the RPCs 404 with `PGRST202` even
+though routing works).
+
+CAUTION: the Supabase control plane keeps its own copy of this setting and may
+re-apply it on a project restart or the next save on the API settings page. If
+its copy still lacks `fin`, that reconcile silently breaks the Financials tab.
+Re-save the value through the dashboard so both sides agree.
