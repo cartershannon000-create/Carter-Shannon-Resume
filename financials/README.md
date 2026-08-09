@@ -125,7 +125,7 @@ current whether or not this machine is on:
 open the Financials tab (or press Refresh)
   -> fin.api_sync_plaid_on_view()   owner-gated, debounced 15 min (60s on Refresh)
   -> fin.sync_plaid()
-       reads plaid_client_id / plaid_secret / plaid_token_<item> from Vault
+       reads credentials from fin.plaid_credentials (pgcrypto), key from Vault
        POST production.plaid.com/transactions/sync  (cursor paging, http extension)
        upserts fin.plaid_transactions            <- raw staging, mirrors plaid_store.sqlite
   -> fin.rebuild_plaid_transactions()
@@ -149,10 +149,23 @@ python3 fin_setup_cloud_sync.py --secrets   # copy credentials into Vault
 ```
 
 `--secrets` moves the Plaid client id, secret, and one access token per institution out
-of the macOS Keychain into Supabase Vault. Read the note at the top of that file first:
-those tokens can read your bank transactions and they will then live in Supabase, not
-only on this Mac. The Keychain copies are left in place, so it is reversible — delete the
-Vault secrets to undo it. Until they exist, the cron job fails every run and records why
+of the macOS Keychain into the database. Read the note at the top of that file first:
+those tokens can read your bank transactions and will then live in Supabase, not only on
+this Mac. The Keychain copies stay, so it is reversible — delete the rows in
+`fin.plaid_credentials` to undo it.
+
+**Why the credentials are not simply in Vault.** Supabase grants `service_role` — the
+agent runner's identity — plaintext read on `vault.decrypted_secrets`, and that grant is
+owned by `supabase_admin`, so `postgres` cannot revoke it. Anything left in Vault is
+permanently readable by the runner, which for bank tokens is a worse exposure than the
+transaction data itself. So the halves are split: the encryption key in Vault, which the
+runner can read and which is useless alone, and the pgcrypto ciphertext in
+`fin.plaid_credentials`, which it has no schema access to reach. Verify with:
+
+```sql
+select has_schema_privilege('service_role','fin','USAGE');            -- must be false
+select has_table_privilege('service_role','fin.plaid_credentials','SELECT');  -- false
+``` Until they exist, the cron job fails every run and records why
 in `fin.plaid_items.last_error`, and the tab keeps rendering the last known state.
 
 ### Why on view rather than on a schedule

@@ -1,27 +1,35 @@
-"""Prepare the in-database Plaid sync: account mapping, item cursors, and credentials.
+"""Prepare the in-database Plaid sync: account mapping, item list, and credentials.
 
-Run once. After this, fin.sync_plaid() runs on a schedule inside Postgres and the
-dashboard stays current whether or not this machine is switched on.
+Run once. After this the sync runs inside Postgres whenever the dashboard is opened, and
+stays current whether or not this machine is switched on.
 
-    python3 fin_setup_cloud_sync.py            # mapping and cursors only
-    python3 fin_setup_cloud_sync.py --secrets  # also copy credentials into Vault
+    python3 fin_setup_cloud_sync.py            # mapping and item list only
+    python3 fin_setup_cloud_sync.py --secrets  # also copy credentials into the database
 
 WHAT MOVES, AND WHAT THAT MEANS
 -------------------------------
 `--secrets` copies the Plaid client id, secret, and one access token per linked
-institution out of the macOS Keychain and into Supabase Vault, where the scheduled job
-can read them. That is the whole point -- a cron job in Supabase cannot reach your
-Keychain -- but it is a real change in where the risk sits: those tokens can read your
-bank transactions, and they will now live in Supabase rather than only on this Mac.
+institution out of the macOS Keychain and into the database, because a job running in
+Supabase cannot reach your Keychain. That is a real change in where the risk sits: those
+tokens can read your bank transactions, and they will live in Supabase as well as on this
+Mac.
+
+They are stored ENCRYPTED with pgcrypto in `fin.plaid_credentials`. Only the encryption
+key goes into Vault. That split is deliberate: Supabase grants service_role -- the agent
+runner's identity -- plaintext read on Vault, and the grant belongs to supabase_admin so
+it cannot be revoked. Anything left in Vault is therefore permanently readable by the
+runner. It has no access to `fin` at all, so it can obtain the key and never the
+ciphertext, and one half on its own is useless.
 
 Values are read and written by this script. They are never printed, never logged, and
-never passed as command-line arguments (which would put them in your shell history and
-the process table). The Keychain copies are left in place, so the local sync keeps
-working and this is reversible: delete the Vault secrets to undo it.
+never passed as command-line arguments, which would put them in your shell history and
+the process table. The Keychain copies are left in place, so the local sync keeps working
+and this is reversible: delete the rows in fin.plaid_credentials to undo it.
 """
 
 from __future__ import annotations
 
+import secrets as secrets_module
 import sqlite3
 import subprocess
 import sys
@@ -101,17 +109,22 @@ def main() -> None:
                 else:
                     missing.append(item_id)
 
+            # The encryption key lives in Vault; the tokens live encrypted in `fin`.
+            # Supabase grants service_role plaintext read on Vault and that grant cannot
+            # be revoked by us, so the runner can obtain the key -- and nothing else,
+            # because it has no access to `fin` at all. It never holds both halves.
+            cur.execute("select 1 from vault.secrets where name = 'fin_credential_key'")
+            if not cur.fetchone():
+                key = secrets_module.token_urlsafe(48)
+                cur.execute("select vault.create_secret(%s, %s)", (key, 'fin_credential_key'))
+                print("created a new encryption key in Vault (fin_credential_key)")
+
             for name, value in secrets:
-                # vault.create_secret errors on a duplicate name, so replace in place.
-                cur.execute("select id from vault.secrets where name = %s", (name,))
-                row = cur.fetchone()
-                if row:
-                    cur.execute("select vault.update_secret(%s, %s, %s)", (row[0], value, name))
-                else:
-                    cur.execute("select vault.create_secret(%s, %s)", (value, name))
+                cur.execute("select fin.set_credential(%s, %s)", (name, value))
             conn.commit()
             # Names only. The values are never echoed.
-            print(f"stored {len(secrets)} secrets in Vault: {', '.join(n for n, _ in secrets)}")
+            print(f"stored {len(secrets)} credentials encrypted in fin.plaid_credentials: "
+                  f"{', '.join(n for n, _ in secrets)}")
             if missing:
                 print(f"WARNING no Keychain token for: {', '.join(missing)}")
         else:
