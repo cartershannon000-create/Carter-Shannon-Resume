@@ -115,3 +115,63 @@ exposed-schemas requirement, which is a separate gate from these grants.
   `salary`, or when a new month arrives with no workbook column.
 - The Review tab's "Saved overrides" count reads 0 on load, because overrides are resolved
   server-side and baked into the payload. In-session edits count correctly.
+
+## Autonomous sync (added 2026-08-09)
+
+The sync runs **inside Postgres**, on a `pg_cron` schedule, so the dashboard stays
+current whether or not this machine is on:
+
+```
+pg_cron 'fin-plaid-sync'  every 6h
+  -> fin.sync_plaid()
+       reads plaid_client_id / plaid_secret / plaid_token_<item> from Vault
+       POST production.plaid.com/transactions/sync  (cursor paging, http extension)
+       upserts fin.plaid_transactions            <- raw staging, mirrors plaid_store.sqlite
+  -> fin.rebuild_plaid_transactions()
+       derives fin.transactions from the WHOLE staging table
+```
+
+The two-step shape is deliberate. `/transactions/sync` is incremental, but
+`fin.transactions` is keyed on a fingerprint rather than Plaid's `transaction_id`, and
+`occurrence` is computed by ranking identical rows across the entire feed. Deriving from
+the full staging table each time makes the whole thing idempotent: a repeated or
+overlapping run cannot double-count.
+
+There is no Edge Function and no `fin_ingest` password. The functions are SECURITY
+DEFINER owned by `postgres`; `service_role` is granted nothing, as everywhere else here.
+
+### One-time setup
+
+```bash
+python3 fin_setup_cloud_sync.py             # account mapping + item list
+python3 fin_setup_cloud_sync.py --secrets   # copy credentials into Vault
+```
+
+`--secrets` moves the Plaid client id, secret, and one access token per institution out
+of the macOS Keychain into Supabase Vault. Read the note at the top of that file first:
+those tokens can read your bank transactions and they will then live in Supabase, not
+only on this Mac. The Keychain copies are left in place, so it is reversible — delete the
+Vault secrets to undo it. Until they exist, the cron job fails every run and records why
+in `fin.plaid_items.last_error`.
+
+### Checking on it
+
+```sql
+select institution, last_synced_at, last_error from fin.plaid_items order by institution;
+select * from cron.job_run_details where jobid =
+  (select jobid from cron.job where jobname = 'fin-plaid-sync') order by start_time desc limit 5;
+```
+
+### Categorisation
+
+`fin.category_rules` and friends are a replica, not the source. Rules are authored in
+`build_financial_dashboard.py` (the monthly review skill appends to `CATEGORY_RULES`) and
+pushed with:
+
+```bash
+python3 fin_sync_rules.py     # push, then verify against Python
+```
+
+Verification runs both implementations over every distinct description in the local
+database. It currently agrees on all 1,433. **Run it after adding any rule** — otherwise
+new transactions get classified by rules the cloud has never seen.
