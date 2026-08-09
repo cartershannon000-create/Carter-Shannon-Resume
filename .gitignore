@@ -9,3 +9,22 @@ __pycache__/
 
 # staged site build (see build-site.sh)
 dist/
+
+# ---------------------------------------------------------------------------
+# financials/ -- the pipeline that builds the dashboard.
+#
+# The code in there is tracked; none of the data it operates on ever is. These
+# are real bank transactions and Plaid credentials. build-site.sh also excludes
+# the whole directory from the published site (see EXCLUDE_RE) because it stages
+# from `git ls-files`, so nothing here can reach the web either way.
+# ---------------------------------------------------------------------------
+financials/financials.sqlite
+financials/plaid_store.sqlite
+financials/plaid_config.json
+financials/financial_dashboard.html
+financials/Budget_2025-26.xlsx
+financials/Source data/
+financials/parsed/
+financials/*.csv
+financials/*.xlsx
+financials/*.xls

@@ -26,7 +26,13 @@ set -euo pipefail
 
 OUT="dist"
 # Infrastructure and source that has no business being on the web.
-EXCLUDE_RE='^(supabase|tests|docs|\.claude|\.github|\.worktrees)/'
+#
+# `financials` holds the pipeline that builds the dashboard, not the dashboard
+# itself. Publishing it would put build_financial_dashboard.py on the web, and
+# CATEGORY_RULES in that file is a list of every merchant Carter shops at. The
+# served artefact is dev/login/financials-frame.html, which is generated from it
+# and carries no data.
+EXCLUDE_RE='^(supabase|tests|docs|financials|\.claude|\.github|\.worktrees)/'
 
 rm -rf "$OUT"
 mkdir -p "$OUT"
