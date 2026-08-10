@@ -598,3 +598,47 @@ Do not present accuracy as a score out of ten or a grade. Show the numbers.
 - A snapshot is written for the total (category `''`) as well as per category
 - Scoring never includes the in-flight month
 - Forecast output with corrections disabled is identical to Addendum 4's output
+
+---
+
+# ADDENDUM 6 — keep rent out of the forecast chart
+
+Rent is $1,470 landing as a single step on day 27. On the cumulative chart it dwarfs
+everything else and flattens the variable spend the chart exists to show. It is also the
+least interesting line on there: it is known, constant, and never the thing worth
+watching.
+
+**Exclude `rent` from the chart series only.** It stays everywhere else — the headline
+totals, the category table, and the committed items table. Nothing about the forecast
+maths changes; this is a presentation change.
+
+## Implementation
+
+Each category already carries its own `cumulative` array, so the chart series can be
+summed client-side from the per-category arrays with `rent` skipped. Prefer that over a
+new SQL series: it needs no migration and cannot drift from the totals.
+
+Apply to every line on the chart — `actual`, `committed`, `low`, `medium`, `high`.
+
+When a single category is selected in the existing selector, show that category as
+normal, including rent if rent is what was selected. The exclusion applies to the
+aggregate view only.
+
+## Label it, or the numbers look broken
+
+The chart will now end well below the headline medium — about $2,400 against $3,884. That
+is a discrepancy someone will notice and distrust. The chart needs a visible caption
+stating it excludes rent, and the excluded amount, e.g.:
+
+> Excludes rent ($1,470, due day 27)
+
+Read the rent figure from the committed item rather than hard-coding it, so it follows a
+rent change.
+
+## Verification
+
+- The aggregate chart's final `medium` point equals the headline medium minus rent's
+  forecast, to the cent
+- Selecting `rent` in the category selector still draws rent
+- The caption shows the rent amount from the payload, not a literal
+- Headline totals, the category table, and the committed table are all unchanged

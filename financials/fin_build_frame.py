@@ -101,7 +101,11 @@ BOOTSTRAP = """    // Driven by the control plane: stay blank until the parent p
       }
       if (!msg || msg.type !== 'fin-payload' || !msg.payload) return;
       DATA = msg.payload;
-      categoryOverrides = {};
+      // Seed from the server rather than starting empty, so the Review tab's saved-count
+      // reflects what is stored instead of only what was edited in this session. The
+      // categories in DATA already have these applied, so this changes no number -- it
+      // just tells the page which of them were decisions rather than inferences.
+      categoryOverrides = msg.payload.overrides || {};
       const restoreTab = finBooted ? activeTab : null;
       document.getElementById('tabs').innerHTML = '';
       init();

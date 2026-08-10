@@ -3090,9 +3090,38 @@ def render_html(payload: dict[str, Any]) -> str:
       const committed = forecast.committed || {{remaining: 0, charged_so_far: 0, items: []}};
       const calendar = forecast.calendar || {{weekdays_remaining: 0, weekend_days_remaining: 0}};
       const committedItems = committed.items || [];
+      // Rent lands as a single step of roughly a month's rent on its due day, which on a
+      // cumulative chart dwarfs everything else and flattens the variable spend the chart
+      // exists to show. The aggregate view therefore leaves it out. It stays in the
+      // headline totals and in both tables: this is a presentation choice, not a change
+      // to the forecast. Selecting rent explicitly still draws it.
+      const sumSeries = rows => {{
+        const first = rows.find(row => (row.cumulative || []).length);
+        const days = first ? first.cumulative.map(point => point.day) : [];
+        return days.map((day, i) => {{
+          const point = {{day}};
+          ['actual', 'committed', 'low', 'medium', 'high'].forEach(key => {{
+            const values = rows
+              .map(row => (row.cumulative || [])[i])
+              .filter(entry => entry && entry[key] != null)
+              .map(entry => entry[key]);
+            point[key] = values.length
+              ? Math.round(values.reduce((a, b) => a + b, 0) * 100) / 100
+              : null;
+          }});
+          return point;
+        }});
+      }};
+      const rentRow = categories.find(row => row.category === 'rent');
+      const rentItem = (forecast.committed && forecast.committed.items || [])
+        .find(item => item.category === 'rent');
       const selected = forecastCategory === 'total'
-        ? {{...forecast.total, label: 'Total', cumulative: forecast.cumulative || []}}
+        ? {{...forecast.total, label: 'Total', cumulative: sumSeries(categories.filter(row => row.category !== 'rent'))}}
         : categories.find(row => row.category === forecastCategory);
+      // Read the figure from the payload so it follows a rent change rather than drifting.
+      const rentNote = forecastCategory === 'total' && rentRow
+        ? `<div class="subtle">Excludes rent (${{money(rentRow.medium)}}${{rentItem && rentItem.expected_day ? `, due day ${{rentItem.expected_day}}` : ''}}). It is constant, and including it hides the shape of everything else.</div>`
+        : '';
       if (!selected) {{ forecastCategory = 'total'; return renderForecast(); }}
       const options = `<option value="total">Total spend</option>` + categories.map(row =>
         `<option value="${{esc(row.category)}}" ${{row.category === forecastCategory ? 'selected' : ''}}>${{esc(row.label)}}${{row.net_negative ? ' — net of reimbursements' : ''}}</option>`
@@ -3110,6 +3139,7 @@ def render_html(payload: dict[str, Any]) -> str:
         <section class="account-title">
           <div><h2>${{esc(forecast.month || 'Current month')}} Forecast</h2><div class="subtle">Spend to date plus fixed merchant commitments and variable spend historically still to come.</div></div>
           <label>Chart category <select id="forecastCategory">${{options}}</select></label>
+          ${{rentNote}}
         </section>
         <section class="grid kpis">
           ${{kpi('Spent to date', money(forecast.total.spent), `Through day ${{forecast.day_of_month || 0}} of ${{forecast.days_in_month || 0}}`)}}
