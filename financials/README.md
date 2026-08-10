@@ -105,97 +105,32 @@ Every table has RLS on with no policies. The only reachable entry points are
 only and both gated on `cos.is_owner()`. See `../supabase/README.md` for the PostgREST
 exposed-schemas requirement, which is a separate gate from these grants.
 
-## Known gaps
+## Status
 
-- `plaid_sync.py` runs locally against the macOS Keychain, so nothing updates while this
-  machine is off.
-- `extend_monthly_summary_with_actuals()` and `reconcile_salary_rows()` are not ported to
-  SQL. `fin.monthly_summary()` serves stored values, so the Salary, Net Income, Margin,
-  and Total Savings rows go stale if a Review override moves a transaction into or out of
-  `salary`, or when a new month arrives with no workbook column.
-- The Review tab's "Saved overrides" count reads 0 on load, because overrides are resolved
-  server-side and baked into the payload. In-session edits count correctly.
+Everything below is live and verified against the production database.
 
-## Autonomous sync (added 2026-08-09)
+- **Ingest** — Plaid sync runs inside Postgres, triggered when the dashboard is opened.
+  Nothing local is involved.
+- **Read path** — all aggregation is SQL. `fin_parity.py` diffs it against the Python
+  reference field by field at zero tolerance and passes on all four blocks.
+- **Monthly** — months beyond the budget workbook are computed live, so a Review override
+  moves them. Compensation constants live in `fin.compensation`, not in code.
+- **Forecast** — committed/variable split with day-type rates. See `FORECAST_SPEC.md`,
+  which also records the models that were tried and rejected.
+- **Accuracy** — every forecast is snapshotted. Corrections are disabled below two
+  completed months, so today they do nothing by design.
 
-The sync runs **inside Postgres**, triggered when the dashboard is opened, so it stays
-current whether or not this machine is on:
+### Things to know
 
-```
-open the Financials tab (or press Refresh)
-  -> fin.api_sync_plaid_on_view()   owner-gated, debounced 15 min (60s on Refresh)
-  -> fin.sync_plaid()
-       reads credentials from fin.plaid_credentials (pgcrypto), key from Vault
-       POST production.plaid.com/transactions/sync  (cursor paging, http extension)
-       upserts fin.plaid_transactions            <- raw staging, mirrors plaid_store.sqlite
-  -> fin.rebuild_plaid_transactions()
-       derives fin.transactions from the WHOLE staging table
-```
-
-The two-step shape is deliberate. `/transactions/sync` is incremental, but
-`fin.transactions` is keyed on a fingerprint rather than Plaid's `transaction_id`, and
-`occurrence` is computed by ranking identical rows across the entire feed. Deriving from
-the full staging table each time makes the whole thing idempotent: a repeated or
-overlapping run cannot double-count.
-
-There is no Edge Function and no `fin_ingest` password. The functions are SECURITY
-DEFINER owned by `postgres`; `service_role` is granted nothing, as everywhere else here.
-
-### One-time setup
-
-```bash
-python3 fin_setup_cloud_sync.py             # account mapping + item list
-python3 fin_setup_cloud_sync.py --secrets   # copy credentials into Vault
-```
-
-`--secrets` moves the Plaid client id, secret, and one access token per institution out
-of the macOS Keychain into the database. Read the note at the top of that file first:
-those tokens can read your bank transactions and will then live in Supabase, not only on
-this Mac. The Keychain copies stay, so it is reversible — delete the rows in
-`fin.plaid_credentials` to undo it.
-
-**Why the credentials are not simply in Vault.** Supabase grants `service_role` — the
-agent runner's identity — plaintext read on `vault.decrypted_secrets`, and that grant is
-owned by `supabase_admin`, so `postgres` cannot revoke it. Anything left in Vault is
-permanently readable by the runner, which for bank tokens is a worse exposure than the
-transaction data itself. So the halves are split: the encryption key in Vault, which the
-runner can read and which is useless alone, and the pgcrypto ciphertext in
-`fin.plaid_credentials`, which it has no schema access to reach. Verify with:
-
-```sql
-select has_schema_privilege('service_role','fin','USAGE');            -- must be false
-select has_table_privilege('service_role','fin.plaid_credentials','SELECT');  -- false
-``` Until they exist, the cron job fails every run and records why
-in `fin.plaid_items.last_error`, and the tab keeps rendering the last known state.
-
-### Why on view rather than on a schedule
-
-This data has exactly one consumer: a dashboard someone looks at. A cron job spends Plaid
-calls whether or not anyone is watching, and still serves data up to its interval stale at
-the moment they are. On view, nothing is fetched when nobody is looking, and what you see
-was fetched seconds ago. It also matches the console's existing `refreshFleetOnView`.
-
-The cached payload renders first and the sync runs behind it, so a slow bank never blocks
-the page. `fin.api_sync_plaid_on_view` carries its own `statement_timeout` of 55s because
-`authenticator` runs with 8s, which four banks paged over HTTP would exceed.
-
-### Checking on it
-
-```sql
-select institution, last_synced_at, last_error from fin.plaid_items order by institution;
-select fin.api_sync_plaid_on_view(1);   -- force a sync now, as the owner
-```
-
-### Categorisation
-
-`fin.category_rules` and friends are a replica, not the source. Rules are authored in
-`build_financial_dashboard.py` (the monthly review skill appends to `CATEGORY_RULES`) and
-pushed with:
-
-```bash
-python3 fin_sync_rules.py     # push, then verify against Python
-```
-
-Verification runs both implementations over every distinct description in the local
-database. It currently agrees on all 1,433. **Run it after adding any rule** — otherwise
-new transactions get classified by rules the cloud has never seen.
+- **Seasonality is inert until 2027.** A calendar month needs a full trailing 12-month
+  window to count as an observation and history starts 2025-01. Correct, but do not
+  describe summer spend as modelled yet.
+- **`food` forecasts negative.** Venmo reimbursements offset it. Consistent with every
+  other tab; flagged as `net_negative` rather than hidden with an absolute.
+- **Account tabs are hardcoded** in `dev/login/index.html` and `FIN_TABS`. Linking a new
+  institution needs a line in each. A test catches them disagreeing, not one being missing.
+- **The parity harness proves agreement, not correctness.** It shows Python and SQL match.
+  Whether either is right is what the forecast snapshots are for — next month, compare
+  what was predicted on the 9th against what landed.
+- **Verify Codex against the live database.** Its sandbox has no network, so its
+  "validated on live data" claims cover Python only.
