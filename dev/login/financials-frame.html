@@ -1203,6 +1203,7 @@
       const categories = forecast.categories || [];
       const committed = forecast.committed || {remaining: 0, charged_so_far: 0, items: []};
       const calendar = forecast.calendar || {weekdays_remaining: 0, weekend_days_remaining: 0};
+      const accuracy = forecast.accuracy || {months_scored: 0, total: {}, by_category: [], corrections_applied: false};
       const committedItems = committed.items || [];
       // Rent lands as a single step of roughly a month's rent on its due day, which on a
       // cumulative chart dwarfs everything else and flattens the variable spend the chart
@@ -1249,6 +1250,19 @@
         const direction = factor > 1 ? 'higher' : 'lower';
         return `<div class="subtle">Typically ${Math.round(Math.abs(factor - 1) * 100)}% ${direction} in ${esc(forecastMonth)}</div>`;
       };
+      const accuracyPercent = value => value == null
+        ? '—'
+        : `${Number(value) >= 0 ? '+' : ''}${(Number(value) * 100).toFixed(1)}%`;
+      const coveragePercent = value => value == null ? '—' : `${(Number(value) * 100).toFixed(0)}%`;
+      const categoryAccuracy = row => {
+        const values = row.accuracy || {months: 0};
+        if (!values.months) return '<span class="subtle">Not scored</span>';
+        return `<span>${accuracyPercent(values.median_pct_error)} bias</span><div class="subtle">${coveragePercent(values.in_band_rate)} in band · ${values.months} mo</div>`;
+      };
+      const lastAccuracy = accuracy.last_month;
+      const learningNote = Number(accuracy.months_scored || 0) < 2
+        ? `${Number(accuracy.months_scored || 0)} completed month${Number(accuracy.months_scored || 0) === 1 ? '' : 's'} scored. At least 2 are required before any correction is applied; all correction factors are 1.0.`
+        : `${Number(accuracy.months_scored || 0)} completed months scored. Bounded bias and range-width corrections are active where a category has at least 2 months.`;
       app.innerHTML = `
         <section class="account-title">
           <div><h2>${esc(forecast.month || 'Current month')} Forecast</h2><div class="subtle">Spend to date plus fixed merchant commitments and variable spend historically still to come.</div></div>
@@ -1269,6 +1283,16 @@
           ${kpi('Weekend days remaining', Number(calendar.weekend_days_remaining || 0).toLocaleString(), 'Saturdays and Sundays after today')}
         </section>
         <section class="card" style="margin-top:16px">
+          <h2>How this forecast has been doing</h2>
+          <div class="subtle" style="margin-bottom:10px">${esc(learningNote)}</div>
+          ${lastAccuracy ? `<div class="grid kpis">
+            ${kpi('Last completed month', esc(lastAccuracy.month), `${lastAccuracy.in_band ? 'Landed inside' : 'Landed outside'} the predicted range`)}
+            ${kpi('Predicted medium', money(lastAccuracy.predicted_medium), `Model ${esc(accuracy.model_version || '')}`)}
+            ${kpi('Actual', money(lastAccuracy.actual), `${accuracyPercent(lastAccuracy.pct_error)} vs prediction`)}
+            ${kpi('Range coverage', coveragePercent(accuracy.total && accuracy.total.in_band_rate), `${accuracyPercent(accuracy.total && accuracy.total.median_pct_error)} median error`)}
+          </div>` : '<div class="empty">No completed forecast month has been captured yet.</div>'}
+        </section>
+        <section class="card" style="margin-top:16px">
           <h2>Committed Items</h2>
           <div class="subtle" style="margin-bottom:8px">Recurring merchant charges detected from the trailing six complete months. Overdue items remain in the forecast until they arrive.</div>
           ${committedItems.length ? `<div class="table-wrap"><table><thead><tr><th>Merchant</th><th class="money">Expected amount</th><th class="money">Expected day</th><th>Status</th></tr></thead><tbody>
@@ -1282,8 +1306,8 @@
         <section class="card" style="margin-top:16px">
           <h2>Category Forecasts</h2>
           <div class="subtle" style="margin-bottom:8px">Day-type rows apply weekday and weekend daily-rate quartiles from the trailing six complete months. Run-rate rows have fewer than three complete months and do not imply the same precision.</div>
-          <div class="table-wrap"><table><thead><tr><th>Category</th><th class="money">Spent</th><th class="money">Committed</th><th class="money">Variable median</th><th class="money">Low</th><th class="money">Medium</th><th class="money">High</th><th>Basis</th><th class="money">History</th></tr></thead><tbody>
-            ${categories.map(row => `<tr><td>${esc(row.label)}${row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}${seasonalInsight(row)}</td><td class="money">${exactMoney(row.spent)}</td><td class="money">${exactMoney(row.committed)}</td><td class="money">${exactMoney(row.variable_medium)}</td><td class="money">${exactMoney(row.low)}</td><td class="money">${exactMoney(row.medium)}</td><td class="money">${exactMoney(row.high)}</td><td><span class="tag">${row.basis === 'profile' ? 'Day type' : 'Run rate'}</span></td><td class="money">${row.months_of_history}</td></tr>`).join('')}
+          <div class="table-wrap"><table><thead><tr><th>Category</th><th class="money">Spent</th><th class="money">Committed</th><th class="money">Variable median</th><th class="money">Low</th><th class="money">Medium</th><th class="money">High</th><th>Accuracy</th><th>Basis</th><th class="money">History</th></tr></thead><tbody>
+            ${categories.map(row => `<tr><td>${esc(row.label)}${row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}${seasonalInsight(row)}</td><td class="money">${exactMoney(row.spent)}</td><td class="money">${exactMoney(row.committed)}</td><td class="money">${exactMoney(row.variable_medium)}</td><td class="money">${exactMoney(row.low)}</td><td class="money">${exactMoney(row.medium)}</td><td class="money">${exactMoney(row.high)}</td><td>${categoryAccuracy(row)}</td><td><span class="tag">${row.basis === 'profile' ? 'Day type' : 'Run rate'}</span></td><td class="money">${row.months_of_history}</td></tr>`).join('')}
           </tbody></table></div>
         </section>`;
       document.getElementById('forecastCategory').addEventListener('change', event => {

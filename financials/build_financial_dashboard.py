@@ -935,7 +935,10 @@ def forecast_merchant_label(tx: Transaction) -> tuple[int, str]:
     return (0, label)
 
 
-def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
+FORECAST_MODEL_VERSION = "daytype-1"
+
+
+def _build_forecast_daytype_base(transactions: list[Transaction]) -> dict[str, Any]:
     """Forecast committed charges and calendar-sensitive variable category spend."""
     today = date.today()
     current_month = month_key(today)
@@ -1291,6 +1294,223 @@ def build_forecast(transactions: list[Transaction]) -> dict[str, Any]:
         "categories": category_rows,
         "cumulative": total_cumulative,
     }
+
+
+def _forecast_day_bucket(day_of_month: int) -> str:
+    if day_of_month <= 10:
+        return "1-10"
+    if day_of_month <= 20:
+        return "11-20"
+    return "21-end"
+
+
+def _forecast_accuracy_stats(
+    transactions: list[Transaction],
+    snapshots: list[dict[str, Any]],
+    today: date,
+) -> dict[tuple[str, str], dict[str, Any]]:
+    """Score only closed months, grouped by category and prediction-time bucket."""
+    current_month = month_key(today)
+    actual_by_month_category: dict[tuple[str, str], float] = defaultdict(float)
+    actual_by_month: dict[str, float] = defaultdict(float)
+    for tx in transactions:
+        if tx.month >= current_month or not tx_is_expense(tx):
+            continue
+        actual_by_month_category[(tx.month, tx.category)] += tx.cost
+        actual_by_month[tx.month] += tx.cost
+
+    scored: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for snapshot in snapshots:
+        if (
+            snapshot.get("model_version") != FORECAST_MODEL_VERSION
+            or str(snapshot.get("month", "")) >= current_month
+        ):
+            continue
+        month = str(snapshot["month"])
+        category = str(snapshot.get("category", ""))
+        actual = (
+            actual_by_month.get(month)
+            if category == ""
+            else actual_by_month_category.get((month, category))
+        )
+        # Match the SQL inner join: a snapshot without a final category total is not a
+        # scored observation. The month total is present whenever that month has spend.
+        if actual is None:
+            continue
+        medium = float(snapshot["medium"])
+        pct_error = (actual - medium) / abs(actual) if actual else None
+        bucket = _forecast_day_bucket(int(snapshot["day_of_month"]))
+        scored[(category, bucket)].append({
+            "month": month,
+            "day_of_month": int(snapshot["day_of_month"]),
+            "predicted_medium": medium,
+            "actual": actual,
+            "pct_error": pct_error,
+            "in_band": float(snapshot["low"]) <= actual <= float(snapshot["high"]),
+        })
+
+    stats: dict[tuple[str, str], dict[str, Any]] = {}
+    for key, rows in scored.items():
+        pct_errors = [row["pct_error"] for row in rows if row["pct_error"] is not None]
+        stats[key] = {
+            "sample_count": len(rows),
+            "months": len({row["month"] for row in rows}),
+            "median_pct_error": _percentile(pct_errors, 0.5) if pct_errors else None,
+            "in_band_rate": mean(1.0 if row["in_band"] else 0.0 for row in rows),
+            "rows": rows,
+        }
+    return stats
+
+
+def build_forecast(
+    transactions: list[Transaction],
+    forecast_snapshots: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Add closed-month scoring and bounded calibration to the day-type forecast.
+
+    Snapshot persistence belongs to the cloud's volatile capture function. Accepting
+    snapshot rows here keeps the local Python mirror deterministic and makes the scoring
+    and correction maths independently testable; ordinary local builds have no cloud
+    snapshots and therefore leave every forecast number unchanged.
+    """
+    forecast = _build_forecast_daytype_base(transactions)
+    snapshots = forecast_snapshots or []
+    today = date.today()
+    bucket = _forecast_day_bucket(forecast["day_of_month"])
+    stats = _forecast_accuracy_stats(transactions, snapshots, today)
+    corrections_applied = False
+
+    for row in forecast["categories"]:
+        category_stats = stats.get((row["category"], bucket))
+        months = int(category_stats["months"]) if category_stats else 0
+        sample_count = int(category_stats["sample_count"]) if category_stats else 0
+        median_pct_error = category_stats["median_pct_error"] if category_stats else None
+        in_band_rate = category_stats["in_band_rate"] if category_stats else None
+
+        if months < 2:
+            bias_factor = 1.0
+            band_scale = 1.0
+        else:
+            shrink = months / (months + 3)
+            bias_factor = min(max(1 + (median_pct_error or 0.0) * shrink, 0.7), 1.4)
+            band_scale = min(max(math.sqrt(0.5 / max(in_band_rate or 0.0, 0.1)), 0.6), 1.8)
+            corrections_applied = True
+
+        row["accuracy"] = {
+            "median_pct_error": median_pct_error,
+            "in_band_rate": in_band_rate,
+            "bias_factor": bias_factor,
+            "band_scale": band_scale,
+            "months": months,
+            "sample_count": sample_count,
+            "day_bucket": bucket,
+        }
+
+        # Do not even reconstruct the existing values below the learning threshold.
+        # This guarantees the Addendum 4 numerical payload remains identical today.
+        if months < 2:
+            continue
+
+        variable_low = float(row["variable_low"])
+        variable_medium = float(row["variable_medium"])
+        variable_high = float(row["variable_high"])
+        corrected_medium = variable_medium * bias_factor
+        corrected_low = min(
+            corrected_medium - (variable_medium - variable_low) * band_scale,
+            corrected_medium,
+        )
+        corrected_high = max(
+            corrected_medium + (variable_high - variable_medium) * band_scale,
+            corrected_medium,
+        )
+        row["variable_low"] = round(corrected_low, 2)
+        row["variable_medium"] = round(corrected_medium, 2)
+        row["variable_high"] = round(corrected_high, 2)
+        row["low"] = round(row["spent"] + row["committed"] + corrected_low, 2)
+        row["medium"] = round(row["spent"] + row["committed"] + corrected_medium, 2)
+        row["high"] = round(row["spent"] + row["committed"] + corrected_high, 2)
+        row["net_negative"] = row["spent"] < 0 or row["medium"] < 0
+
+        for point in row["cumulative"]:
+            if point["day"] <= forecast["day_of_month"]:
+                continue
+            committed_line = float(point["committed"])
+            point_low = float(point["low"]) - committed_line
+            point_medium = float(point["medium"]) - committed_line
+            point_high = float(point["high"]) - committed_line
+            corrected_point_medium = point_medium * bias_factor
+            corrected_point_low = min(
+                corrected_point_medium - (point_medium - point_low) * band_scale,
+                corrected_point_medium,
+            )
+            corrected_point_high = max(
+                corrected_point_medium + (point_high - point_medium) * band_scale,
+                corrected_point_medium,
+            )
+            point["low"] = round(committed_line + corrected_point_low, 2)
+            point["medium"] = round(committed_line + corrected_point_medium, 2)
+            point["high"] = round(committed_line + corrected_point_high, 2)
+
+    if corrections_applied:
+        categories = forecast["categories"]
+        forecast["total"].update({
+            "spent": round(sum(row["spent"] for row in categories), 2),
+            "low": round(sum(row["low"] for row in categories), 2),
+            "medium": round(sum(row["medium"] for row in categories), 2),
+            "high": round(sum(row["high"] for row in categories), 2),
+            "variable_low": round(sum(row["variable_low"] for row in categories), 2),
+            "variable_medium": round(sum(row["variable_medium"] for row in categories), 2),
+            "variable_high": round(sum(row["variable_high"] for row in categories), 2),
+        })
+        for day_index, total_point in enumerate(forecast["cumulative"]):
+            for key in ("actual", "committed", "low", "medium", "high"):
+                values = [row["cumulative"][day_index][key] for row in categories]
+                total_point[key] = (
+                    None
+                    if all(value is None for value in values)
+                    else round(sum(value or 0 for value in values), 2)
+                )
+
+    total_stats = stats.get(("", bucket))
+    total_months = int(total_stats["months"]) if total_stats else 0
+    # The SQL chooses the latest captured day in the latest completed forecast month.
+    # Build this directly from the total rows so other category stats cannot enter.
+    last_rows = [
+        row
+        for (category, _), value in stats.items()
+        if category == ""
+        for row in value["rows"]
+    ]
+    last_row = max(last_rows, key=lambda row: (row["month"], row["day_of_month"]), default=None)
+    last_month = None if last_row is None else {
+        "month": last_row["month"],
+        "predicted_medium": round(last_row["predicted_medium"], 2),
+        "actual": round(last_row["actual"], 2),
+        "pct_error": last_row["pct_error"],
+        "in_band": last_row["in_band"],
+    }
+    forecast["accuracy"] = {
+        "model_version": FORECAST_MODEL_VERSION,
+        "months_scored": total_months,
+        "total": {
+            "median_pct_error": total_stats["median_pct_error"] if total_stats else None,
+            "in_band_rate": total_stats["in_band_rate"] if total_stats else None,
+        },
+        "corrections_applied": corrections_applied,
+        "by_category": [
+            {
+                "category": row["category"],
+                "median_pct_error": row["accuracy"]["median_pct_error"],
+                "in_band_rate": row["accuracy"]["in_band_rate"],
+                "bias_factor": row["accuracy"]["bias_factor"],
+                "band_scale": row["accuracy"]["band_scale"],
+                "months": row["accuracy"]["months"],
+            }
+            for row in sorted(forecast["categories"], key=lambda value: value["category"])
+        ],
+        "last_month": last_month,
+    }
+    return forecast
 
 
 def parse_workbook_monthly_summary(wb: openpyxl.Workbook) -> dict[str, Any]:
@@ -3089,6 +3309,7 @@ def render_html(payload: dict[str, Any]) -> str:
       const categories = forecast.categories || [];
       const committed = forecast.committed || {{remaining: 0, charged_so_far: 0, items: []}};
       const calendar = forecast.calendar || {{weekdays_remaining: 0, weekend_days_remaining: 0}};
+      const accuracy = forecast.accuracy || {{months_scored: 0, total: {{}}, by_category: [], corrections_applied: false}};
       const committedItems = committed.items || [];
       // Rent lands as a single step of roughly a month's rent on its due day, which on a
       // cumulative chart dwarfs everything else and flattens the variable spend the chart
@@ -3135,6 +3356,19 @@ def render_html(payload: dict[str, Any]) -> str:
         const direction = factor > 1 ? 'higher' : 'lower';
         return `<div class="subtle">Typically ${{Math.round(Math.abs(factor - 1) * 100)}}% ${{direction}} in ${{esc(forecastMonth)}}</div>`;
       }};
+      const accuracyPercent = value => value == null
+        ? '—'
+        : `${{Number(value) >= 0 ? '+' : ''}}${{(Number(value) * 100).toFixed(1)}}%`;
+      const coveragePercent = value => value == null ? '—' : `${{(Number(value) * 100).toFixed(0)}}%`;
+      const categoryAccuracy = row => {{
+        const values = row.accuracy || {{months: 0}};
+        if (!values.months) return '<span class="subtle">Not scored</span>';
+        return `<span>${{accuracyPercent(values.median_pct_error)}} bias</span><div class="subtle">${{coveragePercent(values.in_band_rate)}} in band · ${{values.months}} mo</div>`;
+      }};
+      const lastAccuracy = accuracy.last_month;
+      const learningNote = Number(accuracy.months_scored || 0) < 2
+        ? `${{Number(accuracy.months_scored || 0)}} completed month${{Number(accuracy.months_scored || 0) === 1 ? '' : 's'}} scored. At least 2 are required before any correction is applied; all correction factors are 1.0.`
+        : `${{Number(accuracy.months_scored || 0)}} completed months scored. Bounded bias and range-width corrections are active where a category has at least 2 months.`;
       app.innerHTML = `
         <section class="account-title">
           <div><h2>${{esc(forecast.month || 'Current month')}} Forecast</h2><div class="subtle">Spend to date plus fixed merchant commitments and variable spend historically still to come.</div></div>
@@ -3155,6 +3389,16 @@ def render_html(payload: dict[str, Any]) -> str:
           ${{kpi('Weekend days remaining', Number(calendar.weekend_days_remaining || 0).toLocaleString(), 'Saturdays and Sundays after today')}}
         </section>
         <section class="card" style="margin-top:16px">
+          <h2>How this forecast has been doing</h2>
+          <div class="subtle" style="margin-bottom:10px">${{esc(learningNote)}}</div>
+          ${{lastAccuracy ? `<div class="grid kpis">
+            ${{kpi('Last completed month', esc(lastAccuracy.month), `${{lastAccuracy.in_band ? 'Landed inside' : 'Landed outside'}} the predicted range`)}}
+            ${{kpi('Predicted medium', money(lastAccuracy.predicted_medium), `Model ${{esc(accuracy.model_version || '')}}`)}}
+            ${{kpi('Actual', money(lastAccuracy.actual), `${{accuracyPercent(lastAccuracy.pct_error)}} vs prediction`)}}
+            ${{kpi('Range coverage', coveragePercent(accuracy.total && accuracy.total.in_band_rate), `${{accuracyPercent(accuracy.total && accuracy.total.median_pct_error)}} median error`)}}
+          </div>` : '<div class="empty">No completed forecast month has been captured yet.</div>'}}
+        </section>
+        <section class="card" style="margin-top:16px">
           <h2>Committed Items</h2>
           <div class="subtle" style="margin-bottom:8px">Recurring merchant charges detected from the trailing six complete months. Overdue items remain in the forecast until they arrive.</div>
           ${{committedItems.length ? `<div class="table-wrap"><table><thead><tr><th>Merchant</th><th class="money">Expected amount</th><th class="money">Expected day</th><th>Status</th></tr></thead><tbody>
@@ -3168,8 +3412,8 @@ def render_html(payload: dict[str, Any]) -> str:
         <section class="card" style="margin-top:16px">
           <h2>Category Forecasts</h2>
           <div class="subtle" style="margin-bottom:8px">Day-type rows apply weekday and weekend daily-rate quartiles from the trailing six complete months. Run-rate rows have fewer than three complete months and do not imply the same precision.</div>
-          <div class="table-wrap"><table><thead><tr><th>Category</th><th class="money">Spent</th><th class="money">Committed</th><th class="money">Variable median</th><th class="money">Low</th><th class="money">Medium</th><th class="money">High</th><th>Basis</th><th class="money">History</th></tr></thead><tbody>
-            ${{categories.map(row => `<tr><td>${{esc(row.label)}}${{row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}}${{seasonalInsight(row)}}</td><td class="money">${{exactMoney(row.spent)}}</td><td class="money">${{exactMoney(row.committed)}}</td><td class="money">${{exactMoney(row.variable_medium)}}</td><td class="money">${{exactMoney(row.low)}}</td><td class="money">${{exactMoney(row.medium)}}</td><td class="money">${{exactMoney(row.high)}}</td><td><span class="tag">${{row.basis === 'profile' ? 'Day type' : 'Run rate'}}</span></td><td class="money">${{row.months_of_history}}</td></tr>`).join('')}}
+          <div class="table-wrap"><table><thead><tr><th>Category</th><th class="money">Spent</th><th class="money">Committed</th><th class="money">Variable median</th><th class="money">Low</th><th class="money">Medium</th><th class="money">High</th><th>Accuracy</th><th>Basis</th><th class="money">History</th></tr></thead><tbody>
+            ${{categories.map(row => `<tr><td>${{esc(row.label)}}${{row.net_negative ? '<div class="subtle">Net of reimbursements</div>' : ''}}${{seasonalInsight(row)}}</td><td class="money">${{exactMoney(row.spent)}}</td><td class="money">${{exactMoney(row.committed)}}</td><td class="money">${{exactMoney(row.variable_medium)}}</td><td class="money">${{exactMoney(row.low)}}</td><td class="money">${{exactMoney(row.medium)}}</td><td class="money">${{exactMoney(row.high)}}</td><td>${{categoryAccuracy(row)}}</td><td><span class="tag">${{row.basis === 'profile' ? 'Day type' : 'Run rate'}}</span></td><td class="money">${{row.months_of_history}}</td></tr>`).join('')}}
           </tbody></table></div>
         </section>`;
       document.getElementById('forecastCategory').addEventListener('change', event => {{
