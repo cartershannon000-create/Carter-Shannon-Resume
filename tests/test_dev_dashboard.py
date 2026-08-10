@@ -20,6 +20,7 @@ FLEET_SOURCE_MIGRATION = ROOT / "supabase" / "migrations" / "20260728171000_flee
 FLEET_PROVENANCE_MIGRATION = ROOT / "supabase" / "migrations" / "20260728230000_fleet_position_provenance.sql"
 FLEET_HISTORY_MIGRATION = ROOT / "supabase" / "migrations" / "20260728231500_fleet_service_history.sql"
 CHAT_FAILURE_MIGRATION = ROOT / "supabase" / "migrations" / "20260730170000_chat_failure_visibility.sql"
+CHAT_PLAN_MIGRATION = ROOT / "supabase" / "migrations" / "20260810161534_omnisupply_chat_plan.sql"
 CHAT_MANAGEMENT_MIGRATION = ROOT / "supabase" / "migrations" / "20260730210000_chat_management_and_reports.sql"
 FLEET_ACTIVITY_MIGRATION = ROOT / "supabase" / "migrations" / "20260730230000_fleet_recent_activity_and_flightaware_sync.sql"
 FIN_SCHEMA_MIGRATION = ROOT / "supabase" / "migrations" / "20260809160558_fin_schema.sql"
@@ -47,6 +48,7 @@ class DevDashboardTests(unittest.TestCase):
         cls.fleet_provenance_sql = FLEET_PROVENANCE_MIGRATION.read_text(encoding="utf-8")
         cls.fleet_history_sql = FLEET_HISTORY_MIGRATION.read_text(encoding="utf-8")
         cls.chat_failure_sql = CHAT_FAILURE_MIGRATION.read_text(encoding="utf-8")
+        cls.chat_plan_sql = CHAT_PLAN_MIGRATION.read_text(encoding="utf-8")
         cls.chat_management_sql = CHAT_MANAGEMENT_MIGRATION.read_text(encoding="utf-8")
         cls.fleet_activity_sql = FLEET_ACTIVITY_MIGRATION.read_text(encoding="utf-8")
 
@@ -581,6 +583,55 @@ class DevDashboardTests(unittest.TestCase):
         )
         self.assertIn("sb.rpc('api_chat_job_progress'", self.js)
         self.assertIn("Technical details", self.js)
+
+    def test_chat_plan_is_one_snapshot_per_job(self):
+        self.assertRegex(
+            self.chat_plan_sql,
+            r"create table if not exists cos\.chat_plan\s*\(\s*job_id text primary key,",
+        )
+        self.assertIn("check (jsonb_typeof(items) = 'array')", self.chat_plan_sql)
+
+    def test_chat_plan_is_private(self):
+        self.assertIn(
+            "alter table cos.chat_plan enable row level security;",
+            self.chat_plan_sql,
+        )
+        self.assertIn(
+            "revoke all on table cos.chat_plan from public, anon, authenticated;",
+            self.chat_plan_sql,
+        )
+
+    def test_chat_plan_schema_creation_is_idempotent(self):
+        create_statements = re.findall(
+            r"^create\s+.*?(?=;)", self.chat_plan_sql, re.IGNORECASE | re.MULTILINE | re.DOTALL
+        )
+        self.assertTrue(create_statements)
+        for statement in create_statements:
+            self.assertRegex(statement.lower(), r"if not exists|or replace")
+
+    def test_chat_progress_rpc_preserves_existing_keys_and_adds_plan(self):
+        function = self.chat_plan_sql.split(
+            "create or replace function cos.api_chat_job_progress", 1
+        )[1].split("revoke all on function", 1)[0]
+        for key in ("ok", "job", "steps", "plan"):
+            self.assertIn(f"'{key}'", function)
+        self.assertIn("'item_id', p.plan_item_id", function)
+        self.assertIn("'items', p.items", function)
+        self.assertIn("'updated_at', p.updated_at", function)
+
+    def test_chat_plan_progress_rpc_is_owner_gated_and_granted(self):
+        self.assertIn(
+            "if not cos.is_owner() then raise exception 'forbidden';",
+            self.chat_plan_sql,
+        )
+        self.assertIn(
+            "revoke all on function cos.api_chat_job_progress(text, integer)",
+            self.chat_plan_sql,
+        )
+        self.assertIn(
+            "grant execute on function cos.api_chat_job_progress(text, integer)",
+            self.chat_plan_sql,
+        )
 
     def test_chat_polling_has_one_owner_and_recovers_after_browser_interruptions(self):
         send_chat = self.js[
