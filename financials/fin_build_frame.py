@@ -113,6 +113,8 @@ BOOTSTRAP = """    // Driven by the control plane: stay blank until the parent p
       if (wanted && DATA.accounts.includes(wanted)) { activeTab = wanted; render(); }
       pendingTab = null;
       finBooted = true;
+      const refreshBanks = document.getElementById('refreshBanks');
+      if (refreshBanks) { refreshBanks.disabled = false; refreshBanks.textContent = 'Refresh from banks'; }
       parent.postMessage({type: 'fin-height', height: document.documentElement.scrollHeight}, window.location.origin);
     });
     parent.postMessage({type: 'fin-ready'}, window.location.origin);

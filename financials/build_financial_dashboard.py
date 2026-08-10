@@ -2415,6 +2415,7 @@ def render_html(payload: dict[str, Any]) -> str:
     <div>
       <h1>Financial Dashboard</h1>
       <div class="subtle" id="rangeLine"></div>
+      <div class="subtle" id="syncLine"></div>
     </div>
     <div class="toolbar">
       <input id="globalSearch" type="search" placeholder="Search transactions">
@@ -2427,6 +2428,7 @@ def render_html(payload: dict[str, Any]) -> str:
       <select id="monthSingle"></select>
       <select id="monthStart"></select>
       <select id="monthEnd"></select>
+      <button id="refreshBanks" type="button" hidden>Refresh from banks</button>
       <button id="resetFilters">Reset</button>
     </div>
   </header>
@@ -3903,6 +3905,37 @@ def render_html(payload: dict[str, Any]) -> str:
       return renderAccount(activeTab);
     }}
 
+
+    // How long ago the BANKS were last reached, which is a different question from when
+    // this payload was built. The oldest institution wins: if one bank synced a minute
+    // ago and another failed four hours back, four hours is the honest answer.
+    function relativeAge(iso) {{
+      if (!iso) return 'never';
+      const then = new Date(iso).getTime();
+      if (!Number.isFinite(then)) return 'unknown';
+      const mins = Math.max(0, Math.round((Date.now() - then) / 60000));
+      if (mins < 1) return 'just now';
+      if (mins < 60) return `${{mins}} min ago`;
+      const hours = Math.round(mins / 60);
+      if (hours < 24) return `${{hours}} hour${{hours === 1 ? '' : 's'}} ago`;
+      const days = Math.round(hours / 24);
+      return `${{days}} day${{days === 1 ? '' : 's'}} ago`;
+    }}
+
+    function renderSyncLine() {{
+      const line = document.getElementById('syncLine');
+      if (!line) return;
+      const sync = DATA.sync || {{}};
+      const failing = (sync.items || []).filter(item => item.last_error);
+      const parts = [`Banks last synced ${{relativeAge(sync.last_synced_at)}}`];
+      if (sync.never_synced) parts.push(`${{sync.never_synced}} never synced`);
+      if (failing.length) {{
+        parts.push(`${{failing.length}} failing: ${{failing.map(i => i.institution).join(', ')}}`);
+      }}
+      line.textContent = parts.join(' · ');
+      line.style.color = failing.length || sync.never_synced ? 'var(--danger)' : '';
+    }}
+
     function init() {{
       const chartTip = document.getElementById('chartTip');
       document.addEventListener('mousemove', e => {{
@@ -3925,6 +3958,7 @@ def render_html(payload: dict[str, Any]) -> str:
         }}
       }});
       document.getElementById('rangeLine').textContent = `${{DATA.summary.overall.first_date}} to ${{DATA.summary.overall.last_date}} · generated ${{DATA.generated_at}}`;
+      renderSyncLine();
       loadCategoryOverrides();
       applyCategoryOverrides();
       // Render immediately from localStorage, then upgrade to the database-backed store
@@ -3958,6 +3992,19 @@ def render_html(payload: dict[str, Any]) -> str:
         updateMonthControlVisibility();
         render();
       }});
+      // Only offered when the control plane is hosting this page: it owns the Supabase
+      // client, so the pull is its to make. Opened as a plain file or behind
+      // serve_dashboard.py there is nothing that can reach Plaid, and a button that
+      // silently does nothing is worse than no button.
+      const refreshBanks = document.getElementById('refreshBanks');
+      if (refreshBanks && overrideBackend === 'parent') {{
+        refreshBanks.hidden = false;
+        refreshBanks.addEventListener('click', () => {{
+          refreshBanks.disabled = true;
+          refreshBanks.textContent = 'Refreshing…';
+          parent.postMessage({{type: 'fin-refresh-banks'}}, window.location.origin);
+        }});
+      }}
       render();
     }}
     init();

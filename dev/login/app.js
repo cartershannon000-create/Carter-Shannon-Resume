@@ -2477,6 +2477,10 @@ async function setFinCategory(txId,category){
   // bridge, and the insights, and every one of those is computed in the database.
   await loadFinancials(true);
 }
+async function refreshFinancialsFromBanks(){
+  try{await syncFinancialsOnView(1)}
+  finally{await loadFinancials(true)}
+}
 window.addEventListener('message',event=>{
   if(event.origin!==location.origin)return;
   const frame=finFrame();
@@ -2485,6 +2489,7 @@ window.addEventListener('message',event=>{
   if(!msg||typeof msg!=='object')return;
   if(msg.type==='fin-ready'){finFrameReady=true;postFinPayload();return}
   if(msg.type==='fin-height'){const h=Number(msg.height)||0;if(h>200)frame.style.minHeight=`${h+40}px`;return}
+  if(msg.type==='fin-refresh-banks'){refreshFinancialsFromBanks();return}
   if(msg.type==='fin-set-category'&&typeof msg.txId==='string')setFinCategory(msg.txId,String(msg.category||''));
 });
 
