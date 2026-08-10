@@ -723,7 +723,10 @@ def parse_plaid_transactions(mapping: dict[str, str]) -> list[Transaction]:
     if plaid_sync is None or PLAID_TAKEOVER_DATE is None:
         return []
 
-    rows = plaid_sync.load_dashboard_rows(env=PLAID_DASHBOARD_ENV)
+    # Pending rows are included and flagged rather than dropped. They are what makes
+    # the dashboard agree with the card statement; the rebuild is derived from the
+    # whole feed each run, so a settle or a reversal corrects itself.
+    rows = plaid_sync.load_dashboard_rows(env=PLAID_DASHBOARD_ENV, include_pending=True)
     transactions: list[Transaction] = []
     seen_in_feed: Counter[tuple] = Counter()
 
@@ -754,6 +757,7 @@ def parse_plaid_transactions(mapping: dict[str, str]) -> list[Transaction]:
             amount=row["amount"],
             cost=row["cost"],
             source=f"Plaid:{row['account']}",
+            status="pending" if row.get("pending") else "",
             native_category=row["native_category"],
             counterparty=row["merchant_name"],
             occurrence=seen_in_feed[key],
@@ -2973,7 +2977,7 @@ def render_html(payload: dict[str, Any]) -> str:
       return `<div class="table-wrap"><table class="tx-table${{editable ? ' tx-table-editable' : ''}}">
         <thead><tr><th>Date</th><th>Account</th><th>Description</th><th>Category</th><th class="money">Cost</th></tr></thead>
         <tbody>${{rows.map(tx => `<tr>
-          <td class="nowrap">${{esc(tx.date)}}</td>
+          <td class="nowrap">${{esc(tx.date)}}${{tx.pending ? '<div class="subtle" style="color:var(--gold)">pending</div>' : ''}}</td>
           <td>${{esc(tx.account)}}</td>
           <td>${{esc(tx.description)}}${{tx.counterparty ? `<div class="subtle">${{esc(tx.counterparty)}}</div>` : ''}}</td>
           <td>${{editable ? categorySelect(tx) : `<span class="tag">${{esc(tx.category_label)}}</span>`}}${{categoryOverrides[tx.id] ? '<div class="subtle override-note">edited</div>' : ''}}</td>

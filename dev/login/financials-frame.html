@@ -867,7 +867,7 @@
       return `<div class="table-wrap"><table class="tx-table${editable ? ' tx-table-editable' : ''}">
         <thead><tr><th>Date</th><th>Account</th><th>Description</th><th>Category</th><th class="money">Cost</th></tr></thead>
         <tbody>${rows.map(tx => `<tr>
-          <td class="nowrap">${esc(tx.date)}</td>
+          <td class="nowrap">${esc(tx.date)}${tx.pending ? '<div class="subtle" style="color:var(--gold)">pending</div>' : ''}</td>
           <td>${esc(tx.account)}</td>
           <td>${esc(tx.description)}${tx.counterparty ? `<div class="subtle">${esc(tx.counterparty)}</div>` : ''}</td>
           <td>${editable ? categorySelect(tx) : `<span class="tag">${esc(tx.category_label)}</span>`}${categoryOverrides[tx.id] ? '<div class="subtle override-note">edited</div>' : ''}</td>
