@@ -723,10 +723,11 @@ def parse_plaid_transactions(mapping: dict[str, str]) -> list[Transaction]:
     if plaid_sync is None or PLAID_TAKEOVER_DATE is None:
         return []
 
-    # Pending rows are included and flagged rather than dropped. They are what makes
-    # the dashboard agree with the card statement; the rebuild is derived from the
-    # whole feed each run, so a settle or a reversal corrects itself.
-    rows = plaid_sync.load_dashboard_rows(env=PLAID_DASHBOARD_ENV, include_pending=True)
+    # Settled charges only. A pending amount is provisional -- a tip changes it, and an
+    # authorisation and its reversal both appear -- so including it would mean totals
+    # that move after you read them. Pending rows are still stored by the sync, which
+    # is how a charge is recognised when it posts.
+    rows = plaid_sync.load_dashboard_rows(env=PLAID_DASHBOARD_ENV)
     transactions: list[Transaction] = []
     seen_in_feed: Counter[tuple] = Counter()
 
@@ -757,7 +758,6 @@ def parse_plaid_transactions(mapping: dict[str, str]) -> list[Transaction]:
             amount=row["amount"],
             cost=row["cost"],
             source=f"Plaid:{row['account']}",
-            status="pending" if row.get("pending") else "",
             native_category=row["native_category"],
             counterparty=row["merchant_name"],
             occurrence=seen_in_feed[key],
