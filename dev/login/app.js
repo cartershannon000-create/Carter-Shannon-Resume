@@ -431,7 +431,7 @@ function bindClientCards(scope=document){
 }
 function renderClientResults(){const results=$('#client-results');if(!results)return;const clients=visibleClients();results.innerHTML=clientResultsMarkup();const count=$('#client-result-count');if(count)count.textContent=`${clients.length} shown`;bindClientCards(results)}
 function renderClients(){
-  const clients=officeState?.clients||[];$('#client-count').textContent=clients.length;
+  const clients=officeState?.clients||[];
   $('[data-panel="clients"]').innerHTML=pageHead('Clients','Relationships, pipeline, touches, and active engagements in one operating view.',`${clients.filter(client=>client.status==='active').length} active · ${clients.length} total`)+`
   <article class="card client-create"><div class="card-head"><div><h3>Client directory</h3><p>Add a relationship, then use its drill-down to log activity and commercial work.</p></div><button class="action-button approve" type="button" data-office-toggle="client">Add client</button></div>${clientForm()}</article>
   <div class="card client-controls"><div class="client-filter-grid"><label>Search<input type="search" data-client-filter="search" value="${esc(clientView.search)}" placeholder="Client name"></label><label>Tier<select data-client-filter="tier"><option value="">All tiers</option><option value="A"${clientView.tier==='A'?' selected':''}>Tier A</option><option value="B"${clientView.tier==='B'?' selected':''}>Tier B</option><option value="C"${clientView.tier==='C'?' selected':''}>Tier C</option></select></label><label>Status<select data-client-filter="status"><option value="">All statuses</option><option value="lead"${clientView.status==='lead'?' selected':''}>Lead</option><option value="active"${clientView.status==='active'?' selected':''}>Active</option><option value="dormant"${clientView.status==='dormant'?' selected':''}>Dormant</option><option value="lost"${clientView.status==='lost'?' selected':''}>Lost</option></select></label><label>Sort by<select data-client-filter="sort"><option value="name"${clientView.sort==='name'?' selected':''}>Name</option><option value="tier"${clientView.sort==='tier'?' selected':''}>Tier</option><option value="value"${clientView.sort==='value'?' selected':''}>Open value (high to low)</option></select></label></div><span class="quiet" id="client-result-count">${visibleClients().length} shown</span></div>
@@ -489,7 +489,7 @@ function bindOfficeForms(scope,clientId=null){
   $$('[data-calendar-done]',scope).forEach(form=>form.onsubmit=event=>submitCalendarDone(event,form.dataset.calendarDone,form.dataset.reopenClientId||null));
   $$('[data-delete-calendar]',scope).forEach(button=>button.onclick=event=>deleteCalendarItem(event,button.dataset.deleteCalendar,button.dataset.reopenClientId||null));
 }
-async function reloadOffice(reopenClientId=null){const{data:office,error}=await sb.rpc('api_office_state');if(error)throw error;officeState=office||{clients:[],calendar:[]};renderClients();renderFinances();renderCalendar();bindNavigation();if(reopenClientId)openClientDrill(reopenClientId);if(calendarDetailItemId!=null)openCalendarDetail(calendarDetailItemId,false)}
+async function reloadOffice(reopenClientId=null){const{data:office,error}=await sb.rpc('api_office_state');if(error)throw error;officeState=office||{clients:[],calendar:[]};renderTabBadges();markPanelsDirty(['clients','finances','calendar']);renderActivePanel();if(reopenClientId)openClientDrill(reopenClientId);if(calendarDetailItemId!=null)openCalendarDetail(calendarDetailItemId,false)}
 
 /* ── Finances ─────────────────────────────────────────────────────── */
 function financeEngagements(){return (officeState.clients||[]).flatMap(client=>(client.engagements||[]).map(engagement=>({...engagement,clientName:client.name||''})))}
@@ -632,8 +632,8 @@ function renderCalendar(){
   if(calendarDetailItemId!=null)syncCalendarDetailLayout();
 }
 
-function bindCalendarControls(){
-  const panel=$('[data-panel="calendar"]');if(!panel)return;
+function bindCalendarControls(scope=document){
+  const panel=scope.matches?.('[data-panel="calendar"]')?scope:$('[data-panel="calendar"]',scope);if(!panel)return;
   $$('[data-calendar-view]',panel).forEach(select=>select.onchange=()=>{if(!CALENDAR_VIEWS.has(select.value))return;calendarView=select.value;try{localStorage.setItem(CALENDAR_VIEW_KEY,calendarView)}catch{}renderCalendar();bindCalendarControls()});
   $$('[data-calendar-shift]',panel).forEach(button=>button.onclick=()=>{const amount=Number(button.dataset.calendarShift);calendarCursor=calendarView==='month'?calendarDay(calendarCursor.getFullYear(),calendarCursor.getMonth()+amount,1):calendarAddDays(calendarCursor,amount*7);renderCalendar();bindCalendarControls()});
   $$('[data-calendar-today]',panel).forEach(button=>button.onclick=()=>{calendarCursor=new Date();renderCalendar();bindCalendarControls()});
@@ -1298,7 +1298,7 @@ async function openConversation(conversationId){
   if(chatPoll.conversationId&&chatPoll.conversationId!==conversationId)stopChatPoll();
   const{data,error}=await sb.rpc('api_chat_messages',{p_conversation_id:conversationId});
   if(error){console.error(error);return}
-  chatThread=data;renderChats();bindNavigation();
+  chatThread=data;rerenderPanel('chats');
   const pending=[...(data.messages||[])].reverse().find(m=>m.status==='pending'||m.status==='streaming');
   if(pending?.job_id)startChatPoll(pending.job_id,conversationId);
   else if(chatPoll.conversationId===conversationId)stopChatPoll();
@@ -1343,7 +1343,7 @@ async function startChatPoll(jobId,conversationId){
   const tick=async()=>{
     if(!chatPollIsActive(token,jobId,conversationId)||chatPoll.inFlight)return;
     chatPoll.inFlight=true;
-    let delay=2500,progressError=null;
+    let delay=1000,progressError=null;
     try{
       // Real runner steps stream in beneath the paced phases and are labelled
       // as observed, not simulated. Progress and message reads are independent:
@@ -1372,10 +1372,10 @@ async function startChatPoll(jobId,conversationId){
         // Paint the completed answer before refreshing the sidebar. A slow or
         // failed list refresh must not hide a result already returned by the
         // conversation RPC.
-        renderChats();bindNavigation();
+        rerenderPanel('chats');
         try{await refreshChatList()}catch(error){console.error(error)}
         if(chatThread?.conversation?.conversation_id===conversationId){
-          renderChats();bindNavigation();
+          rerenderPanel('chats');
         }
         return;
       }
@@ -1441,7 +1441,7 @@ async function setChatArchived(conversationId,archived,button){
   if(error){
     chatNotice={tone:'error',message:`Could not ${archived?'archive':'restore'} the conversation: ${error.message}`};
     resetChatActionButton(button,original);
-    renderChats();bindNavigation();return;
+    rerenderPanel('chats');return;
   }
   const wasOpen=chatThread?.conversation?.conversation_id===conversationId;
   if(wasOpen&&archived){stopChatPoll();stopThinking();chatThread=null;chatSending=false}
@@ -1451,7 +1451,7 @@ async function setChatArchived(conversationId,archived,button){
     chatView='active';
     await openConversation(conversationId);
   }else{
-    renderChats();bindNavigation();
+    rerenderPanel('chats');
   }
 }
 async function deleteChatConversation(conversationId,button){
@@ -1467,14 +1467,14 @@ async function deleteChatConversation(conversationId,button){
   if(error){
     chatNotice={tone:'error',message:`Could not delete the conversation: ${error.message}`};
     resetChatActionButton(button,original);
-    renderChats();bindNavigation();return;
+    rerenderPanel('chats');return;
   }
   if(chatThread?.conversation?.conversation_id===conversationId){
     stopChatPoll();stopThinking();chatThread=null;chatSending=false;
   }
   chatNotice={tone:'success',message:'Conversation deleted permanently. Existing reports were preserved.'};
   await refreshChatList();
-  renderChats();bindNavigation();
+  rerenderPanel('chats');
 }
 async function generateConversationReport(conversationId,button){
   if(chatActionBusy)return;
@@ -1488,17 +1488,18 @@ async function generateConversationReport(conversationId,button){
     chatActionBusy=false;
     chatNotice={tone:'error',message:`Could not generate the report: ${error.message}`};
     if(button){button.disabled=false;button.textContent=original}
-    renderChats();bindNavigation();return;
+    rerenderPanel('chats');return;
   }
   const result=await sb.rpc('api_reports_state');
   chatActionBusy=false;
   if(result.error){
     chatNotice={tone:'error',message:`The report was generated, but could not be opened: ${result.error.message}`};
-    renderChats();bindNavigation();return;
+    rerenderPanel('chats');return;
   }
   reportState=result.data||{reports:[]};
+  renderTabBadges();
   openReportId=data.report_id;
-  renderReports();renderChats();bindNavigation();
+  markPanelsDirty(['reports','chats']);
   activate('reports');
 }
 
@@ -1510,7 +1511,7 @@ function missingProviderChatRpc(error){
 
 async function sendChat(text){
   const question=(text||'').trim();if(!question||chatSending)return;
-  chatSending=true;renderChats();bindNavigation();
+  chatSending=true;rerenderPanel('chats');
   const selection=selectedChatModel();
   let{data,error}=await sb.rpc('api_chat_send',{
     p_conversation_id:chatThread?.conversation?.conversation_id||null,
@@ -1533,7 +1534,7 @@ async function sendChat(text){
     }
   }
   if(error){chatSending=false;console.error(error);
-    alert(`Could not send: ${error.message}`);renderChats();bindNavigation();
+    alert(`Could not send: ${error.message}`);rerenderPanel('chats');
     const box=$('#chat-input');if(box){box.value=question;box.focus();syncChatComposer()}return}
   chatSending=false;
   await refreshChatList();
@@ -1549,7 +1550,6 @@ let reportState={reports:[]},openReportId=null;
 function renderReports(){
   const panel=$('[data-panel="reports"]');if(!panel)return;
   const reports=reportState.reports||[];
-  const badge=$('#report-count');if(badge)badge.textContent=reports.length||'—';
   if(!reports.length){
     panel.innerHTML=pageHead('Reports','Findings consolidated into durable, citable artifacts.','')+
       `<div class="empty-state"><strong>No reports yet</strong><p>Publish a snapshot with <code>sckg publish</code>, or consolidate a conversation.</p></div>`;
@@ -1589,7 +1589,7 @@ async function refreshFleetOnView(){
     if(error)console.warn('Fleet refresh unavailable; showing last known state',error);
     const{data:fleet,error:fleetError}=await sb.rpc('api_fleet_state',{p_trail_minutes:120});
     if(!fleetError&&fleet){fleetState=fleet;fleetMapView=null}
-    renderCompany();bindNavigation();
+    markPanelsDirty(['company']);renderPanel('company');
   })().finally(()=>{fleetRefreshPromise=null});
   return fleetRefreshPromise;
 }
@@ -1784,17 +1784,17 @@ function renderCompany(){
     </article>`;
 }
 
-function bindFleetMapControls(){
-  const history=$('#fleet-show-history');
+function bindFleetMapControls(scope=document){
+  const history=$('#fleet-show-history',scope);
   if(history)history.onchange=()=>{
-    fleetShowHistoric=history.checked;fleetMapView=null;renderCompany();bindNavigation();
+    fleetShowHistoric=history.checked;fleetMapView=null;rerenderPanel('company');
   };
-  $$('[data-fleet-zoom]').forEach(button=>button.onclick=()=>zoomFleetMap(
+  $$('[data-fleet-zoom]',scope).forEach(button=>button.onclick=()=>zoomFleetMap(
     button.dataset.fleetZoom==='in'?.72:1.38
   ));
-  const reset=$('[data-fleet-map-reset]');
+  const reset=$('[data-fleet-map-reset]',scope);
   if(reset)reset.onclick=()=>setFleetMapView(fittedFleetView());
-  const map=$('#fleet-map');if(!map)return;
+  const map=$('#fleet-map',scope);if(!map)return;
   let drag=null;
   map.onpointerdown=event=>{
     if(event.button!==0)return;
@@ -2243,12 +2243,12 @@ function simPause(){
   simUpdateDynamic();
 }
 function simConfigChanged(){
-  simResetState();simMapView=null;renderSimulations();bindNavigation();
+  simResetState();simMapView=null;rerenderPanel('simulations');
 }
-function bindSimulationMap(){
-  $$('[data-sim-zoom]').forEach(button=>button.onclick=()=>zoomSimMap(button.dataset.simZoom==='in'?.72:1.38));
-  const reset=$('[data-sim-map-reset]');if(reset)reset.onclick=()=>setSimMapView(fittedSimView());
-  const map=$('#sim-map');if(!map)return;
+function bindSimulationMap(scope=document){
+  $$('[data-sim-zoom]',scope).forEach(button=>button.onclick=()=>zoomSimMap(button.dataset.simZoom==='in'?.72:1.38));
+  const reset=$('[data-sim-map-reset]',scope);if(reset)reset.onclick=()=>setSimMapView(fittedSimView());
+  const map=$('#sim-map',scope);if(!map)return;
   let drag=null;
   map.onpointerdown=event=>{if(event.button!==0)return;drag={x:event.clientX,y:event.clientY,view:{...(simMapView||fittedSimView())}};
     map.setPointerCapture(event.pointerId);map.classList.add('dragging')};
@@ -2259,8 +2259,8 @@ function bindSimulationMap(){
   map.addEventListener('wheel',event=>{event.preventDefault();const rect=map.getBoundingClientRect();
     zoomSimMap(event.deltaY<0?.82:1.22,(event.clientX-rect.left)/rect.width,(event.clientY-rect.top)/rect.height)},{passive:false});
 }
-function bindSimulationControls(){
-  const panel=$('[data-panel="simulations"]');if(!panel)return;
+function bindSimulationControls(scope=document){
+  const panel=scope.matches?.('[data-panel="simulations"]')?scope:$('[data-panel="simulations"]',scope);if(!panel)return;
   $$('[data-sim-horizon]',panel).forEach(button=>button.onclick=()=>{simState.config.horizon=button.dataset.simHorizon;simConfigChanged()});
   $$('[data-sim-strategy]',panel).forEach(button=>button.onclick=()=>{simState.config.strategy=button.dataset.simStrategy;simConfigChanged()});
   const runs=$('#sim-runs',panel);if(runs)runs.onchange=()=>{simState.config.runs=Number(runs.value);simConfigChanged()};
@@ -2275,14 +2275,42 @@ function bindSimulationControls(){
   const speed=$('#sim-speed',panel);if(speed)speed.onchange=()=>{simState.config.speed=Number(speed.value);if(simState.status==='running')simStart()};
   const start=$('#sim-start',panel);if(start)start.onclick=simStart;
   const pause=$('#sim-pause',panel);if(pause)pause.onclick=simPause;
-  const reset=$('#sim-reset',panel);if(reset)reset.onclick=()=>{simResetState();renderSimulations();bindNavigation()};
+  const reset=$('#sim-reset',panel);if(reset)reset.onclick=()=>{simResetState();rerenderPanel('simulations')};
   const scrub=$('#sim-scrub',panel);if(scrub)scrub.oninput=()=>{if(simState.status==='running')simPause();
     simState.frame=Number(scrub.value);simState.status=simState.frame?simState.frame>=Number(scrub.max)?'complete':'paused':'ready';simUpdateDynamic()};
-  bindSimulationMap();
+  bindSimulationMap(panel);
 }
 function putSimRange(selector,value){const output=$(selector);if(output)output.textContent=value}
 
-function renderOmnisupply(){renderChats();renderReports();renderCompany();renderSimulations();renderOmniSystem()}
+const PANEL_RENDERERS={
+  overview:renderOverview,
+  clients:renderClients,
+  finances:renderFinances,
+  calendar:renderCalendar,
+  metrics:renderMetrics,
+  work:renderWork,
+  agents:renderAgents,
+  usage:renderUsage,
+  approvals:renderApprovals,
+  system:renderSystem,
+  chats:renderChats,
+  reports:renderReports,
+  company:renderCompany,
+  simulations:renderSimulations,
+  'omni-system':renderOmniSystem,
+  [FIN_PANEL]:()=>{},
+};
+const dirtyPanels=new Set();
+function markPanelsDirty(keys=Object.keys(PANEL_RENDERERS)){keys.forEach(key=>dirtyPanels.add(key))}
+function renderPanel(panelKey){
+  if(!state||!dirtyPanels.has(panelKey))return;
+  const renderer=PANEL_RENDERERS[panelKey];if(!renderer)return;
+  renderer();dirtyPanels.delete(panelKey);
+  const panel=$(`[data-panel="${panelKey}"]`);if(panel)bindNavigation(panel);
+}
+function rerenderPanel(panelKey){markPanelsDirty([panelKey]);renderPanel(panelKey)}
+function renderActivePanel(){const panel=$('[data-panel].active');if(panel)renderPanel(panel.dataset.panel)}
+
 function syncChatComposer(){
   const composer=$('#chat-composer'),box=$('#chat-input'),submit=$('#chat-submit');
   if(!composer||!box||!submit)return;
@@ -2303,45 +2331,49 @@ function bindChatConversationControls(scope=document){
     button.dataset.chatReport,button
   ));
 }
-function bindNavigation(){
-  $$('[data-app-link]').forEach(button=>button.onclick=()=>selectApp(button.dataset.appLink));
-  $$('[data-omni-answer]').forEach(el=>el.onclick=()=>openOmniDrill(el.dataset.omniAnswer));
-  bindChatConversationControls();
-  $$('[data-ask]').forEach(el=>el.onclick=()=>sendChat(el.dataset.ask));
-  $$('[data-report]').forEach(el=>el.onclick=()=>{openReportId=el.dataset.report;renderReports();bindNavigation()});
-  const chatNew=$('#chat-new');
-  if(chatNew)chatNew.onclick=()=>{stopChatPoll();chatThread=null;chatSending=false;chatView='active';chatSearch='';chatNotice=null;renderChats();bindNavigation()};
-  const chatSearchInput=$('#chat-search');
+function bindNavigation(scope=document){
+  if(scope===document){
+    $$('[data-app-link]').forEach(button=>button.onclick=()=>selectApp(button.dataset.appLink));
+    $$('[data-tab]').forEach(button=>button.onclick=()=>activate(button.dataset.tab));
+    $('#drill-backdrop').onclick=closeDrill;
+  }
+  $$('[data-omni-answer]',scope).forEach(el=>el.onclick=()=>openOmniDrill(el.dataset.omniAnswer));
+  bindChatConversationControls(scope);
+  $$('[data-ask]',scope).forEach(el=>el.onclick=()=>sendChat(el.dataset.ask));
+  $$('[data-report]',scope).forEach(el=>el.onclick=()=>{openReportId=el.dataset.report;rerenderPanel('reports')});
+  const chatNew=$('#chat-new',scope);
+  if(chatNew)chatNew.onclick=()=>{stopChatPoll();chatThread=null;chatSending=false;chatView='active';chatSearch='';chatNotice=null;rerenderPanel('chats')};
+  const chatSearchInput=$('#chat-search',scope);
   if(chatSearchInput)chatSearchInput.oninput=()=>{
     chatSearch=chatSearchInput.value;
     const results=$('#chat-list-results');if(!results)return;
     results.innerHTML=conversationList();
     bindChatConversationControls(results);
   };
-  $$('[data-chat-view]').forEach(button=>button.onclick=()=>{
+  $$('[data-chat-view]',scope).forEach(button=>button.onclick=()=>{
     if(chatView===button.dataset.chatView)return;
-    chatView=button.dataset.chatView;chatSearch='';renderChats();bindNavigation();
+    chatView=button.dataset.chatView;chatSearch='';rerenderPanel('chats');
   });
-  const chatNoticeClose=$('#chat-notice-close');
-  if(chatNoticeClose)chatNoticeClose.onclick=()=>{chatNotice=null;renderChats();bindNavigation()};
-  const reportBack=$('#report-back');
-  if(reportBack)reportBack.onclick=()=>{openReportId=null;renderReports();bindNavigation()};
-  const thinkToggle=$('#think-toggle');
+  const chatNoticeClose=$('#chat-notice-close',scope);
+  if(chatNoticeClose)chatNoticeClose.onclick=()=>{chatNotice=null;rerenderPanel('chats')};
+  const reportBack=$('#report-back',scope);
+  if(reportBack)reportBack.onclick=()=>{openReportId=null;rerenderPanel('reports')};
+  const thinkToggle=$('#think-toggle',scope);
   if(thinkToggle)thinkToggle.onclick=()=>setThinkOpen(!thinkOpen);
-  const composer=$('#chat-composer');
-  const model=$('#chat-model'),effort=$('#chat-effort');
+  const composer=$('#chat-composer',scope);
+  const model=$('#chat-model',scope),effort=$('#chat-effort',scope);
   if(model)model.onchange=()=>{chatModel=model.value};
   if(effort)effort.onchange=()=>{chatEffort=effort.value};
-  const fleetRefresh=$('#fleet-refresh');
+  const fleetRefresh=$('#fleet-refresh',scope);
   if(fleetRefresh)fleetRefresh.onclick=async()=>{
     fleetRefresh.disabled=true;fleetRefresh.textContent='Refreshing…';
     await refreshFleetOnView();
   };
-  bindFleetMapControls();
-  bindSimulationControls();
+  bindFleetMapControls(scope);
+  bindSimulationControls(scope);
   if(composer){
-    composer.onsubmit=event=>{event.preventDefault();const box=$('#chat-input');const text=box.value;box.value='';sendChat(text)};
-    const box=$('#chat-input');
+    composer.onsubmit=event=>{event.preventDefault();const box=$('#chat-input',scope);const text=box.value;box.value='';sendChat(text)};
+    const box=$('#chat-input',scope);
     // Enter sends, Shift+Enter newlines -- the convention every chat UI uses,
     // and the one people type without thinking about it.
     if(box)box.onkeydown=event=>{
@@ -2350,26 +2382,23 @@ function bindNavigation(){
     if(box)box.oninput=syncChatComposer;
     syncChatComposer();
   }
-  $$('[data-tab]').forEach(button=>button.onclick=()=>activate(button.dataset.tab));
-  $$('[data-go]').forEach(button=>button.onclick=()=>activate(button.dataset.go));
-  $$('[data-approval]').forEach(button=>button.onclick=()=>decideApproval(button.dataset.approval,button.dataset.decision==='true',button.closest('.approval-row')?.querySelector('[data-start-provider]')?.value||'claude'));
-  $$('[data-release-work]').forEach(button=>button.onclick=event=>{event.stopPropagation();approveRelease(button.dataset.releaseWork,button.dataset.releaseTitle,button)});
-  $$('[data-rec]').forEach(button=>button.onclick=()=>decideRecommendation(button.dataset.rec,button.dataset.recAction));
-  $$('[data-provider]').forEach(el=>el.onclick=()=>drillProvider(el.dataset.provider));
-  $$('[data-model]').forEach(el=>el.onclick=()=>drillModel(el.dataset.modelProvider,el.dataset.model));
-  $$('[data-project]').forEach(el=>el.onclick=()=>drillProject(el.dataset.project));
-  $$('[data-week]').forEach(el=>el.onclick=()=>drillWeek(el.dataset.week));
-  $$('[data-metric]').forEach(el=>el.onclick=()=>drillMetric(el.dataset.metric));
-  $$('[data-run]').forEach(el=>el.onclick=()=>openRunView(el.dataset.run,el.dataset.runTitle));
-  bindClientCards();
-  $$('[data-client-filter]').forEach(control=>control.oninput=()=>{clientView[control.dataset.clientFilter]=control.value;renderClientResults()});
-  $$('[data-agent]').forEach(el=>el.onclick=()=>openAgentDrill(el.dataset.agent));
-  $$('[data-mode]').forEach(el=>el.onclick=()=>{usageMode=el.dataset.mode;renderUsage();bindNavigation()});
-  $$('[data-drill]').forEach(el=>el.onclick=()=>{const d=el.dataset.drill;if(d==='cost')drillCost();else if(d==='tokens')drillTokens();else if(d==='work-tab')activate('work');else if(d==='approvals-tab')activate('approvals')});
-  bindOfficeForms($('[data-panel="clients"]'));
-  bindOfficeForms($('[data-panel="finances"]'));
-  bindCalendarControls();
-  $('#drill-backdrop').onclick=closeDrill;
+  $$('[data-go]',scope).forEach(button=>button.onclick=()=>activate(button.dataset.go));
+  $$('[data-approval]',scope).forEach(button=>button.onclick=()=>decideApproval(button.dataset.approval,button.dataset.decision==='true',button.closest('.approval-row')?.querySelector('[data-start-provider]')?.value||'claude'));
+  $$('[data-release-work]',scope).forEach(button=>button.onclick=event=>{event.stopPropagation();approveRelease(button.dataset.releaseWork,button.dataset.releaseTitle,button)});
+  $$('[data-rec]',scope).forEach(button=>button.onclick=()=>decideRecommendation(button.dataset.rec,button.dataset.recAction));
+  $$('[data-provider]',scope).forEach(el=>el.onclick=()=>drillProvider(el.dataset.provider));
+  $$('[data-model]',scope).forEach(el=>el.onclick=()=>drillModel(el.dataset.modelProvider,el.dataset.model));
+  $$('[data-project]',scope).forEach(el=>el.onclick=()=>drillProject(el.dataset.project));
+  $$('[data-week]',scope).forEach(el=>el.onclick=()=>drillWeek(el.dataset.week));
+  $$('[data-metric]',scope).forEach(el=>el.onclick=()=>drillMetric(el.dataset.metric));
+  $$('[data-run]',scope).forEach(el=>el.onclick=()=>openRunView(el.dataset.run,el.dataset.runTitle));
+  bindClientCards(scope);
+  $$('[data-client-filter]',scope).forEach(control=>control.oninput=()=>{clientView[control.dataset.clientFilter]=control.value;renderClientResults()});
+  $$('[data-agent]',scope).forEach(el=>el.onclick=()=>openAgentDrill(el.dataset.agent));
+  $$('[data-mode]',scope).forEach(el=>el.onclick=()=>{usageMode=el.dataset.mode;rerenderPanel('usage')});
+  $$('[data-drill]',scope).forEach(el=>el.onclick=()=>{const d=el.dataset.drill;if(d==='cost')drillCost();else if(d==='tokens')drillTokens();else if(d==='work-tab')activate('work');else if(d==='approvals-tab')activate('approvals')});
+  bindOfficeForms(scope);
+  bindCalendarControls(scope);
 }
 /* The routing table and the markup are two lists of the same names, kept in
    sync by hand. When they drift, activate() finds no panel and the app renders
@@ -2405,8 +2434,8 @@ function resolveRoute(value){
   return APP_TABS[parts[0]].includes(tab)?{app:parts[0],tab}:{app:'home'};
 }
 function setActiveApp(app){$$('[data-app-link]').forEach(button=>{const active=button.dataset.appLink===app;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')})}
-function showHome(updateHash=true){closeCalendarDetail(false);closeDrill();document.body.classList.remove('calendar-active');$('#home').hidden=false;$('.tabs').hidden=true;$('#loading').hidden=true;$$('[data-tab]').forEach(button=>{button.classList.remove('active');button.setAttribute('aria-selected','false');button.tabIndex=-1});$$('[data-panel]').forEach(panel=>{panel.classList.remove('active');panel.hidden=true});setActiveApp('home');if(updateHash)history.replaceState(null,'','#home');window.scrollTo({top:0,behavior:'smooth'})}
-function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}if(tab!=='calendar')closeCalendarDetail(false);closeDrill();document.body.classList.toggle('calendar-active',tab==='calendar');$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});const wantPanel=FIN_TABS[tab]?FIN_PANEL:tab;$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===wantPanel;panel.classList.toggle('active',active);panel.setAttribute('aria-hidden',String(!active));panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);window.scrollTo({top:0,behavior:'smooth'});if(tab==='company'&&state)refreshFleetOnView();if(tab==='simulations')simUpdateDynamic();if(FIN_TABS[tab]){loadFinancials().then(syncFinancialsOnView);setFinTab(FIN_TABS[tab])}}
+function showHome(updateHash=true){closeCalendarDetail(false);closeDrill();document.body.classList.remove('calendar-active');$('#home').hidden=false;$('.tabs').hidden=true;$('#loading').hidden=true;$$('[data-tab]').forEach(button=>{button.classList.remove('active');button.setAttribute('aria-selected','false');button.tabIndex=-1});$$('[data-panel]').forEach(panel=>{panel.classList.remove('active');panel.hidden=true});setActiveApp('home');if(updateHash)history.replaceState(null,'','#home');window.scrollTo(0,0)}
+function activate(tab,updateHash=true){const app=appForTab(tab);if(!app){showHome(updateHash);return}if(tab!=='calendar')closeCalendarDetail(false);closeDrill();document.body.classList.toggle('calendar-active',tab==='calendar');$('#home').hidden=true;$('.tabs').hidden=false;$$('[data-tab]').forEach(button=>{const active=button.dataset.tab===tab;button.hidden=button.dataset.dashboard!==app;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=button.hidden?-1:0});const wantPanel=FIN_TABS[tab]?FIN_PANEL:tab;$$('[data-panel]').forEach(panel=>{const active=panel.dataset.panel===wantPanel;panel.classList.toggle('active',active);panel.setAttribute('aria-hidden',String(!active));panel.hidden=!active});$('#loading').hidden=!!state;setActiveApp(app);if(updateHash)history.replaceState(null,'',`#${app}/${tab}`);renderPanel(wantPanel);window.scrollTo(0,0);if(tab==='company'&&state)refreshFleetOnView();if(tab==='simulations'&&state)simUpdateDynamic();if(FIN_TABS[tab]){loadFinancials().then(syncFinancialsOnView);setFinTab(FIN_TABS[tab])}}
 function selectApp(app){if(app==='home'){showHome();return}if(APP_DEFAULT[app])activate(APP_DEFAULT[app]);else showHome()}
 function routeLocation(updateHash=true){const route=resolveRoute(location.hash.slice(1));if(route.app==='home')showHome(updateHash);else activate(route.tab,updateHash)}
 /* Financials ------------------------------------------------------------------
@@ -2494,12 +2523,23 @@ window.addEventListener('message',event=>{
 });
 
 function greeting(){const h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening'}
+function renderTabBadges(){
+  const clients=Array.isArray(officeState?.clients)?officeState.clients:null;
+  const reports=Array.isArray(reportState?.reports)?reportState.reports:null;
+  const overview=state?.overview,work=state?.operations?.work;
+  $('#client-count').textContent=clients?clients.length:'—';
+  $('#report-count').textContent=reports?(reports.length||'—'):'—';
+  $('#work-count').textContent=overview?.active_work??'—';
+  $('#approval-count').textContent=overview?.pending_review!=null&&overview?.pending_approvals!=null&&Array.isArray(work)
+    ?overview.pending_review+overview.pending_approvals+releaseReadyWork().length:'—';
+  $('#metric-count').textContent=Array.isArray(state?.metrics)?state.metrics.filter(m=>m.status==='needs_attention').length:'—';
+}
 function render(){
-  $('#loading').hidden=true;$('#updated-at').textContent=date(state.generated_at);$('#work-count').textContent=state.overview.active_work;$('#approval-count').textContent=state.overview.pending_review+state.overview.pending_approvals+releaseReadyWork().length;$('#metric-count').textContent=state.metrics.filter(m=>m.status==='needs_attention').length;
+  $('#loading').hidden=true;$('#updated-at').textContent=date(state.generated_at);renderTabBadges();
   const h1=$('.welcome h1');if(h1)h1.textContent=`${greeting()}, Carter.`;
   const connected=state.control_plane.local_runner==='connected';$('#runner-pill').classList.toggle('connected',connected);$('#runner-pill').innerHTML=`<i></i> ${connected?'Local runner connected':'Local runner offline'}`;
   assertTabsMatchMarkup();
-  renderOverview();renderClients();renderFinances();renderCalendar();renderMetrics();renderWork();renderAgents();renderUsage();renderApprovals();renderSystem();renderOmnisupply();bindNavigation();routeLocation(false);
+  routeLocation(false);
 }
 async function load(){
   const[dashboard,quality,officeResult,agentGraphResult,omniResult,chatResult,reportResult,fleetResult]=await Promise.all([
@@ -2517,6 +2557,7 @@ async function load(){
   reportState=reportResult.error?{reports:[]}:(reportResult.data||{reports:[]});
   fleetState=fleetResult.error?{aircraft:[],trails:{},coverage:{}}:(fleetResult.data||{aircraft:[],trails:{},coverage:{}});
   state={...dashboard.data,quality:quality.data||{reviews:[],contracts:[],skill_summary:{},skill_weekly:[]}};
+  markPanelsDirty();
   render();
 }
 async function decideApproval(id,approved,startProvider='claude'){const model=startProvider==='codex'?'Codex':'Claude';if(!confirm(`${approved?`Approve this plan and start with ${model}? Its job is queued for the runner immediately.`:'Reject this execution gate?'}`))return;const{error}=await sb.rpc('api_decide_approval',{p_approval_id:id,p_approved:approved,p_note:`Decided from CS Ventures control dashboard${approved?`; start model: ${model}`:''}`,p_start_provider:startProvider});if(error){alert(`Action failed: ${error.message}`);return}await load()}

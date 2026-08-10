@@ -69,6 +69,95 @@ class DevDashboardTests(unittest.TestCase):
         )
         self.assertIn("financials:['fin-overview',", self.js)
 
+    def test_every_routed_panel_has_a_lazy_renderer(self):
+        app_tabs = self.js.split("const APP_TABS={", 1)[1].split("};", 1)[0]
+        routed_tabs = set(re.findall(r"'([a-z-]+)'", app_tabs))
+        fin_tabs = set(re.findall(r"'(fin-[a-z-]+)':", self.js))
+        routed_panels = {"fin-dashboard" if tab in fin_tabs else tab for tab in routed_tabs}
+        registry = self.js.split("const PANEL_RENDERERS={", 1)[1].split("};", 1)[0]
+        registry_panels = set(re.findall(r"^\s{2}'?([a-z-]+)'?:", registry, re.MULTILINE))
+        if "[FIN_PANEL]:" in registry:
+            registry_panels.add("fin-dashboard")
+        self.assertEqual(registry_panels, routed_panels)
+
+    def test_lazy_renderer_keys_match_panel_markup(self):
+        markup_panels = set(re.findall(r'data-panel="([^"]+)"', self.html))
+        registry = self.js.split("const PANEL_RENDERERS={", 1)[1].split("};", 1)[0]
+        registry_panels = set(re.findall(r"^\s{2}'?([a-z-]+)'?:", registry, re.MULTILINE))
+        if "[FIN_PANEL]:" in registry:
+            registry_panels.add("fin-dashboard")
+        self.assertEqual(registry_panels, markup_panels)
+
+    def test_navigation_binding_is_scoped_but_global_controls_are_not(self):
+        binding = self.js.split("function bindNavigation(scope=document){", 1)[1].split(
+            "/* The routing table", 1
+        )[0]
+        self.assertIn("$$('[data-omni-answer]',scope)", binding)
+        self.assertIn("bindChatConversationControls(scope)", binding)
+        self.assertIn("$$('[data-tab]').forEach", binding)
+        self.assertIn("$$('[data-app-link]').forEach", binding)
+        self.assertNotIn("$$('[data-tab]',scope)", binding)
+        self.assertNotIn("$$('[data-app-link]',scope)", binding)
+        self.assertIn("$('#refresh').addEventListener", self.js)
+        self.assertIn("$('#signout').addEventListener", self.js)
+
+    def test_tab_switches_are_instant(self):
+        home = self.js.split("function showHome(", 1)[1].split("function activate", 1)[0]
+        activate = self.js.split("function activate(", 1)[1].split("function selectApp", 1)[0]
+        self.assertNotIn("behavior:'smooth'", home)
+        self.assertNotIn("behavior:'smooth'", activate)
+        self.assertIn("window.scrollTo(0,0)", home)
+        self.assertIn("window.scrollTo(0,0)", activate)
+
+    def test_chat_poll_uses_fast_healthy_interval_and_bounded_backoff(self):
+        poll = self.js.split("async function startChatPoll", 1)[1].split(
+            "async function refreshChatList", 1
+        )[0]
+        self.assertIn("let delay=1000,progressError=null", poll)
+        self.assertIn(
+            "delay=Math.min(10000,2500*(2**Math.min(chatPoll.retryCount,2)))",
+            poll,
+        )
+
+    def test_load_marks_all_panels_dirty_before_rendering(self):
+        load = self.js.split("async function load(){", 1)[1].split(
+            "async function decideApproval", 1
+        )[0]
+        self.assertIn("markPanelsDirty();", load)
+        self.assertLess(load.index("markPanelsDirty();"), load.index("render();"))
+
+    def test_tab_badges_render_independently_of_lazy_panels(self):
+        badges = self.js.split("function renderTabBadges(){", 1)[1].split(
+            "function render(){", 1
+        )[0]
+        render = self.js.split("function render(){", 1)[1].split(
+            "async function load(){", 1
+        )[0]
+        reload_office = self.js.split("async function reloadOffice(", 1)[1].split(
+            "/* ── Finances", 1
+        )[0]
+        generate_report = self.js.split(
+            "async function generateConversationReport(", 1
+        )[1].split("function missingProviderChatRpc", 1)[0]
+        render_clients = self.js.split("function renderClients(){", 1)[1].split(
+            "function officeValue", 1
+        )[0]
+        render_reports = self.js.split("function renderReports(){", 1)[1].split(
+            "/* ── Company Info", 1
+        )[0]
+
+        self.assertIn("renderTabBadges();", render)
+        self.assertIn("renderTabBadges();", reload_office)
+        self.assertIn("renderTabBadges();", generate_report)
+        self.assertNotIn("#client-count", render_clients)
+        self.assertNotIn("#report-count", render_reports)
+
+        tab_rail = self.html.split('<nav class="tabs"', 1)[1].split("</nav>", 1)[0]
+        count_ids = set(re.findall(r'id="([a-z-]+-count)"', tab_rail))
+        # Chat intentionally retains its pre-existing refreshChatList ownership.
+        self.assertEqual(count_ids - {"chat-count"}, set(re.findall(r"#([a-z-]+-count)", badges)))
+        self.assertNotIn("#chat-count", badges)
+
     def test_financials_tabs_all_drive_the_single_iframe_panel(self):
         """Financials is the one app whose tabs do not each own a panel.
 
@@ -297,8 +386,8 @@ class DevDashboardTests(unittest.TestCase):
 
     def test_company_fleet_map_can_pan_zoom_and_fit_visible_aircraft(self):
         self.assertIn("function fittedFleetView(", self.js)
-        self.assertIn("function bindFleetMapControls()", self.js)
-        self.assertIn("bindFleetMapControls();", self.js)
+        self.assertIn("function bindFleetMapControls(scope=document)", self.js)
+        self.assertIn("bindFleetMapControls(scope);", self.js)
         self.assertIn('data-fleet-zoom="in"', self.js)
         self.assertIn("map.onpointermove", self.js)
         self.assertIn("map.addEventListener('wheel'", self.js)
