@@ -1051,8 +1051,23 @@ function thinkingPanel(){
         <span class="think-note">Hubs and counts are real; the field is schematic and the sequence is paced, not traced.</span>
       </div>
     </div>
+    <div class="think-plan" id="chat-plan"></div>
     <div class="think-steps" id="chat-steps"></div>
   </div>`;
+}
+
+function chatPlanMarkup(plan){
+  const items=Array.isArray(plan?.items)?plan.items:[];
+  if(!plan||!items.length)return '';
+  const completed=items.filter(item=>item.completed===true).length;
+  let activeAssigned=false;
+  const rows=items.map(item=>{
+    let state='pending',marker='□',stateLabel='Pending';
+    if(item.completed===true){state='done';marker='✓';stateLabel='Done'}
+    else if(!activeAssigned){state='active';marker='●';stateLabel='In progress';activeAssigned=true}
+    return `<li class="think-plan-item ${state}"><span class="think-plan-marker" aria-hidden="true">${marker}</span><span class="think-plan-text">${esc(item.text)}</span><span class="sr-only">${stateLabel}</span></li>`;
+  }).join('');
+  return `<div class="think-plan-head"><span>Agent plan</span><strong>${completed} of ${items.length}</strong></div><ol class="think-plan-list">${rows}</ol>`;
 }
 
 function paintPhase(){
@@ -1177,13 +1192,19 @@ function messageBubble(m){
 }
 
 const CHAT_MODELS=[
-  {value:'claude-opus-5',label:'Claude Opus 5',provider:'claude'},
-  {value:'claude-sonnet-5',label:'Claude Sonnet 5',provider:'claude'},
-  {value:'gpt-5.6-sol',label:'GPT-5.6 Sol',provider:'codex'},
-  {value:'gpt-5.6-terra',label:'GPT-5.6 Terra',provider:'codex'},
-  {value:'gpt-5.6-luna',label:'GPT-5.6 Luna',provider:'codex'},
+  {value:'claude-opus-5',label:'Claude Opus 5',provider:'claude',description:'Deep Claude reasoning for the hardest analyses.'},
+  {value:'claude-sonnet-5',label:'Claude Sonnet 5',provider:'claude',description:'Balanced Claude speed and capability for everyday analysis.'},
+  {value:'gpt-5.6-sol',label:'GPT-5.6 Sol',provider:'codex',description:'Most capable Codex model for complex, high-stakes work.'},
+  {value:'gpt-5.6-terra',label:'GPT-5.6 Terra',provider:'codex',description:'Balanced Codex model for everyday analytical work.'},
+  {value:'gpt-5.6-luna',label:'GPT-5.6 Luna',provider:'codex',description:'Fast Codex model for straightforward questions.'},
 ];
-const CHAT_EFFORTS=['low','medium','high','xhigh','max'];
+const CHAT_EFFORTS=[
+  {value:'low',label:'Low',description:'Fastest response with limited deliberation.'},
+  {value:'medium',label:'Medium',description:'Balanced speed and reasoning depth.'},
+  {value:'high',label:'High',description:'Deeper reasoning for involved questions.'},
+  {value:'xhigh',label:'Extra high',description:'Extended reasoning for complex, multi-step analysis.'},
+  {value:'max',label:'Max',description:'Maximum available deliberation; usually the slowest.'},
+];
 // Canonical Q1–Q6 wording from SCKG/DEMO-SCRIPT.md. These submit as-is so
 // rehearsal clicks exercise the same questions the verified answers cover.
 const CHAT_USE_CASES=[
@@ -1196,6 +1217,21 @@ const CHAT_USE_CASES=[
 ];
 let chatModel='gpt-5.6-sol',chatEffort='high';
 function selectedChatModel(){return CHAT_MODELS.find(item=>item.value===chatModel)||CHAT_MODELS[0]}
+function selectedChatEffort(){return CHAT_EFFORTS.find(item=>item.value===chatEffort)||CHAT_EFFORTS[2]}
+function chatConfigMenu(kind,items,selected){
+  return `<div class="chat-config-control">
+    <button type="button" class="chat-config-chip" data-chat-popover-trigger="${kind}"
+      aria-expanded="false" aria-haspopup="menu" aria-controls="chat-${kind}-menu">
+      <span>${kind==='model'?'Model':'Effort'} · <strong data-chat-chip-label>${esc(selected.label)}</strong></span><i aria-hidden="true">⌄</i>
+    </button>
+    <div class="chat-config-menu" id="chat-${kind}-menu" data-chat-popover="${kind}" role="menu" hidden>
+      ${items.map((item,index)=>`<button type="button" role="menuitem" data-chat-config-value="${esc(item.value)}"${item.value===selected.value?' class="selected"':''}>
+        <span class="chat-config-marker" aria-hidden="true">${item.value===selected.value?'✓':index+1}</span>
+        <span><strong>${esc(item.label)}</strong><small>${esc(item.description)}</small></span>
+      </button>`).join('')}
+    </div>
+  </div>`;
+}
 function chatModelLabel(model,provider){
   return CHAT_MODELS.find(item=>item.value===model)?.label||
     (provider==='codex'?'Codex':'Claude');
@@ -1274,18 +1310,10 @@ function renderChats(){
           <textarea id="chat-input" rows="3" placeholder="Ask about lanes, events, exposure, or what the data cannot answer…"></textarea>
           <div class="chat-composer-bar">
             <div class="chat-composer-config">
-              <label class="chat-provider">Model
-                <select id="chat-model" aria-label="Chat model">
-                  ${CHAT_MODELS.map(item=>`<option value="${esc(item.value)}"${chatModel===item.value?' selected':''}>${esc(item.label)}</option>`).join('')}
-                </select>
-              </label>
-              <label class="chat-provider">Effort
-                <select id="chat-effort" aria-label="Thinking effort">
-                  ${CHAT_EFFORTS.map(effort=>`<option value="${effort}"${chatEffort===effort?' selected':''}>${effort}</option>`).join('')}
-                </select>
-              </label>
+              ${chatConfigMenu('model',CHAT_MODELS,selectedChatModel())}
+              ${chatConfigMenu('effort',CHAT_EFFORTS,selectedChatEffort())}
             </div>
-            <button type="submit" id="chat-submit" disabled aria-hidden="true">Ask <span aria-hidden="true">↑</span></button>
+            <button type="submit" id="chat-submit" disabled aria-hidden="true" aria-label="Send question"><span aria-hidden="true">↑</span></button>
           </div>
         </form>`}
         <p class="chat-note">Answers are produced on the local runner. If it is offline, questions queue until it reconnects.</p>
@@ -1354,11 +1382,15 @@ async function startChatPoll(jobId,conversationId){
         });
         if(!chatPollIsActive(token,jobId,conversationId))return;
         progressError=result.error;
-        if(!result.error&&result.data?.steps?.length){
-          chatPoll.seq=result.data.steps[result.data.steps.length-1].seq;
-          const box=$('#chat-steps');
-          if(box)box.innerHTML=`<div class="think-steps-head">Runner steps</div>`+
-            result.data.steps.slice(-6).map(s=>`<div class="chat-step ${esc(s.kind)}"><span>${STEP_ICON[s.kind]||'·'}</span><div>${esc(s.label)}${s.detail?`<small>${esc(s.detail)}</small>`:''}</div></div>`).join('');
+        if(!result.error){
+          const planBox=$('#chat-plan');
+          if(planBox)planBox.innerHTML=chatPlanMarkup(result.data?.plan);
+          if(result.data?.steps?.length){
+            chatPoll.seq=result.data.steps[result.data.steps.length-1].seq;
+            const box=$('#chat-steps');
+            if(box)box.innerHTML=`<div class="think-steps-head">Observed runner steps</div>`+
+              result.data.steps.slice(-6).map(s=>`<div class="chat-step ${esc(s.kind)}"><span>${STEP_ICON[s.kind]||'·'}</span><div>${esc(s.label)}${s.detail?`<small>${esc(s.detail)}</small>`:''}</div></div>`).join('');
+          }
         }
       }catch(error){progressError=error}
 
@@ -2311,13 +2343,51 @@ function renderPanel(panelKey){
 function rerenderPanel(panelKey){markPanelsDirty([panelKey]);renderPanel(panelKey)}
 function renderActivePanel(){const panel=$('[data-panel].active');if(panel)renderPanel(panel.dataset.panel)}
 
-function syncChatComposer(){
-  const composer=$('#chat-composer'),box=$('#chat-input'),submit=$('#chat-submit');
+function syncChatComposer(scope=document){
+  const composer=$('#chat-composer',scope),box=$('#chat-input',scope),submit=$('#chat-submit',scope);
   if(!composer||!box||!submit)return;
   const hasText=Boolean(box.value.trim());
   composer.classList.toggle('has-text',hasText);
   submit.disabled=!hasText||chatSending;
   submit.setAttribute('aria-hidden',String(!hasText));
+}
+let chatPopoverOutsideHandler=null;
+function bindChatComposerPopovers(scope){
+  if(chatPopoverOutsideHandler)document.removeEventListener('click',chatPopoverOutsideHandler);
+  chatPopoverOutsideHandler=null;
+  const composer=$('#chat-composer',scope);if(!composer)return;
+  let openTrigger=null;
+  const closePopovers=(restoreFocus=false)=>{
+    $$('[data-chat-popover]',scope).forEach(menu=>menu.hidden=true);
+    $$('[data-chat-popover-trigger]',scope).forEach(trigger=>trigger.setAttribute('aria-expanded','false'));
+    if(restoreFocus&&openTrigger)openTrigger.focus();
+    openTrigger=null;
+  };
+  $$('[data-chat-popover-trigger]',scope).forEach(trigger=>trigger.onclick=()=>{
+    const menu=$(`[data-chat-popover="${trigger.dataset.chatPopoverTrigger}"]`,scope);
+    const opening=menu?.hidden;
+    closePopovers();
+    if(opening&&menu){menu.hidden=false;trigger.setAttribute('aria-expanded','true');openTrigger=trigger;menu.querySelector('button')?.focus()}
+  });
+  $$('[data-chat-config-value]',scope).forEach(item=>item.onclick=()=>{
+    const menu=item.closest('[data-chat-popover]'),kind=menu?.dataset.chatPopover;
+    if(kind==='model')chatModel=item.dataset.chatConfigValue;
+    if(kind==='effort')chatEffort=item.dataset.chatConfigValue;
+    const trigger=$(`[data-chat-popover-trigger="${kind}"]`,scope);
+    const selected=kind==='model'?selectedChatModel():selectedChatEffort();
+    const label=$('[data-chat-chip-label]',trigger);if(label)label.textContent=selected.label;
+    $$('[data-chat-config-value]',menu).forEach((option,index)=>{
+      const isSelected=option===item;
+      option.classList.toggle('selected',isSelected);
+      const marker=$('.chat-config-marker',option);if(marker)marker.textContent=isSelected?'✓':index+1;
+    });
+    closePopovers(true);
+  });
+  composer.onkeydown=event=>{
+    if(event.key==='Escape'&&openTrigger){event.preventDefault();closePopovers(true)}
+  };
+  chatPopoverOutsideHandler=event=>{if(openTrigger&&!event.target.closest('.chat-config-control'))closePopovers()};
+  document.addEventListener('click',chatPopoverOutsideHandler);
 }
 function bindChatConversationControls(scope=document){
   $$('[data-conversation]',scope).forEach(el=>el.onclick=()=>openConversation(el.dataset.conversation));
@@ -2361,9 +2431,7 @@ function bindNavigation(scope=document){
   const thinkToggle=$('#think-toggle',scope);
   if(thinkToggle)thinkToggle.onclick=()=>setThinkOpen(!thinkOpen);
   const composer=$('#chat-composer',scope);
-  const model=$('#chat-model',scope),effort=$('#chat-effort',scope);
-  if(model)model.onchange=()=>{chatModel=model.value};
-  if(effort)effort.onchange=()=>{chatEffort=effort.value};
+  bindChatComposerPopovers(scope);
   const fleetRefresh=$('#fleet-refresh',scope);
   if(fleetRefresh)fleetRefresh.onclick=async()=>{
     fleetRefresh.disabled=true;fleetRefresh.textContent='Refreshing…';
@@ -2379,8 +2447,8 @@ function bindNavigation(scope=document){
     if(box)box.onkeydown=event=>{
       if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();composer.requestSubmit()}
     };
-    if(box)box.oninput=syncChatComposer;
-    syncChatComposer();
+    if(box)box.oninput=()=>syncChatComposer(scope);
+    syncChatComposer(scope);
   }
   $$('[data-go]',scope).forEach(button=>button.onclick=()=>activate(button.dataset.go));
   $$('[data-approval]',scope).forEach(button=>button.onclick=()=>decideApproval(button.dataset.approval,button.dataset.decision==='true',button.closest('.approval-row')?.querySelector('[data-start-provider]')?.value||'claude'));

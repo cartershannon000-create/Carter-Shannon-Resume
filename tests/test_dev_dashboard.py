@@ -633,6 +633,44 @@ class DevDashboardTests(unittest.TestCase):
             self.chat_plan_sql,
         )
 
+    def test_chat_plan_renderer_escapes_model_text_and_hides_empty_plans(self):
+        renderer = self.js.split("function chatPlanMarkup(plan){", 1)[1].split(
+            "function paintPhase", 1
+        )[0]
+        self.assertIn("if(!plan||!items.length)return '';", renderer)
+        self.assertIn("${esc(item.text)}", renderer)
+        self.assertIn("completed} of ${items.length}", renderer)
+
+    def test_chat_poll_updates_plan_without_rerendering_the_panel(self):
+        progress_update = self.js.split("const result=await sb.rpc('api_chat_job_progress'", 1)[1].split(
+            "const result=await sb.rpc('api_chat_messages'", 1
+        )[0]
+        self.assertIn("const planBox=$('#chat-plan');", progress_update)
+        self.assertIn("planBox.innerHTML=chatPlanMarkup(result.data?.plan)", progress_update)
+        self.assertNotIn("renderChats(", progress_update)
+        self.assertNotIn("rerenderPanel('chats')", progress_update)
+
+    def test_chat_composer_popovers_are_accessible_and_escape_closes(self):
+        composer = self.js.split("function chatConfigMenu", 1)[1].split(
+            "function chatModelLabel", 1
+        )[0]
+        bindings = self.js.split("function bindChatComposerPopovers(scope){", 1)[1].split(
+            "function bindChatConversationControls", 1
+        )[0]
+        self.assertIn('aria-expanded="false"', composer)
+        self.assertIn('aria-haspopup="menu"', composer)
+        self.assertIn("event.key==='Escape'", bindings)
+        self.assertIn("closePopovers(true)", bindings)
+        self.assertIn("$('[data-chat-chip-label]',trigger)", bindings)
+
+    def test_chat_composer_uses_popover_chips_not_native_selects(self):
+        self.assertNotIn('<select id="chat-model"', self.js)
+        self.assertNotIn('<select id="chat-effort"', self.js)
+        self.assertIn('data-chat-popover-trigger="${kind}"', self.js)
+
+    def test_chat_javascript_cache_token_matches_chat_ux_release(self):
+        self.assertIn('src="app.js?v=20260810-chat-ux"', self.html)
+
     def test_chat_polling_has_one_owner_and_recovers_after_browser_interruptions(self):
         send_chat = self.js[
             self.js.index("async function sendChat(text)"):
