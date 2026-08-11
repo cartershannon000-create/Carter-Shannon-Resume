@@ -19,7 +19,7 @@
 .confidence-high{background:#e7f2e9;color:#245c33;border-color:#c3ddc9}
 .confidence-moderate{background:#e8eff4;color:#33596f;border-color:#c4d7e2}
 .confidence-low{background:#fbf1e4;color:#8a5c28;border-color:#e6d2b6}
-.confidence-scenario{background:#7e6b98;color:#fff;border-color:#6b5985}
+.confidence-scenario{background:#efe9f5;color:#4c3a68;border-color:#d8cce6}
 
 /* ── Figure tiles ────────────────────────────────────────────────── */
 .omni-figures{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-top:14px}
