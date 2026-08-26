@@ -11,7 +11,8 @@
     check: '<path d="M4 12.5 9 17.5 20 6.5"/>',
     external: '<path d="M7 17 17 7"/><path d="M8 7h9v9"/>',
     link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
-    arrowRight: '<path d="M5 12h14"/><path d="M13 5l7 7-7 7"/>'
+    arrowRight: '<path d="M5 12h14"/><path d="M13 5l7 7-7 7"/>',
+    download: '<path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 20h16"/>'
   };
   function icon(name, cls) {
     return '<svg class="rs-ico' + (cls ? " " + cls : "") + '" viewBox="0 0 24 24" aria-hidden="true">' + ICON[name] + "</svg>";
@@ -233,6 +234,42 @@
       };
       sync();
       save.addEventListener("click", function () { toggle(SAVE_KEY, slug); sync(); });
+    }
+    /* ── export to PDF ──
+       Uses the browser's own print pipeline (Save as PDF), so there is no library to
+       ship and the page prints identically from the button or from Ctrl+P. Collapsed
+       sections are opened for the render and restored exactly as they were afterwards,
+       so the PDF is always the whole document. The title swap gives the saved file a
+       clean default name instead of the site-suffixed <title>. */
+    var printState = null;
+    function beforePrint() {
+      if (printState) return;
+      var list = Array.prototype.slice.call(document.querySelectorAll("details.rs-sec"));
+      printState = { open: list.map(function (s) { return s.open; }), title: document.title };
+      list.forEach(function (s) { s.open = true; });
+      if (meta.title) document.title = meta.title;
+    }
+    function afterPrint() {
+      if (!printState) return;
+      var list = Array.prototype.slice.call(document.querySelectorAll("details.rs-sec"));
+      list.forEach(function (s, i) { s.open = printState.open[i]; });
+      document.title = printState.title;
+      printState = null;
+    }
+    window.addEventListener("beforeprint", beforePrint);
+    window.addEventListener("afterprint", afterPrint);
+    if (window.matchMedia) {
+      // Safari does not fire beforeprint/afterprint; the print media query does.
+      var mql = window.matchMedia("print");
+      var onMql = function (e) { if (e.matches) beforePrint(); else afterPrint(); };
+      if (mql.addEventListener) mql.addEventListener("change", onMql);
+      else if (mql.addListener) mql.addListener(onMql);
+    }
+    var pdf = document.getElementById("rs-export-pdf");
+    if (pdf) {
+      pdf.innerHTML = icon("download", "rs-ico-sm") + "Export PDF";
+      pdf.setAttribute("title", "Save this report as a PDF");
+      pdf.addEventListener("click", function () { beforePrint(); window.print(); });
     }
     // expand / collapse all sections
     var toggleAll = document.getElementById("rs-toggle-all");

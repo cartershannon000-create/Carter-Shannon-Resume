@@ -121,7 +121,9 @@ a.rs-tag:hover { background: var(--green); color: #fff; }
 .rs-stat-src { margin-top: 7px; font: 500 10.5px/1.4 var(--font-body); color: var(--muted); }
 
 .rs-block { margin-bottom: 44px; }
-.rs-block > h2 { display: flex; align-items: baseline; gap: 12px; font: 700 11px/1 var(--font-body); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+/* the sections block nests its h2 inside .rs-block-head, so a `>` alone would drop
+   it back to the UA heading style */
+.rs-block > h2, .rs-block-head h2 { display: flex; align-items: baseline; gap: 12px; font: 700 11px/1 var(--font-body); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
 .rs-block-note { margin: 0 0 20px; font: 400 13.5px/1.6 var(--font-body); color: var(--muted); max-width: 68ch; }
 .rs-rule { height: 1px; background: var(--line); margin: 0 0 20px; }
 
@@ -200,3 +202,85 @@ a.rs-tag:hover { background: var(--green); color: #fff; }
   padding: 12px 20px; border-radius: 999px; font: 600 12.5px/1 var(--font-body); opacity: 0; transition: opacity .28s, transform .28s; z-index: 500; pointer-events: none;
   box-shadow: 0 8px 30px rgba(4,16,10,.28); }
 .rs-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* print-only content lives here so it never shows on screen */
+.rs-print-only { display: none; }
+
+/* ── print / PDF export ──
+   The Export PDF button routes through the browser's print pipeline, so this block
+   is the PDF design. It drops the site chrome, converts the two dark panels to ink
+   on white (a reader with "background graphics" disabled would otherwise get white
+   text on white), and keeps every card, chart, and section off a page seam. */
+@media print {
+  @page { size: letter; margin: 15mm 14mm 16mm; }
+
+  html, body.rs-body { background: #fff; color: #111811; }
+  .rs-body { font-size: 11pt; }
+
+  /* site chrome and anything interactive */
+  .csv-bar, .rs-site-foot, .rs-back, .rs-report-actions, .rs-toggle-all,
+  .rs-snip, .rs-toast, .rs-chev { display: none !important; }
+
+  /* a link the reader cannot click needs to carry its address */
+  .rs-companion-cta .rs-ico { display: none; }
+  .rs-companion-cta::after { content: " (" attr(href) ")"; font-weight: 400; color: #536050; word-break: break-all; }
+
+  .rs-print-only { display: block; margin-top: 10px; font-size: 9pt; color: #536050; }
+
+  /* masthead: dark gradient becomes a printed title block */
+  .rs-masthead { background: none !important; color: #111811; border-bottom: 2px solid #2e6b3f;
+    padding: 0 0 16pt; margin-bottom: 20pt; }
+  .rs-masthead .wrap, .rs-report { max-width: none; padding: 0; margin: 0; }
+  .rs-eyebrow { color: #2e6b3f; margin-bottom: 10pt; }
+  .rs-masthead h1 { font-size: 25pt; line-height: 1.14; color: #111811; max-width: none; margin-bottom: 12pt; }
+  .rs-masthead-meta, .rs-source-label, .rs-dot { color: #536050; }
+  .rs-source-link { color: #2e6b3f; }
+  .rs-source-link .rs-ico { display: none; }
+  .rs-source-link::after { content: " (" attr(href) ")"; font-weight: 400; color: #536050; word-break: break-all; }
+  .rs-masthead .rs-tag { color: #536050; background: none; border: 1px solid rgba(28,42,30,.2); }
+
+  /* the two dark panels */
+  .rs-tldr { background: none !important; border: 1px solid rgba(28,42,30,.18); border-left: 3pt solid #2e6b3f;
+    border-radius: 0; padding: 14pt 16pt; }
+  .rs-tldr h2 { color: #2e6b3f; }
+  .rs-tldr p { color: #111811; font-size: 12pt; line-height: 1.55; }
+
+  /* flatten screen-only depth */
+  .rs-card, .rs-kp, .rs-chart, .rs-implication, .rs-stat, .rs-companion, .rs-tldr { box-shadow: none !important; }
+  .rs-kp, .rs-chart, .rs-implication, .rs-companion { background: none !important; border-radius: 0; }
+  /* the strip prints as a ruled band rather than a boxed grid: a partial last row
+     would otherwise leave the box hanging open, and per-cell rules would draw a
+     ragged line across it. Whitespace separates the rows instead. */
+  .rs-stats { background: none; border: none; border-radius: 0;
+    border-top: 1px solid rgba(28,42,30,.18); border-bottom: 1px solid rgba(28,42,30,.18);
+    gap: 14pt 0; padding: 13pt 0; }
+  .rs-stat { background: none !important; padding: 0 16pt 0 0; }
+
+  /* every section prints expanded, even from Ctrl+P before the script opens them */
+  details.rs-sec:not([open]) > .rs-sec-body { display: block !important; }
+  .rs-sec-head { cursor: default; padding-bottom: 8pt; }
+
+  /* keep blocks whole and headings attached to what they introduce */
+  .rs-kp, .rs-chart, .rs-implication, .rs-stat, .rs-qi, .rs-companion, .rs-sec-body p { break-inside: avoid; }
+  .rs-sec, .rs-tldr, .rs-quick { break-inside: avoid-page; }
+  .rs-block > h2, .rs-block-head h2, .rs-block-note, .rs-rule, .rs-sec-head, .rs-chart figcaption { break-after: avoid; }
+  .rs-block { margin-bottom: 22pt; }
+
+  /* two charts per row prints at a legible size. The chart SVG carries a 460px
+     intrinsic width, so the explicit zero minimums keep a pair of cards from
+     flooring at ~960px and running off narrower paper than letter. */
+  .rs-charts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14pt; }
+  .rs-chart { border-color: rgba(28,42,30,.18); padding: 12pt; min-width: 0; }
+  .rs-svg { max-width: 100%; }
+  .rs-svg-val { fill: #111811; }
+  .rs-svg-lbl, .rs-chart-note, .rs-chart-unit { fill: #536050; color: #536050; }
+
+  /* SVG marks are foreground content and always print; force the rest too so the
+     green accents survive browsers that strip backgrounds */
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .rs-report-foot { border-top: 1px solid rgba(28,42,30,.18); }
+  .rs-report-foot a { color: #2e6b3f; text-decoration: none; }
+  .rs-report-foot a::after { content: " (" attr(href) ")"; color: #536050; word-break: break-all; }
+  a { text-decoration: none; }
+}
